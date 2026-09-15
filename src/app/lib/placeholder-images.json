@@ -1,6 +1,7 @@
+
 {
   "hero": {
-    "url": "/hero.png",
+    "url": "/assets/hero.png",
     "width": 1920,
     "height": 1080,
     "hint": "professional terminal"
