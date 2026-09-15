@@ -42,6 +42,18 @@ export default function TerminalWorkspace() {
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
 
+  // Define data stream for active positions
+  const tradesQuery = useMemo(() => {
+    if (!db || !user) return null;
+    return query(
+      collection(db, `users/${user.uid}/positions`),
+      where("status", "==", "Open"),
+      orderBy("timestamp", "desc")
+    );
+  }, [db, user]);
+
+  const { data: activePositions, loading: positionsLoading } = useCollection<any>(tradesQuery);
+
   useEffect(() => {
     const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
     if (savedMode) setAccountMode(savedMode);
@@ -325,9 +337,11 @@ export default function TerminalWorkspace() {
                       Positions are logging in Sandbox environment. Switch to Real Account to view live blockchain settled ledger.
                     </td>
                   </tr>
-                ) : activePositions?.length === 0 ? (
+                ) : positionsLoading ? (
+                  <tr><td colSpan={6} className="p-8 text-center text-[#6B7280] uppercase tracking-widest font-bold">Syncing Ledger...</td></tr>
+                ) : !activePositions || activePositions.length === 0 ? (
                   <tr><td colSpan={6} className="p-8 text-center text-[#6B7280] uppercase tracking-widest font-bold">No Open Exposure</td></tr>
-                ) : activePositions?.map((pos: any) => (
+                ) : activePositions.map((pos: any) => (
                   <tr key={pos.id} className="hover:bg-[#F7F7F5]">
                     <td className="p-3 font-mono font-bold">{pos.instrument}</td>
                     <td className="p-3">
