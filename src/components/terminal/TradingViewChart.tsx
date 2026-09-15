@@ -85,7 +85,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({ symbol, onSy
       try {
         const data = await fetchHistoricalData(symbol);
         if (seriesRef.current && data) {
-          seriesRef.current.setData(data);
+          seriesRef.current.setData(data as any);
           chart.timeScale().fitContent();
         }
       } catch (e) {}
