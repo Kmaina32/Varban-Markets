@@ -19,7 +19,7 @@
     "hint": "data server"
   },
   "auth": {
-    "url": "https://picsum.photos/seed/varban_auth/1080/1920",
+    "url": "/assets/auth.png",
     "width": 1080,
     "height": 1920,
     "hint": "modern architecture"
