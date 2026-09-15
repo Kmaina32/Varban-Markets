@@ -1,0 +1,26 @@
+{
+  "hero": {
+    "url": "https://picsum.photos/seed/varban_institutional/1920/1080",
+    "width": 1920,
+    "height": 1080,
+    "hint": "professional terminal"
+  },
+  "terminal": {
+    "url": "https://picsum.photos/seed/varban_terminal/1200/800",
+    "width": 1200,
+    "height": 800,
+    "hint": "candlestick chart"
+  },
+  "infrastructure": {
+    "url": "https://picsum.photos/seed/varban_infra/800/600",
+    "width": 800,
+    "height": 600,
+    "hint": "data server"
+  },
+  "auth": {
+    "url": "https://picsum.photos/seed/varban_auth/1080/1920",
+    "width": 1080,
+    "height": 1920,
+    "hint": "modern architecture"
+  }
+}

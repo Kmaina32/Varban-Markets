@@ -1,0 +1,86 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Core account data for the trader.",
+      "type": "object",
+      "properties": {
+        "balance": { "type": "number", "description": "Current account balance in USD." },
+        "equity": { "type": "number", "description": "Total account equity including open positions." },
+        "currency": { "type": "string", "description": "Base account currency." },
+        "verificationStatus": { "type": "string", "enum": ["Not Verified", "Pending", "Verified"] },
+        "fullName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" }
+      },
+      "required": ["balance", "verificationStatus"]
+    },
+    "Position": {
+      "title": "Trade Position",
+      "description": "Active or closed market exposure record.",
+      "type": "object",
+      "properties": {
+        "instrument": { "type": "string" },
+        "vector": { "type": "string", "enum": ["CALL", "PUT"] },
+        "entryPrice": { "type": "number" },
+        "currentPrice": { "type": "number" },
+        "stake": { "type": "number" },
+        "expiry": { "type": "string" },
+        "status": { "type": "string", "enum": ["Open", "Closed"] },
+        "profit": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Transaction": {
+      "title": "Transaction Record",
+      "description": "Ledger entry for funds or settlements.",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "asset": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "ref": { "type": "string" }
+      }
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "System or trade alert.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "body": { "type": "string" },
+        "type": { "type": "string" },
+        "isUnread": { "type": "boolean" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["email", "google"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Primary user profile and balance data"
+    },
+    "/users/{userId}/positions/{posId}": {
+      "schema": "Position",
+      "description": "User trade history and open positions"
+    },
+    "/users/{userId}/transactions/{txId}": {
+      "schema": "Transaction",
+      "description": "Funding and settlement logs"
+    },
+    "/users/{userId}/notifications/{noteId}": {
+      "schema": "Notification",
+      "description": "User activity alerts"
+    },
+    "/users/{userId}/watchlist/{symbol}": {
+      "schema": { "type": "object", "properties": { "symbol": { "type": "string" } } },
+      "description": "User favorite instruments"
+    }
+  }
+}
