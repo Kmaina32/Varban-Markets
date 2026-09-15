@@ -9,7 +9,7 @@ import { useTranslation } from "@/app/lib/i18n-context";
 export default function AccountWorkspace() {
   const { user } = useUser();
   const db = useFirestore();
-  const { t, loading: i18nLoading } = useTranslation();
+  const { t } = useTranslation();
   const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
 
   const personalParams = [
