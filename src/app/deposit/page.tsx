@@ -98,7 +98,7 @@ export default function DepositPage() {
             </div>
 
             <div className="bg-[#F7F7F5] border border-[#E4E4E4] p-4 flex items-start space-x-3">
-              <ShieldCheck className="w-5 h-5 text-[#C9A227] shrink-0" />
+              <ShieldCheck className="w-5 h-5 text-[#0055FF] shrink-0" />
               <p className="text-[10px] text-[#6B7280] leading-relaxed">
                 All capital movements are processed under deterministic infrastructure handshakes. Verification logs are immutable and auditable.
               </p>

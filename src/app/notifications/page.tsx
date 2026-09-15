@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo } from "react";
@@ -35,7 +34,7 @@ export default function NotificationsPage() {
   const getColor = (type: string) => {
     switch (type) {
       case 'Trade': return "text-[#16835B]";
-      case 'Security': return "text-[#C9A227]";
+      case 'Security': return "text-[#0055FF]";
       case 'Funds': return "text-[#16835B]";
       default: return "text-[#6B7280]";
     }
@@ -50,7 +49,7 @@ export default function NotificationsPage() {
         <div className="flex justify-between items-center px-1">
           <div className="flex items-center space-x-2">
             <span className="text-[10px] font-bold text-[#0A0A0A] uppercase tracking-widest">Feed</span>
-            <span className="bg-[#C9A227] text-[#0A0A0A] text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+            <span className="bg-[#0055FF] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
               {alerts?.filter((a: any) => a.isUnread).length || 0} New
             </span>
           </div>
@@ -73,9 +72,9 @@ export default function NotificationsPage() {
             return (
               <Card 
                 key={alert.id} 
-                className={`bg-white border-[#E4E4E4] p-5 shadow-sm flex items-start space-x-4 group hover:border-[#C9A227] transition-all relative ${alert.isUnread ? 'border-l-2 border-l-[#C9A227]' : ''}`}
+                className={`bg-white border-[#E4E4E4] p-5 shadow-sm flex items-start space-x-4 group hover:border-[#0055FF] transition-all relative ${alert.isUnread ? 'border-l-2 border-l-[#0055FF]' : ''}`}
               >
-                <div className={`p-2.5 bg-[#F7F7F5] border border-[#E4E4E4] group-hover:border-[#C9A227] transition-colors`}>
+                <div className={`p-2.5 bg-[#F7F7F5] border border-[#E4E4E4] group-hover:border-[#0055FF] transition-colors`}>
                   <Icon className={`w-4 h-4 ${getColor(alert.type)}`} />
                 </div>
                 <div className="flex-grow">
@@ -85,7 +84,7 @@ export default function NotificationsPage() {
                         {alert.title}
                       </h4>
                       {alert.isUnread && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#C9A227]"></span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#0055FF]"></span>
                       )}
                     </div>
                     <span className="text-[9px] font-mono text-[#6B7280]">

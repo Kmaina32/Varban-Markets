@@ -53,7 +53,7 @@ export default function UserDashboard() {
   const activeEquity = accountMode === 'REAL' ? (profile?.equity || profile?.balance || 0) : demoBalance;
 
   const metrics = [
-    { title: accountMode === 'REAL' ? t('dashboard.balance') : 'Demo Balance', value: activeBalance, icon: DollarSign, color: accountMode === 'REAL' ? "text-[#16835B]" : "text-[#C9A227]" },
+    { title: accountMode === 'REAL' ? t('dashboard.balance') : 'Demo Balance', value: activeBalance, icon: DollarSign, color: accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]" },
     { title: accountMode === 'REAL' ? t('dashboard.equity') : 'Demo Equity', value: activeEquity, icon: TrendingUp, color: "text-[#0A0A0A]" },
     { title: t('dashboard.openRisk'), value: accountMode === 'REAL' ? (profile?.openRisk || 0) : 0, icon: Shield, color: "text-[#C43D3D]" },
     { title: t('dashboard.dailyPL'), value: accountMode === 'REAL' ? (profile?.dailyPL || 0) : 0, icon: Activity, color: "text-[#16835B]" }
@@ -64,7 +64,7 @@ export default function UserDashboard() {
       <div className="space-y-8">
         {/* Account Mode Notice Bar */}
         {accountMode === 'DEMO' && (
-          <div className="bg-[#C9A227]/10 border border-[#C9A227] p-3 text-[10px] font-bold uppercase tracking-wider text-[#C9A227]">
+          <div className="bg-[#0055FF]/10 border border-[#0055FF] p-3 text-[10px] font-bold uppercase tracking-wider text-[#0055FF]">
             Demo Practice Environment active. Open positions show simulated statistics.
           </div>
         )}
@@ -89,7 +89,7 @@ export default function UserDashboard() {
           <div className="lg:col-span-2 space-y-4">
             <div className="flex justify-between items-center px-1">
               <h3 className="text-xs font-bold uppercase tracking-wider">{t('dashboard.recentTrades')}</h3>
-              <Link href="/history" className="text-[10px] font-bold text-[#C9A227] uppercase tracking-widest flex items-center">
+              <Link href="/history" className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest flex items-center">
                 {t('dashboard.viewHistory')} <ArrowRight className="ml-1 w-3 h-3" />
               </Link>
             </div>
@@ -140,7 +140,7 @@ export default function UserDashboard() {
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
               <h3 className="text-xs font-bold uppercase tracking-wider">{t('dashboard.watchlist')}</h3>
-              <Link href="/watchlist" className="text-[10px] font-bold text-[#C9A227] uppercase tracking-widest flex items-center">
+              <Link href="/watchlist" className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest flex items-center">
                 {t('dashboard.manageWatchlist')} <Star className="ml-1 w-3 h-3" />
               </Link>
             </div>
@@ -150,7 +150,7 @@ export default function UserDashboard() {
               ) : watchlist?.length === 0 ? (
                 <p className="text-xs text-[#6B7280] text-center p-4 border border-dashed border-[#E4E4E4]">{t('dashboard.emptyWatchlist')}</p>
               ) : watchlist?.map((item: any) => (
-                <Link href={`/terminal?symbol=${item.symbol}`} key={item.symbol} className="bg-white border border-[#E4E4E4] p-3 flex justify-between items-center shadow-sm hover:border-[#C9A227] transition-colors cursor-pointer">
+                <Link href={`/terminal?symbol=${item.symbol}`} key={item.symbol} className="bg-white border border-[#E4E4E4] p-3 flex justify-between items-center shadow-sm hover:border-[#0055FF] transition-colors cursor-pointer">
                   <div>
                     <span className="text-[10px] font-mono font-bold block">{item.symbol}</span>
                     <span className="text-[9px] text-[#6B7280] uppercase">{t('tables.asset')}</span>

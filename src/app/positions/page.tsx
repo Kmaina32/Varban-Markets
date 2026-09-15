@@ -36,7 +36,7 @@ export default function ActivePositionsPage() {
         <Card className="bg-white border-[#E4E4E4] p-6 shadow-sm">
           <div className="flex justify-between items-center mb-2">
             <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">{t('pages.totalStake')}</span>
-            <Target className="w-4 h-4 text-[#C9A227]" />
+            <Target className="w-4 h-4 text-[#0055FF]" />
           </div>
           <div className="text-xl font-mono font-bold">${formatNumber(totalStake, { minimumFractionDigits: 2 })} USD</div>
         </Card>
@@ -84,7 +84,7 @@ export default function ActivePositionsPage() {
                 </td>
                 <td className="p-4 text-right">{formatNumber(pos.entryPrice, { minimumFractionDigits: 2 })}</td>
                 <td className="p-4 text-right">${formatNumber(pos.stake, { minimumFractionDigits: 2 })}</td>
-                <td className="p-4 text-right text-[#C9A227]">{pos.duration}</td>
+                <td className="p-4 text-right text-[#0055FF]">{pos.duration}</td>
               </tr>
             ))}
           </tbody>

@@ -61,7 +61,7 @@ export default function WalletPage() {
     >
       <div className="max-w-5xl mx-auto space-y-8 text-[#0A0A0A]">
         {accountMode === 'DEMO' && (
-          <div className="bg-[#C9A227]/10 border border-[#C9A227] p-3 text-[10px] font-bold uppercase tracking-wider text-[#C9A227] flex justify-between items-center">
+          <div className="bg-[#0055FF]/10 border border-[#0055FF] p-3 text-[10px] font-bold uppercase tracking-wider text-[#0055FF] flex justify-between items-center">
             <span>Demo Mode Simulator has zero capital risk thresholds.</span>
             <button 
               onClick={() => {
@@ -83,11 +83,11 @@ export default function WalletPage() {
                 <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-1">
                   {accountMode === 'REAL' ? t('wallet.available') : 'Demo Practice Balance'}
                 </span>
-                <h2 className={cn("text-3xl font-mono font-bold", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#C9A227]")}>
+                <h2 className={cn("text-3xl font-mono font-bold", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>
                   {profileLoading ? "..." : `$${formatNumber(activeBalance, { minimumFractionDigits: 2 })}`}
                 </h2>
               </div>
-              <Wallet className="w-6 h-6 text-[#C9A227]" />
+              <Wallet className="w-6 h-6 text-[#0055FF]" />
             </div>
             
             <div className="grid grid-cols-2 gap-4">
@@ -116,49 +116,6 @@ export default function WalletPage() {
                 <span className="text-lg font-mono font-bold">${formatNumber(accountMode === 'REAL' ? (profile?.openRisk || 0) : 0, { minimumFractionDigits: 2 })}</span>
               </div>
             </div>
-          </Card>
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex justify-between items-center px-1">
-            <h3 className="text-xs font-bold uppercase tracking-wider">{t('wallet.recentTx')}</h3>
-            <Link href="/transactions" className="text-[9px] font-bold text-[#C9A227] uppercase tracking-widest">
-              {t('wallet.viewAll')}
-            </Link>
-          </div>
-          <Card className="bg-white border-[#E4E4E4] overflow-hidden">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-[#F7F7F5] border-b border-[#E4E4E4]">
-                  <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase">{t('wallet.type')}</th>
-                  <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase">{t('wallet.status')}</th>
-                  <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase text-right">{t('wallet.amount')}</th>
-                  <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase text-right">{t('wallet.date')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E4E4E4] text-xs font-mono">
-                {accountMode === 'DEMO' ? (
-                  <tr>
-                    <td colSpan={4} className="p-4 text-center text-[#6B7280]">
-                      Transaction logs are preserved for the Real Account space.
-                    </td>
-                  </tr>
-                ) : txLoading ? (
-                  <tr><td colSpan={4} className="p-4 text-center text-[#6B7280]">Loading...</td></tr>
-                ) : recentTxs?.length === 0 ? (
-                  <tr><td colSpan={4} className="p-4 text-center text-[#6B7280]">{t('wallet.noTx')}</td></tr>
-                ) : recentTxs?.map((tx: any) => (
-                  <tr key={tx.id} className="hover:bg-[#F7F7F5]">
-                    <td className="p-3 font-bold">{tx.type}</td>
-                    <td className="p-3 uppercase text-[9px]">{tx.status}</td>
-                    <td className="p-3 text-right">${formatNumber(tx.amount, { minimumFractionDigits: 2 })}</td>
-                    <td className="p-3 text-right text-[#6B7280]">
-                      {tx.timestamp?.toDate ? formatDate(tx.timestamp.toDate()) : "..."}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </Card>
         </div>
       </div>

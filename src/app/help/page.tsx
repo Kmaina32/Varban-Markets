@@ -42,8 +42,8 @@ export default function HelpPage() {
             { icon: CreditCard, title: "Payments", desc: "Adding and taking out money." },
             { icon: ShieldCheck, title: "Security", desc: "Keeping your account safe." }
           ].map((item, idx) => (
-            <div key={idx} className="bg-white border border-[#E4E4E4] p-6 shadow-sm hover:border-[#C9A227] transition-colors group cursor-pointer">
-              <item.icon className="w-5 h-5 text-[#C9A227] mb-3" />
+            <div key={idx} className="bg-white border border-[#E4E4E4] p-6 shadow-sm hover:border-[#0055FF] transition-colors group cursor-pointer">
+              <item.icon className="w-5 h-5 text-[#0055FF] mb-3" />
               <h4 className="text-xs font-bold uppercase text-[#0A0A0A] tracking-wider">{item.title}</h4>
               <p className="text-[11px] text-[#6B7280] mt-1">{item.desc}</p>
             </div>
@@ -80,7 +80,7 @@ export default function HelpPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F7F7F5]">
-        <div className="w-5 h-5 border-2 border-[#C9A227] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-5 h-5 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -101,7 +101,7 @@ export default function HelpPage() {
   return (
     <div className="bg-[#F7F7F5] py-20 px-4">
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center space-x-2 mb-8 text-[#C9A227]">
+        <div className="flex items-center space-x-2 mb-8 text-[#0055FF]">
           <HelpCircle className="w-5 h-5" />
           <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Public Help</span>
         </div>

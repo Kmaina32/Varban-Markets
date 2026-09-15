@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -11,17 +10,11 @@ import { collection, deleteDoc, doc } from "firebase/firestore";
 import { fetchLivePrice } from "@/app/lib/market-service";
 import { useTranslation } from "@/app/lib/i18n-context";
 
-/**
- * @fileOverview Institutional Watchlist Workspace.
- * Provides real-time monitoring of priority market instruments.
- */
-
 export default function WatchlistPage() {
   const { user } = useUser();
   const db = useFirestore();
   const { t, formatNumber } = useTranslation();
   
-  // Memoize the collection reference to prevent re-render loops
   const watchlistQuery = useMemo(() => {
     if (!db || !user) return null;
     return collection(db, `users/${user.uid}/watchlist`);
@@ -30,7 +23,6 @@ export default function WatchlistPage() {
   const { data: watchlist, loading } = useCollection<any>(watchlistQuery);
   const [prices, setPrices] = useState<Record<string, any>>({});
 
-  // Background polling for watchlist prices
   useEffect(() => {
     if (!watchlist || watchlist.length === 0) return;
     
@@ -42,16 +34,10 @@ export default function WatchlistPage() {
           try {
             const data = await fetchLivePrice(item.symbol);
             newPrices[item.symbol] = data;
-          } catch (e) {
-            // Silently handle individual instrument data gaps
-          }
+          } catch (e) {}
         }));
-        if (active) {
-          setPrices(newPrices);
-        }
-      } catch (err) {
-        // Handle global pricing service interruptions
-      }
+        if (active) setPrices(newPrices);
+      } catch (err) {}
     };
 
     updatePrices();
@@ -64,19 +50,15 @@ export default function WatchlistPage() {
 
   const removeSymbol = (symbol: string) => {
     if (!db || !user) return;
-    // Optimistic background deletion
     deleteDoc(doc(db, `users/${user.uid}/watchlist`, symbol)).catch(() => {});
   };
 
   return (
-    <AuthedLayout 
-      title={t('nav.watchlist')} 
-      subtitle={t('pages.watchlistSubtitle')}
-    >
+    <AuthedLayout title={t('nav.watchlist')} subtitle={t('pages.watchlistSubtitle')}>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {loading ? (
           <div className="col-span-full py-20 text-center">
-            <div className="w-6 h-6 border-2 border-[#C9A227] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">{t('common.loading')}</p>
           </div>
         ) : !watchlist || watchlist.length === 0 ? (
@@ -96,7 +78,7 @@ export default function WatchlistPage() {
             const isPositive = live?.changePercent >= 0;
             
             return (
-              <Card key={item.symbol} className="bg-white border-[#E4E4E4] p-5 shadow-sm group hover:border-[#C9A227] transition-all relative overflow-hidden">
+              <Card key={item.symbol} className="bg-white border-[#E4E4E4] p-5 shadow-sm group hover:border-[#0055FF] transition-all relative overflow-hidden">
                 <div className="flex justify-between items-start mb-4 relative z-10">
                   <div>
                     <div className="flex items-center space-x-2 mb-1">
@@ -112,7 +94,6 @@ export default function WatchlistPage() {
                   <button 
                     onClick={() => removeSymbol(item.symbol)}
                     className="text-[#E4E4E4] hover:text-[#C43D3D] transition-colors p-1"
-                    title="Remove from watchlist"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -133,14 +114,13 @@ export default function WatchlistPage() {
                   
                   <Link 
                     href={`/terminal?symbol=${item.symbol}`} 
-                    className="w-10 h-10 flex items-center justify-center bg-[#F7F7F5] border border-[#E4E4E4] text-[#0A0A0A] hover:bg-[#0A0A0A] hover:text-white transition-all shadow-sm"
+                    className="w-10 h-10 flex items-center justify-center bg-[#F7F7F5] border border-[#E4E4E4] text-[#0A0A0A] hover:bg-[#0055FF] hover:text-white transition-all shadow-sm"
                   >
                     <Sliders className="w-4 h-4" />
                   </Link>
                 </div>
                 
-                {/* Visual Background Accent */}
-                <div className="absolute top-0 right-0 w-16 h-16 bg-[#C9A227]/5 -z-0 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute top-0 right-0 w-16 h-16 bg-[#0055FF]/5 -z-0 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </Card>
             );
           })

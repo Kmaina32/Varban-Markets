@@ -102,7 +102,7 @@ export default function ContactPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F7F7F5]">
-        <div className="w-5 h-5 border-2 border-[#C9A227] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-5 h-5 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -118,8 +118,8 @@ export default function ContactPage() {
             <ContactForm isAuthed={true} />
           </div>
           <div className="space-y-6">
-            <div className="bg-[#0A0A0A] text-white p-6 border-b-4 border-[#C9A227]">
-              <ShieldCheck className="w-8 h-8 text-[#C9A227] mb-4" />
+            <div className="bg-[#0A0A0A] text-white p-6 border-b-4 border-[#0055FF]">
+              <ShieldCheck className="w-8 h-8 text-[#0055FF] mb-4" />
               <h4 className="text-xs font-bold uppercase tracking-wider mb-2">Priority Support</h4>
               <p className="text-[10px] text-[#6B7280] leading-relaxed">
                 Logged in users get faster support responses.
@@ -137,7 +137,7 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           <div className="lg:col-span-4 space-y-12">
             <div>
-              <span className="text-[10px] font-bold text-[#C9A227] uppercase tracking-[0.2em] block mb-4">{t('nav.contact')}</span>
+              <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.2em] block mb-4">{t('nav.contact')}</span>
               <h1 className="text-4xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display leading-tight">
                 Get in Touch.
               </h1>
@@ -152,7 +152,7 @@ export default function ContactPage() {
                 { icon: Phone, title: "Phone", detail: "+44 (0) 20 7946 0000" }
               ].map((item, idx) => (
                 <div key={idx} className="flex items-start space-x-4">
-                  <item.icon className="w-5 h-5 text-[#C9A227] shrink-0 mt-1" />
+                  <item.icon className="w-5 h-5 text-[#0055FF] shrink-0 mt-1" />
                   <div>
                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">{item.title}</h4>
                     <p className="text-xs text-[#6B7280] mt-1">{item.detail}</p>

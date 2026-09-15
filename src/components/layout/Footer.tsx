@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -33,7 +32,7 @@ export default function Footer() {
           <div>
             <div className="flex items-center mb-4">
               <Image 
-                src={placeholderImages.logo.url}
+                src="/assets/logo.png"
                 alt="Varban Markets"
                 width={120}
                 height={28}
@@ -46,7 +45,7 @@ export default function Footer() {
           </div>
           
           <div>
-            <h4 className="text-[10px] font-bold text-[#C9A227] uppercase tracking-widest mb-4">Markets</h4>
+            <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Markets</h4>
             <ul className="space-y-2 text-xs text-[#6B7280]">
               <li><Link href="/markets" className="hover:text-[#0A0A0A] transition-colors">Available Markets</Link></li>
               <li><Link href="/how-it-works" className="hover:text-[#0A0A0A] transition-colors">How It Works</Link></li>
@@ -55,14 +54,14 @@ export default function Footer() {
           </div>
           
           <div>
-            <h4 className="text-[10px] font-bold text-[#C9A227] uppercase tracking-widest mb-4">Legal</h4>
+            <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Legal</h4>
             <ul className="space-y-2 text-xs text-[#6B7280]">
               <li><Link href="/risk-disclosure" className="hover:text-[#0A0A0A] transition-colors">Risk Disclosure</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-[10px] font-bold text-[#C9A227] uppercase tracking-widest mb-4">Support</h4>
+            <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Support</h4>
             <ul className="space-y-2 text-xs text-[#6B7280]">
               <li><Link href="/help" className="hover:text-[#0A0A0A] transition-colors">Help Center</Link></li>
               <li><Link href="/contact" className="hover:text-[#0A0A0A] transition-colors">Contact Support</Link></li>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -165,9 +164,9 @@ export default function MarketsPage() {
                     <TableCell className="text-center">
                       <button 
                         onClick={() => toggleWatchlist(inst)}
-                        className={`transition-all transform active:scale-90 ${starred ? 'text-[#C9A227]' : 'text-[#E4E4E4] hover:text-[#C9A227]'}`}
+                        className={`transition-all transform active:scale-90 ${starred ? 'text-[#0055FF]' : 'text-[#E4E4E4] hover:text-[#0055FF]'}`}
                       >
-                        <Star className={`w-4 h-4 ${starred ? 'fill-[#C9A227]' : ''}`} />
+                        <Star className={`w-4 h-4 ${starred ? 'fill-[#0055FF]' : ''}`} />
                       </button>
                     </TableCell>
                     <TableCell>

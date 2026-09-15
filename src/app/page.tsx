@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import Image from "next/image";
 import { Shield, Database, Sliders, Cpu, ArrowRight } from "lucide-react";
@@ -21,7 +20,7 @@ export default function HomePage() {
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
           <div className="max-w-3xl">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#C9A227] block mb-4">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#0055FF] block mb-4">
               Varban Markets
             </span>
             <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-white uppercase mb-6 leading-[1.1]">
@@ -31,7 +30,7 @@ export default function HomePage() {
               Access global markets through a professional terminal with defined risk and transparent execution. Manage your portfolio with institutional-grade tools and real-time market data.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link href="/register" className="btn-institutional-primary bg-[#C9A227] text-[#0A0A0A] border-[#C9A227] hover:bg-white hover:border-white px-8">
+              <Link href="/register" className="btn-institutional-primary bg-[#0055FF] text-white border-[#0055FF] hover:bg-white hover:text-[#0055FF] px-8">
                 Open Account
               </Link>
               <Link href="/markets" className="btn-institutional-secondary bg-transparent text-white border-white/20 hover:bg-white/5 px-8">
@@ -82,17 +81,17 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="border border-[#E4E4E4] p-8 bg-[#F7F7F5]">
-              <Shield className="w-6 h-6 text-[#C9A227] mb-6" />
+              <Shield className="w-6 h-6 text-[#0055FF] mb-6" />
               <h4 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A] mb-3">Limited Exposure</h4>
               <p className="text-[11px] text-[#6B7280] leading-relaxed">Your risk is strictly limited to your initial stake. You cannot lose more than the amount you commit to a trade.</p>
             </div>
             <div className="border border-[#E4E4E4] p-8 bg-[#F7F7F5]">
-              <Database className="w-6 h-6 text-[#C9A227] mb-6" />
+              <Database className="w-6 h-6 text-[#0055FF] mb-6" />
               <h4 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A] mb-3">Transparent Pricing</h4>
               <p className="text-[11px] text-[#6B7280] leading-relaxed">Trade entry and exit prices are captured at the exact moment of execution for full transparency.</p>
             </div>
             <div className="border border-[#E4E4E4] p-8 bg-[#F7F7F5]">
-              <Sliders className="w-6 h-6 text-[#C9A227] mb-6" />
+              <Sliders className="w-6 h-6 text-[#0055FF] mb-6" />
               <h4 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A] mb-3">Flexible Durations</h4>
               <p className="text-[11px] text-[#6B7280] leading-relaxed">Select contract durations that suit your strategy, ranging from 1 minute to 24 hours.</p>
             </div>
@@ -101,7 +100,7 @@ export default function HomePage() {
       </section>
 
       {/* FINAL CTA */}
-      <section className="py-24 bg-[#C9A227] text-[#0A0A0A] text-center">
+      <section className="py-24 bg-[#0055FF] text-white text-center">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h3 className="text-3xl sm:text-4xl font-bold uppercase tracking-tight mb-8">
             Access the Varban Markets Trading Platform.

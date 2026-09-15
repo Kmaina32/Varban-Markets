@@ -29,7 +29,7 @@ export default function AccountWorkspace() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-3">
             <div className="bg-white border border-[#E4E4E4] p-4 flex items-center space-x-3">
-              <User className="w-4 h-4 text-[#C9A227]" />
+              <User className="w-4 h-4 text-[#0055FF]" />
               <span className="text-xs font-bold uppercase tracking-wider">{t('nav.account')}</span>
             </div>
             <div className="bg-white border border-[#E4E4E4] p-4 flex items-center space-x-3">

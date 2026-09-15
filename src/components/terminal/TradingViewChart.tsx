@@ -110,9 +110,9 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({ symbol, onSy
           <div className="relative instrument-selector">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="flex items-center space-x-2 bg-white border border-[#E4E4E4] px-3 py-1.5 hover:border-[#C9A227] transition-all shadow-sm"
+              className="flex items-center space-x-2 bg-white border border-[#E4E4E4] px-3 py-1.5 hover:border-[#0055FF] transition-all shadow-sm"
             >
-              <BarChart3 className="w-3.5 h-3.5 text-[#C9A227]" />
+              <BarChart3 className="w-3.5 h-3.5 text-[#0055FF]" />
               <span className="text-[10px] font-mono font-bold text-[#0A0A0A] uppercase tracking-wider">{symbol}</span>
               <ChevronDown className={`w-3 h-3 text-[#6B7280] transition-transform duration-200 ${menuOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -130,7 +130,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({ symbol, onSy
                       setMenuOpen(false);
                     }}
                     className={`w-full text-left px-3 py-2.5 text-[10px] uppercase block font-mono border-b border-[#F7F7F5] last:border-0 hover:bg-[#F7F7F5] transition-colors ${
-                      inst.symbol === symbol ? 'bg-[#C9A227]/5 text-[#C9A227]' : 'text-[#0A0A0A]'
+                      inst.symbol === symbol ? 'bg-[#0055FF]/5 text-[#0055FF]' : 'text-[#0A0A0A]'
                     }`}
                   >
                     <div className="flex justify-between items-center">
@@ -160,8 +160,8 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({ symbol, onSy
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/60 z-20 top-12">
           <div className="flex flex-col items-center space-y-3">
-            <div className="w-6 h-6 border-2 border-[#C9A227] border-t-transparent rounded-full animate-spin"></div>
-            <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#C9A227]">{t('common.loading')}</div>
+            <div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div>
+            <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">{t('common.loading')}</div>
           </div>
         </div>
       )}

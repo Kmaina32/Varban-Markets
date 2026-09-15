@@ -88,7 +88,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
                       className={cn(
                         "flex items-center h-10 px-2 text-[11px] font-bold uppercase tracking-wider transition-all border-l-2",
                         isActive 
-                          ? "text-[#C9A227] bg-[#C9A227]/5 border-[#C9A227]" 
+                          ? "text-[#0055FF] bg-[#0055FF]/5 border-[#0055FF]" 
                           : "text-[#6B7280] hover:text-[#0A0A0A] border-transparent"
                       )}
                     >
@@ -101,16 +101,6 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
             </div>
           ))}
         </nav>
-        <div className="p-6 border-t border-[#E4E4E4]">
-          <Link 
-            href="/" 
-            onClick={onLinkClick}
-            className="flex items-center h-12 px-4 text-[11px] font-bold uppercase tracking-wider text-[#6B7280] hover:text-[#C43D3D] bg-[#F7F7F5] border border-[#E4E4E4] transition-all"
-          >
-            <LogOut className="w-4 h-4 shrink-0 mr-4" />
-            <span>{t('nav.exit')}</span>
-          </Link>
-        </div>
       </div>
     );
   }
@@ -131,13 +121,12 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
                   <Link
                     key={item.href}
                     href={item.href}
-                    onClick={onLinkClick}
                     className={cn(
                       "flex items-center h-8 px-2 text-[10px] font-bold uppercase tracking-wider transition-all group/item whitespace-nowrap",
-                      isActive ? "text-[#C9A227] bg-[#C9A227]/5" : "text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5]"
+                      isActive ? "text-[#0055FF] bg-[#0055FF]/5" : "text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5]"
                     )}
                   >
-                    <item.icon className={cn("w-3.5 h-3.5 shrink-0 transition-colors", isActive ? "text-[#C9A227]" : "text-[#6B7280] group-hover/item:text-[#0A0A0A]")} />
+                    <item.icon className={cn("w-3.5 h-3.5 shrink-0 transition-colors", isActive ? "text-[#0055FF]" : "text-[#6B7280] group-hover/item:text-[#0A0A0A]")} />
                     <span className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       {item.label}
                     </span>
@@ -148,18 +137,6 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
           </div>
         ))}
       </nav>
-      <div className="p-3 border-t border-[#E4E4E4] shrink-0">
-        <Link 
-          href="/" 
-          onClick={onLinkClick}
-          className="flex items-center h-8 px-2 text-[10px] font-bold uppercase tracking-wider text-[#6B7280] hover:text-[#C43D3D] hover:bg-[#F7F7F5] transition-all group/item whitespace-nowrap"
-        >
-          <LogOut className="w-3.5 h-3.5 shrink-0" />
-          <span className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            {t('nav.exit')}
-          </span>
-        </Link>
-      </div>
     </aside>
   );
 }

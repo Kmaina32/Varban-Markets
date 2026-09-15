@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 const config: Config = {
@@ -57,7 +56,7 @@ const config: Config = {
           muted: "#6B7280",
           green: "#16835B",
           red: "#C43D3D",
-          gold: "#C9A227",
+          blue: "#0055FF",
           white: "#FFFFFF",
           offwhite: "#F7F7F5",
         },

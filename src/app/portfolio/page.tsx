@@ -41,7 +41,7 @@ export default function PortfolioPage() {
           <Card key={i} className="bg-white border-[#E4E4E4] p-4 shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">{stat.label}</span>
-              <stat.icon className="w-3.5 h-3.5 text-[#C9A227]" />
+              <stat.icon className="w-3.5 h-3.5 text-[#0055FF]" />
             </div>
             <div className="text-xl font-mono font-bold">
               {profileLoading || positionsLoading ? "..." : typeof stat.value === 'number' ? `${stat.prefix}${formatNumber(stat.value, { minimumFractionDigits: 2 })}` : stat.value}

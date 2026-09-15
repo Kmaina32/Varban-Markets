@@ -249,7 +249,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
 
               {isReviewing && user && (
                 <div className="pt-4 border-t-2 border-[#0A0A0A] bg-[#F7F7F5] p-4 space-y-4">
-                  <div className="flex items-center space-x-1.5 text-[#C9A227]">
+                  <div className="flex items-center space-x-1.5 text-[#0055FF]">
                     <ShieldAlert className="w-4 h-4 shrink-0" />
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#0A0A0A]">{t('trading.riskPreVerify')}</span>
                   </div>

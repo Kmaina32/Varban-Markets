@@ -40,7 +40,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
           {principles.map((p, idx) => (
             <div key={idx} className="bg-white border border-[#E4E4E4] p-8 space-y-4">
-              <p.icon className="w-6 h-6 text-[#C9A227]" />
+              <p.icon className="w-6 h-6 text-[#0055FF]" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">
                 {p.title}
               </h3>
@@ -52,15 +52,15 @@ export default function AboutPage() {
         </div>
 
         <div className="bg-white text-[#0A0A0A] p-8 border border-[#E4E4E4]">
-          <h2 className="text-xl font-bold uppercase tracking-tight mb-4 text-[#C9A227]">Operational Integrity</h2>
+          <h2 className="text-xl font-bold uppercase tracking-tight mb-4 text-[#0055FF]">Operational Integrity</h2>
           <p className="text-xs text-[#6B7280] leading-relaxed mb-6">
             We operate a matching protocol where every trade execution is logged with a unique reference key. This ensures that the platform state remains consistent and auditable at all times.
           </p>
           <div className="flex flex-wrap gap-4">
-            <Link href="/technology" className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#C9A227] pb-1 hover:text-[#C9A227] transition-colors">
+            <Link href="/technology" className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#0055FF] pb-1 hover:text-[#0055FF] transition-colors">
               Technology Architecture &rarr;
             </Link>
-            <Link href="/risk-disclosure" className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#C9A227] pb-1 hover:text-[#C9A227] transition-colors">
+            <Link href="/risk-disclosure" className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#0055FF] pb-1 hover:text-[#0055FF] transition-colors">
               Risk Disclosure &rarr;
             </Link>
           </div>
