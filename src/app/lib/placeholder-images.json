@@ -23,5 +23,11 @@
     "width": 1080,
     "height": 1920,
     "hint": "modern architecture"
+  },
+  "logo": {
+    "url": "/assets/logo.png",
+    "width": 180,
+    "height": 40,
+    "hint": "company logo"
   }
 }

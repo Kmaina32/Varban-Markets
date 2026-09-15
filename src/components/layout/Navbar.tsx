@@ -1,10 +1,13 @@
+
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useUser } from "@/firebase";
+import placeholderImages from "@/app/lib/placeholder-images.json";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -22,7 +25,6 @@ export default function Navbar() {
   const isStrict = strictWorkspacePaths.some(path => pathname === path || pathname?.startsWith(path + '/'));
   const isShared = sharedPaths.some(path => pathname === path || pathname?.startsWith(path + '/'));
 
-  // Suppress public navigation header if user is inside a strict private path OR an active shared workspace
   if (isStrict || (isShared && user)) return null;
 
   const publicLinks = [
@@ -39,10 +41,15 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2.5">
-              <span className="text-[#0A0A0A] font-bold tracking-[0.2em] text-[10px] uppercase font-display">
-                VARBAN <span className="text-[#C9A227]">MARKETS</span>
-              </span>
+            <Link href="/" className="flex items-center">
+              <Image 
+                src={placeholderImages.logo.url}
+                alt="Varban Markets"
+                width={140}
+                height={32}
+                className="h-8 w-auto object-contain"
+                priority
+              />
             </Link>
           </div>
 

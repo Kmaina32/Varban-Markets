@@ -1,14 +1,17 @@
+
 'use client';
 
 import AuthedSidebar from "./AuthedSidebar";
 import { Bell, User, Globe, Menu, X, ChevronDown, Check, Settings, LogOut } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useUser, useDoc, useFirestore } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { LocaleCode, LANGUAGE_LABELS } from "@/app/lib/i18n-dictionary";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { cn } from "@/app/lib/utils";
+import placeholderImages from "@/app/lib/placeholder-images.json";
 
 const STRICT_PATHS = [
   '/terminal', '/dashboard', '/portfolio', '/positions', 
@@ -120,10 +123,15 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-          <Link href="/dashboard" className="hidden md:flex items-center space-x-2.5">
-            <span className="text-[#0A0A0A] font-bold tracking-[0.2em] text-[10px] uppercase font-display whitespace-nowrap">
-              VARBAN <span className="text-[#C9A227]">WORKSPACE</span>
-            </span>
+          <Link href="/dashboard" className="hidden md:flex items-center">
+            <Image 
+              src={placeholderImages.logo.url}
+              alt="Varban Workspace"
+              width={120}
+              height={28}
+              className="h-7 w-auto object-contain"
+              priority
+            />
           </Link>
 
           <div className="h-6 w-px bg-[#E4E4E4] hidden md:block"></div>
@@ -135,10 +143,15 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
         </div>
 
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:hidden flex items-center">
-          <Link href="/dashboard" className="flex items-center space-x-2.5">
-            <span className="text-[#0A0A0A] font-bold tracking-[0.2em] text-[10px] uppercase font-display whitespace-nowrap">
-              VARBAN <span className="text-[#C9A227]">WORKSPACE</span>
-            </span>
+          <Link href="/dashboard" className="flex items-center">
+             <Image 
+              src={placeholderImages.logo.url}
+              alt="Varban Workspace"
+              width={110}
+              height={26}
+              className="h-6 w-auto object-contain"
+              priority
+            />
           </Link>
         </div>
         

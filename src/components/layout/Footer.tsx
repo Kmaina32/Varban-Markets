@@ -1,8 +1,11 @@
+
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useUser } from "@/firebase";
+import placeholderImages from "@/app/lib/placeholder-images.json";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -21,7 +24,6 @@ export default function Footer() {
   const isStrict = strictWorkspacePaths.some(path => pathname === path || pathname?.startsWith(path + '/'));
   const isShared = sharedPaths.some(path => pathname === path || pathname?.startsWith(path + '/'));
 
-  // Hide footer on authentication pages, strict workspace pages, and shared pages when logged in
   if (isStrict || (isShared && user)) return null;
 
   return (
@@ -29,8 +31,14 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div>
-            <div className="flex items-center space-x-2.5 mb-4">
-              <span className="text-[#0A0A0A] font-bold tracking-widest text-xs uppercase">VARBAN MARKETS</span>
+            <div className="flex items-center mb-4">
+              <Image 
+                src={placeholderImages.logo.url}
+                alt="Varban Markets"
+                width={120}
+                height={28}
+                className="h-7 w-auto object-contain"
+              />
             </div>
             <p className="text-xs text-[#6B7280] leading-relaxed">
               Professional electronic trading infrastructure for synthetic and derivative markets.
