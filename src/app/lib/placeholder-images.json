@@ -1,6 +1,6 @@
 {
   "hero": {
-    "url": "https://picsum.photos/seed/varban_institutional/1920/1080",
+    "url": "/hero.png",
     "width": 1920,
     "height": 1080,
     "hint": "professional terminal"
