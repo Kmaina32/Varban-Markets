@@ -5,7 +5,7 @@ import Image from "next/image";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
 import { CheckCircle2, ChevronDown, User, Check, TrendingUp, TrendingDown, ShieldCheck, Menu, X, BarChart3, GripHorizontal } from "lucide-react";
-import Link from "next/link";
+import Link from "next/navigation";
 import { TradingViewChart } from "@/components/terminal/TradingViewChart";
 import { useUser, useFirestore, useCollection, useDoc } from "@/firebase";
 import { collection, addDoc, serverTimestamp, query, where, orderBy } from "firebase/firestore";
@@ -206,13 +206,6 @@ export default function TerminalWorkspace() {
           <Link href="/dashboard" className="flex items-center">
             <Image src="/assets/logo.png" alt="Varban Terminal" width={110} height={26} className="h-6 md:h-7 w-auto object-contain" priority />
           </Link>
-          
-          <div className="h-6 w-px bg-[#E4E4E4] hidden md:block"></div>
-          
-          <nav className="hidden md:flex space-x-6 text-[9px] font-bold uppercase tracking-[0.1em]">
-            <Link href="/markets" className="text-[#6B7280] hover:text-[#0055FF]">{t('nav.markets')}</Link>
-            <Link href="/portfolio" className="text-[#6B7280] hover:text-[#0055FF]">{t('nav.portfolio')}</Link>
-          </nav>
         </div>
 
         <div className="flex items-center space-x-2 md:space-x-8">
@@ -473,14 +466,14 @@ export default function TerminalWorkspace() {
 
               <div className="grid grid-cols-1 gap-3">
                 <button 
-                  onClick={() => { setDirection("CALL"); setReviewActive(true); }}
+                  onClick={ () => { setDirection("CALL"); setReviewActive(true); } }
                   className={cn("py-4 text-xs font-bold uppercase tracking-widest border flex items-center justify-center space-x-2", direction === "CALL" ? "bg-[#16835B] text-white border-[#16835B]" : "bg-white text-[#16835B] border-[#16835B]")}
                 >
                   <TrendingUp className="w-4 h-4" />
                   <span>Call Outcome</span>
                 </button>
                 <button 
-                  onClick={() => { setDirection("PUT"); setReviewActive(true); }}
+                  onClick={ () => { setDirection("PUT"); setReviewActive(true); } }
                   className={cn("py-4 text-xs font-bold uppercase tracking-widest border flex items-center justify-center space-x-2", direction === "PUT" ? "bg-[#C43D3D] text-white border-[#C43D3D]" : "bg-white text-[#C43D3D] border-[#C43D3D]")}
                 >
                   <TrendingDown className="w-4 h-4" />
