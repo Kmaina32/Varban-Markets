@@ -78,6 +78,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
       { label: t('nav.adminUsers'), href: "/admin/users", icon: Users },
       { label: t('nav.adminLedger'), href: "/admin/transactions", icon: FileSpreadsheet },
       { label: t('nav.adminMarkets'), href: "/admin/markets", icon: Database },
+      { label: "Platform Settings", href: "/admin/settings", icon: Settings },
     ]
   };
 
