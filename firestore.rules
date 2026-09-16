@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Determine if the requesting entity holds Root Administrative Authority
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.email == 'macos8388@gmail.com' || 
+        request.auth.token.email == 'gmaina4242@gmail.com'
+      );
+    }
+
+    // User Profile & Sub-collection Protocols
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if isAdmin();
+
+      match /{allSubcollections=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, write: if isAdmin();
+      }
+    }
+
+    // Global Ledger Auditing (Collection Group Queries)
+    match /{path=**}/transactions/{txId} {
+      allow read: if isAdmin();
+    }
+    
+    match /{path=**}/positions/{posId} {
+      allow read: if isAdmin();
+    }
+  }
+}
