@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
 import { CheckCircle2, ChevronDown, User, Check, TrendingUp, TrendingDown, ShieldCheck, Menu, X, BarChart3, GripHorizontal } from "lucide-react";
-import Link from "next/navigation";
 import { TradingViewChart } from "@/components/terminal/TradingViewChart";
 import { useUser, useFirestore, useCollection, useDoc } from "@/firebase";
 import { collection, addDoc, serverTimestamp, query, where, orderBy } from "firebase/firestore";
