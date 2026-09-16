@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
@@ -12,6 +13,7 @@ import { collection, addDoc, serverTimestamp, query, where, orderBy } from "fire
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 import AuthedSidebar from "@/components/layout/AuthedSidebar";
+import TerminalTutorial from "@/components/terminal/TerminalTutorial";
 
 export default function TerminalWorkspace() {
   const { user } = useUser();
@@ -186,9 +188,11 @@ export default function TerminalWorkspace() {
 
   return (
     <div className="bg-white text-[#0A0A0A] h-screen flex flex-col overflow-hidden font-sans relative">
+      <TerminalTutorial />
+      
       {/* Mobile Navbar Overlay Drawer */}
       {isMobileNavOpen && (
-        <div className="fixed inset-0 z-[200] md:hidden">
+        <div className="fixed inset-0 z-[250] md:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setIsMobileNavOpen(false)}></div>
           <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white animate-in slide-in-from-left duration-300">
              <AuthedSidebar isMobile onLinkClick={() => setIsMobileNavOpen(false)} />
@@ -198,14 +202,16 @@ export default function TerminalWorkspace() {
 
       {/* Header */}
       <header className="relative h-16 border-b border-[#E4E4E4] flex items-center justify-between px-4 md:px-6 bg-white shrink-0 z-50 shadow-sm">
-        <div className="flex items-center w-full md:w-auto justify-center md:justify-start">
+        <div className="flex items-center w-full md:w-auto">
           <button onClick={() => setIsMobileNavOpen(true)} className="absolute left-4 md:relative p-2 hover:bg-[#F7F7F5] transition-colors md:hidden">
             <Menu className="w-5 h-5" />
           </button>
           
-          <Link href="/dashboard" className="flex items-center">
-            <Image src="/assets/logo.png" alt="Varban Terminal" width={110} height={26} className="h-6 md:h-7 w-auto object-contain" priority />
-          </Link>
+          <div className="w-full flex justify-center md:justify-start">
+            <Link href="/dashboard" className="flex items-center">
+              <Image src="/assets/logo.png" alt="Varban Terminal" width={110} height={26} className="h-6 md:h-7 w-auto object-contain" priority />
+            </Link>
+          </div>
         </div>
 
         <div className="flex items-center space-x-2 md:space-x-8 absolute right-4 md:relative">
@@ -268,7 +274,7 @@ export default function TerminalWorkspace() {
             isMobileMarketMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
           )}>
             <div className="p-4 border-b border-[#E4E4E4] bg-[#F7F7F5] flex justify-between items-center">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Asset Monitoring</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Monitoring</span>
               <button onClick={() => setIsMobileMarketMenuOpen(false)} className="md:hidden p-2"><X className="w-4 h-4" /></button>
             </div>
             <div className="flex-grow overflow-y-auto no-scrollbar divide-y divide-[#E4E4E4]">
@@ -340,7 +346,7 @@ export default function TerminalWorkspace() {
             )}
 
             <div className="flex-grow relative">
-              <TradingViewChart symbol={activeInst.symbol} onSymbolChange={handleSymbolChange} />
+              <TradingViewChart symbol={activeInst.symbol} />
             </div>
 
             {/* Resize Handle for Desktop */}
@@ -424,7 +430,7 @@ export default function TerminalWorkspace() {
             isMobileTradeMenuOpen ? "translate-y-0 opacity-100" : "translate-y-full md:translate-y-0 opacity-0 md:opacity-100"
           )}>
             <div className="p-4 border-b border-[#E4E4E4] bg-[#F7F7F5] flex justify-between items-center">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Trade Configuration</h3>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Configuration</h3>
               <button onClick={() => setIsMobileTradeMenuOpen(false)} className="md:hidden p-2"><X className="w-4 h-4" /></button>
             </div>
 
