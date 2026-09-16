@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import Image from "next/image";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
-import { CheckCircle2, ChevronDown, User, Check, TrendingUp, TrendingDown, ShieldCheck, Menu, X, BarChart3, SlidersHorizontal } from "lucide-react";
+import { CheckCircle2, ChevronDown, User, Check, TrendingUp, TrendingDown, ShieldCheck, Menu, X, BarChart3, GripHorizontal } from "lucide-react";
 import Link from "next/link";
 import { TradingViewChart } from "@/components/terminal/TradingViewChart";
 import { useUser, useFirestore, useCollection, useDoc } from "@/firebase";
@@ -33,6 +33,10 @@ export default function TerminalWorkspace() {
   const [isMobileTradeMenuOpen, setIsMobileTradeMenuOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   
+  // Tray Resizing State Logic
+  const [trayHeight, setTrayHeight] = useState(200);
+  const [isResizing, setIsResizing] = useState(false);
+  
   const dropdownRef = useRef<HTMLDivElement>(null);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   
@@ -49,6 +53,33 @@ export default function TerminalWorkspace() {
   }, [db, user]);
 
   const { data: activePositions, loading: positionsLoading } = useCollection<any>(tradesQuery);
+
+  // Resize Handlers
+  const startResizing = useCallback(() => {
+    setIsResizing(true);
+  }, []);
+
+  const stopResizing = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  const resize = useCallback((e: MouseEvent) => {
+    if (isResizing) {
+      const newHeight = window.innerHeight - e.clientY;
+      if (newHeight > 80 && newHeight < window.innerHeight * 0.6) {
+        setTrayHeight(newHeight);
+      }
+    }
+  }, [isResizing]);
+
+  useEffect(() => {
+    window.addEventListener('mousemove', resize);
+    window.addEventListener('mouseup', stopResizing);
+    return () => {
+      window.removeEventListener('mousemove', resize);
+      window.removeEventListener('mouseup', stopResizing);
+    };
+  }, [resize, stopResizing]);
 
   useEffect(() => {
     const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
@@ -238,7 +269,7 @@ export default function TerminalWorkspace() {
         
         <div className="flex-grow flex flex-col md:flex-row overflow-hidden md:ml-16">
           
-          {/* Market List Selection Layer (Mobile Dropdown/Slide & Desktop Sidebar) */}
+          {/* Market List Selection Layer */}
           <div className={cn(
             "fixed inset-0 z-[150] md:relative md:inset-auto md:z-0 md:flex flex-col w-full md:w-64 border-r border-[#E4E4E4] bg-white transition-transform duration-300 ease-in-out",
             isMobileMarketMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
@@ -275,8 +306,8 @@ export default function TerminalWorkspace() {
           </div>
 
           {/* Main Chart Section */}
-          <main className="flex-grow flex flex-col overflow-hidden relative">
-            {/* Mobile Tool Bar for Dropdown Asset Toggling */}
+          <main className={`flex-grow flex flex-col overflow-hidden relative ${isResizing ? 'select-none' : ''}`}>
+            {/* Mobile Tool Bar */}
             <div className="md:hidden flex items-center justify-between p-3 border-b border-[#E4E4E4] bg-white z-40">
               <button onClick={() => setIsMobileMarketMenuOpen(true)} className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-wider border border-[#E4E4E4] px-3 py-1.5 bg-[#F7F7F5]">
                 <BarChart3 className="w-3.5 h-3.5 text-[#0055FF]" />
@@ -307,10 +338,24 @@ export default function TerminalWorkspace() {
               <TradingViewChart symbol={activeInst.symbol} onSymbolChange={handleSymbolChange} />
             </div>
 
+            {/* Resize Handle for Desktop */}
+            <div 
+              onMouseDown={startResizing}
+              className="hidden md:flex h-1.5 bg-[#E4E4E4] hover:bg-[#0055FF] cursor-row-resize items-center justify-center group transition-colors z-[60]"
+            >
+              <div className="w-10 h-0.5 bg-[#6B7280] group-hover:bg-white rounded-full"></div>
+            </div>
+
             {/* Bottom Info / Positions Tray */}
-            <div className="h-40 md:h-48 border-t border-[#E4E4E4] bg-white shrink-0 overflow-y-auto no-scrollbar">
+            <div 
+              style={{ height: `${trayHeight}px` }}
+              className="md:min-h-[100px] border-t border-[#E4E4E4] bg-white shrink-0 overflow-y-auto no-scrollbar relative z-50 transition-[height] duration-75 ease-out md:transition-none"
+            >
               <div className="px-4 py-2 border-b border-[#E4E4E4] bg-[#F7F7F5] flex justify-between items-center sticky top-0 z-10">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">Active Positions</span>
+                <div className="flex items-center space-x-2">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">Active Positions</span>
+                  <GripHorizontal className="hidden md:block w-3 h-3 text-[#E4E4E4]" />
+                </div>
                 <Link href="/history" className="text-[9px] font-bold uppercase tracking-widest text-[#0055FF]">Full Ledger</Link>
               </div>
               <div className="overflow-x-auto">
@@ -349,7 +394,7 @@ export default function TerminalWorkspace() {
               </div>
             </div>
 
-            {/* Mobile Action Bar to summon specific order configuration */}
+            {/* Mobile Action Bar */}
             <div className="md:hidden p-4 bg-white border-t border-[#E4E4E4] flex justify-between space-x-3 z-40">
               <button 
                 onClick={() => { setDirection("CALL"); setIsMobileTradeMenuOpen(true); }}
@@ -368,7 +413,7 @@ export default function TerminalWorkspace() {
             </div>
           </main>
 
-          {/* Trade Configuration Layer (Mobile Bottom Slide Tray & Desktop Sidebar Layout) */}
+          {/* Trade Configuration Layer */}
           <div className={cn(
             "fixed inset-0 z-[160] md:relative md:inset-auto md:z-0 md:flex flex-col w-full md:w-80 border-l border-[#E4E4E4] bg-white transition-all duration-300 ease-in-out",
             isMobileTradeMenuOpen ? "translate-y-0 opacity-100" : "translate-y-full md:translate-y-0 opacity-0 md:opacity-100"
