@@ -80,7 +80,7 @@ export default function GlobalLedger() {
                     <td className="p-4 text-center">
                       <span className={cn(
                         "px-1.5 py-0.5 border text-[9px] font-bold uppercase",
-                        tx.status === 'Confirmed' ? "border-[#16835B] text-[#16835B]" : "border-[#C9A227] text-[#C9A227]"
+                        tx.status === 'Confirmed' ? "border-[#16835B] text-[#16835B]" : "border-[#0055FF] text-[#0055FF]"
                       )}>
                         {tx.status}
                       </span>
