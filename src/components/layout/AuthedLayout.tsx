@@ -107,27 +107,27 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
       <header className="relative h-16 border-b border-[#E4E4E4] bg-white flex items-center justify-between px-4 md:px-6 shrink-0 z-[150] shadow-sm">
-        <div className="flex items-center space-x-2 md:space-x-8">
+        <div className="flex items-center w-full md:w-auto justify-center md:justify-start">
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
-            className="p-2 md:hidden hover:bg-[#F7F7F5] transition-colors"
+            className="absolute left-4 md:relative p-2 md:hidden hover:bg-[#F7F7F5] transition-colors"
           >
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
-          <Link href="/dashboard" className="hidden md:flex items-center">
+          
+          <Link href="/dashboard" className="flex items-center">
             <Image src="/assets/logo.png" alt="Varban Workspace" width={120} height={28} className="h-7 w-auto object-contain" priority />
           </Link>
-          <div className="h-6 w-px bg-[#E4E4E4] hidden md:block"></div>
+          
+          <div className="h-6 w-px bg-[#E4E4E4] hidden md:block md:ml-6 md:mr-6"></div>
+          
           <div className="hidden md:block">
             <h1 className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#0A0A0A]">{title}</h1>
             {subtitle && <p className="text-[9px] text-[#6B7280] uppercase tracking-wider mt-0.5">{subtitle}</p>}
           </div>
-          <div className="md:hidden truncate max-w-[120px]">
-            <h1 className="text-[10px] font-bold uppercase tracking-wider">{title}</h1>
-          </div>
         </div>
 
-        <div className="flex items-center space-x-2 md:space-x-8">
+        <div className="flex items-center space-x-2 md:space-x-8 absolute right-4 md:relative">
           <div className="relative" ref={dropdownRef}>
             <button onClick={() => setIsAmountDropdownOpen(!isAmountDropdownOpen)} className="flex items-center space-x-2 border border-[#E4E4E4] px-2 md:px-3 py-1 bg-white text-right hover:bg-[#F7F7F5] transition-colors shadow-sm select-none">
               <div className="text-right">

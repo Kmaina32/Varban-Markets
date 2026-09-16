@@ -198,8 +198,8 @@ export default function TerminalWorkspace() {
 
       {/* Header */}
       <header className="relative h-16 border-b border-[#E4E4E4] flex items-center justify-between px-4 md:px-6 bg-white shrink-0 z-50 shadow-sm">
-        <div className="flex items-center space-x-3 md:space-x-6">
-          <button onClick={() => setIsMobileNavOpen(true)} className="md:hidden p-2 hover:bg-[#F7F7F5] transition-colors">
+        <div className="flex items-center w-full md:w-auto justify-center md:justify-start">
+          <button onClick={() => setIsMobileNavOpen(true)} className="absolute left-4 md:relative p-2 hover:bg-[#F7F7F5] transition-colors md:hidden">
             <Menu className="w-5 h-5" />
           </button>
           
@@ -208,7 +208,7 @@ export default function TerminalWorkspace() {
           </Link>
         </div>
 
-        <div className="flex items-center space-x-2 md:space-x-8">
+        <div className="flex items-center space-x-2 md:space-x-8 absolute right-4 md:relative">
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsAmountDropdownOpen(!isAmountDropdownOpen)}
@@ -351,10 +351,10 @@ export default function TerminalWorkspace() {
               <div className="w-10 h-0.5 bg-[#6B7280] group-hover:bg-white rounded-full"></div>
             </div>
 
-            {/* Bottom Info / Positions Tray */}
+            {/* Bottom Info / Positions Tray - Hidden on Mobile */}
             <div 
               style={{ height: `${trayHeight}px` }}
-              className="md:min-h-[100px] border-t border-[#E4E4E4] bg-white shrink-0 overflow-y-auto no-scrollbar relative z-50 transition-[height] duration-75 ease-out md:transition-none"
+              className="hidden md:block border-t border-[#E4E4E4] bg-white shrink-0 overflow-y-auto no-scrollbar relative z-50 transition-[height] duration-75 ease-out md:transition-none"
             >
               <div className="px-4 py-2 border-b border-[#E4E4E4] bg-[#F7F7F5] flex justify-between items-center sticky top-0 z-10">
                 <div className="flex items-center space-x-2">
