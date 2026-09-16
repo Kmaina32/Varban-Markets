@@ -1,6 +1,6 @@
 'use client';
 
-import { ShieldAlert, Activity, User, LogOut, LayoutDashboard } from "lucide-react";
+import { ShieldAlert, User, LogOut, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -34,7 +34,7 @@ export default function AdminHeader({ title, subtitle }: AdminHeaderProps) {
         <Link href="/admin" className="flex items-center space-x-2">
           <Image src="/assets/logo.png" alt="Varban Corporate" width={110} height={26} className="h-6 w-auto object-contain" priority />
           <span className="text-[8px] font-bold bg-[#C43D3D] text-white px-1.5 py-0.5 tracking-widest uppercase">
-            Control Node
+            Admin
           </span>
         </Link>
         
@@ -50,13 +50,6 @@ export default function AdminHeader({ title, subtitle }: AdminHeaderProps) {
       </div>
 
       <div className="flex items-center space-x-6">
-        <div className="hidden sm:flex items-center space-x-2 border border-[#E4E4E4] px-3 py-1.5 bg-[#F7F7F5]">
-          <Activity className="w-3 h-3 text-[#16835B]" />
-          <span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">
-            System Status: <span className="text-[#16835B]">Operational</span>
-          </span>
-        </div>
-
         <div className="relative" ref={dropdownRef}>
           <button 
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
