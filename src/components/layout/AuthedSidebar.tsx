@@ -6,10 +6,12 @@ import {
   LayoutDashboard, Monitor, Globe, Briefcase, Target, 
   FileText, Clock, Star, Wallet, ArrowDownCircle, 
   ArrowUpCircle, Activity, User, ShieldCheck, Lock, 
-  Bell, Settings, HelpCircle, Mail, LogOut
+  Bell, Settings, HelpCircle, Mail, ShieldAlert,
+  Users, Database, FileSpreadsheet
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
+import { useUser, useDoc, useFirestore } from "@/firebase";
 
 interface AuthedSidebarProps {
   onLinkClick?: () => void;
@@ -20,6 +22,9 @@ interface AuthedSidebarProps {
 export default function AuthedSidebar({ onLinkClick, className, isMobile = false }: AuthedSidebarProps) {
   const pathname = usePathname();
   const { t } = useTranslation();
+  const { user } = useUser();
+  const db = useFirestore();
+  const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
 
   const sections = [
     {
@@ -58,21 +63,33 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
         { label: t('nav.notifications'), href: "/notifications", icon: Bell },
         { label: t('nav.preferences'), href: "/preferences", icon: Settings },
       ]
-    },
-    {
-      title: "SUPPORT",
-      items: [
-        { label: t('nav.help'), href: "/help", icon: HelpCircle },
-        { label: t('nav.contact'), href: "/contact", icon: Mail },
-      ]
     }
   ];
+
+  // Admin access layer - always visible for prototype demonstration
+  const adminSection = {
+    title: "ADMINISTRATION",
+    items: [
+      { label: t('nav.adminOverview'), href: "/admin", icon: ShieldAlert },
+      { label: t('nav.adminUsers'), href: "/admin/users", icon: Users },
+      { label: t('nav.adminLedger'), href: "/admin/transactions", icon: FileSpreadsheet },
+      { label: t('nav.adminMarkets'), href: "/admin/markets", icon: Database },
+    ]
+  };
+
+  const finalSections = [...sections, adminSection, {
+    title: "SUPPORT",
+    items: [
+      { label: t('nav.help'), href: "/help", icon: HelpCircle },
+      { label: t('nav.contact'), href: "/contact", icon: Mail },
+    ]
+  }];
 
   if (isMobile) {
     return (
       <div className={cn("flex flex-col h-full bg-white", className)}>
         <nav className="flex-grow space-y-6 px-6 py-8 overflow-y-auto no-scrollbar">
-          {sections.map((section) => (
+          {finalSections.map((section) => (
             <div key={section.title} className="space-y-2">
               <h3 className="text-[10px] font-bold text-[#6B7280] uppercase tracking-[0.2em] px-2">
                 {section.title}
@@ -109,7 +126,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     <aside className={cn("group absolute left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-[#E4E4E4] flex flex-col transition-all duration-300 z-[40] overflow-hidden no-scrollbar hidden md:flex", className)}>
       <div className="pt-4"></div>
       <nav className="flex-grow space-y-4 px-4 pb-6 overflow-y-auto no-scrollbar">
-        {sections.map((section) => (
+        {finalSections.map((section) => (
           <div key={section.title}>
             <h3 className="text-[9px] font-bold text-[#6B7280] uppercase tracking-[0.2em] mb-1.5 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
               {section.title}
