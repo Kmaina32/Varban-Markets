@@ -6,7 +6,6 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useUser } from "@/firebase";
-import placeholderImages from "@/app/lib/placeholder-images.json";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -36,7 +35,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="bg-white border-b border-[#E4E4E4] sticky top-0 z-50 h-16 flex items-center shadow-sm">
+    <nav className="bg-white border-b border-[#E4E4E4] sticky top-0 z-[100] h-16 flex items-center shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
@@ -86,7 +85,59 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-      {/* ... Mobile Menu omitted for brevity, keeping existing logic ... */}
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-[200] bg-white md:hidden animate-in fade-in duration-200">
+          <div className="flex flex-col h-full">
+            <div className="h-16 border-b border-[#E4E4E4] flex items-center justify-between px-4 shrink-0">
+              <Image 
+                src="/assets/logo.png"
+                alt="Varban Markets"
+                width={120}
+                height={28}
+                className="h-7 w-auto object-contain"
+              />
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-2 text-[#0A0A0A]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-grow overflow-y-auto p-6 space-y-8">
+              <nav className="flex flex-col space-y-4">
+                {publicLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A] py-2 border-b border-[#F7F7F5]"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+              <div className="flex flex-col space-y-4 pt-4">
+                <Link 
+                  href="/login" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full py-4 text-center text-xs font-bold uppercase tracking-widest border border-[#E4E4E4]"
+                >
+                  Log In
+                </Link>
+                <Link 
+                  href="/register" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full py-4 text-center text-xs font-bold uppercase tracking-widest bg-[#0055FF] text-white"
+                >
+                  Open Account
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
