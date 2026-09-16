@@ -1,15 +1,20 @@
-
 'use client';
 
+/**
+ * @fileOverview High-Performance Electronic Trading Terminal Workspace.
+ * Simulates real-time option contract settlement cycles to update open/closed trade records,
+ * evaluate net wins/losses, adapt user capital domains, and broadcast telemetry alerts.
+ */
+
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
 import { CheckCircle2, ChevronDown, User, Check, TrendingUp, TrendingDown, ShieldCheck, Menu, X, BarChart3, GripHorizontal } from "lucide-react";
 import { TradingViewChart } from "@/components/terminal/TradingViewChart";
 import { useUser, useFirestore, useCollection, useDoc } from "@/firebase";
-import { collection, addDoc, serverTimestamp, query, where, orderBy } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, query, where, orderBy, doc, updateDoc, increment } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 import AuthedSidebar from "@/components/layout/AuthedSidebar";
@@ -29,14 +34,14 @@ export default function TerminalWorkspace() {
   const [duration, setDuration] = useState<string>("5m");
   const [reviewActive, setReviewActive] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  
   const [isAmountDropdownOpen, setIsAmountDropdownOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobileMarketMenuOpen, setIsMobileMarketMenuOpen] = useState(false);
   const [isMobileTradeMenuOpen, setIsMobileTradeMenuOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   
-  // Tray Resizing State Logic
-  const [trayHeight, setTrayHeight] = useState(200);
+  const [trayHeight, setTrayHeight] = useState(220);
   const [isResizing, setIsResizing] = useState(false);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -45,18 +50,78 @@ export default function TerminalWorkspace() {
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
 
+  // Position listeners grouped by user authority
   const tradesQuery = useMemo(() => {
     if (!db || !user) return null;
     return query(
       collection(db, `users/${user.uid}/positions`),
-      where("status", "==", "Open"),
       orderBy("timestamp", "desc")
     );
   }, [db, user]);
 
-  const { data: activePositions, loading: positionsLoading } = useCollection<any>(tradesQuery);
+  const { data: allPositions, loading: positionsLoading } = useCollection<any>(tradesQuery);
 
-  // Resize Handlers
+  const activePositions = useMemo(() => {
+    return allPositions?.filter((p: any) => p.status === "Open") || [];
+  }, [allPositions]);
+
+  // Automated contract settlement cycle simulation (Client-driven for immediate MVP presentation)
+  useEffect(() => {
+    if (!user || !db || !allPositions || allPositions.length === 0) return;
+    
+    // Look for any Open position created more than 15 seconds ago to settle automatically for demonstration
+    const openItems = allPositions.filter((p: any) => p.status === "Open");
+    if (openItems.length === 0) return;
+
+    const latest = openItems[0];
+    const timestampMs = latest.timestamp?.seconds ? latest.timestamp.seconds * 1000 : Date.now();
+    
+    // Auto settle open trades after 18 seconds to show user closed trades, profit, and loss events dynamically
+    if (Date.now() - timestampMs > 18000) {
+      const entry = latest.entryPrice || livePrice;
+      const isCall = latest.vector === "CALL";
+      const isWin = isCall ? livePrice >= entry : livePrice < entry;
+      const netProfit = isWin ? latest.stake * 0.85 : -latest.stake;
+
+      // Transition position to Closed status
+      const positionDocRef = doc(db, `users/${user.uid}/positions`, latest.id);
+      updateDoc(positionDocRef, {
+        status: "Closed",
+        currentPrice: livePrice,
+        profit: netProfit,
+        settledAt: new Date().toISOString()
+      }).catch(() => {});
+
+      // Atomically update profile wallet domain metrics
+      if (accountMode === 'REAL') {
+        updateDoc(doc(db, "users", user.uid), {
+          balance: increment(netProfit),
+          equity: increment(netProfit)
+        }).catch(() => {});
+
+        // Log Transaction Entry
+        addDoc(collection(db, `users/${user.uid}/transactions`), {
+          type: "Trade Settlement",
+          asset: latest.instrument,
+          amount: latest.stake,
+          vector: latest.vector,
+          status: "Settled",
+          output: netProfit >= 0 ? `+${netProfit.toFixed(2)}` : `${netProfit.toFixed(2)}`,
+          timestamp: serverTimestamp()
+        }).catch(() => {});
+      }
+
+      // Generate systematic audit log notifications
+      addDoc(collection(db, `users/${user.uid}/notifications`), {
+        title: netProfit >= 0 ? "Option Contract Profit Realized" : "Contract Risk Liquidated",
+        body: `Position ${latest.id.slice(0,6).toUpperCase()} on ${latest.instrument} expired. Outcome resulted in ${netProfit >= 0 ? 'Gain' : 'Loss'} of $${Math.abs(netProfit).toFixed(2)} USD.`,
+        type: "Trade",
+        isUnread: true,
+        timestamp: serverTimestamp()
+      }).catch(() => {});
+    }
+  }, [allPositions, livePrice, user, db, accountMode]);
+
   const startResizing = useCallback(() => {
     setIsResizing(true);
   }, []);
@@ -68,7 +133,7 @@ export default function TerminalWorkspace() {
   const resize = useCallback((e: MouseEvent) => {
     if (isResizing) {
       const newHeight = window.innerHeight - e.clientY;
-      if (newHeight > 80 && newHeight < window.innerHeight * 0.6) {
+      if (newHeight > 80 && newHeight < window.innerHeight * 0.7) {
         setTrayHeight(newHeight);
       }
     }
@@ -158,16 +223,23 @@ export default function TerminalWorkspace() {
       localStorage.setItem('varban_demo_balance', currentDemoBal.toString());
       window.dispatchEvent(new Event('varban_account_mode_changed'));
       
-      setSuccessMessage(`${activeInst.symbol} @ ${livePrice.toFixed(4)}`);
+      setSuccessMessage(`${activeInst.symbol} Simulated Ticket Opened`);
       setReviewActive(false);
       setIsMobileTradeMenuOpen(false);
-      setTimeout(() => setSuccessMessage(null), 4000);
+      setTimeout(() => setSuccessMessage(null), 3000);
       return;
     }
 
     if (!user || !db || !direction) return;
+    
+    if (stake > (profile?.balance || 0)) {
+      alert("Deficit Exposure Error: Stake exceeds live capital allocations.");
+      return;
+    }
+
     setReviewActive(false);
     
+    // Add document context to user positions pipeline
     addDoc(collection(db, `users/${user.uid}/positions`), {
       instrument: activeInst.symbol,
       vector: direction,
@@ -179,9 +251,9 @@ export default function TerminalWorkspace() {
       timestamp: serverTimestamp()
     }).catch(() => {});
 
-    setSuccessMessage(`${activeInst.symbol} @ ${livePrice.toFixed(4)}`);
+    setSuccessMessage(`${activeInst.symbol} Position Transmitted @ ${livePrice.toFixed(2)}`);
     setIsMobileTradeMenuOpen(false);
-    setTimeout(() => setSuccessMessage(null), 4000);
+    setTimeout(() => setSuccessMessage(null), 3500);
   };
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
@@ -190,7 +262,6 @@ export default function TerminalWorkspace() {
     <div className="bg-white text-[#0A0A0A] h-screen flex flex-col overflow-hidden font-sans relative">
       <TerminalTutorial />
       
-      {/* Mobile Navbar Overlay Drawer */}
       {isMobileNavOpen && (
         <div className="fixed inset-0 z-[250] md:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setIsMobileNavOpen(false)}></div>
@@ -200,21 +271,28 @@ export default function TerminalWorkspace() {
         </div>
       )}
 
-      {/* Header */}
+      {/* Header Area with centered mobile logo alignment */}
       <header className="relative h-16 border-b border-[#E4E4E4] flex items-center justify-between px-4 md:px-6 bg-white shrink-0 z-50 shadow-sm">
-        <div className="flex items-center w-full md:w-auto">
-          <button onClick={() => setIsMobileNavOpen(true)} className="absolute left-4 md:relative p-2 hover:bg-[#F7F7F5] transition-colors md:hidden">
+        <div className="flex items-center w-auto">
+          <button onClick={() => setIsMobileNavOpen(true)} className="p-2 hover:bg-[#F7F7F5] transition-colors md:hidden mr-2">
             <Menu className="w-5 h-5" />
           </button>
           
-          <div className="w-full flex justify-center md:justify-start">
+          <div className="md:block hidden">
             <Link href="/dashboard" className="flex items-center">
-              <Image src="/assets/logo.png" alt="Varban Terminal" width={110} height={26} className="h-6 md:h-7 w-auto object-contain" priority />
+              <Image src="/assets/logo.png" alt="Varban Terminal" width={110} height={26} className="h-7 w-auto object-contain" priority />
             </Link>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2 md:space-x-8 absolute right-4 md:relative">
+        {/* Absolute Centered Logo for Mobile Breakpoint Only */}
+        <div className="absolute left-1/2 -translate-x-1/2 md:hidden block pointer-events-auto">
+          <Link href="/dashboard">
+            <Image src="/assets/logo.png" alt="Varban Markets Logo" width={100} height={24} className="h-6 w-auto object-contain" priority />
+          </Link>
+        </div>
+
+        <div className="flex items-center space-x-2 md:space-x-8">
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsAmountDropdownOpen(!isAmountDropdownOpen)}
@@ -222,7 +300,7 @@ export default function TerminalWorkspace() {
             >
               <div className="text-right">
                 <span className="text-[7px] md:text-[8px] text-[#6B7280] uppercase tracking-widest font-bold block">
-                  {accountMode === 'REAL' ? 'Real' : 'Demo'}
+                  {accountMode === 'REAL' ? 'Real Domain' : 'Simulated'}
                 </span>
                 <span className={cn(
                   "text-[9px] md:text-[10px] font-mono font-bold block",
@@ -237,11 +315,11 @@ export default function TerminalWorkspace() {
             {isAmountDropdownOpen && (
               <div className="absolute right-0 mt-1.5 w-48 md:w-56 bg-white border border-[#E4E4E4] shadow-lg z-50 p-1 flex flex-col space-y-0.5">
                 <button onClick={() => selectAccountMode('REAL')} className={cn("w-full text-left px-3 py-2 text-[10px] uppercase font-bold tracking-wider flex items-center justify-between", accountMode === 'REAL' ? "bg-[#F7F7F5] text-[#16835B]" : "text-[#0A0A0A] hover:bg-[#F7F7F5]")}>
-                  <span>Real Account</span>
+                  <span>Real Capital</span>
                   {accountMode === 'REAL' && <Check className="w-3 h-3 text-[#16835B]" />}
                 </button>
                 <button onClick={() => selectAccountMode('DEMO')} className={cn("w-full text-left px-3 py-2 text-[10px] uppercase font-bold tracking-wider flex items-center justify-between", accountMode === 'DEMO' ? "bg-[#F7F7F5] text-[#0055FF]" : "text-[#0A0A0A] hover:bg-[#F7F7F5]")}>
-                  <span>Demo Account</span>
+                  <span>Demo Sandbox</span>
                   {accountMode === 'DEMO' && <Check className="w-3 h-3 text-[#0055FF]" />}
                 </button>
               </div>
@@ -254,27 +332,27 @@ export default function TerminalWorkspace() {
             </button>
             {isProfileDropdownOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white border border-[#E4E4E4] shadow-lg z-50 py-1 flex flex-col">
-                <Link href="/account" className="px-4 py-2.5 text-[10px] font-bold uppercase text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5]">Profile</Link>
-                <Link href="/" className="px-4 py-2.5 text-[10px] font-bold uppercase text-[#C43D3D] hover:bg-[#F7F7F5]">Log Out</Link>
+                <Link href="/account" className="px-4 py-2.5 text-[10px] font-bold uppercase text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5]">Settings</Link>
+                <Link href="/" className="px-4 py-2.5 text-[10px] font-bold uppercase text-[#C43D3D] hover:bg-[#F7F7F5]">Logout</Link>
               </div>
             )}
           </div>
         </div>
       </header>
 
-      {/* Workspace Wrapper */}
+      {/* Terminal Workspace Matrix */}
       <div className="flex-grow flex overflow-hidden relative">
         <AuthedSidebar className="hidden md:flex" />
         
         <div className="flex-grow flex flex-col md:flex-row overflow-hidden md:ml-16">
           
-          {/* Market List Selection Layer */}
+          {/* Asset Monitoring Pillar */}
           <div className={cn(
             "fixed inset-0 z-[150] md:relative md:inset-auto md:z-0 md:flex flex-col w-full md:w-64 border-r border-[#E4E4E4] bg-white transition-transform duration-300 ease-in-out",
             isMobileMarketMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
           )}>
             <div className="p-4 border-b border-[#E4E4E4] bg-[#F7F7F5] flex justify-between items-center">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Monitoring</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Asset Monitoring</span>
               <button onClick={() => setIsMobileMarketMenuOpen(false)} className="md:hidden p-2"><X className="w-4 h-4" /></button>
             </div>
             <div className="flex-grow overflow-y-auto no-scrollbar divide-y divide-[#E4E4E4]">
@@ -304,22 +382,22 @@ export default function TerminalWorkspace() {
             </div>
           </div>
 
-          {/* Main Chart Section */}
+          {/* Interactive Chart Control Matrix */}
           <main className={`flex-grow flex flex-col overflow-hidden relative ${isResizing ? 'select-none' : ''}`}>
             
-            {/* Master Unified Instrument and Pricing Status Header */}
+            {/* Consolidated Workspace Toolbar */}
             <div className="flex items-center justify-between p-3 border-b border-[#E4E4E4] bg-white z-40 shrink-0">
               <div className="flex items-center space-x-3">
                 <button 
                   onClick={() => setIsMobileMarketMenuOpen(true)} 
-                  className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-wider border border-[#E4E4E4] px-3 py-1.5 bg-[#F7F7F5] md:hover:bg-[#E4E4E4] transition-colors"
+                  className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-wider border border-[#E4E4E4] px-3 py-1.5 bg-[#F7F7F5]"
                 >
                   <BarChart3 className="w-3.5 h-3.5 text-[#0055FF]" />
-                  <span>{activeInst.symbol}</span>
+                  <span>{activeInst.symbol} Markets</span>
                   <ChevronDown className="w-3 h-3 text-[#6B7280]" />
                 </button>
                 <div className="hidden md:flex items-center space-x-2 text-[9px] text-[#6B7280] uppercase tracking-widest font-bold">
-                  <span>&mdash; {activeInst.name}</span>
+                  <span>&mdash; {activeInst.name} ({activeInst.settlementMethod})</span>
                 </div>
               </div>
               
@@ -336,58 +414,58 @@ export default function TerminalWorkspace() {
             </div>
 
             {successMessage && (
-              <div className="absolute top-20 md:top-4 left-1/2 -translate-x-1/2 z-[100] bg-[#16835B] text-white px-6 py-3 shadow-xl flex items-center space-x-3 animate-in fade-in slide-in-from-top-4 duration-300">
-                <CheckCircle2 className="w-5 h-5" />
-                <div className="text-xs">
-                  <span className="font-bold uppercase block">Executed</span>
-                  <p className="font-mono text-[10px] opacity-90">{successMessage}</p>
+              <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[100] bg-[#0A0A0A] text-white px-6 py-3 border border-[#16835B] shadow-xl flex items-center space-x-3">
+                <CheckCircle2 className="w-4 h-4 text-[#16835B]" />
+                <div className="text-xs font-mono">
+                  <span className="font-bold uppercase block text-[#16835B]">Transmitted</span>
+                  <p className="text-[10px] opacity-90">{successMessage}</p>
                 </div>
               </div>
             )}
 
-            <div className="flex-grow relative">
+            <div className="flex-grow relative bg-white">
               <TradingViewChart symbol={activeInst.symbol} />
             </div>
 
-            {/* Resize Handle for Desktop */}
+            {/* Desktop Vertical Tray Adjustment Component */}
             <div 
               onMouseDown={startResizing}
               className="hidden md:flex h-1.5 bg-[#E4E4E4] hover:bg-[#0055FF] cursor-row-resize items-center justify-center group transition-colors z-[60]"
             >
-              <div className="w-10 h-0.5 bg-[#6B7280] group-hover:bg-white rounded-full"></div>
+              <div className="w-12 h-0.5 bg-[#6B7280] group-hover:bg-white rounded-full"></div>
             </div>
 
-            {/* Bottom Info / Positions Tray - Hidden on Mobile */}
+            {/* Desktop Active Exposure View — Hidden on Mobile for Standalone Page Monitoring */}
             <div 
               style={{ height: `${trayHeight}px` }}
-              className="hidden md:block border-t border-[#E4E4E4] bg-white shrink-0 overflow-y-auto no-scrollbar relative z-50 transition-[height] duration-75 ease-out md:transition-none"
+              className="hidden md:block border-t border-[#E4E4E4] bg-white shrink-0 overflow-y-auto no-scrollbar relative z-50"
             >
               <div className="px-4 py-2 border-b border-[#E4E4E4] bg-[#F7F7F5] flex justify-between items-center sticky top-0 z-10">
                 <div className="flex items-center space-x-2">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">Active Positions</span>
-                  <GripHorizontal className="hidden md:block w-3 h-3 text-[#E4E4E4]" />
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">Live Account Exposure Matrix</span>
+                  <GripHorizontal className="w-3 h-3 text-[#E4E4E4]" />
                 </div>
-                <Link href="/history" className="text-[9px] font-bold uppercase tracking-widest text-[#0055FF]">Full Ledger</Link>
+                <span className="text-[8px] text-[#6B7280] uppercase tracking-widest">Auto-Settles in ~18s for demo testing</span>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-[10px] text-left border-collapse min-w-[500px] md:min-w-0">
+                <table className="w-full text-[10px] text-left border-collapse">
                   <thead>
-                    <tr className="text-[#6B7280] uppercase border-b border-[#F7F7F5]">
-                      <th className="p-3 font-bold">Market</th>
-                      <th className="p-3 font-bold">Side</th>
-                      <th className="p-3 font-bold text-right">Stake</th>
-                      <th className="p-3 font-bold text-right">Entry</th>
+                    <tr className="text-[#6B7280] uppercase border-b border-[#F7F7F5] bg-[#F7F7F5]/50">
+                      <th className="p-3 font-bold">Instrument</th>
+                      <th className="p-3 font-bold">Vector Direction</th>
+                      <th className="p-3 font-bold text-right">Risk Stake</th>
+                      <th className="p-3 font-bold text-right">Entry Price</th>
                       <th className="p-3 font-bold text-center">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#F7F7F5]">
                     {positionsLoading ? (
-                      <tr><td colSpan={5} className="p-6 text-center text-[#6B7280] font-mono">Syncing...</td></tr>
-                    ) : !activePositions || activePositions.length === 0 ? (
-                      <tr><td colSpan={5} className="p-6 text-center text-[#6B7280] uppercase font-bold text-[9px]">No Open Exposure</td></tr>
+                      <tr><td colSpan={5} className="p-6 text-center text-[#6B7280] font-mono">Syncing pipeline...</td></tr>
+                    ) : activePositions.length === 0 ? (
+                      <tr><td colSpan={5} className="p-6 text-center text-[#6B7280] uppercase font-bold text-[9px] tracking-wider">No active exposure records discovered in current domain.</td></tr>
                     ) : activePositions.map((pos: any) => (
                       <tr key={pos.id} className="hover:bg-[#F7F7F5]">
-                        <td className="p-3 font-mono font-bold">{pos.instrument}</td>
+                        <td className="p-3 font-mono font-bold text-[#0A0A0A]">{pos.instrument}</td>
                         <td className="p-3">
                           <span className={cn("px-1.5 py-0.5 border text-[9px] font-bold", pos.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#C43D3D] text-[#C43D3D]')}>
                             {pos.vector}
@@ -396,7 +474,7 @@ export default function TerminalWorkspace() {
                         <td className="p-3 text-right font-mono">${formatNumber(pos.stake, { minimumFractionDigits: 2 })}</td>
                         <td className="p-3 text-right font-mono">${formatNumber(pos.entryPrice, { minimumFractionDigits: 2 })}</td>
                         <td className="p-3 text-center">
-                          <span className="text-[8px] font-bold uppercase text-[#0055FF]">Active</span>
+                          <span className="text-[8px] font-bold uppercase text-[#0055FF] animate-pulse">Processing</span>
                         </td>
                       </tr>
                     ))}
@@ -405,47 +483,37 @@ export default function TerminalWorkspace() {
               </div>
             </div>
 
-            {/* Mobile Action Bar */}
+            {/* Mobile Trade Trigger Control Panel */}
             <div className="md:hidden p-4 bg-white border-t border-[#E4E4E4] flex justify-between space-x-3 z-40">
               <button 
                 onClick={() => { setDirection("CALL"); setIsMobileTradeMenuOpen(true); }}
                 className="flex-grow py-3 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-[0.2em] flex items-center justify-center space-x-2"
               >
-                <TrendingUp className="w-3.5 h-3.5" />
                 <span>Call Vector</span>
               </button>
               <button 
                 onClick={() => { setDirection("PUT"); setIsMobileTradeMenuOpen(true); }}
                 className="flex-grow py-3 bg-[#C43D3D] text-white text-[10px] font-bold uppercase tracking-[0.2em] flex items-center justify-center space-x-2"
               >
-                <TrendingDown className="w-3.5 h-3.5" />
                 <span>Put Vector</span>
               </button>
             </div>
           </main>
 
-          {/* Trade Configuration Layer */}
+          {/* Trade Configuration Overlay Desk */}
           <div className={cn(
             "fixed inset-0 z-[160] md:relative md:inset-auto md:z-0 md:flex flex-col w-full md:w-80 border-l border-[#E4E4E4] bg-white transition-all duration-300 ease-in-out",
             isMobileTradeMenuOpen ? "translate-y-0 opacity-100" : "translate-y-full md:translate-y-0 opacity-0 md:opacity-100"
           )}>
             <div className="p-4 border-b border-[#E4E4E4] bg-[#F7F7F5] flex justify-between items-center">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Configuration</h3>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Order Ticket</h3>
               <button onClick={() => setIsMobileTradeMenuOpen(false)} className="md:hidden p-2"><X className="w-4 h-4" /></button>
             </div>
 
             <div className="p-6 space-y-6 overflow-y-auto no-scrollbar">
-              <div className="hidden md:block p-4 bg-[#F7F7F5] border border-[#E4E4E4] text-center">
-                <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-1">Live Feed</span>
-                <div className="text-2xl font-mono font-bold">{livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</div>
-                <div className={cn("text-[10px] font-mono font-bold mt-1", liveMetrics.percent >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
-                  {liveMetrics.percent >= 0 ? "+" : ""}{liveMetrics.percent}%
-                </div>
-              </div>
-
               <div className="space-y-4">
                 <div>
-                  <label className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-2">Duration</label>
+                  <label className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-2">Contract Duration</label>
                   <div className="grid grid-cols-4 gap-1">
                     {["1m", "5m", "15m", "1h"].map((d) => (
                       <button key={d} onClick={() => setDuration(d)} className={cn("py-2 text-[10px] font-bold border", duration === d ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white text-[#6B7280] border-[#E4E4E4]")}>{d}</button>
@@ -454,51 +522,49 @@ export default function TerminalWorkspace() {
                 </div>
 
                 <div>
-                  <label className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-2">Stake (USD)</label>
-                  <input type="number" min={activeInst.minStake} max={activeInst.maxStake} value={stake} onChange={(e) => setStake(Number(e.target.value))} className="w-full p-3 bg-white border border-[#E4E4E4] text-sm font-mono font-bold focus:border-[#0055FF] outline-none" />
+                  <label className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-2">Committed Stake (USD)</label>
+                  <input type="number" min={activeInst.minStake} max={activeInst.maxStake} value={stake} onChange={(e) => setStake(Number(e.target.value))} className="w-full p-3 bg-white border border-[#E4E4E4] text-sm font-mono font-bold focus:border-[#0055FF] outline-none text-[#0A0A0A]" />
                 </div>
 
                 <div className="p-4 border border-[#E4E4E4] bg-[#F7F7F5] space-y-2">
                   <div className="flex justify-between text-[10px]">
-                    <span className="text-[#6B7280] uppercase font-bold">Return</span>
+                    <span className="text-[#6B7280] uppercase font-bold">Potential Gross Return</span>
                     <span className="font-mono font-bold text-[#16835B]">${(stake * 1.85).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-[10px] border-t border-[#E4E4E4] pt-2">
-                    <span className="text-[#6B7280] uppercase font-bold">Risk Limit</span>
+                    <span className="text-[#6B7280] uppercase font-bold">Maximum Deficit Risk</span>
                     <span className="font-mono font-bold text-[#C43D3D]">${stake.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 gap-2">
                 <button 
                   onClick={ () => { setDirection("CALL"); setReviewActive(true); } }
-                  className={cn("py-4 text-xs font-bold uppercase tracking-widest border flex items-center justify-center space-x-2", direction === "CALL" ? "bg-[#16835B] text-white border-[#16835B]" : "bg-white text-[#16835B] border-[#16835B]")}
+                  className={cn("py-3.5 text-xs font-bold uppercase tracking-widest border flex items-center justify-center space-x-2", direction === "CALL" ? "bg-[#16835B] text-white border-[#16835B]" : "bg-white text-[#16835B] border-[#E4E4E4]")}
                 >
-                  <TrendingUp className="w-4 h-4" />
-                  <span>Call Outcome</span>
+                  <span>CALL VECTOR</span>
                 </button>
                 <button 
                   onClick={ () => { setDirection("PUT"); setReviewActive(true); } }
-                  className={cn("py-4 text-xs font-bold uppercase tracking-widest border flex items-center justify-center space-x-2", direction === "PUT" ? "bg-[#C43D3D] text-white border-[#C43D3D]" : "bg-white text-[#C43D3D] border-[#C43D3D]")}
+                  className={cn("py-3.5 text-xs font-bold uppercase tracking-widest border flex items-center justify-center space-x-2", direction === "PUT" ? "bg-[#C43D3D] text-white border-[#C43D3D]" : "bg-white text-[#C43D3D] border-[#E4E4E4]")}
                 >
-                  <TrendingDown className="w-4 h-4" />
-                  <span>Put Outcome</span>
+                  <span>PUT VECTOR</span>
                 </button>
               </div>
 
               {reviewActive && (
-                <div className="border-t-4 border-[#0055FF] pt-4 mt-6 animate-in slide-in-from-bottom-4 duration-300">
-                  <div className="flex items-center space-x-2 mb-4">
+                <div className="border-t-2 border-[#0A0A0A] pt-4 mt-6 animate-in fade-in duration-200">
+                  <div className="flex items-center space-x-2 mb-3">
                     <ShieldCheck className="w-4 h-4 text-[#0055FF]" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Risk Pre-Verification</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Risk Pre-Verification</span>
                   </div>
-                  <div className="text-[11px] space-y-2 text-[#6B7280] mb-6">
-                    <p>Execute <span className="font-bold text-[#0A0A0A]">{direction}</span> contract on <span className="font-bold text-[#0A0A0A]">{activeInst.symbol}</span>.</p>
-                  </div>
+                  <p className="text-[11px] text-[#6B7280] leading-relaxed mb-4">
+                    Confirm execution of <span className="font-bold text-[#0A0A0A]">{direction}</span> option model on {activeInst.symbol} for ${stake} USD capital exposure.
+                  </p>
                   <div className="grid grid-cols-2 gap-2">
-                    <button onClick={handleExecute} className="bg-[#0A0A0A] text-white py-3 text-[10px] font-bold uppercase hover:bg-[#0055FF]">Confirm</button>
-                    <button onClick={() => setReviewActive(false)} className="bg-white border border-[#E4E4E4] text-[#0A0A0A] py-3 text-[10px] font-bold uppercase">Cancel</button>
+                    <button onClick={handleExecute} className="bg-[#0A0A0A] text-white py-2.5 text-[10px] font-bold uppercase hover:bg-[#0055FF]">Commit Trade</button>
+                    <button onClick={() => setReviewActive(false)} className="bg-white border border-[#E4E4E4] text-[#0A0A0A] py-2.5 text-[10px] font-bold uppercase">Decline</button>
                   </div>
                 </div>
               )}
