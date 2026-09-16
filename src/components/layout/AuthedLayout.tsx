@@ -14,7 +14,8 @@ const STRICT_PATHS = [
   '/terminal', '/dashboard', '/portfolio', '/positions', 
   '/orders', '/history', '/watchlist', '/wallet', 
   '/deposit', '/withdraw', '/transactions', '/account', 
-  '/verification', '/security', '/notifications', '/preferences'
+  '/verification', '/security', '/notifications', '/preferences',
+  '/admin', '/admin/users', '/admin/transactions', '/admin/markets'
 ];
 
 interface AuthedLayoutProps {
@@ -105,7 +106,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
 
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
-      <header className="relative h-16 border-b border-[#E4E4E4] bg-white flex items-center justify-between px-4 md:px-6 shrink-0 z-50 shadow-sm">
+      <header className="relative h-16 border-b border-[#E4E4E4] bg-white flex items-center justify-between px-4 md:px-6 shrink-0 z-[150] shadow-sm">
         <div className="flex items-center space-x-2 md:space-x-8">
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
@@ -129,16 +130,16 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
         <div className="flex items-center space-x-2 md:space-x-8">
           <div className="relative" ref={dropdownRef}>
             <button onClick={() => setIsAmountDropdownOpen(!isAmountDropdownOpen)} className="flex items-center space-x-2 border border-[#E4E4E4] px-2 md:px-3 py-1 bg-white text-right hover:bg-[#F7F7F5] transition-colors shadow-sm select-none">
-              <div className="text-right hidden xs:block">
-                <span className="text-[8px] text-[#6B7280] uppercase tracking-widest font-bold block">{accountMode === 'REAL' ? 'Real' : 'Demo'}</span>
-                <span className={cn("text-[10px] font-mono font-bold block", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>
+              <div className="text-right">
+                <span className="text-[7px] md:text-[8px] text-[#6B7280] uppercase tracking-widest font-bold block">{accountMode === 'REAL' ? 'Real' : 'Demo'}</span>
+                <span className={cn("text-[9px] md:text-[10px] font-mono font-bold block", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>
                   ${formatNumber(activeBalance, { minimumFractionDigits: 2 })}
                 </span>
               </div>
               <ChevronDown className="w-3 h-3 text-[#6B7280]" />
             </button>
             {isAmountDropdownOpen && (
-              <div className="absolute right-0 mt-1.5 w-56 bg-white border border-[#E4E4E4] shadow-lg z-50 p-1 flex flex-col space-y-0.5">
+              <div className="absolute right-0 mt-1.5 w-56 bg-white border border-[#E4E4E4] shadow-lg z-[200] p-1 flex flex-col space-y-0.5">
                 <button onClick={() => selectAccountMode('REAL')} className={cn("w-full text-left px-3 py-2 text-[10px] uppercase font-bold tracking-wider flex items-center justify-between", accountMode === 'REAL' ? "bg-[#F7F7F5] text-[#16835B]" : "text-[#0A0A0A] hover:bg-[#F7F7F5]")}>
                   <span>Real Account</span>
                   {accountMode === 'REAL' && <Check className="w-3 h-3 text-[#16835B]" />}
@@ -163,7 +164,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
                 </div>
               </button>
               {isProfileDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-[#E4E4E4] shadow-lg z-50 py-1 flex flex-col">
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-[#E4E4E4] shadow-lg z-[200] py-1 flex flex-col">
                   <Link href="/account" onClick={() => setIsProfileDropdownOpen(false)} className="px-4 py-2.5 text-[10px] font-bold uppercase text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5]">Profile</Link>
                   <button onClick={() => router.push('/')} className="px-4 py-2.5 text-left text-[10px] font-bold uppercase text-[#C43D3D] hover:bg-[#F7F7F5]">Log Out</button>
                 </div>
@@ -178,16 +179,18 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
         
         {/* Mobile Sidebar Overlay */}
         {isMobileMenuOpen && (
-          <div className="fixed inset-0 z-[100] md:hidden animate-in fade-in duration-200">
-            <div className="absolute inset-0 bg-[#0A0A0A]/20" onClick={() => setIsMobileMenuOpen(false)}></div>
-            <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white animate-in slide-in-from-left duration-300">
+          <div className="fixed inset-0 z-[250] md:hidden">
+            <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+            <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white animate-in slide-in-from-left duration-300 shadow-2xl">
               <AuthedSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
             </div>
           </div>
         )}
 
         <main className="flex-grow overflow-y-auto bg-[#F7F7F5] p-4 md:p-8 no-scrollbar md:ml-16">
-          {children}
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
         </main>
       </div>
     </div>
