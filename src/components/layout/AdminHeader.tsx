@@ -33,7 +33,7 @@ export default function AdminHeader({ title, subtitle }: AdminHeaderProps) {
       <div className="flex items-center space-x-4">
         <Link href="/admin" className="flex items-center space-x-2">
           <Image src="/assets/logo.png" alt="Varban Corporate" width={110} height={26} className="h-6 w-auto object-contain" priority />
-          <span className="text-[8px] font-bold bg-[#C43D3D] text-white px-1.5 py-0.5 tracking-widest uppercase">
+          <span className="text-[8px] font-bold bg-[#0055FF] text-white px-1.5 py-0.5 tracking-widest uppercase">
             Admin
           </span>
         </Link>
@@ -41,7 +41,7 @@ export default function AdminHeader({ title, subtitle }: AdminHeaderProps) {
         <div className="h-6 w-px bg-[#E4E4E4] hidden md:block"></div>
         
         <div className="hidden md:block">
-          <h1 className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#C43D3D] flex items-center space-x-1.5">
+          <h1 className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#0055FF] flex items-center space-x-1.5">
             <ShieldAlert className="w-3 h-3" />
             <span>{title}</span>
           </h1>
@@ -63,8 +63,8 @@ export default function AdminHeader({ title, subtitle }: AdminHeaderProps) {
                 Root Authority
               </span>
             </div>
-            <div className="w-8 h-8 rounded-full bg-[#C43D3D]/5 border border-[#C43D3D]/20 flex items-center justify-center transition-colors group-hover:border-[#C43D3D]">
-              <User className="w-4 h-4 text-[#C43D3D]" />
+            <div className="w-8 h-8 rounded-full bg-[#0055FF]/5 border border-[#0055FF]/20 flex items-center justify-center transition-colors group-hover:border-[#0055FF]">
+              <User className="w-4 h-4 text-[#0055FF]" />
             </div>
           </button>
 
@@ -83,7 +83,7 @@ export default function AdminHeader({ title, subtitle }: AdminHeaderProps) {
               </Link>
               <button 
                 onClick={() => router.push('/')} 
-                className="px-4 py-2.5 text-left text-[10px] font-bold uppercase text-[#C43D3D] hover:bg-[#F7F7F5] border-t border-[#E4E4E4] flex items-center space-x-2"
+                className="px-4 py-2.5 text-left text-[10px] font-bold uppercase text-[#0055FF] hover:bg-[#F7F7F5] border-t border-[#E4E4E4] flex items-center space-x-2"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Exit Terminal</span>

@@ -57,7 +57,7 @@ export default function MarketControl() {
                       <td className="p-4 text-center">
                         <span className={cn(
                           "px-2 py-0.5 border text-[9px] font-bold uppercase",
-                          inst.status === 'Open' ? "border-[#16835B] text-[#16835B]" : "border-[#C43D3D] text-[#C43D3D]"
+                          inst.status === 'Open' ? "border-[#16835B] text-[#16835B]" : "border-[#0055FF] text-[#0055FF]"
                         )}>
                           {inst.status}
                         </span>
@@ -67,7 +67,7 @@ export default function MarketControl() {
                           onClick={() => toggleStatus(inst.symbol)}
                           className={cn(
                             "p-2 border transition-colors",
-                            inst.status === 'Open' ? "border-[#E4E4E4] hover:bg-[#C43D3D] hover:text-white" : "border-[#16835B] text-[#16835B] hover:bg-[#16835B] hover:text-white"
+                            inst.status === 'Open' ? "border-[#E4E4E4] hover:bg-[#0055FF] hover:text-white" : "border-[#16835B] text-[#16835B] hover:bg-[#16835B] hover:text-white"
                           )}
                         >
                           <Power className="w-3 h-3" />
@@ -87,7 +87,7 @@ export default function MarketControl() {
               <p className="text-[10px] text-[#6B7280] leading-relaxed mb-6">
                 Institutional-grade control over all trade vectors. Emergency halt protocols can be engaged during network instability.
               </p>
-              <button className="w-full py-3 bg-[#C43D3D] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-[#C43D3D] transition-all">
+              <button className="w-full py-3 bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-[#0055FF] transition-all">
                 Emergency Halt Feed
               </button>
             </Card>

@@ -11,7 +11,7 @@ export default function RiskDisclosurePage() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 bg-white border border-[#E4E4E4] p-8">
         
         <div className="border-b border-[#E4E4E4] pb-4 mb-6">
-          <span className="text-[10px] font-bold text-[#C43D3D] uppercase tracking-widest block mb-1">REGULATORY & COMPLIANCE MANDATE</span>
+          <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest block mb-1">REGULATORY & COMPLIANCE MANDATE</span>
           <h1 className="text-2xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Risk Disclosure & Capital Warning</h1>
           <p className="text-xs text-[#6B7280] mt-1">
             Trading synthetic index derivatives involves high-end speculative parameters. Read and comprehend all liability thresholds completely.
@@ -25,7 +25,7 @@ export default function RiskDisclosurePage() {
 
           <div className="space-y-4 pt-2">
             {disclosurePoints.map((point, index) => (
-              <div key={index} className="space-y-1 border-l-2 border-[#C43D3D] pl-3">
+              <div key={index} className="space-y-1 border-l-2 border-[#0055FF] pl-3">
                 <h3 className="font-bold text-[#0A0A0A] uppercase tracking-wide text-[11px]">{point.title}</h3>
                 <p className="text-xs text-[#6B7280]">{point.text}</p>
               </div>

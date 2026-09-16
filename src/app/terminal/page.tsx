@@ -295,7 +295,7 @@ export default function TerminalWorkspace() {
         <div className="flex items-center space-x-2 md:space-x-8">
           <div className="relative" ref={dropdownRef}>
             <button
-              onClick={() => registerAmountDropdownOpen(!isAmountDropdownOpen)}
+              onClick={() => setIsAmountDropdownOpen(!isAmountDropdownOpen)}
               className="flex items-center space-x-2 border border-[#E4E4E4] px-2 md:px-3 py-1 bg-white hover:bg-[#F7F7F5] transition-colors shadow-sm select-none"
             >
               <div className="text-right">
@@ -333,7 +333,7 @@ export default function TerminalWorkspace() {
             {isProfileDropdownOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white border border-[#E4E4E4] shadow-lg z-50 py-1 flex flex-col">
                 <Link href="/account" className="px-4 py-2.5 text-[10px] font-bold uppercase text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5]">Settings</Link>
-                <Link href="/" className="px-4 py-2.5 text-[10px] font-bold uppercase text-[#C43D3D] hover:bg-[#F7F7F5]">Logout</Link>
+                <Link href="/" className="px-4 py-2.5 text-[10px] font-bold uppercase text-[#0055FF] hover:bg-[#F7F7F5]">Logout</Link>
               </div>
             )}
           </div>
@@ -373,7 +373,7 @@ export default function TerminalWorkspace() {
                   </div>
                   <div className="text-right">
                     <span className="text-[10px] font-mono font-bold block">${formatNumber(inst.price, { minimumFractionDigits: 2 })}</span>
-                    <span className={cn("text-[9px] font-mono", inst.changePercent >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
+                    <span className={cn("text-[9px] font-mono", inst.changePercent >= 0 ? "text-[#16835B]" : "text-[#0055FF]")}>
                       {inst.changePercent >= 0 ? "+" : ""}{inst.changePercent}%
                     </span>
                   </div>
@@ -406,7 +406,7 @@ export default function TerminalWorkspace() {
                   <span className="text-xs md:text-sm font-mono font-bold text-[#0A0A0A] block leading-none">
                     {livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
                   </span>
-                  <span className={cn("text-[9px] font-mono font-bold block mt-0.5", liveMetrics.percent >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
+                  <span className={cn("text-[9px] font-mono font-bold block mt-0.5", liveMetrics.percent >= 0 ? "text-[#16835B]" : "text-[#0055FF]")}>
                     {liveMetrics.percent >= 0 ? "+" : ""}{liveMetrics.percent}%
                   </span>
                 </div>
@@ -467,7 +467,7 @@ export default function TerminalWorkspace() {
                       <tr key={pos.id} className="hover:bg-[#F7F7F5]">
                         <td className="p-3 font-mono font-bold text-[#0A0A0A]">{pos.instrument}</td>
                         <td className="p-3">
-                          <span className={cn("px-1.5 py-0.5 border text-[9px] font-bold", pos.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#C43D3D] text-[#C43D3D]')}>
+                          <span className={cn("px-1.5 py-0.5 border text-[9px] font-bold", pos.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#0055FF] text-[#0055FF]')}>
                             {pos.vector}
                           </span>
                         </td>
@@ -493,7 +493,7 @@ export default function TerminalWorkspace() {
               </button>
               <button 
                 onClick={() => { setDirection("PUT"); setIsMobileTradeMenuOpen(true); }}
-                className="flex-grow py-3 bg-[#C43D3D] text-white text-[10px] font-bold uppercase tracking-[0.2em] flex items-center justify-center space-x-2"
+                className="flex-grow py-3 bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-[0.2em] flex items-center justify-center space-x-2"
               >
                 <span>Put Vector</span>
               </button>
@@ -533,7 +533,7 @@ export default function TerminalWorkspace() {
                   </div>
                   <div className="flex justify-between text-[10px] border-t border-[#E4E4E4] pt-2">
                     <span className="text-[#6B7280] uppercase font-bold">Maximum Deficit Risk</span>
-                    <span className="font-mono font-bold text-[#C43D3D]">${stake.toFixed(2)}</span>
+                    <span className="font-mono font-bold text-[#0055FF]">${stake.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -547,7 +547,7 @@ export default function TerminalWorkspace() {
                 </button>
                 <button 
                   onClick={ () => { setDirection("PUT"); setReviewActive(true); } }
-                  className={cn("py-3.5 text-xs font-bold uppercase tracking-widest border flex items-center justify-center space-x-2", direction === "PUT" ? "bg-[#C43D3D] text-white border-[#C43D3D]" : "bg-white text-[#C43D3D] border-[#E4E4E4]")}
+                  className={cn("py-3.5 text-xs font-bold uppercase tracking-widest border flex items-center justify-center space-x-2", direction === "PUT" ? "bg-[#0055FF] text-white border-[#0055FF]" : "bg-white text-[#0055FF] border-[#E4E4E4]")}
                 >
                   <span>PUT VECTOR</span>
                 </button>

@@ -37,11 +37,11 @@ export default function AdminSidebar({ onLinkClick, className, isMobile = false 
                   className={cn(
                     "flex items-center h-9 px-2 text-[10px] font-bold uppercase tracking-wider transition-all border-l-2 whitespace-nowrap group/item",
                     isActive 
-                      ? "text-[#C43D3D] bg-[#C43D3D]/5 border-[#C43D3D]" 
+                      ? "text-[#0055FF] bg-[#0055FF]/5 border-[#0055FF]" 
                       : "text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5] border-transparent"
                   )}
                 >
-                  <item.icon className={cn("w-3.5 h-3.5 shrink-0 transition-colors", isActive ? "text-[#C43D3D]" : "text-[#6B7280] group-hover/item:text-[#0A0A0A]")} />
+                  <item.icon className={cn("w-3.5 h-3.5 shrink-0 transition-colors", isActive ? "text-[#0055FF]" : "text-[#6B7280] group-hover/item:text-[#0A0A0A]")} />
                   <span className={cn("ml-4 transition-opacity", !isMobile && "opacity-0 group-hover:opacity-100 duration-300")}>
                     {item.label}
                   </span>

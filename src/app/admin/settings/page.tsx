@@ -71,7 +71,7 @@ export default function PlatformSettings() {
                     type="checkbox" 
                     checked={formData.maintenanceMode}
                     onChange={(e) => setFormData({...formData, maintenanceMode: e.target.checked})}
-                    className="w-5 h-5 accent-[#C43D3D] cursor-pointer"
+                    className="w-5 h-5 accent-[#0055FF] cursor-pointer"
                   />
                 </div>
               </div>
@@ -151,8 +151,8 @@ export default function PlatformSettings() {
               </button>
             </Card>
 
-            <div className="flex items-start space-x-3 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20">
-              <AlertTriangle className="w-4 h-4 text-[#C43D3D] shrink-0 mt-0.5" />
+            <div className="flex items-start space-x-3 p-4 bg-[#0055FF]/5 border border-[#0055FF]/20">
+              <AlertTriangle className="w-4 h-4 text-[#0055FF] shrink-0 mt-0.5" />
               <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
                 Platform modifications are logged in the immutable audit ledger.
               </p>

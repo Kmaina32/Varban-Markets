@@ -138,7 +138,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
                 onClick={() => setIsMobileMenuOpen(true)}
                 className="md:hidden mb-4 px-3 py-1.5 border border-[#E4E4E4] bg-white text-[10px] font-bold uppercase tracking-wider flex items-center space-x-1.5"
               >
-                <Menu className="w-3.5 h-3.5 text-[#C43D3D]" />
+                <Menu className="w-3.5 h-3.5 text-[#0055FF]" />
                 <span>Control Menu</span>
               </button>
               {children}
@@ -213,7 +213,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
               {isProfileDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-[#E4E4E4] shadow-lg z-[200] py-1 flex flex-col">
                   <Link href="/account" onClick={() => setIsProfileDropdownOpen(false)} className="px-4 py-2.5 text-[10px] font-bold uppercase text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5]">Profile</Link>
-                  <button onClick={() => router.push('/')} className="px-4 py-2.5 text-left text-[10px] font-bold uppercase text-[#C43D3D] hover:bg-[#F7F7F5]">Log Out</button>
+                  <button onClick={() => router.push('/')} className="px-4 py-2.5 text-left text-[10px] font-bold uppercase text-[#0055FF] hover:bg-[#F7F7F5]">Log Out</button>
                 </div>
               )}
             </div>

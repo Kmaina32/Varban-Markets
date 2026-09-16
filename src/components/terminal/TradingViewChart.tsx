@@ -57,10 +57,10 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({ symbol }) =>
 
     const series = chart.addCandlestickSeries({
       upColor: '#16835B',
-      downColor: '#C43D3D',
+      downColor: '#0055FF',
       borderVisible: false,
       wickUpColor: '#16835B',
-      wickDownColor: '#C43D3D',
+      wickDownColor: '#0055FF',
     });
 
     seriesRef.current = series;
