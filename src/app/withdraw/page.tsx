@@ -1,9 +1,10 @@
+
 "use client";
 
 import { useState } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
-import { ArrowUpCircle, AlertTriangle, Check } from "lucide-react";
+import { ArrowUpCircle, AlertTriangle, Check, Banknote } from "lucide-react";
 import { useUser, useFirestore, useDoc } from "@/firebase";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, increment } from "firebase/firestore";
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -17,6 +18,8 @@ export default function WithdrawPage() {
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   
   const [amount, setAmount] = useState("250");
+  const [bankName, setBankName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [token, setToken] = useState<string | null>(null);
 
@@ -33,14 +36,21 @@ export default function WithdrawPage() {
     setIsProcessing(true);
     const refKey = `WTH-${Math.random().toString(36).substring(7).toUpperCase()}`;
 
+    // Record the withdrawal request for Paystack Transfer processing
     addDoc(collection(db, `users/${user.uid}/transactions`), {
       type: "Remittance Withdrawal",
       asset: "USD",
       amount: amountNum,
       status: "Pending",
       timestamp: serverTimestamp(),
-      ref: refKey
+      ref: refKey,
+      bankDetails: {
+        bankName,
+        accountNumber
+      },
+      provider: "Paystack Transfers"
     }).then(() => {
+      // Deduct balance optimistically
       updateDoc(doc(db, "users", user.uid), {
         balance: increment(-amountNum),
         equity: increment(-amountNum)
@@ -61,7 +71,7 @@ export default function WithdrawPage() {
   return (
     <AuthedLayout 
       title="Capital Remittance" 
-      subtitle="Withdrawal of realized gains and capital allocations"
+      subtitle="Withdrawal of realized gains via Paystack Transfers infrastructure"
     >
       <div className="max-w-2xl mx-auto space-y-6">
         {token && (
@@ -69,7 +79,7 @@ export default function WithdrawPage() {
             <Check className="w-5 h-5 shrink-0 mt-0.5" />
             <div className="text-xs">
               <span className="font-bold uppercase block mb-1">Withdrawal Instruction Logged</span>
-              <p className="font-mono text-[11px] text-[#6B7280]">Request ID: {token}. Remittance cycle initiated. Funds will be released upon core vault verification.</p>
+              <p className="font-mono text-[11px] text-[#6B7280]">Request ID: {token}. Remittance cycle initiated via Paystack. Funds will be released upon core vault verification.</p>
             </div>
           </div>
         )}
@@ -91,12 +101,38 @@ export default function WithdrawPage() {
               </div>
             </div>
 
-            <div>
-              <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Destination Vector</label>
-              <select className="w-full border border-[#E4E4E4] p-3 text-xs font-bold uppercase tracking-widest bg-white">
-                <option>Verified Personal Banking Coordinate</option>
-                <option>External Digital Asset Wallet</option>
-              </select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Bank Name</label>
+                <input 
+                  type="text"
+                  placeholder="e.g. GTBank"
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  className="w-full border border-[#E4E4E4] p-3 text-xs uppercase tracking-widest bg-white focus:outline-none focus:border-[#0055FF]"
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Account Number</label>
+                <input 
+                  type="text"
+                  placeholder="10 Digits"
+                  value={accountNumber}
+                  onChange={(e) => setAccountNumber(e.target.value)}
+                  className="w-full border border-[#E4E4E4] p-3 text-xs font-mono bg-white focus:outline-none focus:border-[#0055FF]"
+                  required
+                  maxLength={10}
+                />
+              </div>
+            </div>
+
+            <div className="bg-[#F7F7F5] border border-[#E4E4E4] p-4 flex items-start space-x-3">
+              <Banknote className="w-5 h-5 text-[#0055FF] shrink-0" />
+              <div className="text-[10px] text-[#6B7280] leading-relaxed">
+                <span className="font-bold text-[#0A0A0A] block uppercase mb-1">Paystack Payout Protocol</span>
+                Remittances are processed to verified personal banking coordinates using the Paystack Transfers API.
+              </div>
             </div>
 
             <div className="bg-[#C43D3D]/5 border border-[#C43D3D]/20 p-4 flex items-start space-x-3">
@@ -110,9 +146,10 @@ export default function WithdrawPage() {
             <button 
               type="submit" 
               disabled={isProcessing}
-              className="w-full btn-institutional-primary"
+              className="w-full btn-institutional-primary flex items-center justify-center space-x-2"
             >
-              {isProcessing ? "Authenticating Instruction..." : "Initiate Remittance Request"}
+              <ArrowUpCircle className="w-4 h-4" />
+              <span>{isProcessing ? "Authenticating Instruction..." : "Confirm Paystack Withdrawal"}</span>
             </button>
           </form>
         </Card>

@@ -1,29 +1,40 @@
+
 "use client";
 
 import { useState } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
-import { ArrowDownCircle, ShieldCheck, Check } from "lucide-react";
+import { ShieldCheck, Check, CreditCard } from "lucide-react";
 import { useUser, useFirestore } from "@/firebase";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, increment } from "firebase/firestore";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { usePaystackPayment } from 'react-paystack';
 
 export default function DepositPage() {
   const { user } = useUser();
   const db = useFirestore();
-  const [amount, setAmount] = useState("500");
+  const [amount, setAmount] = useState("5000");
   const [isProcessing, setIsProcessing] = useState(false);
   const [token, setToken] = useState<string | null>(null);
 
-  const handleDeposit = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Paystack Configuration
+  // Note: Public key should ideally be in an environment variable (NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY)
+  const config = {
+    reference: `DEP-${new Date().getTime()}-${Math.floor(Math.random() * 1000000)}`,
+    email: user?.email || "trader@varbanmarkets.com",
+    amount: parseFloat(amount) * 100, // Paystack expects kobo/cents
+    publicKey: 'pk_test_56134b2f2939c05c08882585250325438864720', // Replace with live key in production
+  };
+
+  const initializePayment = usePaystackPayment(config);
+
+  const onSuccess = (reference: any) => {
     if (!user || !db) return;
-
     setIsProcessing(true);
-    const amountNum = parseFloat(amount);
-    const refKey = `DEP-${Math.random().toString(36).substring(7).toUpperCase()}`;
 
+    const amountNum = parseFloat(amount);
+    
     // Record the transaction conduit
     addDoc(collection(db, `users/${user.uid}/transactions`), {
       type: "Vault Deposit",
@@ -31,7 +42,8 @@ export default function DepositPage() {
       amount: amountNum,
       status: "Confirmed",
       timestamp: serverTimestamp(),
-      ref: refKey
+      ref: reference.reference,
+      provider: "Paystack"
     }).then(() => {
       // Optimistically update the balance domains
       updateDoc(doc(db, "users", user.uid), {
@@ -46,7 +58,7 @@ export default function DepositPage() {
         errorEmitter.emit('permission-error', permissionError);
       });
       
-      setToken(refKey);
+      setToken(reference.reference);
       setIsProcessing(false);
     }).catch(async (err) => {
        const permissionError = new FirestorePermissionError({
@@ -58,10 +70,21 @@ export default function DepositPage() {
     });
   };
 
+  const onClose = () => {
+    setIsProcessing(false);
+  };
+
+  const handleDepositClick = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setIsProcessing(true);
+    initializePayment({onSuccess, onClose});
+  };
+
   return (
     <AuthedLayout 
       title="Vault Deposit" 
-      subtitle="Funding account capital domains through secure matching conduits"
+      subtitle="Funding account capital domains through Paystack secure matching conduits"
     >
       <div className="max-w-2xl mx-auto space-y-6">
         {token && (
@@ -69,13 +92,13 @@ export default function DepositPage() {
             <Check className="w-5 h-5 shrink-0 mt-0.5" />
             <div className="text-xs">
               <span className="font-bold uppercase block mb-1">Transmission Registered</span>
-              <p className="font-mono text-[11px] text-[#6B7280]">Record ID: {token}. Internal ledger synchronized successfully.</p>
+              <p className="font-mono text-[11px] text-[#6B7280]">Paystack Ref: {token}. Internal ledger synchronized successfully.</p>
             </div>
           </div>
         )}
 
         <Card className="bg-white border-[#E4E4E4] p-8 shadow-sm">
-          <form onSubmit={handleDeposit} className="space-y-6">
+          <form onSubmit={handleDepositClick} className="space-y-6">
             <div>
               <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Allocation Stake (USD)</label>
               <input 
@@ -84,35 +107,35 @@ export default function DepositPage() {
                 onChange={(e) => setAmount(e.target.value)}
                 className="w-full bg-[#F7F7F5] border border-[#E4E4E4] p-4 text-xl font-mono font-bold focus:outline-none focus:border-[#0A0A0A]"
                 required
+                min="10"
               />
-              <span className="text-[9px] text-[#6B7280] mt-2 block uppercase font-bold tracking-widest">Min: $10.00 / Max: $500,000.00</span>
-            </div>
-
-            <div>
-              <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Settlement Channel</label>
-              <select className="w-full border border-[#E4E4E4] p-3 text-xs font-bold uppercase tracking-widest bg-white">
-                <option>Institutional Bank Wire (SWIFT)</option>
-                <option>Euro-Zone SEPA Handshake</option>
-                <option>Digital Asset Vault (USDT/BTC)</option>
-              </select>
+              <span className="text-[9px] text-[#6B7280] mt-2 block uppercase font-bold tracking-widest">Min: $10.00 / Processing via Paystack</span>
             </div>
 
             <div className="bg-[#F7F7F5] border border-[#E4E4E4] p-4 flex items-start space-x-3">
-              <ShieldCheck className="w-5 h-5 text-[#0055FF] shrink-0" />
-              <p className="text-[10px] text-[#6B7280] leading-relaxed">
-                All capital movements are processed under deterministic infrastructure handshakes. Verification logs are immutable and auditable.
-              </p>
+              <CreditCard className="w-5 h-5 text-[#0055FF] shrink-0" />
+              <div className="text-[10px] text-[#6B7280] leading-relaxed">
+                <span className="font-bold text-[#0A0A0A] block uppercase mb-1">Paystack Gateway</span>
+                All capital movements are processed under deterministic infrastructure handshakes via Paystack. Supports Card, Bank, and USSD.
+              </div>
             </div>
 
             <button 
               type="submit" 
               disabled={isProcessing}
-              className="w-full btn-institutional-primary"
+              className="w-full btn-institutional-primary flex items-center justify-center space-x-2"
             >
-              {isProcessing ? "Transmitting Fields..." : "Confirm & Commit Deposit"}
+              {isProcessing ? "Awaiting Handshake..." : "Initiate Paystack Deposit"}
             </button>
           </form>
         </Card>
+
+        <div className="bg-[#F7F7F5] border border-[#E4E4E4] p-4 flex items-start space-x-3">
+          <ShieldCheck className="w-5 h-5 text-[#16835B] shrink-0" />
+          <p className="text-[10px] text-[#6B7280] leading-relaxed uppercase font-bold tracking-tighter">
+            Verified institutional conduit. PCI-DSS Level 1 compliant via Paystack integration.
+          </p>
+        </div>
       </div>
     </AuthedLayout>
   );
