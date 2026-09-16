@@ -8,6 +8,7 @@ import { useUser, useDoc, useCollection, useFirestore } from "@/firebase";
 import { collection, query, limit, orderBy } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { useState, useEffect } from "react";
+import OnboardingTutorial from "@/components/dashboard/OnboardingTutorial";
 
 export default function UserDashboard() {
   const { user } = useUser();
@@ -61,6 +62,7 @@ export default function UserDashboard() {
 
   return (
     <AuthedLayout title={t('nav.dashboard')}>
+      <OnboardingTutorial />
       <div className="space-y-8">
         {/* Account Mode Notice Bar */}
         {accountMode === 'DEMO' && (

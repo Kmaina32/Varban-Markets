@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useUser } from "@/firebase";
-import placeholderImages from "@/app/lib/placeholder-images.json";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -29,7 +28,7 @@ export default function Footer() {
     <footer className="bg-white text-[#0A0A0A] border-t border-[#E4E4E4] pt-16 pb-12 shadow-[0_-1px_3px_0_rgba(0,0,0,0.05)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-          <div>
+          <div className="md:col-span-1">
             <div className="flex items-center mb-4">
               <Image 
                 src="/assets/logo.png"
@@ -44,28 +43,31 @@ export default function Footer() {
             </p>
           </div>
           
-          <div>
-            <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Markets</h4>
-            <ul className="space-y-2 text-xs text-[#6B7280]">
-              <li><Link href="/markets" className="hover:text-[#0A0A0A] transition-colors">Available Markets</Link></li>
-              <li><Link href="/how-it-works" className="hover:text-[#0A0A0A] transition-colors">How It Works</Link></li>
-              <li><Link href="/technology" className="hover:text-[#0A0A0A] transition-colors">Technology</Link></li>
-            </ul>
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-2 md:col-span-2">
+            <div>
+              <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Markets</h4>
+              <ul className="space-y-2 text-xs text-[#6B7280]">
+                <li><Link href="/markets" className="hover:text-[#0A0A0A] transition-colors">Registry</Link></li>
+                <li><Link href="/how-it-works" className="hover:text-[#0A0A0A] transition-colors">Process</Link></li>
+                <li><Link href="/technology" className="hover:text-[#0A0A0A] transition-colors">Technology</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Support</h4>
+              <ul className="space-y-2 text-xs text-[#6B7280]">
+                <li><Link href="/help" className="hover:text-[#0A0A0A] transition-colors">Help Center</Link></li>
+                <li><Link href="/contact" className="hover:text-[#0A0A0A] transition-colors">Contact</Link></li>
+                <li><Link href="/about" className="hover:text-[#0A0A0A] transition-colors">About Us</Link></li>
+              </ul>
+            </div>
           </div>
-          
+
           <div>
             <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Legal</h4>
             <ul className="space-y-2 text-xs text-[#6B7280]">
               <li><Link href="/risk-disclosure" className="hover:text-[#0A0A0A] transition-colors">Risk Disclosure</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Support</h4>
-            <ul className="space-y-2 text-xs text-[#6B7280]">
-              <li><Link href="/help" className="hover:text-[#0A0A0A] transition-colors">Help Center</Link></li>
-              <li><Link href="/contact" className="hover:text-[#0A0A0A] transition-colors">Contact Support</Link></li>
-              <li><Link href="/about" className="hover:text-[#0A0A0A] transition-colors">About Us</Link></li>
+              <li><Link href="/technology" className="hover:text-[#0A0A0A] transition-colors">Infrastructure</Link></li>
             </ul>
           </div>
         </div>
