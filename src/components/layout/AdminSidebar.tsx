@@ -26,9 +26,6 @@ export default function AdminSidebar({ onLinkClick, className, isMobile = false 
     <div className="flex flex-col h-full justify-between">
       <div className="space-y-6">
         <div>
-          <h3 className="text-[9px] font-bold text-[#6B7280] uppercase tracking-[0.2em] mb-3 px-2 whitespace-nowrap block">
-            Core Governance
-          </h3>
           <div className="space-y-1">
             {items.map((item) => {
               const isActive = pathname === item.href;
