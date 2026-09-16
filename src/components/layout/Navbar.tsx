@@ -42,7 +42,7 @@ export default function Navbar() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
               <Image 
-                src="/assets/logo.png"
+                src="/assets/logo2.png"
                 alt="Varban Markets"
                 width={140}
                 height={32}
@@ -93,7 +93,7 @@ export default function Navbar() {
           <div className="flex flex-col h-full">
             <div className="h-16 border-b border-[#E4E4E4] flex items-center justify-between px-4 shrink-0">
               <Image 
-                src="/assets/logo.png"
+                src="/assets/logo2.png"
                 alt="Varban Markets"
                 width={120}
                 height={28}

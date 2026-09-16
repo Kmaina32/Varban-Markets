@@ -163,7 +163,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
           </button>
           
           <Link href="/dashboard" className="flex items-center">
-            <Image src="/assets/logo.png" alt="Varban Workspace" width={120} height={28} className="h-7 w-auto object-contain" priority />
+            <Image src="/assets/logo2.png" alt="Varban Workspace" width={120} height={28} className="h-7 w-auto object-contain" priority />
           </Link>
           
           <div className="h-6 w-px bg-[#E4E4E4] hidden md:block md:ml-6 md:mr-6"></div>

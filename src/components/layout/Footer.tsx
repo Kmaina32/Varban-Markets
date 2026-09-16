@@ -36,7 +36,7 @@ export default function Footer() {
           <div className="md:col-span-1">
             <div className="flex items-center mb-6">
               <Image 
-                src="/assets/logo.png"
+                src="/assets/logo2.png"
                 alt="Varban Markets"
                 width={120}
                 height={28}

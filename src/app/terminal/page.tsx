@@ -280,7 +280,7 @@ export default function TerminalWorkspace() {
           
           <div className="md:block hidden">
             <Link href="/dashboard" className="flex items-center">
-              <Image src="/assets/logo.png" alt="Varban Terminal" width={110} height={26} className="h-7 w-auto object-contain" priority />
+              <Image src="/assets/logo2.png" alt="Varban Terminal" width={110} height={26} className="h-7 w-auto object-contain" priority />
             </Link>
           </div>
         </div>
@@ -288,14 +288,14 @@ export default function TerminalWorkspace() {
         {/* Absolute Centered Logo for Mobile Breakpoint Only */}
         <div className="absolute left-1/2 -translate-x-1/2 md:hidden block pointer-events-auto">
           <Link href="/dashboard">
-            <Image src="/assets/logo.png" alt="Varban Markets Logo" width={100} height={24} className="h-6 w-auto object-contain" priority />
+            <Image src="/assets/logo2.png" alt="Varban Markets Logo" width={100} height={24} className="h-6 w-auto object-contain" priority />
           </Link>
         </div>
 
         <div className="flex items-center space-x-2 md:space-x-8">
           <div className="relative" ref={dropdownRef}>
             <button
-              onClick={() => setIsAmountDropdownOpen(!isAmountDropdownOpen)}
+              onClick={() => registerAmountDropdownOpen(!isAmountDropdownOpen)}
               className="flex items-center space-x-2 border border-[#E4E4E4] px-2 md:px-3 py-1 bg-white hover:bg-[#F7F7F5] transition-colors shadow-sm select-none"
             >
               <div className="text-right">
