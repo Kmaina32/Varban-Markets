@@ -6,8 +6,7 @@ import {
   LayoutDashboard, Monitor, Globe, Briefcase, Target, 
   FileText, Clock, Star, Wallet, ArrowDownCircle, 
   ArrowUpCircle, Activity, User, ShieldCheck, Lock, 
-  Bell, Settings, HelpCircle, Mail, ShieldAlert,
-  Users, Database, FileSpreadsheet
+  Bell, Settings, HelpCircle, Mail, ShieldAlert
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -26,7 +25,6 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
   const { t } = useTranslation();
   const { user } = useUser();
   const db = useFirestore();
-  const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
 
   const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
@@ -70,15 +68,11 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     }
   ];
 
-  // Admin access layer - only visible to authorized entities
+  // Single admin link to transition entirely into the admin role architecture
   const adminSection = {
     title: "ADMINISTRATION",
     items: [
-      { label: t('nav.adminOverview'), href: "/admin", icon: ShieldAlert },
-      { label: t('nav.adminUsers'), href: "/admin/users", icon: Users },
-      { label: t('nav.adminLedger'), href: "/admin/transactions", icon: FileSpreadsheet },
-      { label: t('nav.adminMarkets'), href: "/admin/markets", icon: Database },
-      { label: "Platform Settings", href: "/admin/settings", icon: Settings },
+      { label: t('nav.admin'), href: "/admin", icon: ShieldAlert },
     ]
   };
 
@@ -106,7 +100,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
               </h3>
               <div className="space-y-1">
                 {section.items.map((item) => {
-                  const isActive = pathname === item.href;
+                  const isActive = pathname === item.href || (item.href === '/admin' && pathname?.startsWith('/admin'));
                   return (
                     <Link
                       key={item.href}
@@ -143,7 +137,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
             </h3>
             <div className="space-y-0.5">
               {section.items.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive = pathname === item.href || (item.href === '/admin' && pathname?.startsWith('/admin'));
                 return (
                   <Link
                     key={item.href}
