@@ -307,20 +307,32 @@ export default function TerminalWorkspace() {
 
           {/* Main Chart Section */}
           <main className={`flex-grow flex flex-col overflow-hidden relative ${isResizing ? 'select-none' : ''}`}>
-            {/* Mobile Tool Bar */}
-            <div className="md:hidden flex items-center justify-between p-3 border-b border-[#E4E4E4] bg-white z-40">
-              <button onClick={() => setIsMobileMarketMenuOpen(true)} className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-wider border border-[#E4E4E4] px-3 py-1.5 bg-[#F7F7F5]">
-                <BarChart3 className="w-3.5 h-3.5 text-[#0055FF]" />
-                <span>{activeInst.symbol}</span>
-                <ChevronDown className="w-3 h-3 text-[#6B7280]" />
-              </button>
-              <div className="text-right">
-                <span className="text-[12px] font-mono font-bold text-[#0A0A0A] block leading-none">
-                  {livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
-                </span>
-                <span className={cn("text-[9px] font-mono font-bold", liveMetrics.percent >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
-                  {liveMetrics.percent >= 0 ? "+" : ""}{liveMetrics.percent}%
-                </span>
+            
+            {/* Master Unified Instrument and Pricing Status Header */}
+            <div className="flex items-center justify-between p-3 border-b border-[#E4E4E4] bg-white z-40 shrink-0">
+              <div className="flex items-center space-x-3">
+                <button 
+                  onClick={() => setIsMobileMarketMenuOpen(true)} 
+                  className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-wider border border-[#E4E4E4] px-3 py-1.5 bg-[#F7F7F5] md:hover:bg-[#E4E4E4] transition-colors"
+                >
+                  <BarChart3 className="w-3.5 h-3.5 text-[#0055FF]" />
+                  <span>{activeInst.symbol}</span>
+                  <ChevronDown className="w-3 h-3 text-[#6B7280]" />
+                </button>
+                <div className="hidden md:flex items-center space-x-2 text-[9px] text-[#6B7280] uppercase tracking-widest font-bold">
+                  <span>&mdash; {activeInst.name}</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-4 text-right">
+                <div>
+                  <span className="text-xs md:text-sm font-mono font-bold text-[#0A0A0A] block leading-none">
+                    {livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                  </span>
+                  <span className={cn("text-[9px] font-mono font-bold block mt-0.5", liveMetrics.percent >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
+                    {liveMetrics.percent >= 0 ? "+" : ""}{liveMetrics.percent}%
+                  </span>
+                </div>
               </div>
             </div>
 
