@@ -155,7 +155,7 @@ export default function TerminalWorkspace() {
 
   return (
     <div className="bg-white text-[#0A0A0A] h-screen flex flex-col overflow-hidden font-sans relative">
-      {/* Mobile Navbar Overlay */}
+      {/* Mobile Navbar Overlay Drawer */}
       {isMobileNavOpen && (
         <div className="fixed inset-0 z-[200] md:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setIsMobileNavOpen(false)}></div>
@@ -238,9 +238,9 @@ export default function TerminalWorkspace() {
         
         <div className="flex-grow flex flex-col md:flex-row overflow-hidden md:ml-16">
           
-          {/* Market List Overlay (Mobile) / Sidebar (Desktop) */}
+          {/* Market List Selection Layer (Mobile Dropdown/Slide & Desktop Sidebar) */}
           <div className={cn(
-            "fixed inset-0 z-[150] md:relative md:inset-auto md:z-0 md:flex flex-col w-full md:w-64 border-r border-[#E4E4E4] bg-white transition-transform duration-300 ease-in-out md:translate-x-0",
+            "fixed inset-0 z-[150] md:relative md:inset-auto md:z-0 md:flex flex-col w-full md:w-64 border-r border-[#E4E4E4] bg-white transition-transform duration-300 ease-in-out",
             isMobileMarketMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
           )}>
             <div className="p-4 border-b border-[#E4E4E4] bg-[#F7F7F5] flex justify-between items-center">
@@ -276,16 +276,16 @@ export default function TerminalWorkspace() {
 
           {/* Main Chart Section */}
           <main className="flex-grow flex flex-col overflow-hidden relative">
-            {/* Mobile Tool Bar */}
+            {/* Mobile Tool Bar for Dropdown Asset Toggling */}
             <div className="md:hidden flex items-center justify-between p-3 border-b border-[#E4E4E4] bg-white z-40">
-              <button onClick={() => setIsMobileMarketMenuOpen(true)} className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-wider border border-[#E4E4E4] px-3 py-1.5">
+              <button onClick={() => setIsMobileMarketMenuOpen(true)} className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-wider border border-[#E4E4E4] px-3 py-1.5 bg-[#F7F7F5]">
                 <BarChart3 className="w-3.5 h-3.5 text-[#0055FF]" />
                 <span>{activeInst.symbol}</span>
                 <ChevronDown className="w-3 h-3 text-[#6B7280]" />
               </button>
               <div className="text-right">
                 <span className="text-[12px] font-mono font-bold text-[#0A0A0A] block leading-none">
-                  {livePrice.toFixed(2)}
+                  {livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
                 </span>
                 <span className={cn("text-[9px] font-mono font-bold", liveMetrics.percent >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
                   {liveMetrics.percent >= 0 ? "+" : ""}{liveMetrics.percent}%
@@ -307,7 +307,7 @@ export default function TerminalWorkspace() {
               <TradingViewChart symbol={activeInst.symbol} onSymbolChange={handleSymbolChange} />
             </div>
 
-            {/* Bottom Info / Positions Tray (Responsive) */}
+            {/* Bottom Info / Positions Tray */}
             <div className="h-40 md:h-48 border-t border-[#E4E4E4] bg-white shrink-0 overflow-y-auto no-scrollbar">
               <div className="px-4 py-2 border-b border-[#E4E4E4] bg-[#F7F7F5] flex justify-between items-center sticky top-0 z-10">
                 <span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">Active Positions</span>
@@ -349,36 +349,36 @@ export default function TerminalWorkspace() {
               </div>
             </div>
 
-            {/* Mobile Trade Trigger Button */}
+            {/* Mobile Action Bar to summon specific order configuration */}
             <div className="md:hidden p-4 bg-white border-t border-[#E4E4E4] flex justify-between space-x-3 z-40">
               <button 
                 onClick={() => { setDirection("CALL"); setIsMobileTradeMenuOpen(true); }}
-                className="flex-grow py-3 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-[0.2em] shadow-lg flex items-center justify-center space-x-2"
+                className="flex-grow py-3 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-[0.2em] flex items-center justify-center space-x-2"
               >
                 <TrendingUp className="w-3.5 h-3.5" />
-                <span>Call</span>
+                <span>Call Vector</span>
               </button>
               <button 
                 onClick={() => { setDirection("PUT"); setIsMobileTradeMenuOpen(true); }}
-                className="flex-grow py-3 bg-[#C43D3D] text-white text-[10px] font-bold uppercase tracking-[0.2em] shadow-lg flex items-center justify-center space-x-2"
+                className="flex-grow py-3 bg-[#C43D3D] text-white text-[10px] font-bold uppercase tracking-[0.2em] flex items-center justify-center space-x-2"
               >
                 <TrendingDown className="w-3.5 h-3.5" />
-                <span>Put</span>
+                <span>Put Vector</span>
               </button>
             </div>
           </main>
 
-          {/* Trade Panel Overlay (Mobile) / Sidebar (Desktop) */}
+          {/* Trade Configuration Layer (Mobile Bottom Slide Tray & Desktop Sidebar Layout) */}
           <div className={cn(
-            "fixed inset-0 z-[150] md:relative md:inset-auto md:z-0 md:flex flex-col w-full md:w-80 border-l border-[#E4E4E4] bg-white transition-transform duration-300 ease-in-out md:translate-x-0",
-            isMobileTradeMenuOpen ? "translate-y-0" : "translate-y-full md:translate-y-0"
+            "fixed inset-0 z-[160] md:relative md:inset-auto md:z-0 md:flex flex-col w-full md:w-80 border-l border-[#E4E4E4] bg-white transition-all duration-300 ease-in-out",
+            isMobileTradeMenuOpen ? "translate-y-0 opacity-100" : "translate-y-full md:translate-y-0 opacity-0 md:opacity-100"
           )}>
             <div className="p-4 border-b border-[#E4E4E4] bg-[#F7F7F5] flex justify-between items-center">
               <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Trade Configuration</h3>
               <button onClick={() => setIsMobileTradeMenuOpen(false)} className="md:hidden p-2"><X className="w-4 h-4" /></button>
             </div>
 
-            <div className="p-6 md:p-6 space-y-6 overflow-y-auto no-scrollbar">
+            <div className="p-6 space-y-6 overflow-y-auto no-scrollbar">
               <div className="hidden md:block p-4 bg-[#F7F7F5] border border-[#E4E4E4] text-center">
                 <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-1">Live Feed</span>
                 <div className="text-2xl font-mono font-bold">{livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</div>
@@ -399,7 +399,7 @@ export default function TerminalWorkspace() {
 
                 <div>
                   <label className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-2">Stake (USD)</label>
-                  <input type="number" value={stake} onChange={(e) => setStake(Number(e.target.value))} className="w-full p-3 bg-white border border-[#E4E4E4] text-sm font-mono font-bold focus:border-[#0055FF] outline-none" />
+                  <input type="number" min={activeInst.minStake} max={activeInst.maxStake} value={stake} onChange={(e) => setStake(Number(e.target.value))} className="w-full p-3 bg-white border border-[#E4E4E4] text-sm font-mono font-bold focus:border-[#0055FF] outline-none" />
                 </div>
 
                 <div className="p-4 border border-[#E4E4E4] bg-[#F7F7F5] space-y-2">
@@ -414,7 +414,7 @@ export default function TerminalWorkspace() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 gap-3">
                 <button 
                   onClick={() => { setDirection("CALL"); setReviewActive(true); }}
                   className={cn("py-4 text-xs font-bold uppercase tracking-widest border flex items-center justify-center space-x-2", direction === "CALL" ? "bg-[#16835B] text-white border-[#16835B]" : "bg-white text-[#16835B] border-[#16835B]")}
