@@ -10,6 +10,11 @@ export default function Footer() {
   const pathname = usePathname();
   const { user } = useUser();
   
+  // Suppress any footer render if path belongs to admin or strict operational domains
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   const strictWorkspacePaths = [
     '/terminal', '/dashboard', '/portfolio', '/positions', 
     '/orders', '/history', '/watchlist', '/wallet', 
@@ -43,7 +48,6 @@ export default function Footer() {
             </p>
           </div>
           
-          {/* Mobile optimized side-by-side categories */}
           <div className="grid grid-cols-2 gap-8 md:grid-cols-2 md:col-span-2">
             <div>
               <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Markets</h4>

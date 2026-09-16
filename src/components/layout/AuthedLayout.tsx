@@ -1,6 +1,8 @@
 'use client';
 
 import AuthedSidebar from "./AuthedSidebar";
+import AdminSidebar from "./AdminSidebar";
+import AdminHeader from "./AdminHeader";
 import { Bell, User, Menu, X, ChevronDown, Check } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -92,7 +94,6 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
       if (!user && isStrict) {
         router.push('/login');
       } else if (user && isAdminPath && !isAdmin) {
-        // Redirect unauthorized users away from admin paths
         router.push('/dashboard');
       }
     }
@@ -111,6 +112,42 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   if (!user && isStrict) return null;
   if (user && isAdminPath && !isAdmin) return null;
   if (!user) return <>{children}</>;
+
+  // Render isolated Admin layouts for administration sub-domains
+  if (isAdminPath) {
+    return (
+      <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
+        <AdminHeader title={title} subtitle={subtitle} />
+        
+        <div className="flex flex-grow overflow-hidden relative">
+          <AdminSidebar className="hidden md:flex" />
+          
+          {/* Mobile Admin Nav Overlay */}
+          {isMobileMenuOpen && (
+            <div className="fixed inset-0 z-[250] md:hidden">
+              <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+              <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white animate-in slide-in-from-left duration-300 shadow-2xl">
+                <AdminSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
+              </div>
+            </div>
+          )}
+
+          <main className="flex-grow overflow-y-auto bg-[#F7F7F5] p-4 md:p-8 no-scrollbar md:ml-16">
+            <div className="max-w-7xl mx-auto">
+              <button 
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="md:hidden mb-4 px-3 py-1.5 border border-[#E4E4E4] bg-white text-[10px] font-bold uppercase tracking-wider flex items-center space-x-1.5"
+              >
+                <Menu className="w-3.5 h-3.5 text-[#C43D3D]" />
+                <span>Control Menu</span>
+              </button>
+              {children}
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
