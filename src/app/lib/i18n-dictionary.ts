@@ -1,6 +1,7 @@
+
 /**
  * @fileOverview Institutional Multi-Language Dictionary Matrix for Varban Markets.
- * Updated with Admin Workspace labels and Simple English terms.
+ * Updated with Paystack-supported currency labels.
  */
 
 export type LocaleCode = 'en' | 'fr' | 'es' | 'pt' | 'zh-CN';
@@ -45,7 +46,7 @@ export const DICTIONARY = {
     trading: {
       setup: 'TRADE SETTINGS',
       direction: 'Direction',
-      stake: 'Amount (USD)',
+      stake: 'Amount',
       duration: 'Duration',
       return: 'Potential Profit',
       loss: 'Max Risk',
@@ -66,7 +67,7 @@ export const DICTIONARY = {
       confirmedRef: 'Trade order recorded successfully.'
     },
     wallet: {
-      available: 'Available Cash',
+      available: 'Available Balance',
       pending: 'Pending',
       metrics: 'Account Summary',
       equity: 'Total Value',
@@ -193,7 +194,7 @@ export const DICTIONARY = {
     trading: {
       setup: 'CONFIGURATION',
       direction: 'Direction',
-      stake: 'Montant (USD)',
+      stake: 'Montant',
       duration: 'Durée',
       return: 'Rendement',
       loss: 'Risque Max',

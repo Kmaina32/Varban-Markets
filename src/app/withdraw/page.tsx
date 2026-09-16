@@ -11,6 +11,8 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useTranslation } from "@/app/lib/i18n-context";
 
+const PAYSTACK_CURRENCIES = ["USD", "NGN", "GHS", "ZAR", "KES"];
+
 export default function WithdrawPage() {
   const { user } = useUser();
   const db = useFirestore();
@@ -18,6 +20,7 @@ export default function WithdrawPage() {
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   
   const [amount, setAmount] = useState("250");
+  const [selectedCurrency, setSelectedCurrency] = useState(profile?.currency || "USD");
   const [bankName, setBankName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -36,21 +39,20 @@ export default function WithdrawPage() {
     setIsProcessing(true);
     const refKey = `WTH-${Math.random().toString(36).substring(7).toUpperCase()}`;
 
-    // Record the withdrawal request for Paystack Transfer processing
     addDoc(collection(db, `users/${user.uid}/transactions`), {
       type: "Remittance Withdrawal",
-      asset: "USD",
+      asset: selectedCurrency,
       amount: amountNum,
       status: "Pending",
       timestamp: serverTimestamp(),
       ref: refKey,
+      currency: selectedCurrency,
       bankDetails: {
         bankName,
         accountNumber
       },
       provider: "Paystack Transfers"
     }).then(() => {
-      // Deduct balance optimistically
       updateDoc(doc(db, "users", user.uid), {
         balance: increment(-amountNum),
         equity: increment(-amountNum)
@@ -86,19 +88,34 @@ export default function WithdrawPage() {
 
         <Card className="bg-white border-[#E4E4E4] p-8 shadow-sm">
           <form onSubmit={handleWithdraw} className="space-y-6">
-            <div>
-              <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Remittance Amount (USD)</label>
-              <input 
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-[#F7F7F5] border border-[#E4E4E4] p-4 text-xl font-mono font-bold focus:outline-none focus:border-[#0A0A0A]"
-                required
-              />
-              <div className="flex justify-between mt-2 text-[9px] font-bold uppercase tracking-widest">
-                <span className="text-[#6B7280]">Available for withdrawal:</span>
-                <span className="text-[#16835B]">${formatNumber(profile?.balance || 0, { minimumFractionDigits: 2 })} USD</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Remittance Amount</label>
+                <input 
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="w-full bg-[#F7F7F5] border border-[#E4E4E4] p-4 text-xl font-mono font-bold focus:outline-none focus:border-[#0A0A0A]"
+                  required
+                />
               </div>
+              <div>
+                <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Currency</label>
+                <select 
+                  value={selectedCurrency}
+                  onChange={(e) => setSelectedCurrency(e.target.value)}
+                  className="w-full bg-[#F7F7F5] border border-[#E4E4E4] p-4 text-xl font-mono font-bold appearance-none focus:outline-none focus:border-[#0A0A0A]"
+                >
+                  {PAYSTACK_CURRENCIES.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex justify-between text-[9px] font-bold uppercase tracking-widest px-1">
+              <span className="text-[#6B7280]">Available for withdrawal:</span>
+              <span className="text-[#16835B]">{formatNumber(profile?.balance || 0, { minimumFractionDigits: 2 })} {profile?.currency || "USD"}</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -109,7 +126,7 @@ export default function WithdrawPage() {
                   placeholder="e.g. GTBank"
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
-                  className="w-full border border-[#E4E4E4] p-3 text-xs uppercase tracking-widest bg-white focus:outline-none focus:border-[#0055FF]"
+                  className="w-full border border-[#E4E4E4] p-3 text-xs uppercase tracking-widest bg-white focus:outline-none focus:border-[#0A0A0A]"
                   required
                 />
               </div>
@@ -120,7 +137,7 @@ export default function WithdrawPage() {
                   placeholder="10 Digits"
                   value={accountNumber}
                   onChange={(e) => setAccountNumber(e.target.value)}
-                  className="w-full border border-[#E4E4E4] p-3 text-xs font-mono bg-white focus:outline-none focus:border-[#0055FF]"
+                  className="w-full border border-[#E4E4E4] p-3 text-xs font-mono bg-white focus:outline-none focus:border-[#0A0A0A]"
                   required
                   maxLength={10}
                 />
@@ -131,15 +148,7 @@ export default function WithdrawPage() {
               <Banknote className="w-5 h-5 text-[#0055FF] shrink-0" />
               <div className="text-[10px] text-[#6B7280] leading-relaxed">
                 <span className="font-bold text-[#0A0A0A] block uppercase mb-1">Paystack Payout Protocol</span>
-                Remittances are processed to verified personal banking coordinates using the Paystack Transfers API.
-              </div>
-            </div>
-
-            <div className="bg-[#C43D3D]/5 border border-[#C43D3D]/20 p-4 flex items-start space-x-3">
-              <AlertTriangle className="w-5 h-5 text-[#C43D3D] shrink-0" />
-              <div className="text-[10px] text-[#6B7280] leading-relaxed">
-                <span className="font-bold text-[#C43D3D] block mb-1 uppercase">Regulatory Notice</span>
-                Withdrawal parameters are restricted to verified KYC profiles only. Unverified balance domains may encounter processing holds.
+                Remittances are processed to verified personal banking coordinates using the Paystack Transfers API for supported currencies.
               </div>
             </div>
 
@@ -149,7 +158,7 @@ export default function WithdrawPage() {
               className="w-full btn-institutional-primary flex items-center justify-center space-x-2"
             >
               <ArrowUpCircle className="w-4 h-4" />
-              <span>{isProcessing ? "Authenticating Instruction..." : "Confirm Paystack Withdrawal"}</span>
+              <span>{isProcessing ? "Authenticating Instruction..." : `Confirm Paystack Withdrawal (${selectedCurrency})`}</span>
             </button>
           </form>
         </Card>

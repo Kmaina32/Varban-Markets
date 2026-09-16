@@ -5,26 +5,30 @@ import { useState } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { ShieldCheck, Check, CreditCard } from "lucide-react";
-import { useUser, useFirestore } from "@/firebase";
+import { useUser, useFirestore, useDoc } from "@/firebase";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, increment } from "firebase/firestore";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { usePaystackPayment } from 'react-paystack';
 
+const PAYSTACK_CURRENCIES = ["USD", "NGN", "GHS", "ZAR", "KES"];
+
 export default function DepositPage() {
   const { user } = useUser();
   const db = useFirestore();
+  const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
+  
   const [amount, setAmount] = useState("5000");
+  const [selectedCurrency, setSelectedCurrency] = useState(profile?.currency || "USD");
   const [isProcessing, setIsProcessing] = useState(false);
   const [token, setToken] = useState<string | null>(null);
 
-  // Paystack Configuration
-  // Note: Public key should ideally be in an environment variable (NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY)
   const config = {
     reference: `DEP-${new Date().getTime()}-${Math.floor(Math.random() * 1000000)}`,
     email: user?.email || "trader@varbanmarkets.com",
-    amount: parseFloat(amount) * 100, // Paystack expects kobo/cents
-    publicKey: 'pk_test_56134b2f2939c05c08882585250325438864720', // Replace with live key in production
+    amount: parseFloat(amount) * 100,
+    publicKey: 'pk_test_56134b2f2939c05c08882585250325438864720',
+    currency: selectedCurrency,
   };
 
   const initializePayment = usePaystackPayment(config);
@@ -35,17 +39,16 @@ export default function DepositPage() {
 
     const amountNum = parseFloat(amount);
     
-    // Record the transaction conduit
     addDoc(collection(db, `users/${user.uid}/transactions`), {
       type: "Vault Deposit",
-      asset: "USD",
+      asset: selectedCurrency,
       amount: amountNum,
       status: "Confirmed",
       timestamp: serverTimestamp(),
       ref: reference.reference,
-      provider: "Paystack"
+      provider: "Paystack",
+      currency: selectedCurrency
     }).then(() => {
-      // Optimistically update the balance domains
       updateDoc(doc(db, "users", user.uid), {
         balance: increment(amountNum),
         equity: increment(amountNum)
@@ -99,24 +102,37 @@ export default function DepositPage() {
 
         <Card className="bg-white border-[#E4E4E4] p-8 shadow-sm">
           <form onSubmit={handleDepositClick} className="space-y-6">
-            <div>
-              <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Allocation Stake (USD)</label>
-              <input 
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-[#F7F7F5] border border-[#E4E4E4] p-4 text-xl font-mono font-bold focus:outline-none focus:border-[#0A0A0A]"
-                required
-                min="10"
-              />
-              <span className="text-[9px] text-[#6B7280] mt-2 block uppercase font-bold tracking-widest">Min: $10.00 / Processing via Paystack</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Stake Amount</label>
+                <input 
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="w-full bg-[#F7F7F5] border border-[#E4E4E4] p-4 text-xl font-mono font-bold focus:outline-none focus:border-[#0A0A0A]"
+                  required
+                  min="1"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Currency (Paystack)</label>
+                <select 
+                  value={selectedCurrency}
+                  onChange={(e) => setSelectedCurrency(e.target.value)}
+                  className="w-full bg-[#F7F7F5] border border-[#E4E4E4] p-4 text-xl font-mono font-bold appearance-none focus:outline-none focus:border-[#0A0A0A]"
+                >
+                  {PAYSTACK_CURRENCIES.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="bg-[#F7F7F5] border border-[#E4E4E4] p-4 flex items-start space-x-3">
               <CreditCard className="w-5 h-5 text-[#0055FF] shrink-0" />
               <div className="text-[10px] text-[#6B7280] leading-relaxed">
                 <span className="font-bold text-[#0A0A0A] block uppercase mb-1">Paystack Gateway</span>
-                All capital movements are processed under deterministic infrastructure handshakes via Paystack. Supports Card, Bank, and USSD.
+                All capital movements are processed under deterministic infrastructure handshakes via Paystack. Supported currencies: NGN, GHS, ZAR, KES, USD.
               </div>
             </div>
 
@@ -125,7 +141,7 @@ export default function DepositPage() {
               disabled={isProcessing}
               className="w-full btn-institutional-primary flex items-center justify-center space-x-2"
             >
-              {isProcessing ? "Awaiting Handshake..." : "Initiate Paystack Deposit"}
+              {isProcessing ? "Awaiting Handshake..." : `Initiate Paystack Deposit (${selectedCurrency})`}
             </button>
           </form>
         </Card>
