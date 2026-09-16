@@ -18,6 +18,8 @@ const STRICT_PATHS = [
   '/admin', '/admin/users', '/admin/transactions', '/admin/markets'
 ];
 
+const ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
+
 interface AuthedLayoutProps {
   children: React.ReactNode;
   title: string;
@@ -82,12 +84,19 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   };
 
   const isStrict = STRICT_PATHS.some(path => pathname === path || pathname?.startsWith(path + '/'));
+  const isAdminPath = pathname?.startsWith('/admin');
+  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
   useEffect(() => {
-    if (!loading && !user && isStrict) {
-      router.push('/login');
+    if (!loading) {
+      if (!user && isStrict) {
+        router.push('/login');
+      } else if (user && isAdminPath && !isAdmin) {
+        // Redirect unauthorized users away from admin paths
+        router.push('/dashboard');
+      }
     }
-  }, [user, loading, isStrict, router]);
+  }, [user, loading, isStrict, isAdminPath, isAdmin, router]);
 
   if (isTerminal) return <>{children}</>;
 
@@ -100,6 +109,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   }
 
   if (!user && isStrict) return null;
+  if (user && isAdminPath && !isAdmin) return null;
   if (!user) return <>{children}</>;
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;

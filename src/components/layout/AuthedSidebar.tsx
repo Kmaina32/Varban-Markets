@@ -19,12 +19,16 @@ interface AuthedSidebarProps {
   isMobile?: boolean;
 }
 
+const ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
+
 export default function AuthedSidebar({ onLinkClick, className, isMobile = false }: AuthedSidebarProps) {
   const pathname = usePathname();
   const { t } = useTranslation();
   const { user } = useUser();
   const db = useFirestore();
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
+
+  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
   const sections = [
     {
@@ -66,7 +70,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     }
   ];
 
-  // Admin access layer - always visible for prototype demonstration
+  // Admin access layer - only visible to authorized entities
   const adminSection = {
     title: "ADMINISTRATION",
     items: [
@@ -77,13 +81,18 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     ]
   };
 
-  const finalSections = [...sections, adminSection, {
+  const finalSections = [...sections];
+  if (isAdmin) {
+    finalSections.push(adminSection);
+  }
+  
+  finalSections.push({
     title: "SUPPORT",
     items: [
       { label: t('nav.help'), href: "/help", icon: HelpCircle },
       { label: t('nav.contact'), href: "/contact", icon: Mail },
     ]
-  }];
+  });
 
   if (isMobile) {
     return (
