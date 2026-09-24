@@ -4,8 +4,8 @@
 /**
  * @fileOverview AI Support Agent Flow for Varban Markets.
  * 
- * - supportChat - Handles the conversational AI logic for the support desk.
- * - SupportChatInput - Array of previous messages and the new prompt.
+ * - supportChat - A wrapper function that handles the conversational AI logic.
+ * - SupportChatInput - The input type for the supportChat flow.
  * - SupportChatOutput - The AI-generated response string.
  */
 
@@ -66,7 +66,23 @@ const supportChatPrompt = ai.definePrompt({
 User: {{message}}`,
 });
 
+const supportChatFlow = ai.defineFlow(
+  {
+    name: 'supportChatFlow',
+    inputSchema: SupportChatInputSchema,
+    outputSchema: SupportChatOutputSchema,
+  },
+  async (input) => {
+    const { output } = await supportChatPrompt(input);
+    return output || "I'm sorry, I couldn't process that request.";
+  }
+);
+
+/**
+ * Handles the conversational AI logic for the support desk.
+ * @param input Previous messages and the new prompt.
+ * @returns The AI-generated response string.
+ */
 export async function supportChat(input: SupportChatInput): Promise<SupportChatOutput> {
-  const { output } = await supportChatPrompt(input);
-  return output!;
+  return supportChatFlow(input);
 }
