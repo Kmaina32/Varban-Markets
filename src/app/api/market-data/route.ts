@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
  * to prevent rate-limit exhaustion on basic API plans.
  */
 
-const TWELVE_DATA_KEY = "a05d6e793a2341b59ca2fbc7e6098d79";
+const TWELVE_DATA_KEY = process.env.TWELVE_DATA_API_KEY;
 const BASE_URL = "https://api.twelvedata.com";
 
 // Simple in-memory cache for production prototype
@@ -22,6 +22,10 @@ export async function GET(req: NextRequest) {
 
   if (!symbol) {
     return NextResponse.json({ error: 'Symbol required' }, { status: 400 });
+  }
+
+  if (!TWELVE_DATA_KEY) {
+    return NextResponse.json({ error: 'Market data provider key not configured' }, { status: 500 });
   }
 
   const cacheKey = `${type}-${symbol}-${interval}-${outputsize}`;
