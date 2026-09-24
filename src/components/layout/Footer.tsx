@@ -10,7 +10,6 @@ export default function Footer() {
   const pathname = usePathname();
   const { user } = useUser();
   
-  // Suppress any footer render if path belongs to admin or strict operational domains
   if (pathname?.startsWith('/admin')) {
     return null;
   }
@@ -44,49 +43,53 @@ export default function Footer() {
               />
             </div>
             <p className="text-xs text-[#6B7280] leading-relaxed max-w-xs">
-              Institutional electronic trading infrastructure for synthetic and derivative markets.
+              Institutional electronic trading infrastructure for synthetic and derivative markets. Registered in Saint Lucia.
             </p>
           </div>
           
           <div className="grid grid-cols-2 gap-8 md:grid-cols-2 md:col-span-2">
             <div>
-              <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Markets</h4>
+              <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Trading</h4>
               <ul className="space-y-3 text-xs text-[#6B7280]">
-                <li><Link href="/markets" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Registry</Link></li>
-                <li><Link href="/how-it-works" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Process</Link></li>
-                <li><Link href="/technology" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Technology</Link></li>
+                <li><Link href="/markets" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Market Registry</Link></li>
+                <li><Link href="/how-it-works" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Execution Process</Link></li>
+                <li><Link href="/terms/trading-rules" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Trading Rules</Link></li>
+                <li><Link href="/terms/market-data" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Market Data</Link></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Support</h4>
+              <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Regulatory</h4>
               <ul className="space-y-3 text-xs text-[#6B7280]">
-                <li><Link href="/help" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Help Center</Link></li>
-                <li><Link href="/contact" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Contact</Link></li>
-                <li><Link href="/about" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">About Us</Link></li>
+                <li><Link href="/terms" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Client Agreement</Link></li>
+                <li><Link href="/terms/risk-disclosure" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Risk Disclosure</Link></li>
+                <li><Link href="/terms/aml-kyc" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">AML & KYC Policy</Link></li>
+                <li><Link href="/terms/privacy" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Privacy Policy</Link></li>
               </ul>
             </div>
           </div>
 
           <div>
-            <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Legal</h4>
+            <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Support</h4>
             <ul className="space-y-3 text-xs text-[#6B7280]">
-              <li><Link href="/risk-disclosure" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Risk Disclosure</Link></li>
-              <li><Link href="/technology" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Infrastructure</Link></li>
+              <li><Link href="/terms/fees" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Fees & Charges</Link></li>
+              <li><Link href="/terms/complaints" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Complaints</Link></li>
+              <li><Link href="/help" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Help Center</Link></li>
+              <li><Link href="/contact" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Contact Support</Link></li>
             </ul>
           </div>
         </div>
 
         <div className="pt-8 border-t border-[#E4E4E4] text-[10px] text-[#6B7280] space-y-4">
-          <div>
-            <span className="font-bold uppercase tracking-wider text-[#0A0A0A] block mb-2">Risk Warning</span>
-            <p className="leading-relaxed opacity-80">
-              Trading synthetic derivatives involves a high level of risk and may result in the loss of your invested capital. You should not commit funds you cannot afford to lose. All trades are settled over-the-counter based on proprietary pricing models.
+          <div className="bg-[#F7F7F5] p-6 border-l-4 border-[#C43D3D]">
+            <span className="font-bold uppercase tracking-wider text-[#C43D3D] block mb-2">High-Risk Investment Warning</span>
+            <p className="leading-relaxed opacity-80 uppercase font-bold text-[#0A0A0A] text-[9px]">
+              TRADING SYNTHETIC DERIVATIVES INVOLVES A HIGH LEVEL OF RISK AND MAY RESULT IN THE TOTAL LOSS OF INVESTED CAPITAL. YOU SHOULD NOT COMMIT FUNDS YOU CANNOT AFFORD TO LOSE. VARBAN MARKETS LTD OPERATES UNDER THE LAWS OF SAINT LUCIA. ALL TRANSACTIONS ARE SETTLED OVER-THE-COUNTER BASED ON DETERMINISTIC PRICING MODELS.
             </p>
           </div>
           <div className="flex flex-col md:flex-row justify-between items-center pt-4 space-y-4 md:space-y-0">
             <p className="tracking-wider uppercase text-[9px] font-bold">
-              &copy; {currentYear} Varban Markets. All rights reserved.
+              &copy; {currentYear} Varban Markets Ltd. Registered in Saint Lucia. All rights reserved.
             </p>
             <div className="flex space-x-6 text-[9px] font-bold uppercase tracking-widest text-[#0055FF]">
               <span>ISO 27001 Certified</span>

@@ -1,13 +1,16 @@
 import Link from "next/link";
-import { Shield, FileText, Lock, AlertTriangle, Scale, CheckCircle, ArrowRight } from "lucide-react";
+import { Scale, Shield, Lock, FileText, AlertTriangle, ArrowRight, Gavel } from "lucide-react";
 
 export default function TermsPage() {
   const navTabs = [
     { label: "General Terms", href: "/terms", active: true },
     { label: "Privacy Policy", href: "/terms/privacy", active: false },
     { label: "Risk Disclosure", href: "/terms/risk-disclosure", active: false },
-    { label: "AML & KYC Policy", href: "/terms/aml-kyc", active: false },
-    { label: "Order Execution", href: "/terms/order-execution", active: false },
+    { label: "AML & KYC", href: "/terms/aml-kyc", active: false },
+    { label: "Trading Rules", href: "/terms/trading-rules", active: false },
+    { label: "Fees & Charges", href: "/terms/fees", active: false },
+    { label: "Complaints", href: "/terms/complaints", active: false },
+    { label: "Market Data", href: "/terms/market-data", active: false },
   ];
 
   return (
@@ -18,23 +21,23 @@ export default function TermsPage() {
         <div className="border-b border-[#E4E4E4] pb-8 mb-8">
           <div className="flex items-center space-x-2 text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-2">
             <Scale className="w-4 h-4" />
-            <span>Legal Suite &mdash; 1 of 5</span>
+            <span>Legal Suite &mdash; 1 of 8</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-tight text-[#0A0A0A]">
-            General Terms of Service
+            Master Client Agreement
           </h1>
-          <p className="text-xs text-[#6B7280] mt-3 leading-relaxed max-w-3xl">
-            This Master Client Agreement governs your access to and use of Varban Markets financial trading platform, synthetic contract engine, mobile interfaces, and API services. Effective Date: January 1, 2026.
+          <p className="text-xs text-[#6B7280] mt-3 leading-relaxed max-w-3xl font-mono">
+            OPERATED BY VARBAN MARKETS LTD. REGISTERED IN SAINT LUCIA. GOVERNED BY THE LAWS OF SAINT LUCIA. EFFECTIVE AS OF JANUARY 2026.
           </p>
         </div>
 
         {/* Legal Suite Sub-Navigation */}
-        <div className="flex overflow-x-auto no-scrollbar space-x-2 border-b border-[#E4E4E4] pb-4 mb-10">
+        <div className="flex overflow-x-auto no-scrollbar space-x-2 border-b border-[#E4E4E4] pb-4 mb-10 sticky top-0 bg-[#F7F7F5] z-10">
           {navTabs.map((tab) => (
             <Link
               key={tab.href}
               href={tab.href}
-              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors border ${
+              className={`px-4 py-2 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap transition-colors border ${
                 tab.active
                   ? "bg-[#0A0A0A] text-white border-[#0A0A0A]"
                   : "bg-white text-[#6B7280] border-[#E4E4E4] hover:bg-[#F7F7F5] hover:text-[#0A0A0A]"
@@ -46,104 +49,76 @@ export default function TermsPage() {
         </div>
 
         {/* Content Body */}
-        <div className="bg-white border border-[#E4E4E4] p-8 md:p-12 space-y-10 shadow-sm text-xs leading-relaxed text-[#333333]">
+        <div className="bg-white border border-[#E4E4E4] p-8 md:p-12 space-y-12 shadow-sm text-[11px] leading-relaxed text-[#333333]">
           
-          {/* Section 1 */}
-          <section className="space-y-3">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2 flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-[#0055FF] text-white flex items-center justify-center text-[10px]">1</span>
-              Acceptance & Eligibility
+          <section className="bg-[#C43D3D]/5 border-l-4 border-[#C43D3D] p-6 space-y-3">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-[#C43D3D] flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" /> Section 1: Important Capital Warning
             </h2>
-            <p>
-              By opening an account, accessing, or transmitting binary option contracts on Varban Markets ("the Platform"), you ("the Client") acknowledge having read, understood, and agreed to be legally bound by these Terms.
+            <p className="font-bold text-[#0A0A0A]">
+              TRADING FINANCIAL DERIVATIVES INVOLVES SUBSTANTIAL RISK. YOU MAY LOSE SOME OR ALL OF THE FUNDS YOU COMMIT TO TRADING. VARBAN MARKETS DOES NOT GUARANTEE PROFITS, RETURNS, OR UNINTERRUPTED ACCESS TO MARKET DATA.
             </p>
-            <ul className="list-disc pl-5 space-y-1 text-[#6B7280]">
-              <li>You must be at least 18 years of age or the legal age of majority in your jurisdiction.</li>
-              <li>You must not reside in a prohibited jurisdiction (including United States, North Korea, Iran, or sanctions-listed countries).</li>
-              <li>You agree that all funds deposited originate from legitimate sources and belong solely to you.</li>
-            </ul>
           </section>
 
-          {/* Section 2 */}
-          <section className="space-y-3">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2 flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-[#0055FF] text-white flex items-center justify-center text-[10px]">2</span>
-              Account Operations & Security
+          <section className="space-y-4">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">
+              Section 2: Definitions & Scope
             </h2>
             <p>
-              Clients are responsible for maintaining the confidentiality of credentials, API keys, and 2FA tokens. Any order transmitted using valid Client credentials shall be deemed authorized and non-reversible.
+              In this Agreement, "Platform" refers to the Varban Markets electronic trading terminal, APIs, and associated funding conduits. "Applicable Law" refers to the laws and regulations of Saint Lucia, including the Electronic Transactions Act and the Consumer Protection Act.
             </p>
-            <div className="p-4 bg-[#F7F7F5] border-l-4 border-[#0055FF] space-y-1">
-              <span className="font-bold text-[#0A0A0A] block uppercase text-[10px]">Security Requirement</span>
-              <p className="text-[#6B7280]">
-                Varban Markets enforces mandatory Two-Factor Authentication (2FA) for withdrawal requests exceeding $1,000 USD equivalent.
-              </p>
-            </div>
           </section>
 
-          {/* Section 3 */}
-          <section className="space-y-3">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2 flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-[#0055FF] text-white flex items-center justify-center text-[10px]">3</span>
-              Option Contract Mechanics & Settlement
+          <section className="space-y-4">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">
+              Section 3: Eligibility & Jurisdictions
             </h2>
             <p>
-              Varban Markets provides fixed-outcome derivative contracts (CALL/PUT vectors). Outcome calculations use real-time market data feeds. 
+              Access is restricted to individuals who are at least 18 years of age and possess full legal capacity. Varban Markets may restrict access to residents of particular jurisdictions including the United States, Iran, North Korea, and other FATF high-risk territories.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-              <div className="p-4 border border-[#E4E4E4] bg-[#F7F7F5]">
-                <span className="font-bold text-[#16835B] block uppercase text-[10px] mb-1">Winning Contract Outcome</span>
-                <p className="text-[#6B7280]">
-                  If the settlement price satisfies the contract condition at expiry, the Client receives the full stake plus the designated payout percentage (typically 85%).
-                </p>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">
+              Section 4: Electronic Acceptance (Saint Lucia)
+            </h2>
+            <p>
+              Pursuant to the Saint Lucia Electronic Transactions Act, electronic acceptance of these Terms constitutes a binding agreement. A contract must not be denied legal effect solely because it is entered into through electronic communications.
+            </p>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">
+              Section 5: Account Security & Authority
+            </h2>
+            <p>
+              Users are solely responsible for maintaining the confidentiality of credentials. Any order transmitted using valid credentials shall be deemed authorized and non-reversible. Mandatory 2FA is required for withdrawals exceeding $1,000 USD equivalent.
+            </p>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">
+              Section 6: Limitation of Liability
+            </h2>
+            <p>
+              To the maximum extent permitted by Saint Lucia law, Varban Markets shall not be liable for indirect, incidental, or consequential losses including loss of opportunity or losses caused by internet disruptions or market data latency.
+            </p>
+          </section>
+
+          <div className="pt-10 border-t border-[#E4E4E4] flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-3">
+              <Gavel className="w-5 h-5 text-[#0055FF]" />
+              <div>
+                <span className="text-[10px] font-bold uppercase text-[#0A0A0A] block">Governing Law</span>
+                <span className="text-[9px] text-[#6B7280] uppercase tracking-widest">Saint Lucia Jurisdiction</span>
               </div>
-              <div className="p-4 border border-[#E4E4E4] bg-[#F7F7F5]">
-                <span className="font-bold text-[#C43D3D] block uppercase text-[10px] mb-1">Expired / Loss Outcome</span>
-                <p className="text-[#6B7280]">
-                  If the contract condition is unfulfilled at expiration, the Client forfeits the initial committed stake. Maximum deficit risk is capped at 100% of committed stake.
-                </p>
-              </div>
             </div>
-          </section>
-
-          {/* Section 4 */}
-          <section className="space-y-3">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2 flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-[#0055FF] text-white flex items-center justify-center text-[10px]">4</span>
-              Deposits, Withdrawals & Fees
-            </h2>
-            <p>
-              Deposits may be made via Cryptocurrencies (BTC, ETH, USDT-TRC20, SOL) or fiat bank transfers. Withdrawals are processed back to the original funding source where possible.
-            </p>
-            <ul className="list-disc pl-5 space-y-1 text-[#6B7280]">
-              <li>Minimum deposit threshold: $10.00 USD.</li>
-              <li>Minimum withdrawal threshold: $20.00 USD.</li>
-              <li>Varban Markets charges 0% commission on standard option execution. Blockchain network fees apply to crypto transactions.</li>
-            </ul>
-          </section>
-
-          {/* Section 5 */}
-          <section className="space-y-3">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2 flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-[#0055FF] text-white flex items-center justify-center text-[10px]">5</span>
-              Limitation of Liability & Indemnity
-            </h2>
-            <p>
-              Varban Markets shall not be held liable for losses resulting from market latency, Internet network disruptions, force majeure events, or unauthorized account compromise due to client negligence.
-            </p>
-          </section>
+            <Link href="/terms/privacy" className="btn-institutional-primary px-8 py-3 bg-[#0055FF] border-[#0055FF] hover:bg-[#0A0A0A]">
+              Next Policy &rarr;
+            </Link>
+          </div>
 
         </div>
-
-        {/* Footer Navigation Switcher */}
-        <div className="mt-8 flex justify-between items-center text-xs">
-          <span className="text-[#6B7280]">Legal Page 1 of 5</span>
-          <Link href="/terms/privacy" className="font-bold text-[#0055FF] hover:underline flex items-center gap-1">
-            <span>Next: Privacy & Data Protection Policy</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
       </div>
     </div>
   );
