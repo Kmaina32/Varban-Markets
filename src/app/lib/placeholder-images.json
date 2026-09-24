@@ -1,7 +1,7 @@
 
 {
   "hero": {
-    "url": "/assets/hero.png",
+    "url": "https://picsum.photos/seed/varban_hero/1920/1080",
     "width": 1920,
     "height": 1080,
     "hint": "professional terminal"
@@ -19,13 +19,13 @@
     "hint": "data server"
   },
   "auth": {
-    "url": "/assets/auth.png",
+    "url": "https://picsum.photos/seed/varban_auth/1080/1920",
     "width": 1080,
     "height": 1920,
     "hint": "modern architecture"
   },
   "logo": {
-    "url": "/assets/logo.png",
+    "url": "https://picsum.photos/seed/varban_logo/180/40",
     "width": 180,
     "height": 40,
     "hint": "company logo"

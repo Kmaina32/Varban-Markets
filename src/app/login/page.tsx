@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useAuth } from "@/firebase";
 import placeholderImages from "@/app/lib/placeholder-images.json";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ShieldCheck } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -43,16 +43,17 @@ export default function LoginPage() {
         <div className="hidden lg:block w-1/2 relative">
           <Image
             src={placeholderImages.auth.url}
-            alt="Varban Background"
+            alt="Varban Markets Infrastructure"
             fill
             className="object-cover"
+            priority
             data-ai-hint={placeholderImages.auth.hint}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
+          <div className="absolute inset-0 bg-white/5"></div>
           <div className="absolute bottom-12 left-12 right-12 z-10">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF] block mb-2">Welcome Back</span>
             <h2 className="text-2xl font-bold uppercase text-[#0A0A0A] tracking-tight leading-tight">
-              Sign in to your trading account
+              Sign in to your trading account.
             </h2>
             <div className="w-12 h-1 bg-[#0055FF] mt-4"></div>
           </div>
@@ -112,13 +113,18 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full btn-institutional-primary py-4 shadow-sm"
             >
-              {loading ? "Signing in..." : "Log in to Account"}
+              {loading ? "Logging in..." : "Log in to Account"}
             </button>
           </form>
 
           <div className="mt-10 pt-6 border-t border-[#E4E4E4] text-center">
-            <span className="text-[11px] text-[#6B7280] uppercase tracking-wide">New here? </span>
+            <span className="text-[11px] text-[#6B7280] uppercase tracking-wide">New to the platform? </span>
             <Link href="/register" className="text-[11px] font-bold text-[#0A0A0A] uppercase tracking-widest underline decoration-[#0055FF] decoration-2 underline-offset-4 ml-1">Create Account</Link>
+          </div>
+
+          <div className="mt-8 flex items-center justify-center space-x-2 opacity-50">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#16835B]" />
+            <span className="text-[8px] font-bold uppercase tracking-widest text-[#6B7280]">Safe and Secure Connection</span>
           </div>
         </div>
       </div>

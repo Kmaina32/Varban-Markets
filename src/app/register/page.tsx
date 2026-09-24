@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -9,6 +10,7 @@ import { doc, setDoc, collection, query, where, getDocs, limit } from "firebase/
 import { useAuth, useFirestore } from "@/firebase";
 import { Check, ShieldCheck, User, Mail, Lock, ChevronDown, Eye, EyeOff, X, ArrowRight, ArrowLeft, FileText } from "lucide-react";
 import { COUNTRIES } from "@/app/lib/countries";
+import placeholderImages from "@/app/lib/placeholder-images.json";
 import { cn } from "@/app/lib/utils";
 
 export default function UnifiedSignupPage() {
@@ -167,16 +169,18 @@ export default function UnifiedSignupPage() {
         {/* Left Side: Image (Desktop only) */}
         <div className="hidden lg:block w-1/2 relative">
           <Image
-            src="/assets/auth.png"
-            alt="Varban Background"
+            src={placeholderImages.auth.url}
+            alt="Varban Markets Background"
             fill
             className="object-cover"
+            priority
+            data-ai-hint={placeholderImages.auth.hint}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
+          <div className="absolute inset-0 bg-white/5"></div>
           <div className="absolute bottom-12 left-12 right-12 z-10">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF] block mb-2">Create Account</span>
             <h2 className="text-2xl font-bold uppercase text-[#0A0A0A] tracking-tight leading-tight">
-              Join thousands of traders worldwide
+              Join thousands of traders worldwide.
             </h2>
             <div className="w-12 h-1 bg-[#0055FF] mt-4"></div>
           </div>
