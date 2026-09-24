@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/image";
-import { Mail, ShieldCheck, MapPin, Phone, Send, Check, MessageCircle } from "lucide-react";
+import { Mail, ShieldCheck, MapPin, Phone, Send, Check } from "lucide-react";
 import { useUser, useFirestore } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import ChatSupport from "@/components/ChatSupport";
 
 export default function ContactPage() {
   const { user } = useUser();
@@ -38,7 +38,7 @@ export default function ContactPage() {
       });
       setSubmitted(true);
     } catch (err) {
-      alert("Transmission failure: Security handshake interrupted.");
+      alert("Transmission failure: Connection interrupted.");
     } finally {
       setStatus("idle");
     }
@@ -52,17 +52,17 @@ export default function ContactPage() {
             <div>
               <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.2em] block mb-4">{t('nav.contact')}</span>
               <h1 className="text-4xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display leading-tight">
-                Institutional Support Desk.
+                Support Desk.
               </h1>
               <p className="text-sm text-[#6B7280] mt-6 leading-relaxed">
-                Access our global support network for technical assistance, account inquiries, or institutional partnerships.
+                Our team is available 24/7 for technical help, account questions, or institutional partnerships.
               </p>
             </div>
 
             <div className="space-y-8">
               {[
-                { icon: Mail, title: "Electronic Mail", detail: "desk@varbanmarkets.com" },
-                { icon: Phone, title: "Global Phone Line", detail: "+44 (0) 20 7946 0122" },
+                { icon: Mail, title: "Email", detail: "desk@varbanmarkets.com" },
+                { icon: Phone, title: "Phone Line", detail: "+44 (0) 20 7946 0122" },
                 { icon: MapPin, title: "London Headquarters", detail: "25 Bank Street, Canary Wharf, London E14 5JP" }
               ].map((item, idx) => (
                 <div key={idx} className="flex items-start space-x-4">
@@ -78,9 +78,9 @@ export default function ContactPage() {
             {user && (
               <div className="bg-white border border-[#E4E4E4] p-6 border-b-4 border-b-[#0055FF] shadow-sm">
                 <ShieldCheck className="w-8 h-8 text-[#0055FF] mb-4" />
-                <h4 className="text-xs font-bold uppercase tracking-wider mb-2 text-[#0A0A0A]">Priority Account Status</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider mb-2 text-[#0A0A0A]">Priority Help</h4>
                 <p className="text-[10px] text-[#6B7280] leading-relaxed">
-                  Authenticated workspace members receive priority status in the support queue for rapid resolution.
+                  As an active member, your messages are moved to the front of our support queue.
                 </p>
               </div>
             )}
@@ -92,25 +92,25 @@ export default function ContactPage() {
                 <div className="w-12 h-12 bg-[#16835B]/10 border border-[#16835B] rounded-full flex items-center justify-center mx-auto mb-4">
                   <Check className="w-6 h-6 text-[#16835B]" />
                 </div>
-                <h3 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A]">Message Transmitted</h3>
+                <h3 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A]">Message Sent</h3>
                 <p className="text-xs text-[#6B7280] leading-relaxed max-w-sm mx-auto">
-                  Your inquiry has been logged in the support ledger. Our desk will respond via email shortly.
+                  We have received your message. Our team will get back to you by email shortly.
                 </p>
                 <button 
                   onClick={() => setSubmitted(false)} 
                   className="text-[10px] font-bold text-[#0A0A0A] uppercase tracking-widest underline mt-4"
                 >
-                  Send Another Inquiry
+                  Send Another Message
                 </button>
               </div>
             ) : (
               <div className="bg-white border border-[#E4E4E4] p-8 shadow-sm">
                 <div className="border-b border-[#E4E4E4] pb-6 mb-8">
                   <h2 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A]">
-                    Submit an Inquiry
+                    Send a Message
                   </h2>
                   <p className="text-[11px] text-[#6B7280] mt-2 uppercase tracking-wider font-bold">
-                    Direct access to the Varban matching engine support desk.
+                    Direct access to the Varban support team.
                   </p>
                 </div>
 
@@ -161,7 +161,7 @@ export default function ContactPage() {
                       value={formData.message}
                       onChange={(e) => setFormData({...formData, message: e.target.value})}
                       className="w-full text-xs p-3 border border-[#E4E4E4] focus:outline-none focus:border-[#0A0A0A] bg-[#F7F7F5]" 
-                      placeholder="Describe your inquiry in detail..."
+                      placeholder="How can we help you?"
                     ></textarea>
                   </div>
 
@@ -170,9 +170,9 @@ export default function ContactPage() {
                     disabled={status === 'loading'}
                     className="w-full btn-institutional-primary flex items-center justify-center space-x-2 py-4"
                   >
-                    {status === 'loading' ? "Transmitting..." : (
+                    {status === 'loading' ? "Sending..." : (
                       <>
-                        <span>Transmit Message</span>
+                        <span>Send Message</span>
                         <Send className="w-3.5 h-3.5" />
                       </>
                     )}
@@ -184,13 +184,7 @@ export default function ContactPage() {
         </div>
       </div>
 
-      {/* Floating Chat Support Trigger */}
-      <button 
-        onClick={() => alert("Initializing Secure Chat Handshake...")}
-        className="fixed bottom-8 right-8 w-14 h-14 bg-white text-[#0A0A0A] flex items-center justify-center shadow-2xl hover:bg-[#0055FF] hover:text-white transition-all z-[100] border-2 border-[#E4E4E4]"
-      >
-        <MessageCircle className="w-6 h-6" />
-      </button>
+      <ChatSupport />
     </div>
   );
 }

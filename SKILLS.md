@@ -16,6 +16,7 @@ This document serves as the primary instruction set for all code and content gen
 - **Images**: Always use full-color images. No grayscale filters.
 - **Borders**: Use subtle borders (`#E4E4E4`) to define structure rather than heavy shadows or dark blocks.
 - **Typography**: Strictly upright (no italics). Use weight and tracking for hierarchy.
+- **Professional Pages**: Footer/Legal pages must be icon-free and use minimalist, text-first layouts without heavy containers.
 
 ## 3. COMPONENT PREFERENCES
 - Use ShadCN for structural components.
