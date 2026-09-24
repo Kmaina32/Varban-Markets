@@ -18,10 +18,24 @@
         "email": { "type": "string" },
         "phone": { "type": "string" },
         "country": { "type": "string" },
-        "referralCode": { "type": "string", "description": "Unique referral code for this user." },
-        "referredBy": { "type": "string", "description": "UID of the user who referred this trader." }
+        "role": { "type": "string", "enum": ["Trader", "Admin"] },
+        "referralCode": { "type": "string" },
+        "referredBy": { "type": "string" },
+        "openRisk": { "type": "number" },
+        "dailyPL": { "type": "number" }
       },
       "required": ["balance", "verificationStatus", "currency"]
+    },
+    "UserCryptoWallet": {
+      "title": "User Crypto Wallet",
+      "description": "Assigned blockchain deposit addresses for a user.",
+      "type": "object",
+      "properties": {
+        "asset": { "type": "string" },
+        "network": { "type": "string" },
+        "address": { "type": "string" },
+        "assignedAt": { "type": "string", "format": "date-time" }
+      }
     },
     "Position": {
       "title": "Trade Position",
@@ -33,10 +47,11 @@
         "entryPrice": { "type": "number" },
         "currentPrice": { "type": "number" },
         "stake": { "type": "number" },
-        "expiry": { "type": "string" },
+        "duration": { "type": "string" },
         "status": { "type": "string", "enum": ["Open", "Closed"] },
         "profit": { "type": "number" },
-        "timestamp": { "type": "string", "format": "date-time" }
+        "timestamp": { "type": "string", "format": "date-time" },
+        "settledAt": { "type": "string", "format": "date-time" }
       }
     },
     "Transaction": {
@@ -46,11 +61,16 @@
       "properties": {
         "type": { "type": "string" },
         "asset": { "type": "string" },
+        "network": { "type": "string" },
         "amount": { "type": "number" },
-        "status": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Review", "Approved", "Confirmed", "Rejected"] },
         "timestamp": { "type": "string", "format": "date-time" },
         "ref": { "type": "string" },
-        "currency": { "type": "string" }
+        "txHash": { "type": "string" },
+        "destinationAddress": { "type": "string" },
+        "currency": { "type": "string" },
+        "fee": { "type": "number" },
+        "netAmount": { "type": "number" }
       }
     },
     "Notification": {
@@ -77,8 +97,7 @@
         "status": { "type": "string", "enum": ["New", "Read", "Replied"] },
         "timestamp": { "type": "string", "format": "date-time" },
         "userId": { "type": "string" }
-      },
-      "required": ["fullName", "email", "message", "status", "timestamp"]
+      }
     }
   },
   "auth": {
@@ -88,6 +107,10 @@
     "/users/{userId}": {
       "schema": "UserProfile",
       "description": "Primary user profile and balance data"
+    },
+    "/users/{userId}/crypto_wallets/{walletId}": {
+      "schema": "UserCryptoWallet",
+      "description": "Assigned user deposit addresses"
     },
     "/users/{userId}/positions/{posId}": {
       "schema": "Position",
