@@ -1,7 +1,7 @@
 
 /**
  * @fileOverview Institutional Multi-Language Dictionary Matrix for Varban Markets.
- * Updated with Paystack-supported currency labels.
+ * Updated with Paystack-supported currency labels and Admin Inbox terms.
  */
 
 export type LocaleCode = 'en' | 'fr' | 'es' | 'pt' | 'zh-CN';
@@ -41,7 +41,8 @@ export const DICTIONARY = {
       adminOverview: 'Admin Overview',
       adminUsers: 'User Management',
       adminLedger: 'Global Ledger',
-      adminMarkets: 'Market Control'
+      adminMarkets: 'Market Control',
+      adminInbox: 'Support Inbox'
     },
     trading: {
       setup: 'TRADE SETTINGS',
@@ -189,7 +190,8 @@ export const DICTIONARY = {
       adminOverview: 'Aperçu Admin',
       adminUsers: 'Gestion Utilisateurs',
       adminLedger: 'Grand Livre Global',
-      adminMarkets: 'Contrôle Marché'
+      adminMarkets: 'Contrôle Marché',
+      adminInbox: 'Boîte de réception support'
     },
     trading: {
       setup: 'CONFIGURATION',

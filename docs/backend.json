@@ -64,6 +64,21 @@
         "isUnread": { "type": "boolean" },
         "timestamp": { "type": "string", "format": "date-time" }
       }
+    },
+    "ContactMessage": {
+      "title": "Contact Message",
+      "description": "User inquiry or support request.",
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string" },
+        "email": { "type": "string" },
+        "topic": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["New", "Read", "Replied"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string" }
+      },
+      "required": ["fullName", "email", "message", "status", "timestamp"]
     }
   },
   "auth": {
@@ -89,6 +104,10 @@
     "/users/{userId}/watchlist/{symbol}": {
       "schema": { "type": "object", "properties": { "symbol": { "type": "string" } } },
       "description": "User favorite instruments"
+    },
+    "/contact_messages/{msgId}": {
+      "schema": "ContactMessage",
+      "description": "Global inbox for platform inquiries"
     }
   }
 }
