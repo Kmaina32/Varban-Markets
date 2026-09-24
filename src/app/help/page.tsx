@@ -110,7 +110,7 @@ export default function HelpPage() {
                 <p className="text-[11px] text-[#6B7280] leading-relaxed">
                   {guide.desc}
                 </p>
-                <div className="mt-4 flex items-center text-[9px] font-bold uppercase tracking-widest text-[#0055FF] opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="mt-4 flex items-center text-[9px] font-bold uppercase tracking-widest text-[#0055FF]">
                   <span>View Documentation</span>
                   <ArrowRight className="ml-1.5 w-3 h-3" />
                 </div>
