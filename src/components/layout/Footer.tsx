@@ -86,8 +86,8 @@ export default function Footer() {
               &copy; {currentYear} Varban Markets Ltd. Registered in Saint Lucia. All rights reserved.
             </p>
             <div className="flex space-x-6 text-[9px] font-bold uppercase tracking-widest text-[#0055FF]">
-              <span>Secure Platform</span>
-              <span>PCI-DSS Compliant</span>
+              <span>ISO/IEC 27001:2022</span>
+              <span>PCI-DSS Level 1 v4.0</span>
             </div>
           </div>
         </div>
