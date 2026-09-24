@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -10,7 +9,7 @@ const STRICT_PATHS = [
   '/orders', '/history', '/watchlist', '/wallet', 
   '/deposit', '/withdraw', '/transactions', '/account', 
   '/verification', '/security', '/notifications', '/preferences',
-  '/referral', '/admin', '/login', '/register'
+  '/referral', '/admin', '/login', '/register', '/markets'
 ];
 
 export default function Footer() {

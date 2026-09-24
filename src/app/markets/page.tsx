@@ -1,8 +1,13 @@
 "use client";
 
+/**
+ * @fileOverview Institutional Market Registry.
+ * Shared page that renders within the authenticated workspace context for auth persistence.
+ */
+
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Search, Sliders, Star, LayoutDashboard } from "lucide-react";
+import { Search, Sliders, Star } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
 import { Button } from "@/components/ui/button";
@@ -17,15 +22,13 @@ import {
 } from "@/components/ui/table";
 import { useUser, useFirestore, useCollection } from "@/firebase";
 import { doc, setDoc, deleteDoc, collection } from "firebase/firestore";
-
-/**
- * @fileOverview Institutional Market Registry.
- * Shared page that renders in the public layout context.
- */
+import AuthedLayout from "@/components/layout/AuthedLayout";
+import { useTranslation } from "@/app/lib/i18n-context";
 
 export default function MarketsPage() {
   const { user } = useUser();
   const db = useFirestore();
+  const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [marketPrices, setMarketPrices] = useState<Record<string, { price: number; percent: number; status: string }>>({});
@@ -89,36 +92,18 @@ export default function MarketsPage() {
     };
   }, []);
 
-  const categories = ["All", "Forex", "Equities", "Digital Assets", "Commodities"];
+  const categories = ["All", "Forex", "Equities", "Crypto", "Commodities"];
 
   const filteredInstruments = AVAILABLE_INSTRUMENTS.filter((inst) => {
-    const matchesCategory = selectedCategory === "All" || inst.category === selectedCategory;
+    const matchesCategory = selectedCategory === "All" || inst.category === selectedCategory || (selectedCategory === 'Crypto' && inst.category === 'Crypto');
     const matchesSearch = inst.symbol.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           inst.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
   return (
-    <div className="bg-[#F7F7F5] min-h-screen py-16 px-4">
-      <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Header Branding */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-[#E4E4E4] pb-8">
-          <div>
-            <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.2em] block mb-2">Instrument Registry</span>
-            <h1 className="text-3xl font-bold uppercase tracking-tight text-[#0A0A0A]">Global Market Feed</h1>
-            <p className="text-xs text-[#6B7280] mt-3 leading-relaxed max-w-xl">
-              Monitor live quotes across all supported asset domains. Authenticated traders can manage their watchlist and access the execution terminal directly.
-            </p>
-          </div>
-          {user && (
-            <Link href="/dashboard" className="btn-institutional-secondary flex items-center gap-2">
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>Back to Dashboard</span>
-            </Link>
-          )}
-        </div>
-
+    <AuthedLayout title={t('nav.markets')} subtitle="Market Registry & List">
+      <div className="space-y-8">
         {errorStatus && (
           <div className="p-3 bg-[#FCF1F1] border border-[#C43D3D] text-[10px] uppercase font-bold text-[#C43D3D]">
             {errorStatus}
@@ -219,6 +204,6 @@ export default function MarketsPage() {
           </Table>
         </Card>
       </div>
-    </div>
+    </AuthedLayout>
   );
 }
