@@ -1,6 +1,6 @@
 /**
  * @fileOverview Institutional Market Data Abstraction Layer.
- * Integrated with Alpha Vantage API for professional equities, forex, and crypto data.
+ * Integrated with Alpha Vantage API for professional equities, forex, crypto, and technical indicators.
  */
 
 export interface PriceSnapshot {
@@ -24,21 +24,25 @@ export interface HistoricalBar {
   volume?: number;
 }
 
+export interface TechnicalIndicatorPoint {
+  time: number;
+  value: number;
+}
+
 interface MarketDataProvider {
   getLivePrice(symbol: string): Promise<PriceSnapshot>;
   getHistoricalBars(symbol: string): Promise<HistoricalBar[]>;
+  getTechnicalIndicator(functionName: string, symbol: string, interval: string, timePeriod: number): Promise<TechnicalIndicatorPoint[]>;
 }
 
 const ALPHA_VANTAGE_KEY = "48SDEBM5X6L6WBVV";
 const BASE_URL = "https://www.alphavantage.co/query";
 
 class AlphaVantageDataProvider implements MarketDataProvider {
-  // Map internal symbols to Alpha Vantage query parameters
   private getParams(symbol: string, functionType: 'LIVE' | 'HISTORY'): string {
-    const interval = "1min"; // Best for "live" feel on free/standard keys
+    const interval = "1min"; 
     
     if (symbol.includes('USD') && !['BTCUSD', 'ETHUSD'].includes(symbol)) {
-      // Forex (e.g., EURUSD, XAUUSD)
       const from = symbol.substring(0, 3);
       const to = symbol.substring(3, 6);
       if (functionType === 'LIVE') {
@@ -46,14 +50,12 @@ class AlphaVantageDataProvider implements MarketDataProvider {
       }
       return `function=FX_INTRADAY&from_symbol=${from}&to_symbol=${to}&interval=${interval}`;
     } else if (['BTCUSD', 'ETHUSD'].includes(symbol)) {
-      // Crypto
       const coin = symbol.substring(0, 3);
       if (functionType === 'LIVE') {
         return `function=CURRENCY_EXCHANGE_RATE&from_currency=${coin}&to_currency=USD`;
       }
       return `function=CRYPTO_INTRADAY&symbol=${coin}&market=USD&interval=${interval}`;
     } else {
-      // Equities (AAPL, NVDA)
       if (functionType === 'LIVE') {
         return `function=GLOBAL_QUOTE&symbol=${symbol}`;
       }
@@ -68,10 +70,9 @@ class AlphaVantageDataProvider implements MarketDataProvider {
       const data = await response.json();
 
       if (data["Note"] || data["Information"]) {
-        throw new Error("Rate limit or API restriction encountered.");
+        throw new Error("Rate limit encountered.");
       }
 
-      // Handle GLOBAL_QUOTE (Stocks)
       if (data["Global Quote"]) {
         const q = data["Global Quote"];
         return {
@@ -87,13 +88,12 @@ class AlphaVantageDataProvider implements MarketDataProvider {
         };
       }
 
-      // Handle Realtime Exchange Rate (Forex/Crypto)
       if (data["Realtime Currency Exchange Rate"]) {
         const r = data["Realtime Currency Exchange Rate"];
         const price = parseFloat(r["5. Exchange Rate"]);
         return {
           price: price,
-          change: 0, // Not provided directly in this endpoint
+          change: 0,
           changePercent: 0,
           open: price,
           high: price,
@@ -104,10 +104,8 @@ class AlphaVantageDataProvider implements MarketDataProvider {
         };
       }
 
-      throw new Error("Invalid response format");
+      throw new Error("Invalid response");
     } catch (error) {
-      console.warn(`Alpha Vantage Error for ${symbol}:`, error);
-      // Fallback to a secondary calculation if live quote fails (derive from intraday)
       return this.deriveLiveFromHistory(symbol);
     }
   }
@@ -155,6 +153,30 @@ class AlphaVantageDataProvider implements MarketDataProvider {
       return [];
     }
   }
+
+  async getTechnicalIndicator(functionName: string, symbol: string, interval: string, timePeriod: number): Promise<TechnicalIndicatorPoint[]> {
+    try {
+      // Map timeframe to Alpha Vantage expected interval strings
+      const alphaInterval = interval === '1D' ? 'daily' : interval.replace('m', 'min');
+      
+      const response = await fetch(`${BASE_URL}?function=${functionName}&symbol=${symbol}&interval=${alphaInterval}&time_period=${timePeriod}&series_type=close&apikey=${ALPHA_VANTAGE_KEY}`);
+      const data = await response.json();
+
+      const seriesKey = Object.keys(data).find(k => k.toLowerCase().includes('technical analysis'));
+      if (!seriesKey) return [];
+
+      const series = data[seriesKey];
+      return Object.entries(series).map(([time, val]: [string, any]) => {
+        return {
+          time: new Date(time).getTime() / 1000,
+          value: parseFloat(Object.values(val)[0] as string)
+        };
+      }).sort((a, b) => a.time - b.time);
+    } catch (e) {
+      console.warn(`Indicator load failed for ${functionName}:`, e);
+      return [];
+    }
+  }
 }
 
 class MockMarketDataProvider implements MarketDataProvider {
@@ -184,9 +206,12 @@ class MockMarketDataProvider implements MarketDataProvider {
       volume: 500000
     }));
   }
+
+  async getTechnicalIndicator(): Promise<TechnicalIndicatorPoint[]> {
+    return [];
+  }
 }
 
-// Strictly isolate mode selection behind environmental switches
 const mode = process.env.NEXT_PUBLIC_MARKET_DATA_MODE || 'live';
 const provider: MarketDataProvider = mode === 'mock' ? new MockMarketDataProvider() : new AlphaVantageDataProvider();
 
@@ -196,4 +221,8 @@ export const fetchLivePrice = async (symbol: string): Promise<PriceSnapshot> => 
 
 export const fetchHistoricalData = async (symbol: string): Promise<HistoricalBar[]> => {
   return provider.getHistoricalBars(symbol);
+};
+
+export const fetchTechnicalIndicator = async (indicator: string, symbol: string, interval: string, timePeriod: number): Promise<TechnicalIndicatorPoint[]> => {
+  return provider.getTechnicalIndicator(indicator, symbol, interval, timePeriod);
 };
