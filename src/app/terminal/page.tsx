@@ -1,3 +1,4 @@
+
 'use client';
 
 /**
@@ -326,7 +327,7 @@ export default function TerminalWorkspace() {
         </div>
       )}
 
-      <header className="relative h-14 md:h-16 border-b flex items-center justify-between px-3 md:px-6 shrink-0 z-50 shadow-sm transition-colors bg-white border-[#E4E4E4]">
+      <header className="relative h-12 md:h-16 border-b flex items-center justify-between px-3 md:px-6 shrink-0 z-50 shadow-sm transition-colors bg-white border-[#E4E4E4]">
         <div className="flex items-center space-x-2 md:space-x-4">
           <button onClick={() => setIsMobileNavOpen(true)} className="p-1.5 hover:bg-[#F7F7F5] transition-colors md:hidden">
             <Menu className="w-5 h-5" />
@@ -496,7 +497,7 @@ export default function TerminalWorkspace() {
           <main className={`flex-grow flex flex-col overflow-hidden relative ${isResizing ? 'select-none' : ''}`}>
             
             {/* Header Toolbar */}
-            <div className="flex items-center justify-between p-2 md:p-2.5 border-b z-40 shrink-0 transition-colors bg-white border-[#E4E4E4]">
+            <div className="flex items-center justify-between p-1.5 md:p-2.5 border-b z-40 shrink-0 transition-colors bg-white border-[#E4E4E4]">
               <div className="flex items-center space-x-2">
                 <button onClick={() => { setLeftTab('MARKETS'); setIsMobileMarketMenuOpen(true); }} className="flex items-center space-x-1.5 text-[9px] md:text-[10px] font-bold uppercase tracking-wider border px-2 py-1 transition-colors border-[#E4E4E4] bg-white hover:bg-[#F7F7F5]">
                   <BarChart3 className="w-3 md:w-3.5 h-3 md:h-3.5 text-[#0055FF]" /> <span>{activeInst.symbol}</span> <ChevronDown className="w-2.5 md:w-3 h-2.5 md:h-3 text-[#6B7280]" />
@@ -514,7 +515,7 @@ export default function TerminalWorkspace() {
             </div>
 
             {/* TECHNICAL CHART SETTINGS BAR - Optimized for Mobile height */}
-            <div className="flex items-center justify-between px-2 py-1 md:px-3 md:py-1.5 border-b shrink-0 z-30 transition-colors bg-[#F7F7F5] border-[#E4E4E4] overflow-x-auto no-scrollbar">
+            <div className="flex items-center justify-between px-2 py-0.5 md:px-3 md:py-1.5 border-b shrink-0 z-30 transition-colors bg-[#F7F7F5] border-[#E4E4E4] overflow-x-auto no-scrollbar">
               <div className="flex items-center space-x-1 md:space-x-1.5 shrink-0">
                 {/* Timeframes */}
                 <div className="flex bg-white border border-[#E4E4E4] rounded overflow-hidden">
@@ -522,7 +523,7 @@ export default function TerminalWorkspace() {
                     <button 
                       key={tf} 
                       onClick={() => setTimeframe(tf)}
-                      className={cn("px-1.5 py-0.5 md:px-2 md:py-1 text-[8px] md:text-[9px] font-bold border-r last:border-r-0 transition-colors", timeframe === tf ? "bg-[#0055FF] text-white" : "text-[#6B7280] hover:text-[#0A0A0A]")}
+                      className={cn("px-1 md:px-2 py-0.5 md:py-1 text-[8px] md:text-[9px] font-bold border-r last:border-r-0 transition-colors", timeframe === tf ? "bg-[#0055FF] text-white" : "text-[#6B7280] hover:text-[#0A0A0A]")}
                     >
                       {tf}
                     </button>
@@ -549,13 +550,13 @@ export default function TerminalWorkspace() {
                 {/* Indicators Toggle */}
                 <button 
                   onClick={() => setShowSMA(!showSMA)}
-                  className={cn("px-1.5 py-0.5 md:px-2 md:py-1 border text-[8px] md:text-[9px] font-bold uppercase rounded transition-all whitespace-nowrap", showSMA ? "bg-[#F59E0B] border-[#F59E0B] text-white" : "bg-white border-[#E4E4E4] text-[#6B7280]")}
+                  className={cn("px-1 md:px-2 py-0.5 md:py-1 border text-[8px] md:text-[9px] font-bold uppercase rounded transition-all whitespace-nowrap", showSMA ? "bg-[#F59E0B] border-[#F59E0B] text-white" : "bg-white border-[#E4E4E4] text-[#6B7280]")}
                 >
                   SMA
                 </button>
                 <button 
                   onClick={() => setShowEMA(!showEMA)}
-                  className={cn("px-1.5 py-0.5 md:px-2 md:py-1 border text-[8px] md:text-[9px] font-bold uppercase rounded transition-all whitespace-nowrap", showEMA ? "bg-[#8B5CF6] border-[#8B5CF6] text-white" : "bg-white border-[#E4E4E4] text-[#6B7280]")}
+                  className={cn("px-1 md:px-2 py-0.5 md:py-1 border text-[8px] md:text-[9px] font-bold uppercase rounded transition-all whitespace-nowrap", showEMA ? "bg-[#8B5CF6] border-[#8B5CF6] text-white" : "bg-white border-[#E4E4E4] text-[#6B7280]")}
                 >
                   EMA
                 </button>
@@ -585,8 +586,8 @@ export default function TerminalWorkspace() {
               </div>
             </div>
 
-            {/* MOBILE ACTION BUTTONS: COMPRESSED SPACING */}
-            <div className="md:hidden p-1.5 border-t grid grid-cols-2 gap-1.5 z-40 shadow-lg shrink-0 transition-colors bg-white border-[#E4E4E4]">
+            {/* MOBILE ACTION BUTTONS: FORCED INTO VIEWPORT */}
+            <div className="md:hidden p-1 border-t grid grid-cols-2 gap-1 z-40 shadow-lg shrink-0 transition-colors bg-white border-[#E4E4E4]">
               <button onClick={() => handleVectorClick("CALL")} className="py-2.5 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 rounded active:scale-[0.98]">
                 <TrendingUp className="w-4 h-4" /> <span>CALL VECTOR</span>
               </button>
