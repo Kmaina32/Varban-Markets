@@ -54,8 +54,8 @@ export default function TerminalWorkspace() {
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
 
   const [activeInst, setActiveInst] = useState<Instrument>(AVAILABLE_INSTRUMENTS[0]);
-  const [livePrice, setLivePrice] = useState<number>(activeInst.price);
-  const [liveMetrics, setLiveMetrics] = useState({ change: activeInst.change, percent: activeInst.changePercent });
+  const [livePrice, setLivePrice] = useState<number | null>(null);
+  const [liveMetrics, setLiveMetrics] = useState<{ change: number | null, percent: number | null }>({ change: null, percent: null });
   const [direction, setDirection] = useState<"CALL" | "PUT" | null>(null);
   const [stake, setStake] = useState<number>(activeInst.minStake);
   const [duration, setDuration] = useState<string>("5m");
@@ -104,7 +104,7 @@ export default function TerminalWorkspace() {
 
   // Automated contract settlement cycle simulation
   useEffect(() => {
-    if (!user || !db || !allPositions || allPositions.length === 0) return;
+    if (!user || !db || !allPositions || allPositions.length === 0 || livePrice === null) return;
     
     const openItems = allPositions.filter((p: any) => p.status === "Open");
     if (openItems.length === 0) return;
@@ -227,6 +227,8 @@ export default function TerminalWorkspace() {
     if (nextInst) {
       setActiveInst(nextInst);
       setStake(nextInst.minStake);
+      setLivePrice(null);
+      setLiveMetrics({ change: null, percent: null });
       setDirection(null);
       setReviewActive(false);
       setIsMobileMarketMenuOpen(false);
@@ -235,7 +237,7 @@ export default function TerminalWorkspace() {
 
   const handleExecute = (overrideDirection?: "CALL" | "PUT") => {
     const selectedVector = overrideDirection || direction;
-    if (!selectedVector) return;
+    if (!selectedVector || livePrice === null) return;
 
     if (accountMode === 'DEMO') {
       const currentDemoBal = demoBalance - stake;
@@ -431,9 +433,9 @@ export default function TerminalWorkspace() {
                     <span className="text-xs font-mono font-bold text-[#0055FF]">{activeInst.symbol}</span>
                   </div>
                   <div className="text-right font-mono">
-                    <span className="text-xs font-bold block">${livePrice.toFixed(2)}</span>
-                    <span className={cn("text-[9px]", liveMetrics.percent >= 0 ? "text-[#16835B]" : "text-[#0055FF]")}>
-                      {liveMetrics.percent >= 0 ? "+" : ""}{liveMetrics.percent}%
+                    <span className="text-xs font-bold block">{livePrice !== null ? `$${livePrice.toFixed(2)}` : "---"}</span>
+                    <span className={cn("text-[9px]", liveMetrics.percent !== null && liveMetrics.percent >= 0 ? "text-[#16835B]" : "text-[#0055FF]")}>
+                      {liveMetrics.percent !== null ? (liveMetrics.percent >= 0 ? "+" : "") + liveMetrics.percent + "%" : "---"}
                     </span>
                   </div>
                 </div>
@@ -476,8 +478,8 @@ export default function TerminalWorkspace() {
                   <div className="flex justify-between border-t border-dashed border-[#E4E4E4] pt-1.5"><span className="text-[#6B7280] uppercase font-bold">Total Settlement</span><span className="font-mono font-bold text-[#16835B]">${(stake * 1.85).toFixed(2)}</span></div>
                 </div>
 
-                <button onClick={() => handleExecute()} disabled={!direction} className={cn("w-full py-3 text-xs font-bold uppercase tracking-widest border flex items-center justify-center space-x-2 transition-all shadow-md", direction === "CALL" ? "bg-[#16835B] text-white border-[#16835B]" : direction === "PUT" ? "bg-[#0055FF] text-white border-[#0055FF]" : "bg-[#E4E4E4] text-[#6B7280]")}>
-                  <ShieldCheck className="w-4 h-4" /> <span>TRANSMIT {direction || 'VECTOR'} ORDER</span>
+                <button onClick={() => handleExecute()} disabled={!direction || livePrice === null} className={cn("w-full py-3 text-xs font-bold uppercase tracking-widest border flex items-center justify-center space-x-2 transition-all shadow-md", direction === "CALL" ? "bg-[#16835B] text-white border-[#16835B]" : direction === "PUT" ? "bg-[#0055FF] text-white border-[#0055FF]" : "bg-[#E4E4E4] text-[#6B7280]")}>
+                  <ShieldCheck className="w-4 h-4" /> <span>{livePrice === null ? "SYNCING FEED..." : `TRANSMIT ${direction || 'VECTOR'} ORDER`}</span>
                 </button>
               </div>
             )}
@@ -487,7 +489,7 @@ export default function TerminalWorkspace() {
                 {AVAILABLE_INSTRUMENTS.map((inst) => (
                   <button key={inst.symbol} onClick={() => handleSymbolChange(inst.symbol)} className={cn("w-full p-3.5 text-left transition-colors flex justify-between items-center group", activeInst.symbol === inst.symbol ? "bg-[#0055FF]/5 border-l-4 border-l-[#0055FF]" : "hover:bg-[#F7F7F5]")}>
                     <div><span className={cn("text-xs font-mono font-bold block", activeInst.symbol === inst.symbol ? "text-[#0055FF]" : "")}>{inst.symbol}</span><span className="text-[9px] text-[#6B7280] uppercase tracking-tighter">{inst.category}</span></div>
-                    <div className="text-right"><span className="text-[10px] font-mono font-bold block">${formatNumber(inst.price, { minimumFractionDigits: 2 })}</span><span className={cn("text-[9px] font-mono", inst.changePercent >= 0 ? "text-[#16835B]" : "text-[#0055FF]")}>{inst.changePercent >= 0 ? "+" : ""}{inst.changePercent}%</span></div>
+                    <div className="text-right"><span className="text-[10px] font-mono font-bold block">---</span><span className="text-[9px] font-mono">---%</span></div>
                   </button>
                 ))}
               </div>
@@ -506,8 +508,12 @@ export default function TerminalWorkspace() {
               </div>
               <div className="flex items-center space-x-2 text-right">
                 <div>
-                  <span className="text-[9px] md:text-sm font-mono font-bold block leading-none">{livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
-                  <span className={cn("text-[7px] md:text-[9px] font-mono font-bold block mt-0.5", liveMetrics.percent >= 0 ? "text-[#16835B]" : "text-[#0055FF]")}>{liveMetrics.percent >= 0 ? "+" : ""}{liveMetrics.percent}%</span>
+                  <span className="text-[9px] md:text-sm font-mono font-bold block leading-none">
+                    {livePrice !== null ? livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : "---"}
+                  </span>
+                  <span className={cn("text-[7px] md:text-[9px] font-mono font-bold block mt-0.5", liveMetrics.percent !== null && liveMetrics.percent >= 0 ? "text-[#16835B]" : "text-[#0055FF]")}>
+                    {liveMetrics.percent !== null ? (liveMetrics.percent >= 0 ? "+" : "") + liveMetrics.percent + "%" : "---"}
+                  </span>
                 </div>
                 <button onClick={() => setIsMobilePositionsOpen(!isMobilePositionsOpen)} className="md:hidden p-0.5 border text-[7px] font-bold uppercase tracking-wider flex items-center gap-0.5 border-[#E4E4E4] bg-white rounded">
                   <Layers className="w-2.5 h-2.5 text-[#0055FF]" /> <span>({activePositions.length})</span>

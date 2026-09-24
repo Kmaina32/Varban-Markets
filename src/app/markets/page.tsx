@@ -153,10 +153,10 @@ export default function MarketsPage() {
             <TableBody className="bg-white">
               {filteredInstruments.map((inst) => {
                 const live = marketPrices[inst.symbol];
-                const price = live ? live.price : inst.price;
-                const percent = live ? live.percent : inst.changePercent;
+                const price = live?.price;
+                const percent = live?.percent;
                 const status = live ? live.status : inst.status;
-                const isPositive = percent >= 0;
+                const isPositive = percent !== undefined ? percent >= 0 : true;
                 const starred = isInWatchlist(inst.symbol);
 
                 return (
@@ -179,10 +179,10 @@ export default function MarketsPage() {
                       {inst.category}
                     </TableCell>
                     <TableCell className="text-right font-mono font-bold text-[#0A0A0A]">
-                      {price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                      {price !== undefined ? price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : "---"}
                     </TableCell>
                     <TableCell className={`text-right font-mono font-bold ${isPositive ? "text-[#16835B]" : "text-[#C43D3D]"}`}>
-                      {isPositive ? "+" : ""}{percent}%
+                      {percent !== undefined ? (isPositive ? "+" : "") + percent + "%" : "---"}
                     </TableCell>
                     <TableCell className="text-center">
                       <span className="text-[9px] font-bold uppercase px-2 py-0.5 border border-[#16835B] text-[#16835B]">

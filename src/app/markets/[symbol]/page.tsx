@@ -27,8 +27,8 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
   const [isReviewing, setIsReviewing] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [tradeResult, setTradeResult] = useState<string | null>(null);
-  const [livePrice, setLivePrice] = useState<number>(inst.price);
-  const [livePercent, setLivePercent] = useState<number>(inst.changePercent);
+  const [livePrice, setLivePrice] = useState<number | null>(null);
+  const [livePercent, setLivePercent] = useState<number | null>(null);
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
 
   useEffect(() => {
@@ -103,12 +103,14 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
           <div className="flex items-center space-x-8">
             <div className="text-right">
               <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block">{t('dashboard.live')}</span>
-              <span className="text-lg font-mono font-bold text-[#0A0A0A]">{livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
+              <span className="text-lg font-mono font-bold text-[#0A0A0A]">
+                {livePrice !== null ? livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : "---"}
+              </span>
             </div>
             <div className="text-right">
               <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block">24h Change</span>
-              <span className={`text-xs font-mono font-bold ${livePercent >= 0 ? "text-[#16835B]" : "text-[#C43D3D]"}`}>
-                {livePercent >= 0 ? "+" : ""}{livePercent}%
+              <span className={`text-xs font-mono font-bold ${livePercent !== null && livePercent >= 0 ? "text-[#16835B]" : "text-[#C43D3D]"}`}>
+                {livePercent !== null ? (livePercent >= 0 ? "+" : "") + livePercent + "%" : "---"}
               </span>
             </div>
           </div>
