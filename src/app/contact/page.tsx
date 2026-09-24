@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from "react";
@@ -62,9 +61,9 @@ export default function ContactPage() {
 
             <div className="space-y-8">
               {[
-                { icon: Mail, title: "Email", detail: "desk@varbanmarkets.com" },
-                { icon: Phone, title: "Phone Line", detail: "+44 (0) 20 7946 0122" },
-                { icon: MapPin, title: "London Headquarters", detail: "25 Bank Street, Canary Wharf, London E14 5JP" }
+                { icon: Mail, title: "Email", detail: "support@varbanmarkets.com" },
+                { icon: Phone, title: "Phone Line", detail: "+1 758 452 9122" },
+                { icon: MapPin, title: "Saint Lucia Headquarters", detail: "Rodney Bayside Building, Rodney Bay, Gros Islet, Saint Lucia" }
               ].map((item, idx) => (
                 <div key={idx} className="flex items-start space-x-4">
                   <item.icon className="w-5 h-5 text-[#0055FF] shrink-0 mt-1" />

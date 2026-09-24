@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -145,7 +144,7 @@ export default function UnifiedSignupPage() {
     },
     {
       title: "7. Complaints Procedure",
-      content: "If you have a problem, email complaints@varbanmarkets.com with your order ID and a description. We aim to confirm receipt in 24 hours and resolve most issues within 14 business days."
+      content: "If you have a problem, email support@varbanmarkets.com with your order ID and a description. We aim to confirm receipt in 24 hours and resolve most issues within 14 business days."
     },
     {
       title: "8. Market Data",
@@ -262,7 +261,7 @@ export default function UnifiedSignupPage() {
                   </div>
                   <div>
                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Email Address</label>
-                    <input required name="email" value={formData.email} onChange={handleChange} type="email" className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none bg-white text-[#0A0A0A] focus:outline-none focus:border-[#0A0A0A]" placeholder="trader@varbanmarkets.com" />
+                    <input required name="email" value={formData.email} onChange={handleChange} type="email" className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none bg-white text-[#0A0A0A] focus:outline-none focus:border-[#0A0A0A]" placeholder="support@varbanmarkets.com" />
                   </div>
                   <div>
                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Phone Number</label>

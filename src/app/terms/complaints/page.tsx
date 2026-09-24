@@ -51,7 +51,7 @@ export default function ComplaintsPage() {
               1. How to Send a Complaint
             </h2>
             <p>
-              If you think there was a system error or a pricing mistake, you must email us at <strong className="text-[#0055FF]">complaints@varbanmarkets.com</strong>.
+              If you think there was a system error or a pricing mistake, you must email us at <strong className="text-[#0055FF]">support@varbanmarkets.com</strong>.
             </p>
             <div className="p-6 border border-[#E4E4E4] bg-[#F7F7F5] space-y-2">
               <span className="text-[10px] font-bold uppercase block text-[#0A0A0A]">What to include:</span>

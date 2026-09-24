@@ -13,9 +13,9 @@ export default function AboutContactPage() {
   ];
 
   const offices = [
-    { city: "London (Global HQ)", address: "25 Bank Street, Canary Wharf, London E14 5JP, United Kingdom", phone: "+44 (0) 20 7946 0912", email: "uk-desk@varbanmarkets.com" },
-    { city: "New York", address: "100 Wall Street, 18th Floor, New York, NY 10005, United States", phone: "+1 (212) 555-0198", email: "us-desk@varbanmarkets.com" },
-    { city: "Singapore", address: "8 Marina View, #22-01 Asia Square Tower 1, Singapore 018960", phone: "+65 6789 0123", email: "apac-desk@varbanmarkets.com" },
+    { city: "Saint Lucia (Global HQ)", address: "Rodney Bayside Building, Rodney Bay, Gros Islet, Saint Lucia", phone: "+1 758 452 9122", email: "support@varbanmarkets.com" },
+    { city: "London", address: "25 Bank Street, Canary Wharf, London E14 5JP, United Kingdom", phone: "+44 (0) 20 7946 0912", email: "support@varbanmarkets.com" },
+    { city: "Singapore", address: "8 Marina View, #22-01 Asia Square Tower 1, Singapore 018960", phone: "+65 6789 0123", email: "support@varbanmarkets.com" },
     { city: "Nairobi", address: "Delta Corner Towers, Ring Road Westlands, Nairobi, Kenya", phone: "+254 700 000 000", email: "support@varbanmarkets.com" },
   ];
 
