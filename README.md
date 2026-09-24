@@ -3,7 +3,7 @@
 ## PLATFORM OVERVIEW
 Varban Markets is a corporate electronic trading protocol engineered for advanced derivatives and synthetic index execution. The workspace utilizes a highly precise, low-friction white interface layout tuned for institutional operators who prioritize deterministic settlement boundaries and comprehensive ledger audibility.
 
---
+---
 
 ## 1. COMPLETED CORE IMPLEMENTATION MATRIX
 
