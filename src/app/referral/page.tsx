@@ -18,6 +18,7 @@ import {
 import { useUser, useDoc, useFirestore, useCollection } from "@/firebase";
 import { collection, query, where, orderBy } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
+import { cn } from "@/app/lib/utils";
 
 /**
  * @fileOverview Referral Management Portal.
