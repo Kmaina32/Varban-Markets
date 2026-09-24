@@ -314,7 +314,7 @@ export default function TerminalWorkspace() {
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden font-sans relative transition-colors duration-200 bg-white text-[#0A0A0A]">
+    <div className="h-screen h-[100dvh] flex flex-col overflow-hidden font-sans relative transition-colors duration-200 bg-white text-[#0A0A0A]">
       <TerminalTutorial />
       
       {isMobileNavOpen && (
@@ -496,77 +496,74 @@ export default function TerminalWorkspace() {
           <main className={`flex-grow flex flex-col overflow-hidden relative ${isResizing ? 'select-none' : ''}`}>
             
             {/* Header Toolbar */}
-            <div className="flex items-center justify-between p-2.5 border-b z-40 shrink-0 transition-colors bg-white border-[#E4E4E4]">
+            <div className="flex items-center justify-between p-2 md:p-2.5 border-b z-40 shrink-0 transition-colors bg-white border-[#E4E4E4]">
               <div className="flex items-center space-x-2">
-                <button onClick={() => { setLeftTab('MARKETS'); setIsMobileMarketMenuOpen(true); }} className="flex items-center space-x-1.5 text-[10px] font-bold uppercase tracking-wider border px-2.5 py-1 transition-colors border-[#E4E4E4] bg-white hover:bg-[#F7F7F5]">
-                  <BarChart3 className="w-3.5 h-3.5 text-[#0055FF]" /> <span>{activeInst.symbol}</span> <ChevronDown className="w-3 h-3 text-[#6B7280]" />
+                <button onClick={() => { setLeftTab('MARKETS'); setIsMobileMarketMenuOpen(true); }} className="flex items-center space-x-1.5 text-[9px] md:text-[10px] font-bold uppercase tracking-wider border px-2 py-1 transition-colors border-[#E4E4E4] bg-white hover:bg-[#F7F7F5]">
+                  <BarChart3 className="w-3 md:w-3.5 h-3 md:h-3.5 text-[#0055FF]" /> <span>{activeInst.symbol}</span> <ChevronDown className="w-2.5 md:w-3 h-2.5 md:h-3 text-[#6B7280]" />
                 </button>
               </div>
-              <div className="flex items-center space-x-3 text-right">
+              <div className="flex items-center space-x-2 md:space-x-3 text-right">
                 <div>
-                  <span className="text-xs md:text-sm font-mono font-bold block leading-none">{livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
-                  <span className={cn("text-[9px] font-mono font-bold block mt-0.5", liveMetrics.percent >= 0 ? "text-[#16835B]" : "text-[#0055FF]")}>{liveMetrics.percent >= 0 ? "+" : ""}{liveMetrics.percent}%</span>
+                  <span className="text-[10px] md:text-sm font-mono font-bold block leading-none">{livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
+                  <span className={cn("text-[8px] md:text-[9px] font-mono font-bold block mt-0.5", liveMetrics.percent >= 0 ? "text-[#16835B]" : "text-[#0055FF]")}>{liveMetrics.percent >= 0 ? "+" : ""}{liveMetrics.percent}%</span>
                 </div>
-                <button onClick={() => setIsMobilePositionsOpen(!isMobilePositionsOpen)} className="md:hidden p-1.5 border text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 border-[#E4E4E4] bg-white">
-                  <Layers className="w-3.5 h-3.5 text-[#0055FF]" /> <span>({activePositions.length})</span>
+                <button onClick={() => setIsMobilePositionsOpen(!isMobilePositionsOpen)} className="md:hidden p-1 border text-[8px] font-bold uppercase tracking-wider flex items-center gap-1 border-[#E4E4E4] bg-white rounded">
+                  <Layers className="w-3 h-3 text-[#0055FF]" /> <span>({activePositions.length})</span>
                 </button>
               </div>
             </div>
 
-            {/* TECHNICAL CHART SETTINGS BAR */}
-            <div className="flex items-center justify-between px-3 py-1.5 border-b shrink-0 z-30 transition-colors bg-[#F7F7F5] border-[#E4E4E4]">
-              <div className="flex items-center space-x-1.5">
+            {/* TECHNICAL CHART SETTINGS BAR - Optimized for Mobile height */}
+            <div className="flex items-center justify-between px-2 py-1 md:px-3 md:py-1.5 border-b shrink-0 z-30 transition-colors bg-[#F7F7F5] border-[#E4E4E4] overflow-x-auto no-scrollbar">
+              <div className="flex items-center space-x-1 md:space-x-1.5 shrink-0">
                 {/* Timeframes */}
                 <div className="flex bg-white border border-[#E4E4E4] rounded overflow-hidden">
                   {['1m', '5m', '15m', '1h', '1D'].map(tf => (
                     <button 
                       key={tf} 
                       onClick={() => setTimeframe(tf)}
-                      className={cn("px-2 py-1 text-[9px] font-bold border-r last:border-r-0 transition-colors", timeframe === tf ? "bg-[#0055FF] text-white" : "text-[#6B7280] hover:text-[#0A0A0A]")}
+                      className={cn("px-1.5 py-0.5 md:px-2 md:py-1 text-[8px] md:text-[9px] font-bold border-r last:border-r-0 transition-colors", timeframe === tf ? "bg-[#0055FF] text-white" : "text-[#6B7280] hover:text-[#0A0A0A]")}
                     >
                       {tf}
                     </button>
                   ))}
                 </div>
 
-                <div className="w-px h-4 bg-[#E4E4E4] mx-1"></div>
+                <div className="w-px h-3 md:h-4 bg-[#E4E4E4] mx-0.5 md:mx-1"></div>
 
                 {/* Chart Mode */}
                 <div className="flex bg-white border border-[#E4E4E4] rounded overflow-hidden">
-                  <button onClick={() => setChartMode('Candlestick')} className={cn("p-1.5 border-r transition-colors", chartMode === 'Candlestick' ? "bg-[#0055FF] text-white" : "text-[#6B7280]")}>
-                    <BarChart3 className="w-3 h-3" />
+                  <button onClick={() => setChartMode('Candlestick')} className={cn("p-1 md:p-1.5 border-r transition-colors", chartMode === 'Candlestick' ? "bg-[#0055FF] text-white" : "text-[#6B7280]")}>
+                    <BarChart3 className="w-2.5 md:w-3 h-2.5 md:h-3" />
                   </button>
-                  <button onClick={() => setChartMode('Line')} className={cn("p-1.5 border-r transition-colors", chartMode === 'Line' ? "bg-[#0055FF] text-white" : "text-[#6B7280]")}>
-                    <LineChart className="w-3 h-3" />
+                  <button onClick={() => setChartMode('Line')} className={cn("p-1 md:p-1.5 border-r transition-colors", chartMode === 'Line' ? "bg-[#0055FF] text-white" : "text-[#6B7280]")}>
+                    <LineChart className="w-2.5 md:w-3 h-2.5 md:h-3" />
                   </button>
-                  <button onClick={() => setChartMode('Area')} className={cn("p-1.5 transition-colors", chartMode === 'Area' ? "bg-[#0055FF] text-white" : "text-[#6B7280]")}>
-                    <AreaChart className="w-3 h-3" />
+                  <button onClick={() => setChartMode('Area')} className={cn("p-1 md:p-1.5 transition-colors", chartMode === 'Area' ? "bg-[#0055FF] text-white" : "text-[#6B7280]")}>
+                    <AreaChart className="w-2.5 md:w-3 h-2.5 md:h-3" />
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-1.5">
+              <div className="flex items-center space-x-1 md:space-x-1.5 shrink-0 ml-2">
                 {/* Indicators Toggle */}
                 <button 
                   onClick={() => setShowSMA(!showSMA)}
-                  className={cn("px-2 py-1 border text-[9px] font-bold uppercase rounded transition-all", showSMA ? "bg-[#F59E0B] border-[#F59E0B] text-white" : "bg-white border-[#E4E4E4] text-[#6B7280]")}
+                  className={cn("px-1.5 py-0.5 md:px-2 md:py-1 border text-[8px] md:text-[9px] font-bold uppercase rounded transition-all whitespace-nowrap", showSMA ? "bg-[#F59E0B] border-[#F59E0B] text-white" : "bg-white border-[#E4E4E4] text-[#6B7280]")}
                 >
-                  SMA 20
+                  SMA
                 </button>
                 <button 
                   onClick={() => setShowEMA(!showEMA)}
-                  className={cn("px-2 py-1 border text-[9px] font-bold uppercase rounded transition-all", showEMA ? "bg-[#8B5CF6] border-[#8B5CF6] text-white" : "bg-white border-[#E4E4E4] text-[#6B7280]")}
+                  className={cn("px-1.5 py-0.5 md:px-2 md:py-1 border text-[8px] md:text-[9px] font-bold uppercase rounded transition-all whitespace-nowrap", showEMA ? "bg-[#8B5CF6] border-[#8B5CF6] text-white" : "bg-white border-[#E4E4E4] text-[#6B7280]")}
                 >
-                  EMA 50
-                </button>
-                <button className="p-1.5 border border-[#E4E4E4] rounded text-[#6B7280] hover:text-[#0055FF] bg-white">
-                  <Settings className="w-3.5 h-3.5" />
+                  EMA
                 </button>
               </div>
             </div>
 
             {/* CHART CONTAINER */}
-            <div className="flex-grow relative w-full h-full min-h-0 bg-transparent">
+            <div className="flex-grow relative w-full h-full min-h-0 bg-transparent overflow-hidden">
               <TradingViewChart 
                 symbol={activeInst.symbol} 
                 chartMode={chartMode}
