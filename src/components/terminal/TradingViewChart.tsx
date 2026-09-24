@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview High-precision TradingView Chart component for the Varban Terminal.
- * Refined to consume normalized market data from the Twelve Data Proxy.
+ * Refined to consume normalized market and technical indicator data from the Twelve Data Proxy.
  */
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -88,8 +88,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     const loadData = async () => {
       setLoading(true);
       try {
-        const interval = timeframe === '1D' ? '1day' : timeframe.replace('m', 'min');
-        const priceData = await fetchHistoricalData(symbol, interval);
+        const priceData = await fetchHistoricalData(symbol, timeframe);
         
         if (!priceData || priceData.length === 0) {
           setLoading(false);
@@ -122,21 +121,33 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
           mainSeriesRef.current = s;
         }
 
-        // Add overlays
+        // Add indicators if toggled
         if (showSMA) {
-          const smaData = await fetchTechnicalIndicator('SMA', symbol, interval, 20);
+          const smaData = await fetchTechnicalIndicator('SMA', symbol, timeframe, 20);
           if (smaData.length > 0) {
-            const s = chart.addLineSeries({ color: '#F59E0B', lineWidth: 1, title: 'SMA 20' });
-            s.setData(smaData);
+            const s = chart.addLineSeries({ 
+              color: '#F59E0B', 
+              lineWidth: 1, 
+              title: 'SMA 20',
+              priceLineVisible: false,
+              lastValueVisible: false
+            });
+            s.setData(smaData as LineData[]);
             smaSeriesRef.current = s;
           }
         }
 
         if (showEMA) {
-          const emaData = await fetchTechnicalIndicator('EMA', symbol, interval, 50);
+          const emaData = await fetchTechnicalIndicator('EMA', symbol, timeframe, 50);
           if (emaData.length > 0) {
-            const s = chart.addLineSeries({ color: '#8B5CF6', lineWidth: 1, title: 'EMA 50' });
-            s.setData(emaData);
+            const s = chart.addLineSeries({ 
+              color: '#8B5CF6', 
+              lineWidth: 1, 
+              title: 'EMA 50',
+              priceLineVisible: false,
+              lastValueVisible: false
+            });
+            s.setData(emaData as LineData[]);
             emaSeriesRef.current = s;
           }
         }

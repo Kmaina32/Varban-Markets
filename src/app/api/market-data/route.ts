@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * @fileOverview Secure Market Data Proxy with Caching.
- * Handles server-side requests to Twelve Data and implements a basic cache 
- * to prevent rate-limit exhaustion on basic API plans.
+ * @fileOverview Secure Market Data Proxy with Caching for Twelve Data.
+ * Handles server-side requests for time series, quotes, and technical indicators.
  */
 
 const TWELVE_DATA_KEY = process.env.TWELVE_DATA_API_KEY;
@@ -11,7 +10,7 @@ const BASE_URL = "https://api.twelvedata.com";
 
 // Simple in-memory cache for production prototype
 const cache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_TTL = 10000; // 10 seconds cache for quotes and series
+const CACHE_TTL = 15000; // 15 seconds cache
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -19,6 +18,8 @@ export async function GET(req: NextRequest) {
   const symbol = searchParams.get('symbol');
   const interval = searchParams.get('interval') || '1min';
   const outputsize = searchParams.get('outputsize') || '300';
+  const indicator = searchParams.get('indicator'); // Specific technical indicator e.g. ema, sma
+  const timePeriod = searchParams.get('time_period');
 
   if (!symbol) {
     return NextResponse.json({ error: 'Symbol required' }, { status: 400 });
@@ -28,7 +29,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Market data provider key not configured' }, { status: 500 });
   }
 
-  const cacheKey = `${type}-${symbol}-${interval}-${outputsize}`;
+  // Construct cache key based on all identifying params
+  const cacheKey = `${type}-${symbol}-${interval}-${outputsize}-${indicator || ''}-${timePeriod || ''}`;
   const cached = cache.get(cacheKey);
 
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
@@ -37,8 +39,9 @@ export async function GET(req: NextRequest) {
 
   // Normalize symbol for Twelve Data (e.g. BTCUSD -> BTC/USD)
   let providerSymbol = symbol;
-  const cryptoForexSymbols = ["BTCUSD", "ETHUSD", "EURUSD", "GBPUSD", "USDJPY", "XAUUSD"];
+  const cryptoForexSymbols = ["BTCUSD", "ETHUSD", "EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "XAGUSD"];
   if (cryptoForexSymbols.includes(symbol) || (symbol.length === 6 && !symbol.includes('/'))) {
+    // Basic heuristic for pairs
     providerSymbol = `${symbol.substring(0, 3)}/${symbol.substring(3, 6)}`;
   }
 
@@ -50,8 +53,18 @@ export async function GET(req: NextRequest) {
     order: 'asc'
   });
 
+  if (timePeriod) params.append('time_period', timePeriod);
+  if (type === 'indicator') params.append('series_type', 'close');
+
   try {
-    const endpoint = type === 'quote' ? 'quote' : 'time_series';
+    // Determine endpoint based on type
+    let endpoint = 'time_series';
+    if (type === 'quote') {
+      endpoint = 'quote';
+    } else if (type === 'indicator' && indicator) {
+      endpoint = indicator.toLowerCase();
+    }
+
     const response = await fetch(`${BASE_URL}/${endpoint}?${params.toString()}`);
     const data = await response.json();
 
@@ -75,6 +88,14 @@ export async function GET(req: NextRequest) {
           timestamp: Date.now()
         }
       };
+    } else if (type === 'indicator') {
+      // Indicator response usually has a key matching the indicator name in lowercase
+      const key = indicator!.toLowerCase();
+      const points = (data.values || []).map((v: any) => ({
+        time: new Date(v.datetime).getTime() / 1000,
+        value: parseFloat(v[key])
+      }));
+      result = { data: points };
     } else {
       const bars = (data.values || []).map((v: any) => ({
         time: new Date(v.datetime).getTime() / 1000,
@@ -87,7 +108,7 @@ export async function GET(req: NextRequest) {
       result = { data: bars };
     }
 
-    if (result.data) {
+    if (result.data || type === 'quote') {
       cache.set(cacheKey, { data: result, timestamp: Date.now() });
     }
 

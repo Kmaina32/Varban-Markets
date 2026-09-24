@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview Institutional Market Data Abstraction Layer.
  * Unified interface for Twelve Data via internal secure proxy.
@@ -60,7 +59,9 @@ export const fetchLivePrice = async (symbol: string): Promise<PriceSnapshot> => 
 
 export const fetchHistoricalData = async (symbol: string, interval: string = "1min"): Promise<HistoricalBar[]> => {
   try {
-    const res = await fetch(`${PROXY_URL}?type=time_series&symbol=${symbol}&interval=${interval.replace('m', 'min')}`);
+    // Interval mapping for Twelve Data
+    const mappedInterval = interval === '1D' ? '1day' : interval.replace('m', 'min');
+    const res = await fetch(`${PROXY_URL}?type=time_series&symbol=${symbol}&interval=${mappedInterval}&outputsize=300`);
     const json = await res.json();
     return json.data || [];
   } catch (e) {
@@ -70,18 +71,13 @@ export const fetchHistoricalData = async (symbol: string, interval: string = "1m
 };
 
 export const fetchTechnicalIndicator = async (indicator: string, symbol: string, interval: string, timePeriod: number): Promise<TechnicalIndicatorPoint[]> => {
-  // Twelve Data indicators follow a similar pattern, for prototype we derive from close price if indicator endpoint not proxied
-  const history = await fetchHistoricalData(symbol, interval);
-  if (history.length === 0) return [];
-
-  // Simple client-side moving average calculation for indicators to reduce API overhead
-  return history.map((bar, index) => {
-    if (index < timePeriod) return null;
-    const slice = history.slice(index - timePeriod + 1, index + 1);
-    const sum = slice.reduce((acc, b) => acc + b.close, 0);
-    return {
-      time: bar.time,
-      value: sum / timePeriod
-    };
-  }).filter(p => p !== null) as TechnicalIndicatorPoint[];
+  try {
+    const mappedInterval = interval === '1D' ? '1day' : interval.replace('m', 'min');
+    const res = await fetch(`${PROXY_URL}?type=indicator&indicator=${indicator.toLowerCase()}&symbol=${symbol}&interval=${mappedInterval}&time_period=${timePeriod}&outputsize=300`);
+    const json = await res.json();
+    return json.data || [];
+  } catch (e) {
+    console.error(`Technical indicator ${indicator} fetch failed:`, e);
+    return [];
+  }
 };
