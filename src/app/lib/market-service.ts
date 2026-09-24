@@ -1,6 +1,6 @@
 /**
  * @fileOverview Institutional Market Data Abstraction Layer.
- * Decouples layout systems from external data vendors cleanly.
+ * Integrated with Alpha Vantage API for professional equities, forex, and crypto data.
  */
 
 export interface PriceSnapshot {
@@ -29,67 +29,128 @@ interface MarketDataProvider {
   getHistoricalBars(symbol: string): Promise<HistoricalBar[]>;
 }
 
-class RealMarketDataProvider implements MarketDataProvider {
-  private apiMap: Record<string, string> = {
-    'BTCUSD': 'BTCUSDT',
-    'ETHUSD': 'ETHUSDT',
-    'XAUUSD': 'PAXGUSDT',
-    'EURUSD': 'EURUSDT',
-    'AAPL': 'BTCUSDT', // Reference index proxy mappings
-    'NVDA': 'ETHUSDT'
-  };
+const ALPHA_VANTAGE_KEY = "48SDEBM5X6L6WBVV";
+const BASE_URL = "https://www.alphavantage.co/query";
 
-  async getLivePrice(symbol: string): Promise<PriceSnapshot> {
-    const mapped = this.apiMap[symbol] || 'BTCUSDT';
-    try {
-      const response = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${mapped}`);
-      if (!response.ok) throw new Error('Network data error');
-      const data = await response.json();
-      
-      let basePrice = parseFloat(data.lastPrice);
-      if (symbol === 'AAPL') basePrice = basePrice * 0.003;
-      if (symbol === 'NVDA') basePrice = basePrice * 0.25;
-      if (symbol === 'EURUSD') basePrice = 1.08 + (basePrice * 0.000001);
-      if (symbol === 'XAUUSD') basePrice = 2000 + (basePrice * 0.01);
-
-      return {
-        price: basePrice,
-        change: parseFloat(data.priceChange),
-        changePercent: parseFloat(data.priceChangePercent),
-        open: parseFloat(data.openPrice),
-        high: parseFloat(data.highPrice),
-        low: parseFloat(data.lowPrice),
-        volume: parseFloat(data.volume),
-        status: 'Open',
-        timestamp: Date.now()
-      };
-    } catch (error) {
-      throw new Error(`Data feed unavailable for symbol ${symbol}`);
+class AlphaVantageDataProvider implements MarketDataProvider {
+  // Map internal symbols to Alpha Vantage query parameters
+  private getParams(symbol: string, functionType: 'LIVE' | 'HISTORY'): string {
+    const interval = "1min"; // Best for "live" feel on free/standard keys
+    
+    if (symbol.includes('USD') && !['BTCUSD', 'ETHUSD'].includes(symbol)) {
+      // Forex (e.g., EURUSD, XAUUSD)
+      const from = symbol.substring(0, 3);
+      const to = symbol.substring(3, 6);
+      if (functionType === 'LIVE') {
+        return `function=CURRENCY_EXCHANGE_RATE&from_currency=${from}&to_currency=${to}`;
+      }
+      return `function=FX_INTRADAY&from_symbol=${from}&to_symbol=${to}&interval=${interval}`;
+    } else if (['BTCUSD', 'ETHUSD'].includes(symbol)) {
+      // Crypto
+      const coin = symbol.substring(0, 3);
+      if (functionType === 'LIVE') {
+        return `function=CURRENCY_EXCHANGE_RATE&from_currency=${coin}&to_currency=USD`;
+      }
+      return `function=CRYPTO_INTRADAY&symbol=${coin}&market=USD&interval=${interval}`;
+    } else {
+      // Equities (AAPL, NVDA)
+      if (functionType === 'LIVE') {
+        return `function=GLOBAL_QUOTE&symbol=${symbol}`;
+      }
+      return `function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=${interval}`;
     }
   }
 
-  async getHistoricalBars(symbol: string): Promise<HistoricalBar[]> {
-    const mapped = this.apiMap[symbol] || 'BTCUSDT';
+  async getLivePrice(symbol: string): Promise<PriceSnapshot> {
     try {
-      const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=${mapped}&interval=1h&limit=100`);
-      if (!response.ok) throw new Error('History data error');
+      const params = this.getParams(symbol, 'LIVE');
+      const response = await fetch(`${BASE_URL}?${params}&apikey=${ALPHA_VANTAGE_KEY}`);
       const data = await response.json();
-      
-      let scalar = 1.0;
-      let offset = 0.0;
-      if (symbol === 'AAPL') scalar = 0.003;
-      if (symbol === 'NVDA') scalar = 0.25;
-      if (symbol === 'EURUSD') { scalar = 0.000001; offset = 1.08; }
-      if (symbol === 'XAUUSD') { scalar = 0.01; offset = 2000; }
 
-      return data.map((d: any) => ({
-        time: d[0] / 1000,
-        open: offset + parseFloat(d[1]) * scalar,
-        high: offset + parseFloat(d[2]) * scalar,
-        low: offset + parseFloat(d[3]) * scalar,
-        close: offset + parseFloat(d[4]) * scalar,
-        volume: parseFloat(d[5])
-      }));
+      if (data["Note"] || data["Information"]) {
+        throw new Error("Rate limit or API restriction encountered.");
+      }
+
+      // Handle GLOBAL_QUOTE (Stocks)
+      if (data["Global Quote"]) {
+        const q = data["Global Quote"];
+        return {
+          price: parseFloat(q["05. price"]),
+          change: parseFloat(q["09. change"]),
+          changePercent: parseFloat(q["10. change percent"].replace('%', '')),
+          open: parseFloat(q["02. open"]),
+          high: parseFloat(q["03. high"]),
+          low: parseFloat(q["04. low"]),
+          volume: parseFloat(q["06. volume"]),
+          status: 'Open',
+          timestamp: Date.now()
+        };
+      }
+
+      // Handle Realtime Exchange Rate (Forex/Crypto)
+      if (data["Realtime Currency Exchange Rate"]) {
+        const r = data["Realtime Currency Exchange Rate"];
+        const price = parseFloat(r["5. Exchange Rate"]);
+        return {
+          price: price,
+          change: 0, // Not provided directly in this endpoint
+          changePercent: 0,
+          open: price,
+          high: price,
+          low: price,
+          volume: 0,
+          status: 'Open',
+          timestamp: Date.now()
+        };
+      }
+
+      throw new Error("Invalid response format");
+    } catch (error) {
+      console.warn(`Alpha Vantage Error for ${symbol}:`, error);
+      // Fallback to a secondary calculation if live quote fails (derive from intraday)
+      return this.deriveLiveFromHistory(symbol);
+    }
+  }
+
+  private async deriveLiveFromHistory(symbol: string): Promise<PriceSnapshot> {
+    const history = await this.getHistoricalBars(symbol);
+    if (history.length === 0) throw new Error("No data available");
+    const latest = history[history.length - 1];
+    const prev = history.length > 1 ? history[history.length - 2] : latest;
+    
+    return {
+      price: latest.close,
+      change: latest.close - prev.close,
+      changePercent: ((latest.close - prev.close) / prev.close) * 100,
+      open: latest.open,
+      high: latest.high,
+      low: latest.low,
+      volume: latest.volume || 0,
+      status: 'Open',
+      timestamp: Date.now()
+    };
+  }
+
+  async getHistoricalBars(symbol: string): Promise<HistoricalBar[]> {
+    try {
+      const params = this.getParams(symbol, 'HISTORY');
+      const response = await fetch(`${BASE_URL}?${params}&apikey=${ALPHA_VANTAGE_KEY}`);
+      const data = await response.json();
+
+      const seriesKey = Object.keys(data).find(k => k.toLowerCase().includes('time series'));
+      if (!seriesKey) return [];
+
+      const series = data[seriesKey];
+      return Object.entries(series).map(([time, val]: [string, any]) => {
+        return {
+          time: new Date(time).getTime() / 1000,
+          open: parseFloat(val["1. open"] || val["1. open (USD)"]),
+          high: parseFloat(val["2. high"] || val["2. high (USD)"]),
+          low: parseFloat(val["3. low"] || val["3. low (USD)"]),
+          close: parseFloat(val["4. close"] || val["4. close (USD)"]),
+          volume: parseFloat(val["5. volume"] || val["6. volume"] || "0")
+        };
+      }).sort((a, b) => a.time - b.time);
     } catch (e) {
       return [];
     }
@@ -116,17 +177,18 @@ class MockMarketDataProvider implements MarketDataProvider {
     const now = Math.floor(Date.now() / 1000);
     return Array.from({ length: 100 }, (_, i) => ({
       time: now - (100 - i) * 3600,
-      open: base,
-      high: base + 2,
-      low: base - 2,
-      close: base + 0.5
+      open: base + Math.random(),
+      high: base + 2 + Math.random(),
+      low: base - 2 - Math.random(),
+      close: base + 0.5 + Math.random(),
+      volume: 500000
     }));
   }
 }
 
-// Strictly isolate mode selection behind clean environmental switches
+// Strictly isolate mode selection behind environmental switches
 const mode = process.env.NEXT_PUBLIC_MARKET_DATA_MODE || 'live';
-const provider: MarketDataProvider = mode === 'mock' ? new MockMarketDataProvider() : new RealMarketDataProvider();
+const provider: MarketDataProvider = mode === 'mock' ? new MockMarketDataProvider() : new AlphaVantageDataProvider();
 
 export const fetchLivePrice = async (symbol: string): Promise<PriceSnapshot> => {
   return provider.getLivePrice(symbol);
