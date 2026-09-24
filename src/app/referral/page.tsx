@@ -8,7 +8,6 @@ import {
   Users, 
   Copy, 
   Check, 
-  Share2, 
   TrendingUp, 
   DollarSign, 
   Trophy,
@@ -26,7 +25,7 @@ import { cn } from "@/app/lib/utils";
  */
 
 export default function ReferralPortal() {
-  const { user } = userUser();
+  const { user } = useUser();
   const db = useFirestore();
   const { t, formatNumber, formatDate } = useTranslation();
   const [copied, setCopied] = useState(false);
@@ -45,9 +44,8 @@ export default function ReferralPortal() {
   const { data: referredUsers, loading: referralsLoading } = useCollection<any>(referralsQuery);
 
   const referralCode = profile?.referralCode || "---";
-  const referralLink = typeof window !== 'undefined' 
-    ? `${window.location.origin}/register?ref=${referralCode}` 
-    : "";
+  // Updated to use the requested domain
+  const referralLink = `https://varbanmarkets.com/register?ref=${referralCode}`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(referralLink);
@@ -62,10 +60,6 @@ export default function ReferralPortal() {
     { label: "Partner Level", value: "Standard", icon: Trophy, color: "text-[#C9A227]" }
   ];
 
-  function userUser() {
-    return useUser();
-  }
-
   return (
     <AuthedLayout 
       title="Referral Program" 
@@ -73,14 +67,14 @@ export default function ReferralPortal() {
     >
       <div className="max-w-5xl mx-auto space-y-8">
         
-        {/* Banner Section */}
-        <Card className="bg-[#0A0A0A] text-white p-8 md:p-12 relative overflow-hidden border-[#0A0A0A]">
+        {/* Banner Section - Updated to White Background */}
+        <Card className="bg-white text-[#0A0A0A] p-8 md:p-12 relative overflow-hidden border-[#E4E4E4] shadow-sm">
           <div className="relative z-10 max-w-2xl">
             <div className="flex items-center gap-2 text-[#0055FF] mb-4">
               <Gift className="w-5 h-5" />
               <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Institutional Growth</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-tight mb-4">
+            <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-tight mb-4 text-[#0A0A0A]">
               Build Your Trading Community.
             </h1>
             <p className="text-sm text-[#6B7280] leading-relaxed mb-8">
@@ -88,26 +82,23 @@ export default function ReferralPortal() {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center gap-4">
-              <div className="w-full sm:w-auto flex-grow bg-white/5 border border-white/10 p-3 flex items-center justify-between group">
-                <code className="text-xs font-mono text-white/70 truncate mr-4">{referralLink}</code>
+              <div className="w-full sm:w-auto flex-grow bg-[#F7F7F5] border border-[#E4E4E4] p-3 flex items-center justify-between group">
+                <code className="text-xs font-mono text-[#0A0A0A] truncate mr-4">{referralLink}</code>
                 <button 
                   onClick={copyToClipboard}
-                  className="p-2 hover:bg-white/10 transition-colors shrink-0"
+                  className="p-2 hover:bg-[#E4E4E4] transition-colors shrink-0"
                 >
                   {copied ? <Check className="w-4 h-4 text-[#16835B]" /> : <Copy className="w-4 h-4 text-[#6B7280]" />}
                 </button>
               </div>
               <button 
                 onClick={copyToClipboard}
-                className="w-full sm:w-auto btn-institutional-primary bg-[#0055FF] border-[#0055FF] hover:bg-white hover:text-[#0055FF]"
+                className="w-full sm:w-auto btn-institutional-primary bg-[#0055FF] border-[#0055FF] hover:bg-[#0A0A0A] hover:border-[#0A0A0A] text-white"
               >
                 {copied ? "Link Copied" : "Copy Invitation Link"}
               </button>
             </div>
           </div>
-          
-          <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-[#0055FF]/10 to-transparent pointer-events-none"></div>
-          <Share2 className="absolute -bottom-10 -right-10 w-64 h-64 text-white/5 rotate-12 pointer-events-none" />
         </Card>
 
         {/* Stats Matrix */}
