@@ -46,6 +46,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
   // Helper to calculate SMA
   const calculateSMA = (data: any[], window: number) => {
+    if (data.length < window) return [];
     const smaData = [];
     for (let i = window - 1; i < data.length; i++) {
       const val = data.slice(i - window + 1, i + 1).reduce((acc, curr) => acc + (curr.close || curr.value), 0) / window;
@@ -95,45 +96,50 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
         const data = await fetchHistoricalData(symbol);
         if (!data || data.length === 0) throw new Error("No data");
 
-        // Clear previous series
-        if (mainSeriesRef.current) chart.removeSeries(mainSeriesRef.current);
-        if (smaSeriesRef.current) chart.removeSeries(smaSeriesRef.current);
-        if (emaSeriesRef.current) chart.removeSeries(emaSeriesRef.current);
+        // Clear refs for the new chart instance
+        mainSeriesRef.current = null;
+        smaSeriesRef.current = null;
+        emaSeriesRef.current = null;
 
         // Add main series based on mode
         if (chartMode === 'Candlestick') {
-          mainSeriesRef.current = chart.addCandlestickSeries({
+          const candlestickSeries = chart.addCandlestickSeries({
             upColor: '#16835B',
             downColor: '#0055FF',
             borderVisible: false,
             wickUpColor: '#16835B',
             wickDownColor: '#0055FF',
           });
-          mainSeriesRef.current.setData(data as CandlestickData[]);
+          candlestickSeries.setData(data as CandlestickData[]);
+          mainSeriesRef.current = candlestickSeries;
         } else if (chartMode === 'Line') {
-          mainSeriesRef.current = chart.addLineSeries({
+          const lineSeries = chart.addLineSeries({
             color: '#0055FF',
             lineWidth: 2,
           });
-          mainSeriesRef.current.setData(data.map(d => ({ time: d.time, value: d.close })) as LineData[]);
+          lineSeries.setData(data.map(d => ({ time: d.time, value: d.close })) as LineData[]);
+          mainSeriesRef.current = lineSeries;
         } else {
-          mainSeriesRef.current = chart.addAreaSeries({
+          const areaSeries = chart.addAreaSeries({
             lineColor: '#0055FF',
             topColor: 'rgba(0, 85, 255, 0.4)',
             bottomColor: 'rgba(0, 85, 255, 0.0)',
             lineWidth: 2,
           });
-          mainSeriesRef.current.setData(data.map(d => ({ time: d.time, value: d.close })) as LineData[]);
+          areaSeries.setData(data.map(d => ({ time: d.time, value: d.close })) as LineData[]);
+          mainSeriesRef.current = areaSeries;
         }
 
         // Technical Overlays
         if (showSMA) {
-          smaSeriesRef.current = chart.addLineSeries({ color: '#F59E0B', lineWidth: 1, title: 'SMA 20' });
-          smaSeriesRef.current.setData(calculateSMA(data, 20));
+          const smaSeries = chart.addLineSeries({ color: '#F59E0B', lineWidth: 1, title: 'SMA 20' });
+          smaSeries.setData(calculateSMA(data, 20));
+          smaSeriesRef.current = smaSeries;
         }
         if (showEMA) {
-          emaSeriesRef.current = chart.addLineSeries({ color: '#8B5CF6', lineWidth: 1, title: 'EMA 50' });
-          emaSeriesRef.current.setData(calculateSMA(data, 50)); // Simple proxy for EMA in this context
+          const emaSeries = chart.addLineSeries({ color: '#8B5CF6', lineWidth: 1, title: 'EMA 50' });
+          emaSeries.setData(calculateSMA(data, 50)); 
+          emaSeriesRef.current = emaSeries;
         }
 
         chart.timeScale().fitContent();
@@ -156,7 +162,10 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
     return () => {
       resizeObserver.disconnect();
-      chart.remove();
+      if (chartRef.current) {
+        chartRef.current.remove();
+        chartRef.current = null;
+      }
     };
   }, [symbol, chartMode, showSMA, showEMA, isDarkTheme]);
 

@@ -63,7 +63,6 @@ export default function TerminalWorkspace() {
   
   // Settings & Toggles
   const [oneClickTrade, setOneClickTrade] = useState<boolean>(false);
-  const [isDarkTheme, setIsDarkTheme] = useState<boolean>(false);
   const [leftTab, setLeftTab] = useState<'TICKET' | 'MARKETS'>('TICKET');
 
   // Chart Analysis Settings
@@ -315,10 +314,7 @@ export default function TerminalWorkspace() {
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
   return (
-    <div className={cn(
-      "h-screen flex flex-col overflow-hidden font-sans relative transition-colors duration-200",
-      isDarkTheme ? "bg-[#0A0A0A] text-white" : "bg-white text-[#0A0A0A]"
-    )}>
+    <div className="h-screen flex flex-col overflow-hidden font-sans relative transition-colors duration-200 bg-white text-[#0A0A0A]">
       <TerminalTutorial />
       
       {isMobileNavOpen && (
@@ -330,12 +326,9 @@ export default function TerminalWorkspace() {
         </div>
       )}
 
-      <header className={cn(
-        "relative h-14 md:h-16 border-b flex items-center justify-between px-3 md:px-6 shrink-0 z-50 shadow-sm transition-colors",
-        isDarkTheme ? "bg-[#121212] border-[#262626]" : "bg-white border-[#E4E4E4]"
-      )}>
+      <header className="relative h-14 md:h-16 border-b flex items-center justify-between px-3 md:px-6 shrink-0 z-50 shadow-sm transition-colors bg-white border-[#E4E4E4]">
         <div className="flex items-center space-x-2 md:space-x-4">
-          <button onClick={() => setIsMobileNavOpen(true)} className="p-1.5 hover:bg-[#F7F7F5] dark:hover:bg-[#262626] transition-colors md:hidden">
+          <button onClick={() => setIsMobileNavOpen(true)} className="p-1.5 hover:bg-[#F7F7F5] transition-colors md:hidden">
             <Menu className="w-5 h-5" />
           </button>
           
@@ -346,21 +339,8 @@ export default function TerminalWorkspace() {
 
         <div className="flex items-center space-x-2 md:space-x-4">
           <button
-            onClick={() => setIsDarkTheme(!isDarkTheme)}
-            className={cn(
-              "p-1.5 border transition-colors flex items-center justify-center",
-              isDarkTheme ? "border-[#333333] bg-[#1A1A1A] hover:bg-[#262626] text-amber-400" : "border-[#E4E4E4] bg-[#F7F7F5] hover:bg-[#E4E4E4] text-[#0A0A0A]"
-            )}
-          >
-            {isDarkTheme ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
-
-          <button
             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-            className={cn(
-              "flex items-center space-x-2 border px-2 md:px-3 py-1 transition-colors shadow-sm select-none",
-              isDarkTheme ? "bg-[#1A1A1A] border-[#333333]" : "bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
-            )}
+            className="flex items-center space-x-2 border px-2 md:px-3 py-1 transition-colors shadow-sm select-none bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
           >
             <div className="text-right">
               <span className="text-[7px] md:text-[8px] text-[#6B7280] uppercase tracking-widest font-bold block">
@@ -409,21 +389,17 @@ export default function TerminalWorkspace() {
           
           {/* LEFT SIDE PANEL: Trading & Asset Monitoring */}
           <div className={cn(
-            "fixed inset-0 z-[200] md:relative md:inset-auto md:z-0 md:flex flex-col w-full md:w-80 border-r shrink-0 transition-transform duration-300 ease-in-out",
-            isDarkTheme ? "bg-[#121212] border-[#262626]" : "bg-white border-[#E4E4E4]",
+            "fixed inset-0 z-[200] md:relative md:inset-auto md:z-0 md:flex flex-col w-full md:w-80 border-r shrink-0 transition-transform duration-300 ease-in-out bg-white border-[#E4E4E4]",
             isMobileTradeMenuOpen || isMobileMarketMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0 hidden md:flex"
           )}>
             
-            <div className={cn(
-              "flex border-b shrink-0",
-              isDarkTheme ? "border-[#262626] bg-[#1A1A1A]" : "border-[#E4E4E4] bg-[#F7F7F5]"
-            )}>
+            <div className="flex border-b shrink-0 border-[#E4E4E4] bg-[#F7F7F5]">
               <button
                 onClick={() => setLeftTab('TICKET')}
                 className={cn(
                   "flex-1 py-3 px-3 text-[10px] font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 transition-colors border-b-2",
                   leftTab === 'TICKET' 
-                    ? (isDarkTheme ? "border-[#0055FF] text-white bg-[#121212]" : "border-[#0055FF] text-[#0055FF] bg-white") 
+                    ? "border-[#0055FF] text-[#0055FF] bg-white" 
                     : "border-transparent text-[#6B7280] hover:text-[#0A0A0A]"
                 )}
               >
@@ -436,7 +412,7 @@ export default function TerminalWorkspace() {
                 className={cn(
                   "flex-1 py-3 px-3 text-[10px] font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 transition-colors border-b-2",
                   leftTab === 'MARKETS' 
-                    ? (isDarkTheme ? "border-[#0055FF] text-white bg-[#121212]" : "border-[#0055FF] text-[#0055FF] bg-white") 
+                    ? "border-[#0055FF] text-[#0055FF] bg-white" 
                     : "border-transparent text-[#6B7280] hover:text-[#0A0A0A]"
                 )}
               >
@@ -447,10 +423,7 @@ export default function TerminalWorkspace() {
 
             {leftTab === 'TICKET' && (
               <div className="p-4 space-y-4 overflow-y-auto no-scrollbar flex-grow">
-                <div className={cn(
-                  "p-3 border flex justify-between items-center",
-                  isDarkTheme ? "bg-[#1A1A1A] border-[#262626]" : "bg-[#F7F7F5] border-[#E4E4E4]"
-                )}>
+                <div className="p-3 border flex justify-between items-center bg-[#F7F7F5] border-[#E4E4E4]">
                   <div>
                     <span className="text-[9px] uppercase font-bold text-[#6B7280] block">Instrument</span>
                     <span className="text-xs font-mono font-bold text-[#0055FF]">{activeInst.symbol}</span>
@@ -486,10 +459,10 @@ export default function TerminalWorkspace() {
 
                 <div>
                   <label className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-1">Committed Stake (USD)</label>
-                  <input type="number" min={activeInst.minStake} max={activeInst.maxStake} value={stake} onChange={(e) => setStake(Number(e.target.value))} className={cn("w-full p-2.5 border text-sm font-mono font-bold focus:border-[#0055FF] outline-none", isDarkTheme ? "bg-[#1A1A1A] border-[#262626]" : "bg-white border-[#E4E4E4]")} />
+                  <input type="number" min={activeInst.minStake} max={activeInst.maxStake} value={stake} onChange={(e) => setStake(Number(e.target.value))} className="w-full p-2.5 border text-sm font-mono font-bold focus:border-[#0055FF] outline-none bg-white border-[#E4E4E4]" />
                 </div>
 
-                <div className={cn("p-3 border flex items-center justify-between", isDarkTheme ? "bg-[#1A1A1A] border-[#262626]" : "bg-[#F7F7F5] border-[#E4E4E4]")}>
+                <div className="p-3 border flex items-center justify-between bg-[#F7F7F5] border-[#E4E4E4]">
                   <div className="flex items-center space-x-2">
                     <Zap className={cn("w-4 h-4", oneClickTrade ? "text-amber-500" : "text-[#6B7280]")} />
                     <div><span className="text-[9px] font-bold uppercase tracking-wider block">One-Click Trade</span></div>
@@ -497,7 +470,7 @@ export default function TerminalWorkspace() {
                   <button onClick={() => setOneClickTrade(!oneClickTrade)} className={cn("w-10 h-5 rounded-full transition-colors relative", oneClickTrade ? 'bg-[#0055FF]' : 'bg-[#E4E4E4]')}><span className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all", oneClickTrade ? 'left-5.5' : 'left-0.5')} /></button>
                 </div>
 
-                <div className={cn("p-3 border space-y-2 text-[10px]", isDarkTheme ? "bg-[#1A1A1A] border-[#262626]" : "bg-[#F7F7F5] border-[#E4E4E4]")}>
+                <div className="p-3 border space-y-2 text-[10px] bg-[#F7F7F5] border-[#E4E4E4]">
                   <div className="flex justify-between"><span className="text-[#6B7280] uppercase font-bold">Return (+85%)</span><span className="font-mono font-bold text-[#16835B]">+${(stake * 0.85).toFixed(2)}</span></div>
                   <div className="flex justify-between border-t border-dashed border-[#E4E4E4] pt-1.5"><span className="text-[#6B7280] uppercase font-bold">Total Settlement</span><span className="font-mono font-bold text-[#16835B]">${(stake * 1.85).toFixed(2)}</span></div>
                 </div>
@@ -509,9 +482,9 @@ export default function TerminalWorkspace() {
             )}
 
             {leftTab === 'MARKETS' && (
-              <div className="flex-grow overflow-y-auto no-scrollbar divide-y divide-[#E4E4E4] dark:divide-[#262626]">
+              <div className="flex-grow overflow-y-auto no-scrollbar divide-y divide-[#E4E4E4]">
                 {AVAILABLE_INSTRUMENTS.map((inst) => (
-                  <button key={inst.symbol} onClick={() => handleSymbolChange(inst.symbol)} className={cn("w-full p-3.5 text-left transition-colors flex justify-between items-center group", activeInst.symbol === inst.symbol ? (isDarkTheme ? "bg-[#0055FF]/10 border-l-4 border-l-[#0055FF]" : "bg-[#0055FF]/5 border-l-4 border-l-[#0055FF]") : (isDarkTheme ? "hover:bg-[#1A1A1A]" : "hover:bg-[#F7F7F5]"))}>
+                  <button key={inst.symbol} onClick={() => handleSymbolChange(inst.symbol)} className={cn("w-full p-3.5 text-left transition-colors flex justify-between items-center group", activeInst.symbol === inst.symbol ? "bg-[#0055FF]/5 border-l-4 border-l-[#0055FF]" : "hover:bg-[#F7F7F5]")}>
                     <div><span className={cn("text-xs font-mono font-bold block", activeInst.symbol === inst.symbol ? "text-[#0055FF]" : "")}>{inst.symbol}</span><span className="text-[9px] text-[#6B7280] uppercase tracking-tighter">{inst.category}</span></div>
                     <div className="text-right"><span className="text-[10px] font-mono font-bold block">${formatNumber(inst.price, { minimumFractionDigits: 2 })}</span><span className={cn("text-[9px] font-mono", inst.changePercent >= 0 ? "text-[#16835B]" : "text-[#0055FF]")}>{inst.changePercent >= 0 ? "+" : ""}{inst.changePercent}%</span></div>
                   </button>
@@ -524,12 +497,9 @@ export default function TerminalWorkspace() {
           <main className={`flex-grow flex flex-col overflow-hidden relative ${isResizing ? 'select-none' : ''}`}>
             
             {/* Header Toolbar */}
-            <div className={cn(
-              "flex items-center justify-between p-2.5 border-b z-40 shrink-0 transition-colors",
-              isDarkTheme ? "bg-[#121212] border-[#262626]" : "bg-white border-[#E4E4E4]"
-            )}>
+            <div className="flex items-center justify-between p-2.5 border-b z-40 shrink-0 transition-colors bg-white border-[#E4E4E4]">
               <div className="flex items-center space-x-2">
-                <button onClick={() => { setLeftTab('MARKETS'); setIsMobileMarketMenuOpen(true); }} className={cn("flex items-center space-x-1.5 text-[10px] font-bold uppercase tracking-wider border px-2.5 py-1 transition-colors", isDarkTheme ? "border-[#333333] bg-[#1A1A1A]" : "border-[#E4E4E4] bg-[#F7F7F5]")}>
+                <button onClick={() => { setLeftTab('MARKETS'); setIsMobileMarketMenuOpen(true); }} className="flex items-center space-x-1.5 text-[10px] font-bold uppercase tracking-wider border px-2.5 py-1 transition-colors border-[#E4E4E4] bg-white hover:bg-[#F7F7F5]">
                   <BarChart3 className="w-3.5 h-3.5 text-[#0055FF]" /> <span>{activeInst.symbol}</span> <ChevronDown className="w-3 h-3 text-[#6B7280]" />
                 </button>
               </div>
@@ -538,20 +508,17 @@ export default function TerminalWorkspace() {
                   <span className="text-xs md:text-sm font-mono font-bold block leading-none">{livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
                   <span className={cn("text-[9px] font-mono font-bold block mt-0.5", liveMetrics.percent >= 0 ? "text-[#16835B]" : "text-[#0055FF]")}>{liveMetrics.percent >= 0 ? "+" : ""}{liveMetrics.percent}%</span>
                 </div>
-                <button onClick={() => setIsMobilePositionsOpen(!isMobilePositionsOpen)} className={cn("md:hidden p-1.5 border text-[9px] font-bold uppercase tracking-wider flex items-center gap-1", isDarkTheme ? "border-[#333333] bg-[#1A1A1A]" : "border-[#E4E4E4] bg-[#F7F7F5]")}>
+                <button onClick={() => setIsMobilePositionsOpen(!isMobilePositionsOpen)} className="md:hidden p-1.5 border text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 border-[#E4E4E4] bg-white">
                   <Layers className="w-3.5 h-3.5 text-[#0055FF]" /> <span>({activePositions.length})</span>
                 </button>
               </div>
             </div>
 
-            {/* TECHNICAL CHART SETTINGS BAR (Between Chart and Toolbar) */}
-            <div className={cn(
-              "flex items-center justify-between px-3 py-1.5 border-b shrink-0 z-30 transition-colors",
-              isDarkTheme ? "bg-[#1A1A1A] border-[#262626]" : "bg-[#F7F7F5] border-[#E4E4E4]"
-            )}>
+            {/* TECHNICAL CHART SETTINGS BAR */}
+            <div className="flex items-center justify-between px-3 py-1.5 border-b shrink-0 z-30 transition-colors bg-[#F7F7F5] border-[#E4E4E4]">
               <div className="flex items-center space-x-1.5">
                 {/* Timeframes */}
-                <div className="flex bg-white dark:bg-[#121212] border border-[#E4E4E4] dark:border-[#262626] rounded overflow-hidden">
+                <div className="flex bg-white border border-[#E4E4E4] rounded overflow-hidden">
                   {['1m', '5m', '15m', '1h', '1D'].map(tf => (
                     <button 
                       key={tf} 
@@ -563,10 +530,10 @@ export default function TerminalWorkspace() {
                   ))}
                 </div>
 
-                <div className="w-px h-4 bg-[#E4E4E4] dark:bg-[#333333] mx-1"></div>
+                <div className="w-px h-4 bg-[#E4E4E4] mx-1"></div>
 
                 {/* Chart Mode */}
-                <div className="flex bg-white dark:bg-[#121212] border border-[#E4E4E4] dark:border-[#262626] rounded overflow-hidden">
+                <div className="flex bg-white border border-[#E4E4E4] rounded overflow-hidden">
                   <button onClick={() => setChartMode('Candlestick')} className={cn("p-1.5 border-r transition-colors", chartMode === 'Candlestick' ? "bg-[#0055FF] text-white" : "text-[#6B7280]")}>
                     <BarChart3 className="w-3 h-3" />
                   </button>
@@ -593,7 +560,7 @@ export default function TerminalWorkspace() {
                 >
                   EMA 50
                 </button>
-                <button className="p-1.5 border border-[#E4E4E4] dark:border-[#262626] rounded text-[#6B7280] hover:text-[#0055FF]">
+                <button className="p-1.5 border border-[#E4E4E4] rounded text-[#6B7280] hover:text-[#0055FF] bg-white">
                   <Settings className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -606,27 +573,24 @@ export default function TerminalWorkspace() {
                 chartMode={chartMode}
                 showSMA={showSMA}
                 showEMA={showEMA}
-                isDarkTheme={isDarkTheme}
+                isDarkTheme={false}
               />
             </div>
 
             {/* Desktop Exposure Tray */}
-            <div onMouseDown={startResizing} className="hidden md:flex h-1.5 bg-[#E4E4E4] dark:bg-[#262626] hover:bg-[#0055FF] cursor-row-resize items-center justify-center z-[60]"><div className="w-12 h-0.5 bg-[#6B7280] rounded-full"></div></div>
-            <div style={{ height: `${trayHeight}px` }} className={cn("hidden md:block border-t shrink-0 overflow-y-auto no-scrollbar transition-colors", isDarkTheme ? "bg-[#121212] border-[#262626]" : "bg-white border-[#E4E4E4]")}>
+            <div onMouseDown={startResizing} className="hidden md:flex h-1.5 bg-[#E4E4E4] hover:bg-[#0055FF] cursor-row-resize items-center justify-center z-[60]"><div className="w-12 h-0.5 bg-[#6B7280] rounded-full"></div></div>
+            <div style={{ height: `${trayHeight}px` }} className="hidden md:block border-t shrink-0 overflow-y-auto no-scrollbar transition-colors bg-white border-[#E4E4E4]">
               <div className="px-4 py-1.5 border-b flex justify-between items-center sticky top-0 z-10 bg-inherit"><span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">Active Exposure Matrix ({activePositions.length})</span></div>
               <div className="overflow-x-auto">
                 <table className="w-full text-[10px] text-left border-collapse">
                   <thead><tr className="uppercase border-b text-[#6B7280]"><th className="p-2 font-bold">Asset</th><th className="p-2 font-bold">Vector</th><th className="p-2 font-bold text-right">Stake</th><th className="p-2 font-bold text-right">Entry</th><th className="p-2 font-bold text-center">Status</th><th className="p-2 font-bold text-center">Action</th></tr></thead>
-                  <tbody className="divide-y divide-[#E4E4E4] dark:divide-[#262626]">{activePositions.length === 0 ? <tr><td colSpan={6} className="p-4 text-center uppercase font-bold text-[9px]">No open contracts</td></tr> : activePositions.map((pos: any) => (<tr key={pos.id} className="hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A]"><td className="p-2 font-mono font-bold">{pos.instrument}</td><td className="p-2"><span className={cn("px-1.5 py-0.5 border text-[9px] font-bold", pos.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#0055FF] text-[#0055FF]')}>{pos.vector}</span></td><td className="p-2 text-right font-mono">${formatNumber(pos.stake, { minimumFractionDigits: 2 })}</td><td className="p-2 text-right font-mono">${formatNumber(pos.entryPrice, { minimumFractionDigits: 2 })}</td><td className="p-2 text-center"><span className="text-[8px] font-bold uppercase text-[#0055FF] animate-pulse">Live</span></td><td className="p-2 text-center"><button onClick={() => handleEarlyCashout(pos)} className="px-2 py-0.5 text-[8px] font-bold uppercase bg-amber-500 text-white rounded">Cashout</button></td></tr>))}</tbody>
+                  <tbody className="divide-y divide-[#E4E4E4]">{activePositions.length === 0 ? <tr><td colSpan={6} className="p-4 text-center uppercase font-bold text-[9px]">No open contracts</td></tr> : activePositions.map((pos: any) => (<tr key={pos.id} className="hover:bg-[#F7F7F5]"><td className="p-2 font-mono font-bold">{pos.instrument}</td><td className="p-2"><span className={cn("px-1.5 py-0.5 border text-[9px] font-bold", pos.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#0055FF] text-[#0055FF]')}>{pos.vector}</span></td><td className="p-2 text-right font-mono">${formatNumber(pos.stake, { minimumFractionDigits: 2 })}</td><td className="p-2 text-right font-mono">${formatNumber(pos.entryPrice, { minimumFractionDigits: 2 })}</td><td className="p-2 text-center"><span className="text-[8px] font-bold uppercase text-[#0055FF] animate-pulse">Live</span></td><td className="p-2 text-center"><button onClick={() => handleEarlyCashout(pos)} className="px-2 py-0.5 text-[8px] font-bold uppercase bg-amber-500 text-white rounded">Cashout</button></td></tr>))}</tbody>
                 </table>
               </div>
             </div>
 
             {/* MOBILE ACTION BUTTONS: COMPRESSED SPACING */}
-            <div className={cn(
-              "md:hidden p-1.5 border-t grid grid-cols-2 gap-1.5 z-40 shadow-lg shrink-0 transition-colors",
-              isDarkTheme ? "bg-[#121212] border-[#262626]" : "bg-white border-[#E4E4E4]"
-            )}>
+            <div className="md:hidden p-1.5 border-t grid grid-cols-2 gap-1.5 z-40 shadow-lg shrink-0 transition-colors bg-white border-[#E4E4E4]">
               <button onClick={() => handleVectorClick("CALL")} className="py-2.5 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 rounded active:scale-[0.98]">
                 <TrendingUp className="w-4 h-4" /> <span>CALL VECTOR</span>
               </button>
