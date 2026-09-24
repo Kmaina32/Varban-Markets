@@ -166,11 +166,11 @@ export default function UnifiedSignupPage() {
   return (
     <div className="bg-[#F7F7F5] min-h-screen flex items-center justify-center py-8 md:py-16 px-4">
       <div className="bg-white border border-[#E4E4E4] max-w-5xl w-full shadow-lg flex flex-col md:flex-row overflow-hidden min-h-[600px]">
-        {/* Left Side: Image (Desktop only) */}
+        {/* Left Side: Full Color Image */}
         <div className="hidden lg:block w-1/2 relative">
           <Image
             src={placeholderImages.auth.url}
-            alt="Varban Markets Background"
+            alt="Varban Markets Welcome"
             fill
             className="object-cover"
             priority
@@ -186,7 +186,7 @@ export default function UnifiedSignupPage() {
           </div>
         </div>
 
-        {/* Right Side: Form */}
+        {/* Right Side: Step-by-step Registration */}
         <div className="w-full lg:w-1/2 flex flex-col bg-white">
           <div className="bg-[#F7F7F5] border-b border-[#E4E4E4] p-6 md:p-8 text-[#0A0A0A] relative overflow-hidden shrink-0">
             <div className="relative z-10">
@@ -388,7 +388,7 @@ export default function UnifiedSignupPage() {
                       "text-[9px] leading-relaxed uppercase font-bold",
                       hasFinishedTerms ? "text-[#6B7280]" : "text-[#6B7280]/40"
                     )}>
-                      I confirm that I have read, understood, and accept the <Link href="/risk-disclosure" className="text-[#0055FF] underline">Risk Disclosure</Link> and all platform rules.
+                      I confirm that I have read, understood, and accept the Risk Warning and all platform rules.
                     </span>
                   </div>
                 </div>
@@ -435,7 +435,6 @@ export default function UnifiedSignupPage() {
       {showTermsWizard && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white border border-[#E4E4E4] w-full max-w-2xl shadow-2xl relative flex flex-col max-h-[80vh]">
-            {/* Modal Header */}
             <div className="p-6 border-b border-[#E4E4E4] flex justify-between items-center bg-[#F7F7F5] shrink-0">
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Mandatory Legal Review</h3>
@@ -449,7 +448,6 @@ export default function UnifiedSignupPage() {
               </button>
             </div>
 
-            {/* Progress Bar */}
             <div className="h-1 bg-[#E4E4E4] w-full shrink-0">
               <div 
                 className="h-full bg-[#0055FF] transition-all duration-300"
@@ -457,7 +455,6 @@ export default function UnifiedSignupPage() {
               ></div>
             </div>
 
-            {/* Content Area */}
             <div className="p-8 md:p-12 overflow-y-auto flex-grow bg-white text-[#333333] text-sm leading-relaxed">
               <h2 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A] mb-6 border-b border-[#E4E4E4] pb-4">
                 {TERMS_CONTENT[termsStep].title}
@@ -470,7 +467,6 @@ export default function UnifiedSignupPage() {
               </div>
             </div>
 
-            {/* Modal Footer Actions */}
             <div className="p-6 border-t border-[#E4E4E4] flex justify-between items-center bg-[#F7F7F5] shrink-0">
               <button 
                 type="button"

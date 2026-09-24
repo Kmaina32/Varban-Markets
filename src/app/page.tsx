@@ -1,19 +1,20 @@
+
 import Link from "next/link";
 import Image from "next/image";
-import { Shield, Database, Sliders, Cpu, ArrowRight } from "lucide-react";
+import { Shield, Database, Sliders, ArrowRight } from "lucide-react";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 
 export default function HomePage() {
   return (
     <div className="flex flex-col bg-[#F7F7F5]">
-      {/* SECTION 1 - Hero */}
+      {/* Hero Section */}
       <section className="relative bg-[#0A0A0A] text-white min-h-[600px] flex items-center overflow-hidden">
-        <div className="absolute inset-0 opacity-40">
+        <div className="absolute inset-0">
           <Image
             src={placeholderImages.hero.url}
             alt="Varban Markets Terminal"
             fill
-            className="object-cover"
+            className="object-cover opacity-50"
             priority
             data-ai-hint={placeholderImages.hero.hint}
           />
@@ -26,7 +27,7 @@ export default function HomePage() {
             <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-white uppercase mb-6 leading-[1.1]">
               Professional Trading for Global Markets.
             </h1>
-            <p className="text-sm sm:text-base text-[#6B7280] mb-8 leading-relaxed max-w-2xl">
+            <p className="text-sm sm:text-base text-[#D1D5DB] mb-8 leading-relaxed max-w-2xl">
               Trade global markets using a professional system. Get clear results, reliable prices, and manage your money with ease using our high-performance trading tools.
             </p>
             <div className="flex flex-wrap gap-4">
@@ -38,7 +39,7 @@ export default function HomePage() {
               </Link>
             </div>
             <div className="mt-8 flex items-center space-x-4">
-              <Link href="/login" className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest hover:text-white transition-colors">
+              <Link href="/login" className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest hover:text-white transition-colors">
                 Sign in to your account &rarr;
               </Link>
             </div>
@@ -46,7 +47,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SECTION 2 - How we work */}
+      {/* Value Proposition Section */}
       <section className="py-24 bg-white border-b border-[#E4E4E4]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -68,7 +69,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SECTION 3 - Safety & Rules */}
+      {/* Safety Section */}
       <section className="py-24 bg-white border-b border-[#E4E4E4]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mb-16">
@@ -99,7 +100,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FINAL CTA */}
+      {/* CTA Section */}
       <section className="py-24 bg-[#0055FF] text-white text-center">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h3 className="text-3xl sm:text-4xl font-bold uppercase tracking-tight mb-8">

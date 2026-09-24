@@ -39,11 +39,11 @@ export default function LoginPage() {
   return (
     <div className="bg-[#F7F7F5] min-h-screen flex items-center justify-center py-16 px-4">
       <div className="bg-white border border-[#E4E4E4] max-w-4xl w-full shadow-lg flex overflow-hidden min-h-[600px]">
-        {/* Left Side: Image */}
+        {/* Left Side: Full Color Auth Image */}
         <div className="hidden lg:block w-1/2 relative">
           <Image
             src={placeholderImages.auth.url}
-            alt="Varban Markets Infrastructure"
+            alt="Varban Markets Login"
             fill
             className="object-cover"
             priority
@@ -59,7 +59,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Right Side: Form */}
+        {/* Right Side: Login Form */}
         <div className="w-full lg:w-1/2 p-8 sm:p-12 flex flex-col justify-center bg-white">
           <div className="border-b border-[#E4E4E4] pb-6 mb-8">
             <h1 className="text-2xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Sign In</h1>
