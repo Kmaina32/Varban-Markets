@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -6,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
  * Handles server-side requests to Twelve Data to protect API credentials.
  */
 
-const TWELVE_DATA_KEY = "48SDEBM5X6L6WBVV"; // Note: In production, move this to process.env.TWELVE_DATA_API_KEY
+const TWELVE_DATA_KEY = "a05d6e793a2341b59ca2fbc7e6098d79"; // Updated to use the new Twelve Data secret key
 const BASE_URL = "https://api.twelvedata.com";
 
 export async function GET(req: NextRequest) {
