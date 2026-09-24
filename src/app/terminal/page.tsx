@@ -1,9 +1,9 @@
-
 'use client';
 
 /**
  * @fileOverview High-Performance Electronic Trading Terminal Workspace.
  * Optimized layout with technical analysis settings and responsive action controls.
+ * Forced viewport alignment for mobile to prevent scrolling.
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
@@ -327,34 +327,35 @@ export default function TerminalWorkspace() {
         </div>
       )}
 
-      <header className="relative h-12 md:h-16 border-b flex items-center justify-between px-3 md:px-6 shrink-0 z-50 shadow-sm transition-colors bg-white border-[#E4E4E4]">
+      {/* ULTRA-COMPACT MOBILE HEADER */}
+      <header className="relative h-10 md:h-16 border-b flex items-center justify-between px-3 md:px-6 shrink-0 z-50 shadow-sm transition-colors bg-white border-[#E4E4E4]">
         <div className="flex items-center space-x-2 md:space-x-4">
-          <button onClick={() => setIsMobileNavOpen(true)} className="p-1.5 hover:bg-[#F7F7F5] transition-colors md:hidden">
-            <Menu className="w-5 h-5" />
+          <button onClick={() => setIsMobileNavOpen(true)} className="p-1 hover:bg-[#F7F7F5] transition-colors md:hidden">
+            <Menu className="w-4 h-4 md:w-5 md:h-5" />
           </button>
           
           <Link href="/dashboard" className="flex items-center">
-            <Image src="/assets/logo2.png" alt="Varban Terminal" width={110} height={26} className="h-6 md:h-7 w-auto object-contain" priority />
+            <Image src="/assets/logo2.png" alt="Varban Terminal" width={90} height={22} className="h-5 md:h-7 w-auto object-contain" priority />
           </Link>
         </div>
 
         <div className="flex items-center space-x-2 md:space-x-4">
           <button
             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-            className="flex items-center space-x-2 border px-2 md:px-3 py-1 transition-colors shadow-sm select-none bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
+            className="flex items-center space-x-1.5 border px-1.5 md:px-3 py-0.5 md:py-1 transition-colors shadow-sm select-none bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
           >
             <div className="text-right">
-              <span className="text-[7px] md:text-[8px] text-[#6B7280] uppercase tracking-widest font-bold block">
-                {accountMode === 'REAL' ? 'Real Account' : 'Demo Mode'}
+              <span className="text-[6px] md:text-[8px] text-[#6B7280] uppercase tracking-widest font-bold block">
+                {accountMode === 'REAL' ? 'Real' : 'Demo'}
               </span>
               <span className={cn(
-                "text-[9px] md:text-[10px] font-mono font-bold block",
+                "text-[8px] md:text-[10px] font-mono font-bold block",
                 accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]"
               )}>
                 ${formatNumber(activeBalance, { minimumFractionDigits: 2 })}
               </span>
             </div>
-            <ChevronDown className="w-3 h-3 text-[#6B7280]" />
+            <ChevronDown className="w-2.5 h-2.5 text-[#6B7280]" />
           </button>
 
           <div className="relative">
@@ -363,7 +364,7 @@ export default function TerminalWorkspace() {
               className="flex items-center space-x-2 group focus:outline-none"
             >
               <div className={cn(
-                "w-7 h-7 md:w-8 md:h-8 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs transition-colors shadow-sm",
+                "w-6 h-6 md:w-8 md:h-8 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-[10px] md:text-xs transition-colors shadow-sm",
                 isProfileDropdownOpen ? "ring-2 ring-[#0055FF]" : "group-hover:ring-2 group-hover:ring-[#0055FF]"
               )}>
                 {user?.email ? user.email.substring(0, 2).toUpperCase() : 'VM'}
@@ -493,29 +494,29 @@ export default function TerminalWorkspace() {
             )}
           </div>
 
-          {/* MAIN CHART AREA */}
-          <main className={`flex-grow flex flex-col overflow-hidden relative ${isResizing ? 'select-none' : ''}`}>
+          {/* MAIN CHART AREA: OPTIMIZED FOR VIEWPORT CONSTRAINTS */}
+          <main className={`flex-grow flex flex-col overflow-hidden relative shrink-0 ${isResizing ? 'select-none' : ''}`}>
             
-            {/* Header Toolbar */}
-            <div className="flex items-center justify-between p-1.5 md:p-2.5 border-b z-40 shrink-0 transition-colors bg-white border-[#E4E4E4]">
+            {/* Header Toolbar: Ultra Compact */}
+            <div className="flex items-center justify-between p-1 md:p-2 border-b z-40 shrink-0 transition-colors bg-white border-[#E4E4E4]">
               <div className="flex items-center space-x-2">
-                <button onClick={() => { setLeftTab('MARKETS'); setIsMobileMarketMenuOpen(true); }} className="flex items-center space-x-1.5 text-[9px] md:text-[10px] font-bold uppercase tracking-wider border px-2 py-1 transition-colors border-[#E4E4E4] bg-white hover:bg-[#F7F7F5]">
-                  <BarChart3 className="w-3 md:w-3.5 h-3 md:h-3.5 text-[#0055FF]" /> <span>{activeInst.symbol}</span> <ChevronDown className="w-2.5 md:w-3 h-2.5 md:h-3 text-[#6B7280]" />
+                <button onClick={() => { setLeftTab('MARKETS'); setIsMobileMarketMenuOpen(true); }} className="flex items-center space-x-1 text-[8px] md:text-[10px] font-bold uppercase tracking-wider border px-1.5 py-0.5 transition-colors border-[#E4E4E4] bg-white hover:bg-[#F7F7F5]">
+                  <BarChart3 className="w-2.5 md:w-3.5 h-2.5 md:h-3.5 text-[#0055FF]" /> <span>{activeInst.symbol}</span> <ChevronDown className="w-2 md:w-3 h-2 md:h-3 text-[#6B7280]" />
                 </button>
               </div>
-              <div className="flex items-center space-x-2 md:space-x-3 text-right">
+              <div className="flex items-center space-x-2 text-right">
                 <div>
-                  <span className="text-[10px] md:text-sm font-mono font-bold block leading-none">{livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
-                  <span className={cn("text-[8px] md:text-[9px] font-mono font-bold block mt-0.5", liveMetrics.percent >= 0 ? "text-[#16835B]" : "text-[#0055FF]")}>{liveMetrics.percent >= 0 ? "+" : ""}{liveMetrics.percent}%</span>
+                  <span className="text-[9px] md:text-sm font-mono font-bold block leading-none">{livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
+                  <span className={cn("text-[7px] md:text-[9px] font-mono font-bold block mt-0.5", liveMetrics.percent >= 0 ? "text-[#16835B]" : "text-[#0055FF]")}>{liveMetrics.percent >= 0 ? "+" : ""}{liveMetrics.percent}%</span>
                 </div>
-                <button onClick={() => setIsMobilePositionsOpen(!isMobilePositionsOpen)} className="md:hidden p-1 border text-[8px] font-bold uppercase tracking-wider flex items-center gap-1 border-[#E4E4E4] bg-white rounded">
-                  <Layers className="w-3 h-3 text-[#0055FF]" /> <span>({activePositions.length})</span>
+                <button onClick={() => setIsMobilePositionsOpen(!isMobilePositionsOpen)} className="md:hidden p-0.5 border text-[7px] font-bold uppercase tracking-wider flex items-center gap-0.5 border-[#E4E4E4] bg-white rounded">
+                  <Layers className="w-2.5 h-2.5 text-[#0055FF]" /> <span>({activePositions.length})</span>
                 </button>
               </div>
             </div>
 
-            {/* TECHNICAL CHART SETTINGS BAR - Optimized for Mobile height */}
-            <div className="flex items-center justify-between px-2 py-0.5 md:px-3 md:py-1.5 border-b shrink-0 z-30 transition-colors bg-[#F7F7F5] border-[#E4E4E4] overflow-x-auto no-scrollbar">
+            {/* TECHNICAL CHART SETTINGS BAR: No vertical padding */}
+            <div className="flex items-center justify-between px-2 py-0 md:py-1 border-b shrink-0 z-30 transition-colors bg-[#F7F7F5] border-[#E4E4E4] overflow-x-auto no-scrollbar">
               <div className="flex items-center space-x-1 md:space-x-1.5 shrink-0">
                 {/* Timeframes */}
                 <div className="flex bg-white border border-[#E4E4E4] rounded overflow-hidden">
@@ -523,48 +524,45 @@ export default function TerminalWorkspace() {
                     <button 
                       key={tf} 
                       onClick={() => setTimeframe(tf)}
-                      className={cn("px-1 md:px-2 py-0.5 md:py-1 text-[8px] md:text-[9px] font-bold border-r last:border-r-0 transition-colors", timeframe === tf ? "bg-[#0055FF] text-white" : "text-[#6B7280] hover:text-[#0A0A0A]")}
+                      className={cn("px-1 md:px-2 py-0.5 md:py-1 text-[7px] md:text-[9px] font-bold border-r last:border-r-0 transition-colors", timeframe === tf ? "bg-[#0055FF] text-white" : "text-[#6B7280] hover:text-[#0A0A0A]")}
                     >
                       {tf}
                     </button>
                   ))}
                 </div>
 
-                <div className="w-px h-3 md:h-4 bg-[#E4E4E4] mx-0.5 md:mx-1"></div>
+                <div className="w-px h-3 md:h-4 bg-[#E4E4E4] mx-0.5"></div>
 
                 {/* Chart Mode */}
                 <div className="flex bg-white border border-[#E4E4E4] rounded overflow-hidden">
-                  <button onClick={() => setChartMode('Candlestick')} className={cn("p-1 md:p-1.5 border-r transition-colors", chartMode === 'Candlestick' ? "bg-[#0055FF] text-white" : "text-[#6B7280]")}>
-                    <BarChart3 className="w-2.5 md:w-3 h-2.5 md:h-3" />
+                  <button onClick={() => setChartMode('Candlestick')} className={cn("p-0.5 md:p-1.5 border-r transition-colors", chartMode === 'Candlestick' ? "bg-[#0055FF] text-white" : "text-[#6B7280]")}>
+                    <BarChart3 className="w-2 md:w-3 h-2 md:h-3" />
                   </button>
-                  <button onClick={() => setChartMode('Line')} className={cn("p-1 md:p-1.5 border-r transition-colors", chartMode === 'Line' ? "bg-[#0055FF] text-white" : "text-[#6B7280]")}>
-                    <LineChart className="w-2.5 md:w-3 h-2.5 md:h-3" />
-                  </button>
-                  <button onClick={() => setChartMode('Area')} className={cn("p-1 md:p-1.5 transition-colors", chartMode === 'Area' ? "bg-[#0055FF] text-white" : "text-[#6B7280]")}>
-                    <AreaChart className="w-2.5 md:w-3 h-2.5 md:h-3" />
+                  <button onClick={() => setChartMode('Line')} className={cn("p-0.5 md:p-1.5 border-r transition-colors", chartMode === 'Line' ? "bg-[#0055FF] text-white" : "text-[#6B7280]")}>
+                    <LineChart className="w-2 md:w-3 h-2 md:h-3" />
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-1 md:space-x-1.5 shrink-0 ml-2">
+              <div className="flex items-center space-x-1 md:space-x-1.5 shrink-0 ml-1">
                 {/* Indicators Toggle */}
                 <button 
                   onClick={() => setShowSMA(!showSMA)}
-                  className={cn("px-1 md:px-2 py-0.5 md:py-1 border text-[8px] md:text-[9px] font-bold uppercase rounded transition-all whitespace-nowrap", showSMA ? "bg-[#F59E0B] border-[#F59E0B] text-white" : "bg-white border-[#E4E4E4] text-[#6B7280]")}
+                  className={cn("px-1 py-0.5 md:py-1 border text-[7px] md:text-[9px] font-bold uppercase rounded transition-all whitespace-nowrap", showSMA ? "bg-[#F59E0B] border-[#F59E0B] text-white" : "bg-white border-[#E4E4E4] text-[#6B7280]")}
                 >
                   SMA
                 </button>
                 <button 
                   onClick={() => setShowEMA(!showEMA)}
-                  className={cn("px-1 md:px-2 py-0.5 md:py-1 border text-[8px] md:text-[9px] font-bold uppercase rounded transition-all whitespace-nowrap", showEMA ? "bg-[#8B5CF6] border-[#8B5CF6] text-white" : "bg-white border-[#E4E4E4] text-[#6B7280]")}
+                  className={cn("px-1 py-0.5 md:py-1 border text-[7px] md:text-[9px] font-bold uppercase rounded transition-all whitespace-nowrap", showEMA ? "bg-[#8B5CF6] border-[#8B5CF6] text-white" : "bg-white border-[#E4E4E4] text-[#6B7280]")}
                 >
                   EMA
                 </button>
               </div>
             </div>
 
-            {/* CHART CONTAINER */}
-            <div className="flex-grow relative w-full h-full min-h-0 bg-transparent overflow-hidden">
+            {/* CHART CONTAINER: Flexible height */}
+            <div className="flex-grow relative w-full min-h-0 bg-transparent overflow-hidden">
               <TradingViewChart 
                 symbol={activeInst.symbol} 
                 chartMode={chartMode}
@@ -574,8 +572,8 @@ export default function TerminalWorkspace() {
               />
             </div>
 
-            {/* Desktop Exposure Tray */}
-            <div onMouseDown={startResizing} className="hidden md:flex h-1.5 bg-[#E4E4E4] hover:bg-[#0055FF] cursor-row-resize items-center justify-center z-[60]"><div className="w-12 h-0.5 bg-[#6B7280] rounded-full"></div></div>
+            {/* Desktop Exposure Tray: Pinned at bottom */}
+            <div onMouseDown={startResizing} className="hidden md:flex h-1 bg-[#E4E4E4] hover:bg-[#0055FF] cursor-row-resize items-center justify-center z-[60]"><div className="w-12 h-0.5 bg-[#6B7280] rounded-full"></div></div>
             <div style={{ height: `${trayHeight}px` }} className="hidden md:block border-t shrink-0 overflow-y-auto no-scrollbar transition-colors bg-white border-[#E4E4E4]">
               <div className="px-4 py-1.5 border-b flex justify-between items-center sticky top-0 z-10 bg-inherit"><span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">Active Exposure Matrix ({activePositions.length})</span></div>
               <div className="overflow-x-auto">
@@ -586,13 +584,13 @@ export default function TerminalWorkspace() {
               </div>
             </div>
 
-            {/* MOBILE ACTION BUTTONS: FORCED INTO VIEWPORT */}
+            {/* MOBILE ACTION BUTTONS: PINNED AT ABSOLUTE BOTTOM */}
             <div className="md:hidden p-1 border-t grid grid-cols-2 gap-1 z-40 shadow-lg shrink-0 transition-colors bg-white border-[#E4E4E4]">
-              <button onClick={() => handleVectorClick("CALL")} className="py-2.5 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 rounded active:scale-[0.98]">
-                <TrendingUp className="w-4 h-4" /> <span>CALL VECTOR</span>
+              <button onClick={() => handleVectorClick("CALL")} className="py-2 bg-[#16835B] text-white text-[9px] font-bold uppercase tracking-wider flex items-center justify-center space-x-1 rounded active:scale-[0.98]">
+                <TrendingUp className="w-3.5 h-3.5" /> <span>CALL</span>
               </button>
-              <button onClick={() => handleVectorClick("PUT")} className="py-2.5 bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 rounded active:scale-[0.98]">
-                <TrendingDown className="w-4 h-4" /> <span>PUT VECTOR</span>
+              <button onClick={() => handleVectorClick("PUT")} className="py-2 bg-[#0055FF] text-white text-[9px] font-bold uppercase tracking-wider flex items-center justify-center space-x-1 rounded active:scale-[0.98]">
+                <TrendingDown className="w-3.5 h-3.5" /> <span>PUT</span>
               </button>
             </div>
 
