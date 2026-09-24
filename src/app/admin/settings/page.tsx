@@ -1,4 +1,3 @@
-
 'use client';
 
 import AuthedLayout from "@/components/layout/AuthedLayout";
@@ -28,6 +27,7 @@ export default function PlatformSettings() {
     primaryMarketProvider: "Automatic",
     finnhubKey: "daqjp7pr01qott5g8tg0daqjp7pr01qott5g8tgg",
     finnhubSecret: "daqjp7pr01qott5g8thg",
+    alphaVantageKey: "48SDEBM5X6L6WBVV",
     coinbaseApiKey: "",
     coinbaseApiSecret: "",
     coinbaseVersion: "2022-01-06"
@@ -46,6 +46,7 @@ export default function PlatformSettings() {
         primaryMarketProvider: settings.primaryMarketProvider ?? "Automatic",
         finnhubKey: settings.finnhubKey ?? "daqjp7pr01qott5g8tg0daqjp7pr01qott5g8tgg",
         finnhubSecret: settings.finnhubSecret ?? "daqjp7pr01qott5g8thg",
+        alphaVantageKey: settings.alphaVantageKey ?? "48SDEBM5X6L6WBVV",
         coinbaseApiKey: settings.coinbaseApiKey ?? "",
         coinbaseApiSecret: settings.coinbaseApiSecret ?? "",
         coinbaseVersion: settings.coinbaseVersion ?? "2022-01-06"
@@ -116,6 +117,7 @@ export default function PlatformSettings() {
                     <option value="Automatic">Automatic Failover (Intelligent)</option>
                     <option value="Coinbase">Coinbase CDP (High-Precision)</option>
                     <option value="TwelveData">Twelve Data (Institutional)</option>
+                    <option value="AlphaVantage">Alpha Vantage (Forex Specialization)</option>
                     <option value="Finnhub">Finnhub (SME Feed)</option>
                   </select>
                 </div>
@@ -146,38 +148,56 @@ export default function PlatformSettings() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Alpha Vantage Settings */}
+                <div className="border-l-2 border-[#C9A227] pl-4 space-y-4">
+                  <span className="text-[10px] font-bold uppercase text-[#C9A227]">Alpha Vantage Node</span>
                   <div>
-                    <label className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1.5">Finnhub API Key</label>
+                    <label className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1.5">API Key</label>
                     <input 
                       type="password"
-                      value={formData.finnhubKey}
-                      onChange={(e) => setFormData({...formData, finnhubKey: e.target.value})}
-                      className="w-full bg-[#F7F7F5] border border-[#E4E4E4] p-3 text-xs font-mono focus:outline-none focus:border-[#0055FF]"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1.5">Finnhub Webhook Secret</label>
-                    <input 
-                      type="password"
-                      value={formData.finnhubSecret}
-                      onChange={(e) => setFormData({...formData, finnhubSecret: e.target.value})}
+                      value={formData.alphaVantageKey}
+                      onChange={(e) => setFormData({...formData, alphaVantageKey: e.target.value})}
                       className="w-full bg-[#F7F7F5] border border-[#E4E4E4] p-3 text-xs font-mono focus:outline-none focus:border-[#0055FF]"
                     />
                   </div>
                 </div>
 
-                <div className="p-4 border border-[#E4E4E4] bg-white">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-[9px] font-bold uppercase text-[#6B7280]">Finnhub Webhook URL</span>
-                    <button onClick={copyWebhook} className="flex items-center gap-1 text-[8px] font-bold uppercase text-[#0055FF] hover:underline">
-                      {copied ? <Check className="w-2.5 h-2.5" /> : <Copy className="w-2.5 h-2.5" />}
-                      <span>{copied ? "Copied" : "Copy URL"}</span>
-                    </button>
+                {/* Finnhub Settings */}
+                <div className="border-l-2 border-[#16835B] pl-4 space-y-4">
+                  <span className="text-[10px] font-bold uppercase text-[#16835B]">Finnhub Integration</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1.5">Finnhub API Key</label>
+                      <input 
+                        type="password"
+                        value={formData.finnhubKey}
+                        onChange={(e) => setFormData({...formData, finnhubKey: e.target.value})}
+                        className="w-full bg-[#F7F7F5] border border-[#E4E4E4] p-3 text-xs font-mono focus:outline-none focus:border-[#0055FF]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1.5">Finnhub Webhook Secret</label>
+                      <input 
+                        type="password"
+                        value={formData.finnhubSecret}
+                        onChange={(e) => setFormData({...formData, finnhubSecret: e.target.value})}
+                        className="w-full bg-[#F7F7F5] border border-[#E4E4E4] p-3 text-xs font-mono focus:outline-none focus:border-[#0055FF]"
+                      />
+                    </div>
                   </div>
-                  <code className="block w-full p-2 bg-[#F7F7F5] text-[10px] font-mono text-[#0A0A0A] truncate">
-                    {webhookUrl}
-                  </code>
+
+                  <div className="p-4 border border-[#E4E4E4] bg-white">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-[9px] font-bold uppercase text-[#6B7280]">Finnhub Webhook URL</span>
+                      <button onClick={copyWebhook} className="flex items-center gap-1 text-[8px] font-bold uppercase text-[#0055FF] hover:underline">
+                        {copied ? <Check className="w-2.5 h-2.5" /> : <Copy className="w-2.5 h-2.5" />}
+                        <span>{copied ? "Copied" : "Copy URL"}</span>
+                      </button>
+                    </div>
+                    <code className="block w-full p-2 bg-[#F7F7F5] text-[10px] font-mono text-[#0A0A0A] truncate">
+                      {webhookUrl}
+                    </code>
+                  </div>
                 </div>
               </div>
             </Card>
@@ -235,7 +255,7 @@ export default function PlatformSettings() {
                     type="email"
                     value={formData.supportEmail}
                     onChange={(e) => setFormData({...formData, supportEmail: e.target.value})}
-                    className="w-full bg-[#F7F7F5] border border-[#E4E4E4] p-3 text-xs focus:outline-none focus:border-[#0055FF]"
+                    className="w-full bg-[#F7F7F5] border border-[#E4E4E4] p-3 text-xs focus:outline-none focus:border-[#0A0A0A]"
                   />
                 </div>
               </div>

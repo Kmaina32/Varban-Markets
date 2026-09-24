@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -10,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 
 const TWELVE_DATA_KEY = process.env.TWELVE_DATA_API_KEY;
-const ALPHA_VANTAGE_KEY = process.env.ALPHA_VANTAGE_API_KEY;
+const ALPHA_VANTAGE_KEY = "48SDEBM5X6L6WBVV"; // Provided Alpha Vantage Key
 const FINNHUB_KEY = "daqjp7pr01qott5g8tg0daqjp7pr01qott5g8tgg";
 const COINBASE_VERSION = "2022-01-06"; // Institutional Implementation Version
 
