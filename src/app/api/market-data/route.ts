@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * @fileOverview Secure Market Data Proxy with Multi-Provider Fallback.
- * Attempts Twelve Data first, then falls back to Binance (for Crypto) 
- * or Alpha Vantage/Finnhub (for Forex/Stocks) if keys are provided.
+ * Fallback Chain: Twelve Data -> Binance (Crypto) -> Alpha Vantage -> Finnhub.
  */
 
 const TWELVE_DATA_KEY = process.env.TWELVE_DATA_API_KEY;
@@ -37,7 +36,8 @@ export async function GET(req: NextRequest) {
   }
 
   // 2. Fallback Logic for Crypto (Binance Public - No Key Required)
-  if (symbol.includes('/') || ['BTC', 'ETH', 'SOL', 'XRP'].some(s => symbol.startsWith(s))) {
+  const isCrypto = symbol.includes('/') || ['BTC', 'ETH', 'SOL', 'XRP'].some(s => symbol.startsWith(s));
+  if (isCrypto) {
     const cryptoResult = await fetchBinanceFallback(symbol);
     if (cryptoResult) {
       const formatted = { data: cryptoResult };
@@ -53,6 +53,15 @@ export async function GET(req: NextRequest) {
       const formatted = { data: avResult };
       cache.set(cacheKey, { data: formatted, timestamp: Date.now() });
       return NextResponse.json(formatted);
+    }
+  }
+
+  // 4. Final Fallback (Finnhub)
+  if (FINNHUB_KEY) {
+    const fhResult = await fetchFinnhubData(symbol, type, interval);
+    if (fhResult && !fhResult.error) {
+      cache.set(cacheKey, { data: fhResult, timestamp: Date.now() });
+      return NextResponse.json(fhResult);
     }
   }
 
@@ -102,7 +111,6 @@ async function fetchTwelveData(symbol: string, type: string, interval: string) {
 
 async function fetchBinanceFallback(symbol: string) {
   try {
-    // Format: BTC/USD -> BTCUSDT
     const cleanSymbol = symbol.replace('/', '').replace('USD', 'USDT');
     const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${cleanSymbol}`);
     const data = await res.json();
@@ -159,6 +167,47 @@ async function fetchAlphaVantage(symbol: string, type: string) {
       };
     }
     return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function fetchFinnhubData(symbol: string, type: string, interval: string) {
+  try {
+    const cleanSymbol = symbol.replace('/', '');
+    const baseUrl = "https://finnhub.io/api/v1";
+    
+    if (type === 'quote') {
+      const res = await fetch(`${baseUrl}/quote?symbol=${cleanSymbol}&token=${FINNHUB_KEY}`);
+      const data = await res.json();
+      if (!data.c) return { error: true };
+      
+      return {
+        price: data.c,
+        change: data.d,
+        changePercent: data.dp,
+        timestamp: data.t * 1000,
+        status: 'Open'
+      };
+    }
+
+    // Candlestick fallback
+    const resolution = interval.replace('min', '').replace('day', 'D');
+    const to = Math.floor(Date.now() / 1000);
+    const from = to - (300 * 60); // Roughly last 300 bars of 1m
+    
+    const res = await fetch(`${baseUrl}/stock/candle?symbol=${cleanSymbol}&resolution=${resolution}&from=${from}&to=${to}&token=${FINNHUB_KEY}`);
+    const data = await res.json();
+    
+    if (data.s !== 'ok') return { error: true };
+
+    return data.t.map((time: number, i: number) => ({
+      time,
+      open: data.o[i],
+      high: data.h[i],
+      low: data.l[i],
+      close: data.c[i]
+    }));
   } catch (e) {
     return null;
   }
