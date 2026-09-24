@@ -1,9 +1,9 @@
+
 'use client';
 
 /**
  * @fileOverview High-Performance Electronic Trading Terminal Workspace.
- * Optimized layout with technical analysis settings and responsive action controls.
- * Forced viewport alignment for mobile to prevent scrolling.
+ * Simplified language for a better user experience.
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
@@ -62,32 +62,26 @@ export default function TerminalWorkspace() {
   const [reviewActive, setReviewActive] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   
-  // Settings & Toggles
   const [oneClickTrade, setOneClickTrade] = useState<boolean>(false);
   const [leftTab, setLeftTab] = useState<'TICKET' | 'MARKETS'>('TICKET');
 
-  // Chart Analysis Settings
   const [chartMode, setChartMode] = useState<ChartMode>('Candlestick');
   const [showSMA, setShowSMA] = useState(false);
   const [showEMA, setShowEMA] = useState(false);
   const [timeframe, setTimeframe] = useState('5m');
 
-  // Mobile Drawers
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobileMarketMenuOpen, setIsMobileMarketMenuOpen] = useState(false);
   const [isMobileTradeMenuOpen, setIsMobileTradeMenuOpen] = useState(false);
   const [isMobilePositionsOpen, setIsMobilePositionsOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   
-  // Bottom Tray Resizing
   const [trayHeight, setTrayHeight] = useState(180);
   const [isResizing, setIsResizing] = useState(false);
   
-  // Account Mode
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
 
-  // Position listeners
   const tradesQuery = useMemo(() => {
     if (!db || !user) return null;
     return query(
@@ -102,7 +96,6 @@ export default function TerminalWorkspace() {
     return allPositions?.filter((p: any) => p.status === "Open") || [];
   }, [allPositions]);
 
-  // Automated contract settlement cycle simulation
   useEffect(() => {
     if (!user || !db || !allPositions || allPositions.length === 0 || livePrice === null) return;
     
@@ -144,8 +137,8 @@ export default function TerminalWorkspace() {
       }
 
       addDoc(collection(db, `users/${user.uid}/notifications`), {
-        title: netProfit >= 0 ? "Option Contract Profit Realized" : "Contract Risk Liquidated",
-        body: `Position ${latest.id.slice(0,6).toUpperCase()} on ${latest.instrument} expired. Outcome resulted in ${netProfit >= 0 ? 'Gain' : 'Loss'} of $${Math.abs(netProfit).toFixed(2)} USD.`,
+        title: netProfit >= 0 ? "Trade Profit Realized" : "Trade Expired Out of Money",
+        body: `Your trade ${latest.id.slice(0,6).toUpperCase()} on ${latest.instrument} has closed. Final result: $${Math.abs(netProfit).toFixed(2)} ${netProfit >= 0 ? 'Gain' : 'Loss'}.`,
         type: "Trade",
         isUnread: true,
         timestamp: serverTimestamp()
@@ -245,7 +238,7 @@ export default function TerminalWorkspace() {
       localStorage.setItem('varban_demo_balance', currentDemoBal.toString());
       window.dispatchEvent(new Event('varban_account_mode_changed'));
       
-      setSuccessMessage(`${activeInst.symbol} ${selectedVector} Simulated Ticket Opened`);
+      setSuccessMessage(`${activeInst.symbol} ${selectedVector} Demo Trade Started`);
       setReviewActive(false);
       setIsMobileTradeMenuOpen(false);
       setTimeout(() => setSuccessMessage(null), 3000);
@@ -255,7 +248,7 @@ export default function TerminalWorkspace() {
     if (!user || !db) return;
     
     if (stake > (profile?.balance || 0)) {
-      alert("Deficit Exposure Error: Stake exceeds live capital allocations.");
+      alert("Insufficient Balance: You do not have enough funds to place this trade.");
       return;
     }
 
@@ -272,7 +265,7 @@ export default function TerminalWorkspace() {
       timestamp: serverTimestamp()
     }).catch(() => {});
 
-    setSuccessMessage(`${activeInst.symbol} ${selectedVector} Transmitted @ $${livePrice.toFixed(2)}`);
+    setSuccessMessage(`${activeInst.symbol} ${selectedVector} Trade Placed @ $${livePrice.toFixed(2)}`);
     setIsMobileTradeMenuOpen(false);
     setTimeout(() => setSuccessMessage(null), 3500);
   };
@@ -289,7 +282,7 @@ export default function TerminalWorkspace() {
 
   const handleEarlyCashout = (pos: any) => {
     if (!user || !db) return;
-    const partialPayout = pos.stake * 0.35; // 35% cashout return
+    const partialPayout = pos.stake * 0.35;
     const positionDocRef = doc(db, `users/${user.uid}/positions`, pos.id);
     
     updateDoc(positionDocRef, {
@@ -310,7 +303,7 @@ export default function TerminalWorkspace() {
       localStorage.setItem('varban_demo_balance', currentDemoBal.toString());
     }
 
-    setSuccessMessage(`Early Cashout: ${pos.instrument} closed. Payout: $${partialPayout.toFixed(2)}`);
+    setSuccessMessage(`Cashout Successful: Trade closed early for $${partialPayout.toFixed(2)}`);
     setTimeout(() => setSuccessMessage(null), 3500);
   };
 
@@ -329,7 +322,7 @@ export default function TerminalWorkspace() {
         </div>
       )}
 
-      {/* ULTRA-COMPACT MOBILE HEADER */}
+      {/* COMPACT MOBILE HEADER */}
       <header className="relative h-10 md:h-16 border-b flex items-center justify-between px-3 md:px-6 shrink-0 z-50 shadow-sm transition-colors bg-white border-[#E4E4E4]">
         <div className="flex items-center space-x-2 md:space-x-4">
           <button onClick={() => setIsMobileNavOpen(true)} className="p-1 hover:bg-[#F7F7F5] transition-colors md:hidden">
@@ -337,7 +330,7 @@ export default function TerminalWorkspace() {
           </button>
           
           <Link href="/dashboard" className="flex items-center">
-            <Image src="/assets/logo2.png" alt="Varban Terminal" width={90} height={22} className="h-5 md:h-7 w-auto object-contain" priority />
+            <Image src="/assets/logo2.png" alt="Varban" width={90} height={22} className="h-5 md:h-7 w-auto object-contain" priority />
           </Link>
         </div>
 
@@ -391,7 +384,7 @@ export default function TerminalWorkspace() {
         
         <div className="flex-grow flex flex-col md:flex-row overflow-hidden md:ml-16">
           
-          {/* LEFT SIDE PANEL: Trading & Asset Monitoring */}
+          {/* LEFT SIDE PANEL */}
           <div className={cn(
             "fixed inset-0 z-[200] md:relative md:inset-auto md:z-0 md:flex flex-col w-full md:w-80 border-r shrink-0 transition-transform duration-300 ease-in-out bg-white border-[#E4E4E4]",
             isMobileTradeMenuOpen || isMobileMarketMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0 hidden md:flex"
@@ -408,7 +401,7 @@ export default function TerminalWorkspace() {
                 )}
               >
                 <Sliders className="w-3.5 h-3.5 text-[#0055FF]" />
-                <span>Trade Configuration</span>
+                <span>Trade Settings</span>
               </button>
               
               <button
@@ -421,7 +414,7 @@ export default function TerminalWorkspace() {
                 )}
               >
                 <BarChart3 className="w-3.5 h-3.5 text-[#16835B]" />
-                <span>Markets</span>
+                <span>Market List</span>
               </button>
             </div>
 
@@ -429,7 +422,7 @@ export default function TerminalWorkspace() {
               <div className="p-4 space-y-4 overflow-y-auto no-scrollbar flex-grow">
                 <div className="p-3 border flex justify-between items-center bg-[#F7F7F5] border-[#E4E4E4]">
                   <div>
-                    <span className="text-[9px] uppercase font-bold text-[#6B7280] block">Instrument</span>
+                    <span className="text-[9px] uppercase font-bold text-[#6B7280] block">Market</span>
                     <span className="text-xs font-mono font-bold text-[#0055FF]">{activeInst.symbol}</span>
                   </div>
                   <div className="text-right font-mono">
@@ -444,16 +437,16 @@ export default function TerminalWorkspace() {
                   <label className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block">Direction</label>
                   <div className="grid grid-cols-2 gap-2">
                     <button onClick={() => handleVectorClick("CALL")} className={cn("py-3 text-[10px] font-bold uppercase tracking-wider border flex items-center justify-center space-x-1.5 transition-all shadow-sm", direction === "CALL" ? "bg-[#16835B] text-white border-[#16835B]" : "bg-white text-[#16835B] border-[#E4E4E4]")}>
-                      <TrendingUp className="w-4 h-4" /> <span>CALL ↑</span>
+                      <TrendingUp className="w-4 h-4" /> <span>Higher ↑</span>
                     </button>
                     <button onClick={() => handleVectorClick("PUT")} className={cn("py-3 text-[10px] font-bold uppercase tracking-wider border flex items-center justify-center space-x-1.5 transition-all shadow-sm", direction === "PUT" ? "bg-[#0055FF] text-white border-[#0055FF]" : "bg-white text-[#0055FF] border-[#E4E4E4]")}>
-                      <TrendingDown className="w-4 h-4" /> <span>PUT ↓</span>
+                      <TrendingDown className="w-4 h-4" /> <span>Lower ↓</span>
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-1.5">Expiry Duration</label>
+                  <label className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-1.5">Trade Duration</label>
                   <div className="grid grid-cols-4 gap-1">
                     {["1m", "5m", "15m", "1h"].map((d) => (
                       <button key={d} onClick={() => setDuration(d)} className={cn("py-2 text-[10px] font-bold border transition-all", duration === d ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white text-[#6B7280] border-[#E4E4E4]")}>{d}</button>
@@ -462,24 +455,24 @@ export default function TerminalWorkspace() {
                 </div>
 
                 <div>
-                  <label className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-1">Committed Stake (USD)</label>
+                  <label className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-1">Trade Amount (USD)</label>
                   <input type="number" min={activeInst.minStake} max={activeInst.maxStake} value={stake} onChange={(e) => setStake(Number(e.target.value))} className="w-full p-2.5 border text-sm font-mono font-bold focus:border-[#0055FF] outline-none bg-white border-[#E4E4E4]" />
                 </div>
 
                 <div className="p-3 border flex items-center justify-between bg-[#F7F7F5] border-[#E4E4E4]">
                   <div className="flex items-center space-x-2">
-                    <div><span className="text-[9px] font-bold uppercase tracking-wider block">One-Click Trade</span></div>
+                    <div><span className="text-[9px] font-bold uppercase tracking-wider block">Quick Trade Mode</span></div>
                   </div>
                   <button onClick={() => setOneClickTrade(!oneClickTrade)} className={cn("w-10 h-5 rounded-full transition-colors relative", oneClickTrade ? 'bg-[#0055FF]' : 'bg-[#E4E4E4]')}><span className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all", oneClickTrade ? 'left-5.5' : 'left-0.5')} /></button>
                 </div>
 
                 <div className="p-3 border space-y-2 text-[10px] bg-[#F7F7F5] border-[#E4E4E4]">
-                  <div className="flex justify-between"><span className="text-[#6B7280] uppercase font-bold">Return (+85%)</span><span className="font-mono font-bold text-[#16835B]">+${(stake * 0.85).toFixed(2)}</span></div>
-                  <div className="flex justify-between border-t border-dashed border-[#E4E4E4] pt-1.5"><span className="text-[#6B7280] uppercase font-bold">Total Settlement</span><span className="font-mono font-bold text-[#16835B]">${(stake * 1.85).toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span className="text-[#6B7280] uppercase font-bold">Estimated Profit</span><span className="font-mono font-bold text-[#16835B]">+${(stake * 0.85).toFixed(2)}</span></div>
+                  <div className="flex justify-between border-t border-dashed border-[#E4E4E4] pt-1.5"><span className="text-[#6B7280] uppercase font-bold">Total Return</span><span className="font-mono font-bold text-[#16835B]">${(stake * 1.85).toFixed(2)}</span></div>
                 </div>
 
                 <button onClick={() => handleExecute()} disabled={!direction || livePrice === null} className={cn("w-full py-3 text-xs font-bold uppercase tracking-widest border flex items-center justify-center space-x-2 transition-all shadow-md", direction === "CALL" ? "bg-[#16835B] text-white border-[#16835B]" : direction === "PUT" ? "bg-[#0055FF] text-white border-[#0055FF]" : "bg-[#E4E4E4] text-[#6B7280]")}>
-                  <ShieldCheck className="w-4 h-4" /> <span>{livePrice === null ? "SYNCING FEED..." : `TRANSMIT ${direction || 'VECTOR'} ORDER`}</span>
+                  <ShieldCheck className="w-4 h-4" /> <span>{livePrice === null ? "SYNCING..." : `PLACE ${direction || ''} TRADE`}</span>
                 </button>
               </div>
             )}
@@ -496,10 +489,9 @@ export default function TerminalWorkspace() {
             )}
           </div>
 
-          {/* MAIN CHART AREA: OPTIMIZED FOR VIEWPORT CONSTRAINTS */}
+          {/* MAIN CHART AREA */}
           <main className={`flex-grow flex flex-col overflow-hidden relative shrink-0 ${isResizing ? 'select-none' : ''}`}>
             
-            {/* Header Toolbar: Ultra Compact */}
             <div className="flex items-center justify-between p-1 md:p-2 border-b z-40 shrink-0 transition-colors bg-white border-[#E4E4E4]">
               <div className="flex items-center space-x-2">
                 <button onClick={() => { setLeftTab('MARKETS'); setIsMobileMarketMenuOpen(true); }} className="flex items-center space-x-1 text-[8px] md:text-[10px] font-bold uppercase tracking-wider border px-1.5 py-0.5 transition-colors border-[#E4E4E4] bg-white hover:bg-[#F7F7F5]">
@@ -521,10 +513,8 @@ export default function TerminalWorkspace() {
               </div>
             </div>
 
-            {/* TECHNICAL CHART SETTINGS BAR: No vertical padding */}
             <div className="flex items-center justify-between px-2 py-0 md:py-1 border-b shrink-0 z-30 transition-colors bg-[#F7F7F5] border-[#E4E4E4] overflow-x-auto no-scrollbar">
               <div className="flex items-center space-x-1 md:space-x-1.5 shrink-0">
-                {/* Timeframes */}
                 <div className="flex bg-white border border-[#E4E4E4] rounded overflow-hidden">
                   {['1m', '5m', '15m', '1h', '1D'].map(tf => (
                     <button 
@@ -539,7 +529,6 @@ export default function TerminalWorkspace() {
 
                 <div className="w-px h-3 md:h-4 bg-[#E4E4E4] mx-0.5"></div>
 
-                {/* Chart Mode */}
                 <div className="flex bg-white border border-[#E4E4E4] rounded overflow-hidden">
                   <button onClick={() => setChartMode('Candlestick')} className={cn("p-0.5 md:p-1.5 border-r transition-colors", chartMode === 'Candlestick' ? "bg-[#0055FF] text-white" : "text-[#6B7280]")}>
                     <BarChart3 className="w-2 md:w-3 h-2 md:h-3" />
@@ -551,7 +540,6 @@ export default function TerminalWorkspace() {
               </div>
 
               <div className="flex items-center space-x-1 md:space-x-1.5 shrink-0 ml-1">
-                {/* Indicators Toggle */}
                 <button 
                   onClick={() => setShowSMA(!showSMA)}
                   className={cn("px-1 py-0.5 md:py-1 border text-[7px] md:text-[9px] font-bold uppercase rounded transition-all whitespace-nowrap", showSMA ? "bg-[#F59E0B] border-[#F59E0B] text-white" : "bg-white border-[#E4E4E4] text-[#6B7280]")}
@@ -567,7 +555,6 @@ export default function TerminalWorkspace() {
               </div>
             </div>
 
-            {/* CHART CONTAINER: Flexible height */}
             <div className="flex-grow relative w-full min-h-0 bg-transparent overflow-hidden">
               <TradingViewChart 
                 symbol={activeInst.symbol} 
@@ -578,25 +565,25 @@ export default function TerminalWorkspace() {
               />
             </div>
 
-            {/* Desktop Exposure Tray: Pinned at bottom */}
+            {/* Desktop Open Trades Tray */}
             <div onMouseDown={startResizing} className="hidden md:flex h-1 bg-[#E4E4E4] hover:bg-[#0055FF] cursor-row-resize items-center justify-center z-[60]"><div className="w-12 h-0.5 bg-[#6B7280] rounded-full"></div></div>
             <div style={{ height: `${trayHeight}px` }} className="hidden md:block border-t shrink-0 overflow-y-auto no-scrollbar transition-colors bg-white border-[#E4E4E4]">
-              <div className="px-4 py-1.5 border-b flex justify-between items-center sticky top-0 z-10 bg-inherit"><span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">Active Exposure Matrix ({activePositions.length})</span></div>
+              <div className="px-4 py-1.5 border-b flex justify-between items-center sticky top-0 z-10 bg-inherit"><span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">Open Trades ({activePositions.length})</span></div>
               <div className="overflow-x-auto">
                 <table className="w-full text-[10px] text-left border-collapse">
-                  <thead><tr className="uppercase border-b text-[#6B7280]"><th className="p-2 font-bold">Asset</th><th className="p-2 font-bold">Vector</th><th className="p-2 font-bold text-right">Stake</th><th className="p-2 font-bold text-right">Entry</th><th className="p-2 font-bold text-center">Status</th><th className="p-2 font-bold text-center">Action</th></tr></thead>
-                  <tbody className="divide-y divide-[#E4E4E4]">{activePositions.length === 0 ? <tr><td colSpan={6} className="p-4 text-center uppercase font-bold text-[9px]">No open contracts</td></tr> : activePositions.map((pos: any) => (<tr key={pos.id} className="hover:bg-[#F7F7F5]"><td className="p-2 font-mono font-bold">{pos.instrument}</td><td className="p-2"><span className={cn("px-1.5 py-0.5 border text-[9px] font-bold", pos.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#0055FF] text-[#0055FF]')}>{pos.vector}</span></td><td className="p-2 text-right font-mono">${formatNumber(pos.stake, { minimumFractionDigits: 2 })}</td><td className="p-2 text-right font-mono">${formatNumber(pos.entryPrice, { minimumFractionDigits: 2 })}</td><td className="p-2 text-center"><span className="text-[8px] font-bold uppercase text-[#0055FF] animate-pulse">Live</span></td><td className="p-2 text-center"><button onClick={() => handleEarlyCashout(pos)} className="px-2 py-0.5 text-[8px] font-bold uppercase bg-amber-500 text-white rounded">Cashout</button></td></tr>))}</tbody>
+                  <thead><tr className="uppercase border-b text-[#6B7280]"><th className="p-2 font-bold">Asset</th><th className="p-2 font-bold">Side</th><th className="p-2 font-bold text-right">Stake</th><th className="p-2 font-bold text-right">Entry</th><th className="p-2 font-bold text-center">Status</th><th className="p-2 font-bold text-center">Action</th></tr></thead>
+                  <tbody className="divide-y divide-[#E4E4E4]">{activePositions.length === 0 ? <tr><td colSpan={6} className="p-4 text-center uppercase font-bold text-[9px]">No open trades</td></tr> : activePositions.map((pos: any) => (<tr key={pos.id} className="hover:bg-[#F7F7F5]"><td className="p-2 font-mono font-bold">{pos.instrument}</td><td className="p-2"><span className={cn("px-1.5 py-0.5 border text-[9px] font-bold", pos.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#0055FF] text-[#0055FF]')}>{pos.vector === 'CALL' ? 'Higher' : 'Lower'}</span></td><td className="p-2 text-right font-mono">${formatNumber(pos.stake, { minimumFractionDigits: 2 })}</td><td className="p-2 text-right font-mono">${formatNumber(pos.entryPrice, { minimumFractionDigits: 2 })}</td><td className="p-2 text-center"><span className="text-[8px] font-bold uppercase text-[#0055FF] animate-pulse">Live</span></td><td className="p-2 text-center"><button onClick={() => handleEarlyCashout(pos)} className="px-2 py-0.5 text-[8px] font-bold uppercase bg-amber-500 text-white rounded">Close Now</button></td></tr>))}</tbody>
                 </table>
               </div>
             </div>
 
-            {/* MOBILE ACTION BUTTONS: PINNED AT ABSOLUTE BOTTOM */}
+            {/* MOBILE ACTION BUTTONS */}
             <div className="md:hidden p-1 border-t grid grid-cols-2 gap-1 z-40 shadow-lg shrink-0 transition-colors bg-white border-[#E4E4E4]">
               <button onClick={() => handleVectorClick("CALL")} className="py-2 bg-[#16835B] text-white text-[9px] font-bold uppercase tracking-wider flex items-center justify-center space-x-1 rounded active:scale-[0.98]">
-                <TrendingUp className="w-3.5 h-3.5" /> <span>CALL</span>
+                <TrendingUp className="w-3.5 h-3.5" /> <span>Higher ↑</span>
               </button>
               <button onClick={() => handleVectorClick("PUT")} className="py-2 bg-[#0055FF] text-white text-[9px] font-bold uppercase tracking-wider flex items-center justify-center space-x-1 rounded active:scale-[0.98]">
-                <TrendingDown className="w-3.5 h-3.5" /> <span>PUT</span>
+                <TrendingDown className="w-3.5 h-3.5" /> <span>Lower ↓</span>
               </button>
             </div>
 

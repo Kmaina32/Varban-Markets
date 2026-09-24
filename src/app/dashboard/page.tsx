@@ -1,3 +1,4 @@
+
 'use client';
 
 import AuthedLayout from "@/components/layout/AuthedLayout";
@@ -17,7 +18,6 @@ export default function UserDashboard() {
 
   const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   
-  // High-performance account mode state allocation
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
 
@@ -55,19 +55,19 @@ export default function UserDashboard() {
 
   const metrics = [
     { title: accountMode === 'REAL' ? t('dashboard.balance') : 'Demo Balance', value: activeBalance, icon: DollarSign, color: accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]" },
-    { title: accountMode === 'REAL' ? t('dashboard.equity') : 'Demo Equity', value: activeEquity, icon: TrendingUp, color: "text-[#0A0A0A]" },
+    { title: accountMode === 'REAL' ? t('dashboard.equity') : 'Demo Value', value: activeEquity, icon: TrendingUp, color: "text-[#0A0A0A]" },
     { title: t('dashboard.openRisk'), value: accountMode === 'REAL' ? (profile?.openRisk || 0) : 0, icon: Shield, color: "text-[#C43D3D]" },
     { title: t('dashboard.dailyPL'), value: accountMode === 'REAL' ? (profile?.dailyPL || 0) : 0, icon: Activity, color: "text-[#16835B]" }
   ];
 
   return (
-    <AuthedLayout title={t('nav.dashboard')}>
+    <AuthedLayout title="My Dashboard" subtitle="Welcome back to your trading workspace">
       <OnboardingTutorial />
       <div className="space-y-8">
         {/* Account Mode Notice Bar */}
         {accountMode === 'DEMO' && (
           <div className="bg-[#0055FF]/10 border border-[#0055FF] p-3 text-[10px] font-bold uppercase tracking-wider text-[#0055FF]">
-            Demo Practice Environment active. Open positions show simulated statistics.
+            You are currently in Demo Mode. Results are simulated for practice.
           </div>
         )}
 
@@ -75,7 +75,7 @@ export default function UserDashboard() {
           {metrics.map((m, idx) => (
             <Card key={idx} className="bg-white border-[#E4E4E4] p-4 flex flex-col justify-between shadow-sm">
               <div className="flex flex-row items-center justify-between mb-2">
-                <span className="text-[9px] text-[#6B7280] uppercase tracking-widest font-bold">{m.title}</span>
+                <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest font-bold">{m.title}</span>
                 <m.icon className="w-3.5 h-3.5 text-[#6B7280]" />
               </div>
               <div>
@@ -111,7 +111,7 @@ export default function UserDashboard() {
                     {accountMode === 'DEMO' ? (
                       <tr>
                         <td colSpan={5} className="p-4 text-center text-[#6B7280]">
-                          Demo history is stored locally in your browser. Switch to Real Account for live ledger database logging.
+                          Demo history is stored locally. Switch to Real Account to see your live trade logs.
                         </td>
                       </tr>
                     ) : tradesLoading ? (

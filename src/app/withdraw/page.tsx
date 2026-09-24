@@ -1,8 +1,8 @@
+
 'use client';
 
 /**
- * @fileOverview Capital Remittance gateway for Varban Markets.
- * Supports both Cryptocurrency Payouts and Fiat Paystack Transfers infrastructure.
+ * @fileOverview Money Withdrawal page for Varban Markets.
  */
 
 import { useState } from "react";
@@ -39,14 +39,13 @@ export default function WithdrawPage() {
 
     const amountNum = parseFloat(amount);
     if (amountNum > (profile?.balance || 0)) {
-      alert("Deficit Account Status: Requested amount exceeds available balance domains.");
+      alert("Insufficient Balance: You do not have enough funds to withdraw this amount.");
       return;
     }
 
     setIsProcessing(true);
     const refKey = `WTH-${Math.random().toString(36).substring(7).toUpperCase()}`;
 
-    // 1. Deduct Balance Domain
     updateDoc(doc(db, "users", user.uid), {
       balance: increment(-amountNum),
       equity: increment(-amountNum)
@@ -58,26 +57,23 @@ export default function WithdrawPage() {
       errorEmitter.emit('permission-error', permissionError);
     });
 
-    // 2. Log Transaction Record
     addDoc(collection(db, `users/${user.uid}/transactions`), {
-      type: "Remittance Withdrawal",
+      type: "Withdrawal",
       asset: selectedCurrency,
       amount: amountNum,
-      status: "Pending Verification",
+      status: "Pending",
       timestamp: serverTimestamp(),
       ref: refKey,
       currency: selectedCurrency,
       bankDetails: {
         bankName,
         accountNumber
-      },
-      provider: "Paystack Transfers Network"
+      }
     }).catch(() => {});
 
-    // 3. Create Systematic Notification Log
     addDoc(collection(db, `users/${user.uid}/notifications`), {
-      title: "Remittance Initiated",
-      body: `Withdrawal request of ${amountNum} ${selectedCurrency} has been scheduled for bank destination ${accountNumber} (${bankName}).`,
+      title: "Withdrawal Started",
+      body: `Your withdrawal of ${amountNum} ${selectedCurrency} to your bank account is now being processed. Reference: ${refKey}.`,
       type: "Funds",
       isUnread: true,
       timestamp: serverTimestamp()
@@ -89,8 +85,8 @@ export default function WithdrawPage() {
 
   return (
     <AuthedLayout 
-      title="Capital Remittance" 
-      subtitle="Withdrawal of realized trading gains via Crypto networks or Paystack Transfers"
+      title="Withdraw Money" 
+      subtitle="Transfer your trading profits to your bank account or crypto wallet"
     >
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Payout Gateway Tabs */}
@@ -105,8 +101,8 @@ export default function WithdrawPage() {
             )}
           >
             <Bitcoin className="w-4 h-4 text-[#F59E0B]" />
-            <span>Crypto Wallet Payout</span>
-            <span className="text-[8px] bg-[#16835B] text-white px-1.5 py-0.5 rounded font-mono">Fastest</span>
+            <span>Crypto Wallet</span>
+            <span className="text-[8px] bg-[#16835B] text-white px-1.5 py-0.5 rounded font-mono">Fast</span>
           </button>
 
           <button
@@ -119,7 +115,7 @@ export default function WithdrawPage() {
             )}
           >
             <Building2 className="w-4 h-4 text-[#0055FF]" />
-            <span>Bank Remittance (Paystack)</span>
+            <span>Bank Account</span>
           </button>
         </div>
 
@@ -128,11 +124,11 @@ export default function WithdrawPage() {
         ) : (
           <div className="space-y-6">
             {token && (
-              <div className="bg-[#0A0A0A] border border-[#16835B] p-4 flex items-start space-x-3 text-[#16835B]">
+              <div className="bg-[#16835B]/10 border border-[#16835B] p-4 flex items-start space-x-3 text-[#16835B]">
                 <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
                 <div className="text-xs">
-                  <span className="font-bold uppercase block mb-1">Remittance Instruction Logged</span>
-                  <p className="font-mono text-[11px] text-[#6B7280]">Request Token ID: {token}. Internal clearing network is verifying banking routing credentials.</p>
+                  <span className="font-bold uppercase block mb-1">Withdrawal Requested</span>
+                  <p className="font-mono text-[11px] text-[#6B7280]">Your request has been received and is now being processed. Reference ID: {token}.</p>
                 </div>
               </div>
             )}
@@ -141,7 +137,7 @@ export default function WithdrawPage() {
               <form onSubmit={handleWithdraw} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Remittance Amount</label>
+                    <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Withdrawal Amount</label>
                     <input 
                       type="number"
                       value={amount}
@@ -151,7 +147,7 @@ export default function WithdrawPage() {
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Currency Realm</label>
+                    <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Currency</label>
                     <select 
                       value={selectedCurrency}
                       onChange={(e) => setSelectedCurrency(e.target.value)}
@@ -165,7 +161,7 @@ export default function WithdrawPage() {
                 </div>
 
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest px-1">
-                  <span className="text-[#6B7280]">Liquid Account Domain Equity:</span>
+                  <span className="text-[#6B7280]">Your Balance:</span>
                   <span className="text-[#16835B]">
                     ${formatNumber(profile?.balance || 0, { minimumFractionDigits: 2 })} {profile?.currency || "USD"}
                   </span>
@@ -173,10 +169,10 @@ export default function WithdrawPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Recipient Bank Institution</label>
+                    <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Bank Name</label>
                     <input 
                       type="text"
-                      placeholder="e.g. Zenith Bank / Access Bank"
+                      placeholder="e.g. Zenith Bank"
                       value={bankName}
                       onChange={(e) => setBankName(e.target.value)}
                       className="w-full border border-[#E4E4E4] p-3 text-xs uppercase tracking-widest bg-white focus:outline-none focus:border-[#0A0A0A] text-[#0A0A0A]"
@@ -184,10 +180,10 @@ export default function WithdrawPage() {
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Institutional Account Number</label>
+                    <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2">Account Number</label>
                     <input 
                       type="text"
-                      placeholder="10 Digits Vector"
+                      placeholder="Enter 10-digit number"
                       value={accountNumber}
                       onChange={(e) => setAccountNumber(e.target.value)}
                       className="w-full border border-[#E4E4E4] p-3 text-xs font-mono bg-white focus:outline-none focus:border-[#0A0A0A] text-[#0A0A0A]"
@@ -200,8 +196,8 @@ export default function WithdrawPage() {
                 <div className="bg-[#F7F7F5] border border-[#E4E4E4] p-4 flex items-start space-x-3">
                   <Banknote className="w-5 h-5 text-[#0055FF] shrink-0" />
                   <div className="text-[10px] text-[#6B7280] leading-relaxed">
-                    <span className="font-bold text-[#0A0A0A] block uppercase mb-1">Paystack Transfer Specifications</span>
-                    Gains settlement is executed via standard over-the-counter automated clearing routines using verified personal destination maps.
+                    <span className="font-bold text-[#0A0A0A] block uppercase mb-1">Standard Processing Time</span>
+                    Most bank withdrawals are processed within 24 hours. Please ensure your account details are correct before submitting.
                   </div>
                 </div>
 
@@ -211,7 +207,7 @@ export default function WithdrawPage() {
                   className="w-full btn-institutional-primary flex items-center justify-center space-x-2"
                 >
                   <ArrowUpCircle className="w-4 h-4" />
-                  <span>{isProcessing ? "Authorizing Accounting Matrix..." : `Execute Paystack Withdrawal Request`}</span>
+                  <span>{isProcessing ? "Processing..." : `Submit Withdrawal Request`}</span>
                 </button>
               </form>
             </Card>

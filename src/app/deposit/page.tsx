@@ -1,8 +1,8 @@
+
 'use client';
 
 /**
- * @fileOverview Vault Deposit Gateway for Varban Markets.
- * Supports both Fiat (Paystack) and Crypto Currency (Multi-chain Blockchain Nodes) deposit methods.
+ * @fileOverview Money Deposit page for Varban Markets.
  */
 
 import { useState } from "react";
@@ -17,7 +17,7 @@ const PaystackDepositForm = dynamic(() => import("@/components/PaystackDepositFo
   loading: () => (
     <div className="max-w-2xl mx-auto p-12 text-center">
       <div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#6B7280]">Initializing Paystack Vault Conduit...</p>
+      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#6B7280]">Loading payment options...</p>
     </div>
   )
 });
@@ -27,8 +27,8 @@ export default function DepositPage() {
 
   return (
     <AuthedLayout 
-      title="Vault Deposit" 
-      subtitle="Fund your trading account using Cryptocurrency or Fiat Paystack gateways"
+      title="Add Money" 
+      subtitle="Choose your preferred method to add funds to your trading account"
     >
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Deposit Gateway Tabs */}
@@ -43,8 +43,8 @@ export default function DepositPage() {
             )}
           >
             <Bitcoin className="w-4 h-4 text-[#F59E0B]" />
-            <span>Cryptocurrency Gateway</span>
-            <span className="text-[8px] bg-[#16835B] text-white px-1.5 py-0.5 rounded font-mono">Instant</span>
+            <span>Cryptocurrency</span>
+            <span className="text-[8px] bg-[#16835B] text-white px-1.5 py-0.5 rounded font-mono">Fast</span>
           </button>
 
           <button
@@ -57,7 +57,7 @@ export default function DepositPage() {
             )}
           >
             <CreditCard className="w-4 h-4 text-[#0055FF]" />
-            <span>Fiat & Card (Paystack)</span>
+            <span>Card or Bank Transfer</span>
           </button>
         </div>
 

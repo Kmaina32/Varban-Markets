@@ -1,7 +1,7 @@
 
 /**
- * @fileOverview Institutional Multi-Language Dictionary Matrix for Varban Markets.
- * Updated with Paystack-supported currency labels and Admin Inbox terms.
+ * @fileOverview Natural Multi-Language Dictionary Matrix for Varban Markets.
+ * Updated with simplified, natural English labels for a better user experience.
  */
 
 export type LocaleCode = 'en' | 'fr' | 'es' | 'pt' | 'zh-CN';
@@ -25,10 +25,10 @@ export const DICTIONARY = {
       orders: 'Orders',
       history: 'Trade History',
       watchlist: 'Watchlist',
-      wallet: 'Funds',
+      wallet: 'Money',
       deposit: 'Add Money',
       withdraw: 'Withdraw',
-      transactions: 'Account Logs',
+      transactions: 'History',
       account: 'Settings',
       verification: 'Verify Identity',
       security: 'Security',
@@ -40,7 +40,7 @@ export const DICTIONARY = {
       admin: 'Administration',
       adminOverview: 'Admin Overview',
       adminUsers: 'User Management',
-      adminLedger: 'Global Ledger',
+      adminLedger: 'Global History',
       adminMarkets: 'Market Control',
       adminInbox: 'Support Inbox'
     },
@@ -64,13 +64,13 @@ export const DICTIONARY = {
       marketDetails: 'Market Details',
       orderConfirmed: 'Order Confirmed',
       specs: 'Market Info',
-      riskPreVerify: 'Risk Check',
-      confirmedRef: 'Trade order recorded successfully.'
+      riskPreVerify: 'Check Details',
+      confirmedRef: 'Trade placed successfully.'
     },
     wallet: {
       available: 'Available Balance',
       pending: 'Pending',
-      metrics: 'Account Summary',
+      metrics: 'Summary',
       equity: 'Total Value',
       risk: 'Money at Risk',
       depositBtn: 'Add Money',
@@ -82,8 +82,8 @@ export const DICTIONARY = {
       amount: 'Amount',
       date: 'Date',
       noTx: 'No activity found.',
-      depositSuccess: 'Deposit Registered',
-      withdrawSuccess: 'Withdrawal Logged'
+      depositSuccess: 'Money Added',
+      withdrawSuccess: 'Withdrawal Started'
     },
     dashboard: {
       balance: 'Balance',
@@ -99,7 +99,7 @@ export const DICTIONARY = {
       live: 'Live'
     },
     tables: {
-      reference: 'Ref ID',
+      reference: 'Order ID',
       asset: 'Asset',
       type: 'Type',
       stake: 'Amount',
@@ -126,10 +126,10 @@ export const DICTIONARY = {
       watchlistTitle: 'Watchlist',
       watchlistSubtitle: 'Your favorite markets',
       depositTitle: 'Add Money',
-      depositSubtitle: 'Send funds to your account',
+      depositSubtitle: 'Add funds to your account',
       withdrawTitle: 'Withdraw Money',
       withdrawSubtitle: 'Take money out of your account',
-      transactionsTitle: 'Account Logs',
+      transactionsTitle: 'Activity History',
       transactionsSubtitle: 'List of all activity',
       accountTitle: 'Profile',
       accountSubtitle: 'Your personal settings',
@@ -146,7 +146,7 @@ export const DICTIONARY = {
       contactTitle: 'Support',
       contactSubtitle: 'Message our team',
       adminTitle: 'Control Center',
-      adminSubtitle: 'System-wide monitoring and oversight'
+      adminSubtitle: 'System-wide monitoring'
     },
     common: {
       loading: 'Loading...',
@@ -174,31 +174,31 @@ export const DICTIONARY = {
       orders: 'Ordres',
       history: 'Historique',
       watchlist: 'Liste de suivi',
-      wallet: 'Portefeuille',
-      deposit: 'Dépôt',
+      wallet: 'Argent',
+      deposit: 'Ajouter de l’argent',
       withdraw: 'Retrait',
-      transactions: 'Transactions',
+      transactions: 'Historique',
       account: 'Profil',
       verification: 'Vérification',
       security: 'Sécurité',
       notifications: 'Notifications',
       preferences: 'Préférences',
-      help: 'Centre d’aide',
-      contact: 'Support client',
+      help: 'Aide',
+      contact: 'Support',
       exit: 'Quitter',
       admin: 'Administration',
       adminOverview: 'Aperçu Admin',
       adminUsers: 'Gestion Utilisateurs',
-      adminLedger: 'Grand Livre Global',
+      adminLedger: 'Historique Global',
       adminMarkets: 'Contrôle Marché',
-      adminInbox: 'Boîte de réception support'
+      adminInbox: 'Support Inbox'
     },
     trading: {
-      setup: 'CONFIGURATION',
+      setup: 'RÉGLAGES',
       direction: 'Direction',
       stake: 'Montant',
       duration: 'Durée',
-      return: 'Rendement',
+      return: 'Profit potentiel',
       loss: 'Risque Max',
       review: 'Vérifier',
       confirm: 'Confirmer',
@@ -213,8 +213,8 @@ export const DICTIONARY = {
       marketDetails: 'Détails du marché',
       orderConfirmed: 'Ordre confirmé',
       specs: 'Infos marché',
-      riskPreVerify: 'Vérification du risque',
-      confirmedRef: 'Ordre enregistré avec succès.'
+      riskPreVerify: 'Vérification',
+      confirmedRef: 'Ordre réussi.'
     },
     wallet: {
       available: 'Solde',
@@ -222,7 +222,7 @@ export const DICTIONARY = {
       metrics: 'Résumé',
       equity: 'Valeur Totale',
       risk: 'Risque',
-      depositBtn: 'Déposer',
+      depositBtn: 'Ajouter',
       withdrawBtn: 'Retirer',
       recentTx: 'Activité',
       viewAll: 'Tout voir',
@@ -231,14 +231,14 @@ export const DICTIONARY = {
       amount: 'Montant',
       date: 'Date',
       noTx: 'Aucune activité.',
-      depositSuccess: 'Dépôt enregistré',
-      withdrawSuccess: 'Retrait enregistré'
+      depositSuccess: 'Argent ajouté',
+      withdrawSuccess: 'Retrait lancé'
     },
     dashboard: {
       balance: 'Solde',
       equity: 'Valeur',
       openRisk: 'Risque',
-      dailyPL: 'P/L Jour',
+      dailyPL: 'Profit Jour',
       recentTrades: 'Trades',
       viewHistory: 'Historique',
       watchlist: 'Suivi',
@@ -248,7 +248,7 @@ export const DICTIONARY = {
       live: 'Direct'
     },
     tables: {
-      reference: 'Réf',
+      reference: 'ID Ordre',
       asset: 'Actif',
       type: 'Type',
       stake: 'Montant',
@@ -274,11 +274,11 @@ export const DICTIONARY = {
       historySubtitle: 'Trades fermés',
       watchlistTitle: 'Suivi',
       watchlistSubtitle: 'Vos favoris',
-      depositTitle: 'Déposer',
+      depositTitle: 'Ajouter de l’argent',
       depositSubtitle: 'Ajouter des fonds',
       withdrawTitle: 'Retrait',
       withdrawSubtitle: 'Retirer des fonds',
-      transactionsTitle: 'Journal',
+      transactionsTitle: 'Historique',
       transactionsSubtitle: 'Toutes les activités',
       accountTitle: 'Profil',
       accountSubtitle: 'Vos réglages',
@@ -295,7 +295,7 @@ export const DICTIONARY = {
       contactTitle: 'Support',
       contactSubtitle: 'Message à l’équipe',
       adminTitle: 'Centre de Contrôle',
-      adminSubtitle: 'Surveillance et supervision du système'
+      adminSubtitle: 'Surveillance du système'
     },
     common: {
       loading: 'Chargement...',
