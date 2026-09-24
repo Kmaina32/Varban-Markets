@@ -1,12 +1,13 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // Determine if the requesting entity holds Root Administrative Authority
+    // Checks both email-based whitelist and document-level role assignment
     function isAdmin() {
       return request.auth != null && (
         request.auth.token.email == 'macos8388@gmail.com' || 
-        request.auth.token.email == 'gmaina4242@gmail.com'
+        request.auth.token.email == 'gmaina4242@gmail.com' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin'
       );
     }
 

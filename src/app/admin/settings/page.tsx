@@ -57,14 +57,14 @@ export default function PlatformSettings() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-6">
             <Card className="bg-white border-[#E4E4E4] p-6 shadow-sm">
-              <h3 className="text-xs font-bold uppercase tracking-wider border-b border-[#E4E4E4] pb-3 mb-6 flex items-center">
+              <h3 className="text-xs font-bold uppercase tracking-wider border-b border-[#E4E4E4] pb-3 mb-6 flex items-center text-[#0A0A0A]">
                 <Activity className="w-3.5 h-3.5 mr-2 text-[#0055FF]" />
                 Operational Status
               </h3>
               <div className="space-y-6">
                 <div className="flex justify-between items-center p-4 bg-[#F7F7F5] border border-[#E4E4E4]">
                   <div>
-                    <span className="text-[10px] font-bold uppercase block">Maintenance Mode</span>
+                    <span className="text-[10px] font-bold uppercase block text-[#0A0A0A]">Maintenance Mode</span>
                     <p className="text-[9px] text-[#6B7280]">Disables all trading operations globally.</p>
                   </div>
                   <input 
@@ -78,7 +78,7 @@ export default function PlatformSettings() {
             </Card>
 
             <Card className="bg-white border-[#E4E4E4] p-6 shadow-sm">
-              <h3 className="text-xs font-bold uppercase tracking-wider border-b border-[#E4E4E4] pb-3 mb-6 flex items-center">
+              <h3 className="text-xs font-bold uppercase tracking-wider border-b border-[#E4E4E4] pb-3 mb-6 flex items-center text-[#0A0A0A]">
                 <DollarSign className="w-3.5 h-3.5 mr-2 text-[#16835B]" />
                 Financial Thresholds
               </h3>
@@ -118,7 +118,7 @@ export default function PlatformSettings() {
 
           <div className="space-y-6">
             <Card className="bg-white border-[#E4E4E4] p-6 shadow-sm">
-              <h3 className="text-xs font-bold uppercase tracking-wider border-b border-[#E4E4E4] pb-3 mb-6 flex items-center">
+              <h3 className="text-xs font-bold uppercase tracking-wider border-b border-[#E4E4E4] pb-3 mb-6 flex items-center text-[#0A0A0A]">
                 <Settings className="w-3.5 h-3.5 mr-2 text-[#6B7280]" />
                 Identity & Compliance
               </h3>
@@ -135,16 +135,16 @@ export default function PlatformSettings() {
               </div>
             </Card>
 
-            <Card className="bg-[#0A0A0A] p-6 border-b-4 border-[#0055FF] text-white">
+            <Card className="bg-white border border-[#0055FF] p-6 border-b-4 border-b-[#0055FF] shadow-sm">
               <ShieldCheck className="w-8 h-8 text-[#0055FF] mb-4" />
-              <h4 className="text-xs font-bold uppercase tracking-wider mb-2">Authority Confirmation</h4>
+              <h4 className="text-xs font-bold uppercase tracking-wider mb-2 text-[#0A0A0A]">Authority Confirmation</h4>
               <p className="text-[10px] text-[#6B7280] leading-relaxed mb-6">
                 Modifying global platform parameters will propagate changes across all user sessions instantly. Ensure all metrics are verified against institutional liquidity boundaries.
               </p>
               <button 
                 onClick={handleSave}
                 disabled={loading}
-                className="w-full py-4 bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-[#0055FF] transition-all flex items-center justify-center space-x-2"
+                className="w-full py-4 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0055FF] transition-all flex items-center justify-center space-x-2 shadow-sm"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>Synchronize State</span>

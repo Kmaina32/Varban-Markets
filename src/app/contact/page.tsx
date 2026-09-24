@@ -76,9 +76,9 @@ export default function ContactPage() {
             </div>
 
             {user && (
-              <div className="bg-[#0A0A0A] text-white p-6 border-b-4 border-[#0055FF]">
+              <div className="bg-white border border-[#E4E4E4] p-6 border-b-4 border-b-[#0055FF] shadow-sm">
                 <ShieldCheck className="w-8 h-8 text-[#0055FF] mb-4" />
-                <h4 className="text-xs font-bold uppercase tracking-wider mb-2">Priority Account Status</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider mb-2 text-[#0A0A0A]">Priority Account Status</h4>
                 <p className="text-[10px] text-[#6B7280] leading-relaxed">
                   Authenticated workspace members receive priority status in the support queue for rapid resolution.
                 </p>
@@ -187,7 +187,7 @@ export default function ContactPage() {
       {/* Floating Chat Support Trigger */}
       <button 
         onClick={() => alert("Initializing Secure Chat Handshake...")}
-        className="fixed bottom-8 right-8 w-14 h-14 bg-[#0A0A0A] text-white flex items-center justify-center shadow-2xl hover:bg-[#0055FF] transition-all z-[100] border-2 border-white"
+        className="fixed bottom-8 right-8 w-14 h-14 bg-white text-[#0A0A0A] flex items-center justify-center shadow-2xl hover:bg-[#0055FF] hover:text-white transition-all z-[100] border-2 border-[#E4E4E4]"
       >
         <MessageCircle className="w-6 h-6" />
       </button>

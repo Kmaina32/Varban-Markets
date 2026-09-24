@@ -44,27 +44,28 @@ export default function LoginPage() {
             src={placeholderImages.auth.url}
             alt="Varban Infrastructure"
             fill
-            className="object-cover"
+            className="object-cover grayscale opacity-10"
             data-ai-hint={placeholderImages.auth.hint}
           />
-          <div className="absolute inset-0 bg-[#0A0A0A]/20"></div>
+          <div className="absolute inset-0 bg-white/40"></div>
           <div className="absolute bottom-12 left-12 right-12 z-10">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C9A227] block mb-2">Institutional Access</span>
-            <h2 className="text-2xl font-bold uppercase text-white tracking-tight leading-tight">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF] block mb-2">Institutional Access</span>
+            <h2 className="text-2xl font-bold uppercase text-[#0A0A0A] tracking-tight leading-tight">
               Secure Gateway to Derivative Markets
             </h2>
+            <div className="w-12 h-1 bg-[#0055FF] mt-4"></div>
           </div>
         </div>
 
         {/* Right Side: Form */}
-        <div className="w-full lg:w-1/2 p-8 sm:p-12 flex flex-col justify-center">
+        <div className="w-full lg:w-1/2 p-8 sm:p-12 flex flex-col justify-center bg-white">
           <div className="border-b border-[#E4E4E4] pb-6 mb-8">
             <h1 className="text-2xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Sign In</h1>
             <p className="text-xs text-[#6B7280] mt-1 uppercase tracking-widest font-bold">Access your professional workspace.</p>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-[#0055FF]/10 border border-[#0055FF]/20 text-[10px] font-bold text-[#0055FF] uppercase tracking-wide">
+            <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide">
               {error}
             </div>
           )}
@@ -108,7 +109,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn-institutional-primary py-4"
+              className="w-full btn-institutional-primary py-4 shadow-sm"
             >
               {loading ? "Authenticating..." : "Sign In to Workspace"}
             </button>
@@ -116,7 +117,7 @@ export default function LoginPage() {
 
           <div className="mt-10 pt-6 border-t border-[#E4E4E4] text-center">
             <span className="text-[11px] text-[#6B7280] uppercase tracking-wide">New to Varban Markets? </span>
-            <Link href="/register" className="text-[11px] font-bold text-[#0A0A0A] uppercase tracking-widest underline decoration-[#C9A227] decoration-2 underline-offset-4 ml-1">Create Account</Link>
+            <Link href="/register" className="text-[11px] font-bold text-[#0A0A0A] uppercase tracking-widest underline decoration-[#0055FF] decoration-2 underline-offset-4 ml-1">Create Account</Link>
           </div>
         </div>
       </div>

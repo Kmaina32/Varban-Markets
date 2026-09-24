@@ -84,13 +84,14 @@ export default function UnifiedSignupPage() {
         
         await setDoc(doc(db, "users", user.uid), {
           fullName: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
+          email: formData.email.toLowerCase(),
           phone: `${formData.dialCode} ${formData.phone}`,
           country: formData.country,
           balance: 1000.00,
           equity: 1000.00,
           currency: "USD",
           verificationStatus: "Not Verified",
+          role: "Trader",
           referralCode: generateReferralCode(),
           referredBy: referredByUid,
           createdAt: new Date().toISOString()
@@ -119,20 +120,21 @@ export default function UnifiedSignupPage() {
             src="/assets/auth.png"
             alt="Varban Infrastructure"
             fill
-            className="object-cover"
+            className="object-cover grayscale opacity-10"
           />
-          <div className="absolute inset-0 bg-[#0A0A0A]/20"></div>
+          <div className="absolute inset-0 bg-white/40"></div>
           <div className="absolute bottom-12 left-12 right-12 z-10">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF] block mb-2">Workspace Access</span>
-            <h2 className="text-2xl font-bold uppercase text-white tracking-tight leading-tight">
+            <h2 className="text-2xl font-bold uppercase text-[#0A0A0A] tracking-tight leading-tight">
               Institutional Grade Trading Infrastructure
             </h2>
+            <div className="w-12 h-1 bg-[#0055FF] mt-4"></div>
           </div>
         </div>
 
         {/* Right Side: Form */}
-        <div className="w-full lg:w-1/2 flex flex-col">
-          <div className="bg-white border-b border-[#E4E4E4] p-6 md:p-8 text-[#0A0A0A] relative overflow-hidden shrink-0">
+        <div className="w-full lg:w-1/2 flex flex-col bg-white">
+          <div className="bg-[#F7F7F5] border-b border-[#E4E4E4] p-6 md:p-8 text-[#0A0A0A] relative overflow-hidden shrink-0">
             <div className="relative z-10">
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF] block mb-2">Varban Markets</span>
               <h1 className="text-xl md:text-2xl font-bold uppercase tracking-tight mb-6">Create Account</h1>
@@ -147,7 +149,7 @@ export default function UnifiedSignupPage() {
                       <div className={`w-8 h-8 flex items-center justify-center border transition-all duration-300 ${
                         isComplete ? "bg-[#16835B] border-[#16835B] text-white" : 
                         isActive ? "bg-[#0055FF] border-[#0055FF] text-white" : 
-                        "border-[#E4E4E4] bg-[#F7F7F5] text-[#6B7280]"
+                        "border-[#E4E4E4] bg-white text-[#6B7280]"
                       }`}>
                         {isComplete ? <Check className="w-4 h-4" /> : <s.icon className="w-3.5 h-3.5" />}
                       </div>
@@ -164,7 +166,7 @@ export default function UnifiedSignupPage() {
 
           <div className="p-6 md:p-12 flex-grow flex flex-col justify-center">
             {error && (
-              <div className="mb-6 p-4 bg-[#C43D3D]/10 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide">
+              <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide">
                 {error}
               </div>
             )}
@@ -314,7 +316,7 @@ export default function UnifiedSignupPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`btn-institutional-primary py-4 ${step > 1 ? 'w-2/3' : 'w-full'}`}
+                  className={`btn-institutional-primary py-4 shadow-sm ${step > 1 ? 'w-2/3' : 'w-full'}`}
                 >
                   {step === 3 ? (loading ? "Processing..." : "Confirm & Commit") : "Next Procedure"}
                 </button>
