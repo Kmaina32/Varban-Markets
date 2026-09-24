@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -92,13 +91,12 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
         const interval = timeframe === '1D' ? '1day' : timeframe.replace('m', 'min');
         const priceData = await fetchHistoricalData(symbol, interval);
         
-        if (!priceData || priceData.length === 0) throw new Error("Signal Lost");
+        if (!priceData || priceData.length === 0) {
+          setLoading(false);
+          return;
+        }
 
-        // Clean up previous series if they exist
-        if (mainSeriesRef.current) chart.removeSeries(mainSeriesRef.current);
-        if (smaSeriesRef.current) chart.removeSeries(smaSeriesRef.current);
-        if (emaSeriesRef.current) chart.removeSeries(emaSeriesRef.current);
-
+        // Add main series based on mode
         if (chartMode === 'Candlestick') {
           const s = chart.addCandlestickSeries({
             upColor: '#16835B',
@@ -124,18 +122,23 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
           mainSeriesRef.current = s;
         }
 
+        // Add overlays
         if (showSMA) {
           const smaData = await fetchTechnicalIndicator('SMA', symbol, interval, 20);
-          const s = chart.addLineSeries({ color: '#F59E0B', lineWidth: 1, title: 'SMA 20' });
-          s.setData(smaData);
-          smaSeriesRef.current = s;
+          if (smaData.length > 0) {
+            const s = chart.addLineSeries({ color: '#F59E0B', lineWidth: 1, title: 'SMA 20' });
+            s.setData(smaData);
+            smaSeriesRef.current = s;
+          }
         }
 
         if (showEMA) {
           const emaData = await fetchTechnicalIndicator('EMA', symbol, interval, 50);
-          const s = chart.addLineSeries({ color: '#8B5CF6', lineWidth: 1, title: 'EMA 50' });
-          s.setData(emaData);
-          emaSeriesRef.current = s;
+          if (emaData.length > 0) {
+            const s = chart.addLineSeries({ color: '#8B5CF6', lineWidth: 1, title: 'EMA 50' });
+            s.setData(emaData);
+            emaSeriesRef.current = s;
+          }
         }
 
         chart.timeScale().fitContent();
@@ -161,6 +164,9 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       if (chartRef.current) {
         chartRef.current.remove();
         chartRef.current = null;
+        mainSeriesRef.current = null;
+        smaSeriesRef.current = null;
+        emaSeriesRef.current = null;
       }
     };
   }, [symbol, chartMode, showSMA, showEMA, timeframe]);
