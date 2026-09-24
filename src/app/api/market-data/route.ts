@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * @fileOverview Secure Market Data Proxy with Multi-Provider Auto-Switching.
- * Logic: Twelve Data -> Binance (Crypto Only) -> Alpha Vantage -> Finnhub (Fail-safe).
+ * Logic: Coinbase CDP -> Twelve Data -> Binance (Crypto Only) -> Alpha Vantage -> Finnhub (Fail-safe).
  * 
  * Auto-Switching Principle: Each fetch function returns null or an error object if 
  * rate-limited or unreachable. The GET handler catches these and cycles to the next.
@@ -11,8 +11,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const TWELVE_DATA_KEY = process.env.TWELVE_DATA_API_KEY;
 const ALPHA_VANTAGE_KEY = process.env.ALPHA_VANTAGE_API_KEY;
-// Provided key used as authoritative default
 const FINNHUB_KEY = "daqjp7pr01qott5g8tg0daqjp7pr01qott5g8tgg";
+const COINBASE_VERSION = "2022-01-06"; // Institutional Implementation Version
 
 const cache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 10000; // 10 seconds cache to preserve limits
@@ -33,7 +33,17 @@ export async function GET(req: NextRequest) {
 
   // Provider Chain Iteration
   
-  // 1. Try Primary: Twelve Data
+  // 1. Try Coinbase CDP (Institutional High Priority for major pairs)
+  const isMajor = ['BTC', 'ETH', 'SOL', 'EUR', 'GBP'].some(s => symbol.startsWith(s));
+  if (isMajor && type === 'quote') {
+    const cbResult = await fetchCoinbaseData(symbol);
+    if (cbResult) {
+      cache.set(cacheKey, { data: cbResult, timestamp: Date.now() });
+      return NextResponse.json(cbResult);
+    }
+  }
+
+  // 2. Try Primary: Twelve Data
   if (TWELVE_DATA_KEY) {
     const result = await fetchTwelveData(symbol, type, interval);
     if (result && !result.error) {
@@ -42,7 +52,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // 2. Crypto Specialization: Binance Public (Zero Key Required)
+  // 3. Crypto Specialization: Binance Public (Zero Key Required)
   const isCrypto = symbol.includes('/') || ['BTC', 'ETH', 'SOL', 'XRP'].some(s => symbol.startsWith(s));
   if (isCrypto) {
     const cryptoResult = await fetchBinanceFallback(symbol);
@@ -53,7 +63,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // 3. Fallback for Stocks/Forex: Alpha Vantage
+  // 4. Fallback for Stocks/Forex: Alpha Vantage
   if (ALPHA_VANTAGE_KEY) {
     const avResult = await fetchAlphaVantage(symbol, type);
     if (avResult) {
@@ -63,7 +73,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // 4. Final Fail-Safe: Finnhub (Using authoritative key)
+  // 5. Final Fail-Safe: Finnhub (Using authoritative key)
   if (FINNHUB_KEY) {
     const fhResult = await fetchFinnhubData(symbol, type, interval);
     if (fhResult && !fhResult.error) {
@@ -76,6 +86,34 @@ export async function GET(req: NextRequest) {
     error: 'Market data providers unavailable or rate limited', 
     status: 503 
   }, { status: 503 });
+}
+
+async function fetchCoinbaseData(symbol: string) {
+  try {
+    const baseAsset = symbol.split('/')[0] || symbol.substring(0, 3);
+    const url = `https://api.coinbase.com/v2/prices/${baseAsset}-USD/spot`;
+    
+    const res = await fetch(url, {
+      headers: {
+        'CB-VERSION': COINBASE_VERSION
+      }
+    });
+    const json = await res.json();
+
+    if (!json.data || !json.data.amount) return null;
+
+    return {
+      data: {
+        price: parseFloat(json.data.amount),
+        change: 0, // Spot endpoint doesn't return 24h change
+        changePercent: 0,
+        timestamp: Date.now(),
+        status: 'Open'
+      }
+    };
+  } catch (e) {
+    return null;
+  }
 }
 
 async function fetchTwelveData(symbol: string, type: string, interval: string) {

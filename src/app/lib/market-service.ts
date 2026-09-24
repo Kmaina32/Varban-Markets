@@ -1,6 +1,7 @@
+
 /**
  * @fileOverview Institutional Market Data Abstraction Layer.
- * Unified interface for Twelve Data via internal secure proxy.
+ * Unified interface for Multi-Provider Price Aggregation via secure proxy.
  */
 
 export interface PriceSnapshot {
@@ -31,6 +32,10 @@ export interface TechnicalIndicatorPoint {
 
 const PROXY_URL = "/api/market-data";
 
+/**
+ * Fetches real-time market results with multi-provider failover.
+ * Priority: Coinbase CDP -> Twelve Data -> Binance -> Finnhub
+ */
 export const fetchLivePrice = async (symbol: string): Promise<PriceSnapshot> => {
   try {
     const res = await fetch(`${PROXY_URL}?type=quote&symbol=${symbol}`);
@@ -59,7 +64,7 @@ export const fetchLivePrice = async (symbol: string): Promise<PriceSnapshot> => 
 
 export const fetchHistoricalData = async (symbol: string, interval: string = "1min"): Promise<HistoricalBar[]> => {
   try {
-    // Interval mapping for Twelve Data
+    // Interval mapping for Twelve Data / Finnhub
     const mappedInterval = interval === '1D' ? '1day' : interval.replace('m', 'min');
     const res = await fetch(`${PROXY_URL}?type=time_series&symbol=${symbol}&interval=${mappedInterval}&outputsize=300`);
     const json = await res.json();

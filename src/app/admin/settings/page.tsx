@@ -3,7 +3,7 @@
 
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
-import { Settings, ShieldCheck, DollarSign, Activity, Save, AlertTriangle, Database, Globe, Copy, Check } from "lucide-react";
+import { Settings, ShieldCheck, DollarSign, Activity, Save, AlertTriangle, Database, Globe, Copy, Check, Link as LinkIcon } from "lucide-react";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { useFirestore, useDoc } from "@/firebase";
 import { doc, setDoc } from "firebase/firestore";
@@ -27,7 +27,10 @@ export default function PlatformSettings() {
     supportEmail: "support@varbanmarkets.com",
     primaryMarketProvider: "Automatic",
     finnhubKey: "daqjp7pr01qott5g8tg0daqjp7pr01qott5g8tgg",
-    finnhubSecret: "daqjp7pr01qott5g8thg"
+    finnhubSecret: "daqjp7pr01qott5g8thg",
+    coinbaseApiKey: "",
+    coinbaseApiSecret: "",
+    coinbaseVersion: "2022-01-06"
   });
 
   const [copied, setCopied] = useState(false);
@@ -42,7 +45,10 @@ export default function PlatformSettings() {
         supportEmail: settings.supportEmail ?? "support@varbanmarkets.com",
         primaryMarketProvider: settings.primaryMarketProvider ?? "Automatic",
         finnhubKey: settings.finnhubKey ?? "daqjp7pr01qott5g8tg0daqjp7pr01qott5g8tgg",
-        finnhubSecret: settings.finnhubSecret ?? "daqjp7pr01qott5g8thg"
+        finnhubSecret: settings.finnhubSecret ?? "daqjp7pr01qott5g8thg",
+        coinbaseApiKey: settings.coinbaseApiKey ?? "",
+        coinbaseApiSecret: settings.coinbaseApiSecret ?? "",
+        coinbaseVersion: settings.coinbaseVersion ?? "2022-01-06"
       });
     }
   }, [settings]);
@@ -108,10 +114,36 @@ export default function PlatformSettings() {
                     className="w-full bg-[#F7F7F5] border border-[#E4E4E4] p-3 text-xs font-bold focus:outline-none focus:border-[#0055FF] appearance-none cursor-pointer"
                   >
                     <option value="Automatic">Automatic Failover (Intelligent)</option>
+                    <option value="Coinbase">Coinbase CDP (High-Precision)</option>
                     <option value="TwelveData">Twelve Data (Institutional)</option>
-                    <option value="Finnhub">Finnhub (Provided Key)</option>
-                    <option value="AlphaVantage">Alpha Vantage (Secondary)</option>
+                    <option value="Finnhub">Finnhub (SME Feed)</option>
                   </select>
+                </div>
+
+                {/* Coinbase Settings */}
+                <div className="border-l-2 border-[#0055FF] pl-4 space-y-4">
+                  <span className="text-[10px] font-bold uppercase text-[#0055FF]">Coinbase CDP Credentials</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1.5">API Key</label>
+                      <input 
+                        type="password"
+                        value={formData.coinbaseApiKey}
+                        onChange={(e) => setFormData({...formData, coinbaseApiKey: e.target.value})}
+                        className="w-full bg-[#F7F7F5] border border-[#E4E4E4] p-3 text-xs font-mono focus:outline-none focus:border-[#0055FF]"
+                        placeholder="organizations/..."
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1.5">API Secret</label>
+                      <input 
+                        type="password"
+                        value={formData.coinbaseApiSecret}
+                        onChange={(e) => setFormData({...formData, coinbaseApiSecret: e.target.value})}
+                        className="w-full bg-[#F7F7F5] border border-[#E4E4E4] p-3 text-xs font-mono focus:outline-none focus:border-[#0055FF]"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -146,9 +178,6 @@ export default function PlatformSettings() {
                   <code className="block w-full p-2 bg-[#F7F7F5] text-[10px] font-mono text-[#0A0A0A] truncate">
                     {webhookUrl}
                   </code>
-                  <p className="text-[8px] text-[#6B7280] mt-2 italic uppercase font-bold">
-                    * Configure this URL in your Finnhub dashboard to receive real-time price updates.
-                  </p>
                 </div>
               </div>
             </Card>
