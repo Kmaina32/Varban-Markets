@@ -1,7 +1,7 @@
-
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { 
@@ -26,7 +26,7 @@ import { cn } from "@/app/lib/utils";
  */
 
 export default function ReferralPortal() {
-  const { user } = useUser();
+  const { user } = userUser();
   const db = useFirestore();
   const { t, formatNumber, formatDate } = useTranslation();
   const [copied, setCopied] = useState(false);
@@ -61,6 +61,10 @@ export default function ReferralPortal() {
     { label: "Pending Payout", value: "$0.00", icon: DollarSign, color: "text-[#6B7280]" },
     { label: "Partner Level", value: "Standard", icon: Trophy, color: "text-[#C9A227]" }
   ];
+
+  function userUser() {
+    return useUser();
+  }
 
   return (
     <AuthedLayout 
