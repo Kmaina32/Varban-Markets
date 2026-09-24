@@ -3,22 +3,18 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { 
-  Layers, 
-  CreditCard, 
-  ShieldCheck, 
-  Search, 
-  HelpCircle, 
-  ArrowRight, 
   Monitor, 
   Wallet, 
   UserCheck, 
   Globe,
-  MessageSquare,
+  Lock,
+  Share2,
+  Search,
+  ArrowRight,
   ChevronDown,
   ChevronUp,
-  Zap,
-  Lock,
-  Share2
+  MessageSquare,
+  HelpCircle
 } from "lucide-react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { useUser } from "@/firebase";
@@ -36,36 +32,42 @@ export default function HelpPage() {
       title: "Trading Terminal", 
       icon: Monitor, 
       color: "text-[#0055FF]",
+      slug: "terminal",
       desc: "Master the execution engine. Learn about CALL/PUT vectors, stake commitment, and the risk pre-verification handshake."
     },
     { 
       title: "Capital & Vaults", 
       icon: Wallet, 
       color: "text-[#16835B]",
+      slug: "vaults",
       desc: "Manage your monetary domains. Understand the differences between Paystack Fiat processing and Blockchain Network nodes."
     },
     { 
       title: "Identity (KYC)", 
       icon: UserCheck, 
       color: "text-[#C9A227]",
+      slug: "kyc",
       desc: "Verification protocols. Learn about the 24-48 hour document audit window and how to unlock institutional withdrawal limits."
     },
     { 
       title: "Security & Access", 
       icon: Lock, 
       color: "text-[#C43D3D]",
+      slug: "security",
       desc: "Protect your workspace. Configure mandatory 2FA, monitor active IP sessions, and manage your account encryption keys."
     },
     { 
       title: "Global Markets", 
       icon: Globe, 
       color: "text-[#0A0A0A]",
+      slug: "markets",
       desc: "Explore the registry. Insights into synthetic indices, high-volatility pairs, and deterministic pricing feeds."
     },
     { 
       title: "Referral Network", 
       icon: Share2, 
       color: "text-[#0055FF]",
+      slug: "referral",
       desc: "Institutional growth. How to share your unique conduit and monitor your network enrollment metrics in the portal."
     }
   ];
@@ -118,21 +120,23 @@ export default function HelpPage() {
         {/* Knowledge Modules Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {WORKSPACE_GUIDES.map((guide, idx) => (
-            <Card key={idx} className="bg-white border-[#E4E4E4] p-6 shadow-sm hover:border-[#0055FF] transition-all group cursor-pointer">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="p-2 bg-[#F7F7F5] border border-[#E4E4E4] group-hover:border-[#0055FF] transition-colors">
-                  <guide.icon className={cn("w-5 h-5", guide.color)} />
+            <Link key={idx} href={`/help/${guide.slug}`}>
+              <Card className="bg-white border-[#E4E4E4] p-6 shadow-sm hover:border-[#0055FF] transition-all group cursor-pointer h-full">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="p-2 bg-[#F7F7F5] border border-[#E4E4E4] group-hover:border-[#0055FF] transition-colors">
+                    <guide.icon className={cn("w-5 h-5", guide.color)} />
+                  </div>
+                  <h4 className="text-xs font-bold uppercase text-[#0A0A0A] tracking-wider">{guide.title}</h4>
                 </div>
-                <h4 className="text-xs font-bold uppercase text-[#0A0A0A] tracking-wider">{guide.title}</h4>
-              </div>
-              <p className="text-[11px] text-[#6B7280] leading-relaxed">
-                {guide.desc}
-              </p>
-              <div className="mt-4 flex items-center text-[9px] font-bold uppercase tracking-widest text-[#0055FF] opacity-0 group-hover:opacity-100 transition-opacity">
-                <span>View Documentation</span>
-                <ArrowRight className="ml-1.5 w-3 h-3" />
-              </div>
-            </Card>
+                <p className="text-[11px] text-[#6B7280] leading-relaxed">
+                  {guide.desc}
+                </p>
+                <div className="mt-4 flex items-center text-[9px] font-bold uppercase tracking-widest text-[#0055FF] opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span>View Documentation</span>
+                  <ArrowRight className="ml-1.5 w-3 h-3" />
+                </div>
+              </Card>
+            </Link>
           ))}
         </div>
 
@@ -206,9 +210,9 @@ export default function HelpPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { icon: Layers, title: "Trading", desc: "How to open and close trades." },
-            { icon: CreditCard, title: "Payments", desc: "Adding and taking out money." },
-            { icon: ShieldCheck, title: "Security", desc: "Keeping your account safe." }
+            { icon: Monitor, title: "Trading", desc: "How to open and close trades." },
+            { icon: Wallet, title: "Payments", desc: "Adding and taking out money." },
+            { icon: Lock, title: "Security", desc: "Keeping your account safe." }
           ].map((item, idx) => (
             <div key={idx} className="bg-white border border-[#E4E4E4] p-6 shadow-sm hover:border-[#0055FF] transition-colors group cursor-pointer">
               <item.icon className="w-5 h-5 text-[#0055FF] mb-3" />
