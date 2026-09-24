@@ -37,11 +37,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(cached.data);
   }
 
-  // Normalize symbol for Twelve Data (e.g. BTCUSD -> BTC/USD)
+  // Normalize symbol for Twelve Data
+  // We handle both format styles: BTC/USD and BTCUSD
   let providerSymbol = symbol;
-  const cryptoForexSymbols = ["BTCUSD", "ETHUSD", "EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "XAGUSD"];
-  if (cryptoForexSymbols.includes(symbol) || (symbol.length === 6 && !symbol.includes('/'))) {
-    // Basic heuristic for pairs
+  
+  // If it's a 6-char alpha string without a slash, it's likely a forex/crypto pair
+  if (symbol.length === 6 && !symbol.includes('/') && /^[A-Z]+$/.test(symbol)) {
     providerSymbol = `${symbol.substring(0, 3)}/${symbol.substring(3, 6)}`;
   }
 
@@ -63,6 +64,10 @@ export async function GET(req: NextRequest) {
       endpoint = 'quote';
     } else if (type === 'indicator' && indicator) {
       endpoint = indicator.toLowerCase();
+    } else if (type === 'price') {
+      endpoint = 'price';
+    } else if (type === 'eod') {
+      endpoint = 'eod';
     }
 
     const response = await fetch(`${BASE_URL}/${endpoint}?${params.toString()}`);
@@ -96,6 +101,10 @@ export async function GET(req: NextRequest) {
         value: parseFloat(v[key])
       }));
       result = { data: points };
+    } else if (type === 'price') {
+      result = { data: { price: parseFloat(data.price || "0") } };
+    } else if (type === 'eod') {
+      result = { data: { close: parseFloat(data.close || "0"), datetime: data.datetime } };
     } else {
       const bars = (data.values || []).map((v: any) => ({
         time: new Date(v.datetime).getTime() / 1000,
