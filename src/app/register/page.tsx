@@ -121,7 +121,7 @@ export default function UnifiedSignupPage() {
             src="/assets/auth.png"
             alt="Varban Background"
             fill
-            className="object-cover grayscale"
+            className="object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
           <div className="absolute bottom-12 left-12 right-12 z-10">

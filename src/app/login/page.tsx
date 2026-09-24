@@ -45,7 +45,7 @@ export default function LoginPage() {
             src={placeholderImages.auth.url}
             alt="Varban Background"
             fill
-            className="object-cover grayscale"
+            className="object-cover"
             data-ai-hint={placeholderImages.auth.hint}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>

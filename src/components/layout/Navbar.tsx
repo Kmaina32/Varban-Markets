@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -24,12 +25,12 @@ export default function Navbar() {
   if (isStrict) return null;
 
   const publicLinks = [
-    { label: "Markets", href: "/markets" },
-    { label: "How It Works", href: "/how-it-works" },
+    { label: "Market List", href: "/markets" },
+    { label: "How to Trade", href: "/how-it-works" },
     { label: "Technology", href: "/technology" },
-    { label: "About", href: "/about" },
-    { label: "Help", href: "/help" },
-    { label: "Contact", href: "/contact" }
+    { label: "About Us", href: "/about" },
+    { label: "Help Center", href: "/help" },
+    { label: "Contact Support", href: "/contact" }
   ];
 
   return (

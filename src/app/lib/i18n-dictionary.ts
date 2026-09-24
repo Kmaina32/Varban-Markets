@@ -18,17 +18,17 @@ export const DICTIONARY = {
   en: {
     nav: {
       dashboard: 'Dashboard',
-      terminal: 'Terminal',
+      terminal: 'Trade',
       markets: 'Markets',
       portfolio: 'Portfolio',
       positions: 'Open Trades',
       orders: 'Orders',
-      history: 'Trade History',
+      history: 'History',
       watchlist: 'Watchlist',
       wallet: 'Money',
       deposit: 'Add Money',
       withdraw: 'Withdraw',
-      transactions: 'History',
+      transactions: 'Transaction History',
       account: 'Settings',
       verification: 'Verify Identity',
       security: 'Security',
@@ -51,7 +51,7 @@ export const DICTIONARY = {
       duration: 'Duration',
       return: 'Potential Profit',
       loss: 'Max Risk',
-      review: 'Check Trade',
+      review: 'Check Details',
       confirm: 'Confirm Trade',
       cancel: 'Cancel',
       openPositions: 'Open Trades',
@@ -167,7 +167,7 @@ export const DICTIONARY = {
   fr: {
     nav: {
       dashboard: 'Tableau de bord',
-      terminal: 'Terminal',
+      terminal: 'Trader',
       markets: 'Marchés',
       portfolio: 'Portefeuille',
       positions: 'Positions',
