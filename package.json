@@ -20,7 +20,9 @@
     "@radix-ui/react-slot": "^1.1.0",
     "firebase": "^11.0.2",
     "lightweight-charts": "^4.2.1",
-    "react-paystack": "^6.0.0"
+    "react-paystack": "^6.0.0",
+    "genkit": "^1.0.0",
+    "@genkit-ai/google-genai": "^1.0.0"
   },
   "overrides": {
     "react-paystack": {
