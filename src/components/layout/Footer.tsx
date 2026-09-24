@@ -3,30 +3,23 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useUser } from "@/firebase";
+
+const STRICT_PATHS = [
+  '/terminal', '/dashboard', '/portfolio', '/positions', 
+  '/orders', '/history', '/watchlist', '/wallet', 
+  '/deposit', '/withdraw', '/transactions', '/account', 
+  '/verification', '/security', '/notifications', '/preferences',
+  '/referral', '/admin', '/login', '/register'
+];
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const pathname = usePathname();
-  const { user } = useUser();
   
-  if (pathname?.startsWith('/admin')) {
-    return null;
-  }
+  const isStrict = STRICT_PATHS.some(path => pathname === path || pathname?.startsWith(path + '/'));
 
-  const strictWorkspacePaths = [
-    '/terminal', '/dashboard', '/portfolio', '/positions', 
-    '/orders', '/history', '/watchlist', '/wallet', 
-    '/deposit', '/withdraw', '/transactions', '/account', 
-    '/verification', '/security', '/notifications', '/preferences',
-    '/referral', '/login', '/register', '/admin'
-  ];
-  const sharedPaths = ['/markets', '/help', '/contact'];
-  
-  const isStrict = strictWorkspacePaths.some(path => pathname === path || pathname?.startsWith(path + '/'));
-  const isShared = sharedPaths.some(path => pathname === path || pathname?.startsWith(path + '/'));
-
-  if (isStrict || (isShared && user)) return null;
+  // Footer should show on all public/shared pages even if logged in
+  if (isStrict) return null;
 
   return (
     <footer className="bg-white text-[#0A0A0A] border-t border-[#E4E4E4] pt-16 pb-12 shadow-[0_-1px_3px_0_rgba(0,0,0,0.05)]">

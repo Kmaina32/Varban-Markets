@@ -2,13 +2,14 @@
 
 /**
  * @fileOverview Master Authenticated Layout with integrated Mobile Drawer, Balance Matrix & Profile Dropdown.
+ * Refined to strictly only show Workspace UI for internal paths.
  */
 
 import AuthedSidebar from "./AuthedSidebar";
 import AdminSidebar from "./AdminSidebar";
 import AdminHeader from "./AdminHeader";
 import ProfileDropdown from "./ProfileDropdown";
-import { Bell, User, Menu, X, ChevronDown, Check, Sparkles } from "lucide-react";
+import { Bell, Menu, X, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useUser, useDoc, useFirestore } from "@/firebase";
@@ -22,7 +23,7 @@ const STRICT_PATHS = [
   '/orders', '/history', '/watchlist', '/wallet', 
   '/deposit', '/withdraw', '/transactions', '/account', 
   '/verification', '/security', '/notifications', '/preferences',
-  '/referral', '/admin', '/admin/users', '/admin/transactions', '/admin/markets'
+  '/referral', '/admin'
 ];
 
 const ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
@@ -86,7 +87,8 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
     }
   }, [user, loading, isStrict, isAdminPath, isAdmin, router]);
 
-  if (isTerminal) return <>{children}</>;
+  // Handle Terminal bypass or non-strict paths (like Help, Contact)
+  if (isTerminal || !isStrict) return <>{children}</>;
 
   if (loading) {
     return (
@@ -96,9 +98,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
     );
   }
 
-  if (!user && isStrict) return null;
-  if (user && isAdminPath && !isAdmin) return null;
-  if (!user) return <>{children}</>;
+  if (!user) return null; // Let the redirect logic handle it
 
   if (isAdminPath) {
     return (
@@ -138,7 +138,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
 
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
-      <header className="relative h-16 border-b border-[#E4E4E4] bg-white flex items-center justify-between px-3 md:px-6 shrink-0 z-150 shadow-sm">
+      <header className="relative h-16 border-b border-[#E4E4E4] bg-white flex items-center justify-between px-3 md:px-6 shrink-0 z-[150] shadow-sm">
         <div className="flex items-center space-x-2 md:space-x-4">
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
@@ -160,7 +160,6 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
         </div>
 
         <div className="flex items-center space-x-2 md:space-x-6">
-          {/* Header Account Balance Pill */}
           <button 
             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
             className="flex items-center space-x-2 border border-[#E4E4E4] px-2 md:px-3 py-1 bg-white hover:bg-[#F7F7F5] transition-colors shadow-sm select-none"
@@ -182,7 +181,6 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
               <span className="absolute top-1 right-1 w-2 h-2 bg-[#0055FF] rounded-full border border-white"></span>
             </Link>
 
-            {/* Profile Dropdown Container */}
             <div className="relative">
               <button 
                 onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)} 

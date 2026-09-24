@@ -4,27 +4,26 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LayoutDashboard } from "lucide-react";
 import { useUser } from "@/firebase";
+
+const STRICT_PATHS = [
+  '/terminal', '/dashboard', '/portfolio', '/positions', 
+  '/orders', '/history', '/watchlist', '/wallet', 
+  '/deposit', '/withdraw', '/transactions', '/account', 
+  '/verification', '/security', '/notifications', '/preferences',
+  '/referral', '/admin'
+];
 
 export default function Navbar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user } = useUser();
   
-  const strictWorkspacePaths = [
-    '/terminal', '/dashboard', '/portfolio', '/positions', 
-    '/orders', '/history', '/watchlist', '/wallet', 
-    '/deposit', '/withdraw', '/transactions', '/account', 
-    '/verification', '/security', '/notifications', '/preferences',
-    '/referral', '/admin'
-  ];
-  const sharedPaths = ['/markets', '/help', '/contact'];
-  
-  const isStrict = strictWorkspacePaths.some(path => pathname === path || pathname?.startsWith(path + '/'));
-  const isShared = sharedPaths.some(path => pathname === path || pathname?.startsWith(path + '/'));
+  const isStrict = STRICT_PATHS.some(path => pathname === path || pathname?.startsWith(path + '/'));
 
-  if (isStrict || (isShared && user)) return null;
+  // Navbar should show on all public/shared pages even if logged in
+  if (isStrict) return null;
 
   const publicLinks = [
     { label: "Markets", href: "/markets" },
@@ -67,12 +66,21 @@ export default function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center space-x-6">
-            <Link href="/login" className="text-[10px] text-[#6B7280] hover:text-[#0A0A0A] uppercase tracking-widest font-bold transition-colors">
-              Log In
-            </Link>
-            <Link href="/register" className="bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest px-6 py-2.5 hover:bg-[#0A0A0A] transition-colors duration-200 border border-[#0055FF]">
-              Open Account
-            </Link>
+            {user ? (
+              <Link href="/dashboard" className="bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest px-6 py-2.5 hover:bg-[#0A0A0A] transition-colors duration-200 border border-[#0055FF] flex items-center gap-2">
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                <span>Go to Workspace</span>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="text-[10px] text-[#6B7280] hover:text-[#0A0A0A] uppercase tracking-widest font-bold transition-colors">
+                  Log In
+                </Link>
+                <Link href="/register" className="bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest px-6 py-2.5 hover:bg-[#0A0A0A] transition-colors duration-200 border border-[#0055FF]">
+                  Open Account
+                </Link>
+              </>
+            )}
           </div>
 
           <div className="md:hidden">
@@ -120,20 +128,32 @@ export default function Navbar() {
                 ))}
               </nav>
               <div className="flex flex-col space-y-4 pt-4">
-                <Link 
-                  href="/login" 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-full py-4 text-center text-xs font-bold uppercase tracking-widest border border-[#E4E4E4]"
-                >
-                  Log In
-                </Link>
-                <Link 
-                  href="/register" 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-full py-4 text-center text-xs font-bold uppercase tracking-widest bg-[#0055FF] text-white"
-                >
-                  Open Account
-                </Link>
+                {user ? (
+                  <Link 
+                    href="/dashboard" 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="w-full py-4 text-center text-xs font-bold uppercase tracking-widest bg-[#0055FF] text-white"
+                  >
+                    Go to Workspace
+                  </Link>
+                ) : (
+                  <>
+                    <Link 
+                      href="/login" 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="w-full py-4 text-center text-xs font-bold uppercase tracking-widest border border-[#E4E4E4]"
+                    >
+                      Log In
+                    </Link>
+                    <Link 
+                      href="/register" 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="w-full py-4 text-center text-xs font-bold uppercase tracking-widest bg-[#0055FF] text-white"
+                    >
+                      Open Account
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>

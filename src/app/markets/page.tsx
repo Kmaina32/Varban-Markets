@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Search, Sliders, Star } from "lucide-react";
+import { Search, Sliders, Star, LayoutDashboard } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
 import { Button } from "@/components/ui/button";
@@ -15,13 +15,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import AuthedLayout from "@/components/layout/AuthedLayout";
 import { useUser, useFirestore, useCollection } from "@/firebase";
 import { doc, setDoc, deleteDoc, collection } from "firebase/firestore";
 
 /**
  * @fileOverview Institutional Market Registry.
- * Allows traders to browse instruments, monitor live quotes, and manage their watchlist.
+ * Shared page that renders in the public layout context.
  */
 
 export default function MarketsPage() {
@@ -100,11 +99,26 @@ export default function MarketsPage() {
   });
 
   return (
-    <AuthedLayout 
-      title="Market Registry" 
-      subtitle="INSTRUMENT REGISTRY & LIVE FEEDS"
-    >
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="bg-[#F7F7F5] min-h-screen py-16 px-4">
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* Header Branding */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-[#E4E4E4] pb-8">
+          <div>
+            <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.2em] block mb-2">Instrument Registry</span>
+            <h1 className="text-3xl font-bold uppercase tracking-tight text-[#0A0A0A]">Global Market Feed</h1>
+            <p className="text-xs text-[#6B7280] mt-3 leading-relaxed max-w-xl">
+              Monitor live quotes across all supported asset domains. Authenticated traders can manage their watchlist and access the execution terminal directly.
+            </p>
+          </div>
+          {user && (
+            <Link href="/dashboard" className="btn-institutional-secondary flex items-center gap-2">
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span>Back to Dashboard</span>
+            </Link>
+          )}
+        </div>
+
         {errorStatus && (
           <div className="p-3 bg-[#FCF1F1] border border-[#C43D3D] text-[10px] uppercase font-bold text-[#C43D3D]">
             {errorStatus}
@@ -164,7 +178,8 @@ export default function MarketsPage() {
                     <TableCell className="text-center">
                       <button 
                         onClick={() => toggleWatchlist(inst)}
-                        className={`transition-all transform active:scale-90 ${starred ? 'text-[#0055FF]' : 'text-[#E4E4E4] hover:text-[#0055FF]'}`}
+                        disabled={!user}
+                        className={`transition-all transform active:scale-90 ${!user ? 'opacity-20' : starred ? 'text-[#0055FF]' : 'text-[#E4E4E4] hover:text-[#0055FF]'}`}
                       >
                         <Star className={`w-4 h-4 ${starred ? 'fill-[#0055FF]' : ''}`} />
                       </button>
@@ -191,7 +206,7 @@ export default function MarketsPage() {
                     </TableCell>
                     <TableCell className="text-center">
                       <Button asChild size="sm" variant="brand" className="h-7 px-4">
-                        <Link href={`/terminal?symbol=${inst.symbol}`}>
+                        <Link href={user ? `/terminal?symbol=${inst.symbol}` : '/login'}>
                           <span>Terminal</span>
                           <Sliders className="ml-1.5 w-3 h-3" />
                         </Link>
@@ -204,6 +219,6 @@ export default function MarketsPage() {
           </Table>
         </Card>
       </div>
-    </AuthedLayout>
+    </div>
   );
 }
