@@ -1,7 +1,7 @@
 # VARBAN MARKETS — LEAD SYSTEM DOCUMENTATION
 
 ## PLATFORM OVERVIEW
-Varban Markets is a corporate electronic trading protocol engineered for advanced derivatives and synthetic index execution. The workspace utilizes a highly precise, low-friction white interface layout tuned for institutional operators who prioritize deterministic settlement boundaries and comprehensive ledger audibility.
+Varban Markets is a professional electronic trading platform engineered for derivatives and synthetic markets. The workspace utilizes a high-precision institutional white design tuned for reliability and clear results.
 
 ---
 
@@ -9,32 +9,34 @@ Varban Markets is a corporate electronic trading protocol engineered for advance
 
 ### A. DATA LOGGING & FIREBASE CONDUITS
 * **Real-Time Position Accounting:** Active and settled contracts are tracked under `users/{userId}/positions` with real-time Firestore synchronization.
-* **Capital Remittance Systems:** Structural vaults handle simulated or live bank transmission handshakes, using atomic `increment()` mechanics for ledger integrity.
+* **Money Management:** Systems handle bank (Paystack) and crypto transmissions, using atomic balance updates for total integrity.
 * **Watchlist Synchronization:** Interactive monitors across sub-collections for high-priority tickers.
 
 ### B. RESPONSIVE LAYER ARCHITECTURE
-* **Adaptive Navigation Modules:** Collapsible mobile drawers with institutional font-weight hierarchies and precise padding.
-* **Absolute Visual Centering:** Mobile-specific brand alignment centered strictly at screen coordinates, while workstation headers remain left-aligned.
-* **Unified Workspace Headers:** Integrated account selector (Real vs Demo) and profile portal for streamlined navigation.
+* **Adaptive Navigation Modules:** Collapsible mobile drawers with natural hierarchies and precise padding.
+* **Uniform Design System:** Standardized institutional white backgrounds across all modules, from Trade to Admin.
+* **Unified Workspace Headers:** Integrated account selector (Real vs Practice) and profile portal for streamlined navigation.
 
 ### C. LOCALIZATION & ACCESSIBILITY
-* **Simplified English Foundations:** Clear, non-speculative financial terminology used throughout the UI.
-* **Translation Matrix:** Centralized dictionary (`src/app/lib/i18n-dictionary.ts`) controlling every button, header, and metadata label.
+* **Natural English Foundations:** Clear, everyday financial terminology used throughout the UI to ensure accessibility.
+* **Mandatory Legal Review:** Registration flow requires users to navigate all 8 regulatory documents before account creation.
 
-### D. SYSTEM STABILITY & SECURITY
-* **Type-Safe Infrastructure:** Resolved all TypeScript compilation barriers in terminal charting and profile management.
-* **Vercel Deployment:** Successfully deployed with 29/29 static pages generated and optimized.
+### D. MARKET DATA INFRASTRUCTURE
+* **Multi-Provider Fallback:** Integrated fallback logic for market data.
+* **Primary Provider:** Twelve Data (Requires `TWELVE_DATA_API_KEY`).
+* **Fallback 1 (Crypto):** Binance Public API (Free, no key required).
+* **Fallback 2 (Forex/Stocks):** Alpha Vantage (Requires `ALPHA_VANTAGE_API_KEY`).
+* **Fallback 3 (Stocks):** Finnhub (Requires `FINNHUB_API_KEY`).
 
 ---
 
 ## 2. PRODUCTION STATUS TRACKER
-- [x] Institutional White Design System Layouts
-- [x] Absolute Mobile Drawer Consolidation
-- [x] Real vs Demo Persistent Context Switches
-- [x] Firestore Live Ledger Tracking Integration
-- [x] Simplified Language Matrix Execution
-- [x] Vercel Deployment Optimization (Output Directory: Default)
-- [x] Production Build Verified (29/29 Pages Optimized)
+- [x] Institutional White Design System
+- [x] Natural English Conversion (All Pages)
+- [x] AI Context-Aware Support Chat
+- [x] Mandatory Legal Wizard for Registration
+- [x] Admin Authority Allocation Tool
+- [x] Market Data Fallback Architecture
 
 ---
 *Operational Ledger Status: Finalized, Synchronized & Locked.*

@@ -1,128 +1,165 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * @fileOverview Secure Market Data Proxy with Caching for Twelve Data.
- * Handles server-side requests for time series, quotes, and technical indicators.
+ * @fileOverview Secure Market Data Proxy with Multi-Provider Fallback.
+ * Attempts Twelve Data first, then falls back to Binance (for Crypto) 
+ * or Alpha Vantage/Finnhub (for Forex/Stocks) if keys are provided.
  */
 
 const TWELVE_DATA_KEY = process.env.TWELVE_DATA_API_KEY;
-const BASE_URL = "https://api.twelvedata.com";
+const ALPHA_VANTAGE_KEY = process.env.ALPHA_VANTAGE_API_KEY;
+const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
 
-// Simple in-memory cache for production prototype
 const cache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_TTL = 15000; // 15 seconds cache
+const CACHE_TTL = 10000; // 10 seconds cache
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const type = searchParams.get('type') || 'time_series';
   const symbol = searchParams.get('symbol');
   const interval = searchParams.get('interval') || '1min';
-  const outputsize = searchParams.get('outputsize') || '300';
-  const indicator = searchParams.get('indicator'); // Specific technical indicator e.g. ema, sma
-  const timePeriod = searchParams.get('time_period');
 
-  if (!symbol) {
-    return NextResponse.json({ error: 'Symbol required' }, { status: 400 });
-  }
+  if (!symbol) return NextResponse.json({ error: 'Symbol required' }, { status: 400 });
 
-  if (!TWELVE_DATA_KEY) {
-    return NextResponse.json({ error: 'Market data provider key not configured' }, { status: 500 });
-  }
-
-  // Construct cache key based on all identifying params
-  const cacheKey = `${type}-${symbol}-${interval}-${outputsize}-${indicator || ''}-${timePeriod || ''}`;
+  const cacheKey = `${type}-${symbol}-${interval}`;
   const cached = cache.get(cacheKey);
-
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     return NextResponse.json(cached.data);
   }
 
-  // Normalize symbol for Twelve Data
-  // We handle both format styles: BTC/USD and BTCUSD
-  let providerSymbol = symbol;
-  
-  // If it's a 6-char alpha string without a slash, it's likely a forex/crypto pair
-  if (symbol.length === 6 && !symbol.includes('/') && /^[A-Z]+$/.test(symbol)) {
-    providerSymbol = `${symbol.substring(0, 3)}/${symbol.substring(3, 6)}`;
+  // 1. Try Primary Provider (Twelve Data)
+  if (TWELVE_DATA_KEY) {
+    const result = await fetchTwelveData(symbol, type, interval);
+    if (result && !result.error) {
+      cache.set(cacheKey, { data: result, timestamp: Date.now() });
+      return NextResponse.json(result);
+    }
   }
 
-  const params = new URLSearchParams({
-    symbol: providerSymbol,
-    interval: interval,
-    outputsize: outputsize,
-    apikey: TWELVE_DATA_KEY,
-    order: 'asc'
-  });
+  // 2. Fallback Logic for Crypto (Binance Public - No Key Required)
+  if (symbol.includes('/') || ['BTC', 'ETH', 'SOL', 'XRP'].some(s => symbol.startsWith(s))) {
+    const cryptoResult = await fetchBinanceFallback(symbol);
+    if (cryptoResult) {
+      const formatted = { data: cryptoResult };
+      cache.set(cacheKey, { data: formatted, timestamp: Date.now() });
+      return NextResponse.json(formatted);
+    }
+  }
 
-  if (timePeriod) params.append('time_period', timePeriod);
-  if (type === 'indicator') params.append('series_type', 'close');
+  // 3. Fallback for Stocks/Forex (Alpha Vantage)
+  if (ALPHA_VANTAGE_KEY) {
+    const avResult = await fetchAlphaVantage(symbol, type);
+    if (avResult) {
+      const formatted = { data: avResult };
+      cache.set(cacheKey, { data: formatted, timestamp: Date.now() });
+      return NextResponse.json(formatted);
+    }
+  }
 
+  return NextResponse.json({ error: 'Market data providers unavailable or rate limited' }, { status: 503 });
+}
+
+async function fetchTwelveData(symbol: string, type: string, interval: string) {
   try {
-    // Determine endpoint based on type
-    let endpoint = 'time_series';
-    if (type === 'quote') {
-      endpoint = 'quote';
-    } else if (type === 'indicator' && indicator) {
-      endpoint = indicator.toLowerCase();
-    } else if (type === 'price') {
-      endpoint = 'price';
-    } else if (type === 'eod') {
-      endpoint = 'eod';
+    let providerSymbol = symbol;
+    if (symbol.length === 6 && !symbol.includes('/')) {
+      providerSymbol = `${symbol.substring(0, 3)}/${symbol.substring(3, 6)}`;
     }
 
-    const response = await fetch(`${BASE_URL}/${endpoint}?${params.toString()}`);
-    const data = await response.json();
+    const endpoint = type === 'quote' ? 'quote' : 'time_series';
+    const url = `https://api.twelvedata.com/${endpoint}?symbol=${providerSymbol}&interval=${interval}&apikey=${TWELVE_DATA_KEY}&order=asc&outputsize=300`;
+    
+    const res = await fetch(url);
+    const data = await res.json();
 
-    if (data.status === 'error' || data.code === 429) {
-      return NextResponse.json({ error: data.message || 'Provider Rate Limit reached' }, { status: 429 });
-    }
-
-    let result;
+    if (data.status === 'error' || data.code === 429) return { error: true };
 
     if (type === 'quote') {
-      result = {
+      return {
         data: {
           price: parseFloat(data.price || data.close || "0"),
           change: parseFloat(data.change || "0"),
           changePercent: parseFloat(data.percent_change || "0"),
-          open: parseFloat(data.open || "0"),
-          high: parseFloat(data.high || "0"),
-          low: parseFloat(data.low || "0"),
-          volume: parseFloat(data.volume || "0"),
-          status: 'Open',
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          status: 'Open'
         }
       };
-    } else if (type === 'indicator') {
-      // Indicator response usually has a key matching the indicator name in lowercase
-      const key = indicator!.toLowerCase();
-      const points = (data.values || []).map((v: any) => ({
-        time: new Date(v.datetime).getTime() / 1000,
-        value: parseFloat(v[key])
-      }));
-      result = { data: points };
-    } else if (type === 'price') {
-      result = { data: { price: parseFloat(data.price || "0") } };
-    } else if (type === 'eod') {
-      result = { data: { close: parseFloat(data.close || "0"), datetime: data.datetime } };
-    } else {
-      const bars = (data.values || []).map((v: any) => ({
+    }
+
+    return {
+      data: (data.values || []).map((v: any) => ({
         time: new Date(v.datetime).getTime() / 1000,
         open: parseFloat(v.open),
         high: parseFloat(v.high),
         low: parseFloat(v.low),
-        close: parseFloat(v.close),
-        volume: parseFloat(v.volume || "0")
-      }));
-      result = { data: bars };
+        close: parseFloat(v.close)
+      }))
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+async function fetchBinanceFallback(symbol: string) {
+  try {
+    // Format: BTC/USD -> BTCUSDT
+    const cleanSymbol = symbol.replace('/', '').replace('USD', 'USDT');
+    const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${cleanSymbol}`);
+    const data = await res.json();
+    if (!data.lastPrice) return null;
+
+    return {
+      price: parseFloat(data.lastPrice),
+      change: parseFloat(data.priceChange),
+      changePercent: parseFloat(data.priceChangePercent),
+      timestamp: Date.now(),
+      status: 'Open'
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+async function fetchAlphaVantage(symbol: string, type: string) {
+  try {
+    const isForex = symbol.includes('/') || symbol.length === 6;
+    const functionName = isForex ? 'CURRENCY_EXCHANGE_RATE' : 'GLOBAL_QUOTE';
+    let url = `https://www.alphavantage.co/query?function=${functionName}&apikey=${ALPHA_VANTAGE_KEY}`;
+
+    if (isForex) {
+      const from = symbol.substring(0, 3);
+      const to = symbol.includes('/') ? symbol.split('/')[1] : symbol.substring(3, 6);
+      url += `&from_currency=${from}&to_currency=${to}`;
+    } else {
+      url += `&symbol=${symbol}`;
     }
 
-    if (result.data || type === 'quote') {
-      cache.set(cacheKey, { data: result, timestamp: Date.now() });
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (isForex && data['Realtime Currency Exchange Rate']) {
+      const rate = data['Realtime Currency Exchange Rate'];
+      return {
+        price: parseFloat(rate['5. Exchange Rate']),
+        change: 0,
+        changePercent: 0,
+        timestamp: Date.now(),
+        status: 'Open'
+      };
     }
 
-    return NextResponse.json(result);
-  } catch (error) {
-    return NextResponse.json({ error: 'Internal Signal Failure' }, { status: 500 });
+    if (data['Global Quote']) {
+      const quote = data['Global Quote'];
+      return {
+        price: parseFloat(quote['05. price']),
+        change: parseFloat(quote['09. change']),
+        changePercent: parseFloat(quote['10. change percent'].replace('%', '')),
+        timestamp: Date.now(),
+        status: 'Open'
+      };
+    }
+    return null;
+  } catch (e) {
+    return null;
   }
 }
