@@ -198,69 +198,9 @@ export default function ProfileDropdown({
         </div>
       </div>
 
-      {/* Navigation Menu Options */}
+      {/* Navigation Menu Options - Streamlined to remove redundant sidebar links */}
       <div className="p-1 space-y-0.5 divide-y divide-[#F7F7F5]">
         <div className="py-1">
-          <Link
-            href="/terminal"
-            onClick={onClose}
-            className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#0A0A0A] hover:bg-[#F7F7F5] flex items-center justify-between"
-          >
-            <span className="flex items-center gap-2">
-              <BarChart3 className="w-3.5 h-3.5 text-[#0055FF]" /> Trading Terminal
-            </span>
-            <ChevronRight className="w-3 h-3 text-[#6B7280]" />
-          </Link>
-          <Link
-            href="/dashboard"
-            onClick={onClose}
-            className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#0A0A0A] hover:bg-[#F7F7F5] flex items-center justify-between"
-          >
-            <span className="flex items-center gap-2">
-              <LayoutDashboard className="w-3.5 h-3.5 text-[#6B7280]" /> Dashboard Summary
-            </span>
-            <ChevronRight className="w-3 h-3 text-[#6B7280]" />
-          </Link>
-          <Link
-            href="/wallet"
-            onClick={onClose}
-            className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#0A0A0A] hover:bg-[#F7F7F5] flex items-center justify-between"
-          >
-            <span className="flex items-center gap-2">
-              <Bitcoin className="w-3.5 h-3.5 text-[#F59E0B]" /> Crypto & Wallet Vault
-            </span>
-            <ChevronRight className="w-3 h-3 text-[#6B7280]" />
-          </Link>
-        </div>
-
-        <div className="py-1">
-          <Link
-            href="/account"
-            onClick={onClose}
-            className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5] flex items-center justify-between"
-          >
-            <span className="flex items-center gap-2">
-              <Settings className="w-3.5 h-3.5" /> Profile & Settings
-            </span>
-          </Link>
-          <Link
-            href="/verification"
-            onClick={onClose}
-            className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5] flex items-center justify-between"
-          >
-            <span className="flex items-center gap-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#16835B]" /> KYC Verification
-            </span>
-          </Link>
-          <Link
-            href="/security"
-            onClick={onClose}
-            className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5] flex items-center justify-between"
-          >
-            <span className="flex items-center gap-2">
-              <Lock className="w-3.5 h-3.5" /> Security & 2FA
-            </span>
-          </Link>
           {isAdmin && (
             <Link
               href="/admin"
@@ -270,6 +210,7 @@ export default function ProfileDropdown({
               <span className="flex items-center gap-2">
                 <Shield className="w-3.5 h-3.5" /> Admin Portal
               </span>
+              <ChevronRight className="w-3 h-3" />
             </Link>
           )}
         </div>

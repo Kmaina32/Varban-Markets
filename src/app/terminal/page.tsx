@@ -464,7 +464,6 @@ export default function TerminalWorkspace() {
 
                 <div className="p-3 border flex items-center justify-between bg-[#F7F7F5] border-[#E4E4E4]">
                   <div className="flex items-center space-x-2">
-                    <Zap className={cn("w-4 h-4", oneClickTrade ? "text-amber-500" : "text-[#6B7280]")} />
                     <div><span className="text-[9px] font-bold uppercase tracking-wider block">One-Click Trade</span></div>
                   </div>
                   <button onClick={() => setOneClickTrade(!oneClickTrade)} className={cn("w-10 h-5 rounded-full transition-colors relative", oneClickTrade ? 'bg-[#0055FF]' : 'bg-[#E4E4E4]')}><span className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all", oneClickTrade ? 'left-5.5' : 'left-0.5')} /></button>
