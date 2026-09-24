@@ -54,20 +54,20 @@ export default function UserDashboard() {
   const activeEquity = accountMode === 'REAL' ? (profile?.equity || profile?.balance || 0) : demoBalance;
 
   const metrics = [
-    { title: accountMode === 'REAL' ? t('dashboard.balance') : 'Demo Balance', value: activeBalance, icon: DollarSign, color: accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]" },
-    { title: accountMode === 'REAL' ? t('dashboard.equity') : 'Demo Value', value: activeEquity, icon: TrendingUp, color: "text-[#0A0A0A]" },
+    { title: accountMode === 'REAL' ? t('dashboard.balance') : 'Practice Balance', value: activeBalance, icon: DollarSign, color: accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]" },
+    { title: accountMode === 'REAL' ? t('dashboard.equity') : 'Practice Value', value: activeEquity, icon: TrendingUp, color: "text-[#0A0A0A]" },
     { title: t('dashboard.openRisk'), value: accountMode === 'REAL' ? (profile?.openRisk || 0) : 0, icon: Shield, color: "text-[#C43D3D]" },
     { title: t('dashboard.dailyPL'), value: accountMode === 'REAL' ? (profile?.dailyPL || 0) : 0, icon: Activity, color: "text-[#16835B]" }
   ];
 
   return (
-    <AuthedLayout title="My Dashboard" subtitle="Welcome back to your trading workspace">
+    <AuthedLayout title="Dashboard" subtitle="Welcome back to your account">
       <OnboardingTutorial />
       <div className="space-y-8">
         {/* Account Mode Notice Bar */}
         {accountMode === 'DEMO' && (
           <div className="bg-[#0055FF]/10 border border-[#0055FF] p-3 text-[10px] font-bold uppercase tracking-wider text-[#0055FF]">
-            You are currently in Demo Mode. Results are simulated for practice.
+            You are using a Practice Account. Results are simulated to help you learn.
           </div>
         )}
 
@@ -111,7 +111,7 @@ export default function UserDashboard() {
                     {accountMode === 'DEMO' ? (
                       <tr>
                         <td colSpan={5} className="p-4 text-center text-[#6B7280]">
-                          Demo history is stored locally. Switch to Real Account to see your live trade logs.
+                          Practice trade history is stored locally. Switch to your Real Account to see your live history.
                         </td>
                       </tr>
                     ) : tradesLoading ? (

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -17,23 +18,23 @@ export default function OnboardingTutorial() {
 
   const steps: Step[] = [
     {
-      title: "Real-time Metrics",
-      description: "Monitor your Total Equity and Open Risk in real-time. These metrics reflect your current deterministic market exposure.",
+      title: "Account Results",
+      description: "Monitor your Total Value and Risk in real-time. These numbers show your current activity in the markets.",
       icon: BarChart3
     },
     {
-      title: "Market Watchlist",
-      description: "Keep high-priority instruments in view. You can add or remove tickers directly from the Market Registry.",
+      title: "Your Watchlist",
+      description: "Keep track of your favorite markets. You can add or remove assets directly from the Market List.",
       icon: Target
     },
     {
-      title: "Execution Terminal",
-      description: "Access the core matching engine through the Terminal. Open CALL or PUT contracts with defined-risk parameters.",
+      title: "Trading Center",
+      description: "Access the main trading area. Place Higher or Lower trades with clear rules and fixed amounts.",
       icon: Zap
     },
     {
-      title: "Capital Remittance",
-      description: "Manage your vault deposits and withdrawals. All capital movements utilize secure institutional handshakes.",
+      title: "Add & Withdraw Money",
+      description: "Manage your funds with ease. All money moves use safe and secure connections to your bank or wallet.",
       icon: Wallet
     }
   ];
@@ -92,7 +93,7 @@ export default function OnboardingTutorial() {
               <StepIcon className="w-5 h-5 text-[#0055FF]" />
             </div>
             <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-[0.2em]">
-              Protocol Walkthrough ({currentStep + 1}/{steps.length})
+              Welcome Guide ({currentStep + 1}/{steps.length})
             </span>
           </div>
 
@@ -130,7 +131,7 @@ export default function OnboardingTutorial() {
                 onClick={handleNext}
                 className="btn-institutional-primary flex items-center space-x-2 py-2 px-4 bg-[#0055FF] border-[#0055FF] hover:bg-[#0A0A0A] hover:border-[#0A0A0A]"
               >
-                <span>{currentStep === steps.length - 1 ? "Complete" : "Continue"}</span>
+                <span>{currentStep === steps.length - 1 ? "Start" : "Next"}</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>

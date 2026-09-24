@@ -18,23 +18,23 @@ export default function TerminalTutorial() {
 
   const steps: Step[] = [
     {
-      title: "Asset Selection",
-      description: "Switch between synthetic indices and currency pairs using the Monitoring panel on the left. Tap the instrument name on mobile to open the list.",
+      title: "Pick a Market",
+      description: "Switch between different markets like indices or currencies using the list on the left. On mobile, just tap the market name to see the full list.",
       icon: BarChart3
     },
     {
-      title: "High-Precision Charting",
-      description: "Analyze price action in real-time. Use the mouse or touch gestures to scroll and scale the deterministic tick feed.",
+      title: "Price Charts",
+      description: "Watch the market movement in real-time. Use your mouse or touch to move and zoom in on the price action.",
       icon: Zap
     },
     {
-      title: "Trade Configuration",
-      description: "Define your duration and stake. Before execution, every contract undergoes a Risk Pre-Verification check for total transparency.",
+      title: "Trade Settings",
+      description: "Set how long you want to trade and the amount you want to use. You'll see exactly how much you can win before you confirm.",
       icon: Sliders
     },
     {
-      title: "Account Mode Switch",
-      description: "Easily toggle between your Real and Demo accounts at the top. The Demo account provides a zero-risk simulator for strategy testing.",
+      title: "Practice or Real",
+      description: "Switch between your Real and Practice accounts at any time. The Practice account lets you test your ideas with zero risk.",
       icon: ShieldCheck
     }
   ];
@@ -93,7 +93,7 @@ export default function TerminalTutorial() {
               <StepIcon className="w-5 h-5 text-[#0055FF]" />
             </div>
             <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-[0.2em]">
-              Terminal Protocol ({currentStep + 1}/{steps.length})
+              How to Trade ({currentStep + 1}/{steps.length})
             </span>
           </div>
 
@@ -131,7 +131,7 @@ export default function TerminalTutorial() {
                 onClick={handleNext}
                 className="btn-institutional-primary flex items-center space-x-2 py-2 px-4 bg-[#0055FF] border-[#0055FF] hover:bg-[#0A0A0A] hover:border-[#0A0A0A]"
               >
-                <span>{currentStep === steps.length - 1 ? "Start Trading" : "Continue"}</span>
+                <span>{currentStep === steps.length - 1 ? "Start Trading" : "Next"}</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>

@@ -1,7 +1,8 @@
+
 export interface Instrument {
   symbol: string;
   name: string;
-  category: 'Synthetic Indices' | 'Forex' | 'Equities' | 'Digital Assets' | 'Commodities';
+  category: 'Synthetic Indices' | 'Forex' | 'Equities' | 'Crypto' | 'Commodities';
   status: 'Open' | 'Closed' | 'Unavailable';
   marketType: string;
   minStake: number;
@@ -11,11 +12,11 @@ export interface Instrument {
 }
 
 export const AVAILABLE_INSTRUMENTS: Instrument[] = [
-  // DIGITAL ASSETS
+  // CRYPTO
   {
     symbol: "BTC/USD",
     name: "Bitcoin / US Dollar",
-    category: "Digital Assets",
+    category: "Crypto",
     status: "Open",
     marketType: "Digital Derivative",
     minStake: 50,
@@ -26,7 +27,7 @@ export const AVAILABLE_INSTRUMENTS: Instrument[] = [
   {
     symbol: "ETH/USD",
     name: "Ethereum / US Dollar",
-    category: "Digital Assets",
+    category: "Crypto",
     status: "Open",
     marketType: "Digital Derivative",
     minStake: 20,
@@ -37,7 +38,7 @@ export const AVAILABLE_INSTRUMENTS: Instrument[] = [
   {
     symbol: "SOL/USD",
     name: "Solana / US Dollar",
-    category: "Digital Assets",
+    category: "Crypto",
     status: "Open",
     marketType: "Digital Derivative",
     minStake: 10,
@@ -48,7 +49,7 @@ export const AVAILABLE_INSTRUMENTS: Instrument[] = [
   {
     symbol: "XRP/USD",
     name: "Ripple / US Dollar",
-    category: "Digital Assets",
+    category: "Crypto",
     status: "Open",
     marketType: "Digital Derivative",
     minStake: 10,
