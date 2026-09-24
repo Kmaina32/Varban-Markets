@@ -120,9 +120,9 @@ export default function UnifiedSignupPage() {
             src="/assets/auth.png"
             alt="Varban Infrastructure"
             fill
-            className="object-cover grayscale opacity-10"
+            className="object-cover grayscale"
           />
-          <div className="absolute inset-0 bg-white/40"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent opacity-60"></div>
           <div className="absolute bottom-12 left-12 right-12 z-10">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF] block mb-2">Workspace Access</span>
             <h2 className="text-2xl font-bold uppercase text-[#0A0A0A] tracking-tight leading-tight">
