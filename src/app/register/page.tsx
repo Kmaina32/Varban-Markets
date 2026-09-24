@@ -8,7 +8,8 @@ import { useRouter } from "next/navigation";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, collection, query, where, getDocs, limit } from "firebase/firestore";
 import { useAuth, useFirestore } from "@/firebase";
-import { Check, ShieldCheck, User, Mail, Lock, Sparkles } from "lucide-react";
+import { Check, ShieldCheck, User, Mail, Lock, Sparkles, ChevronDown } from "lucide-react";
+import { COUNTRIES } from "@/app/lib/countries";
 
 export default function UnifiedSignupPage() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function UnifiedSignupPage() {
     lastName: "",
     email: "",
     phone: "",
+    dialCode: "+44",
     country: "United Kingdom",
     password: "",
     confirmPassword: "",
@@ -82,7 +84,7 @@ export default function UnifiedSignupPage() {
         await setDoc(doc(db, "users", user.uid), {
           fullName: `${formData.firstName} ${formData.lastName}`,
           email: formData.email,
-          phone: formData.phone,
+          phone: `${formData.dialCode} ${formData.phone}`,
           country: formData.country,
           balance: 1000.00,
           equity: 1000.00,
@@ -180,6 +182,22 @@ export default function UnifiedSignupPage() {
                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Last Name</label>
                     <input required name="lastName" value={formData.lastName} onChange={handleChange} type="text" className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none bg-white text-[#0A0A0A] focus:outline-none focus:border-[#0A0A0A] placeholder:text-[#6B7280]/30" placeholder="e.g. Doe" />
                   </div>
+                  <div>
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Country of Residence</label>
+                    <div className="relative">
+                      <select 
+                        name="country" 
+                        value={formData.country} 
+                        onChange={handleChange} 
+                        className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none bg-white text-[#0A0A0A] focus:outline-none focus:border-[#0A0A0A] appearance-none"
+                      >
+                        {COUNTRIES.map(c => (
+                          <option key={c.code} value={c.name}>{c.flag} {c.name}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280] pointer-events-none" />
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -194,17 +212,30 @@ export default function UnifiedSignupPage() {
                   </div>
                   <div>
                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Phone Number</label>
-                    <input required name="phone" value={formData.phone} onChange={handleChange} type="tel" className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none bg-white text-[#0A0A0A] focus:outline-none focus:border-[#0A0A0A]" placeholder="+44 79..." />
-                  </div>
-                  <div>
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Country of Residence</label>
-                    <select name="country" value={formData.country} onChange={handleChange} className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none bg-white text-[#0A0A0A] focus:outline-none focus:border-[#0A0A0A] appearance-none">
-                      <option>United Kingdom</option>
-                      <option>United States</option>
-                      <option>France</option>
-                      <option>Germany</option>
-                      <option>China</option>
-                    </select>
+                    <div className="flex gap-2">
+                      <div className="relative w-32 shrink-0">
+                        <select 
+                          name="dialCode" 
+                          value={formData.dialCode} 
+                          onChange={handleChange} 
+                          className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none bg-white text-[#0A0A0A] focus:outline-none focus:border-[#0A0A0A] appearance-none"
+                        >
+                          {COUNTRIES.map(c => (
+                            <option key={`${c.code}-dial`} value={c.dial_code}>{c.flag} {c.dial_code}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-[#6B7280] pointer-events-none" />
+                      </div>
+                      <input 
+                        required 
+                        name="phone" 
+                        value={formData.phone} 
+                        onChange={handleChange} 
+                        type="tel" 
+                        className="flex-grow text-xs p-3 border border-[#E4E4E4] rounded-none bg-white text-[#0A0A0A] focus:outline-none focus:border-[#0A0A0A]" 
+                        placeholder="7912 345678" 
+                      />
+                    </div>
                   </div>
                 </div>
               )}
