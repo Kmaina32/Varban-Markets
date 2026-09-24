@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -10,7 +9,7 @@ import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { Search, CheckCircle2, XCircle, ExternalLink, Clock, DollarSign } from "lucide-react";
 import { useCollection, useFirestore } from "@/firebase";
-import { collectionGroup, query, where, orderBy, doc, updateDoc, increment, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, collectionGroup, query, where, orderBy, doc, updateDoc, increment, addDoc, serverTimestamp } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 
