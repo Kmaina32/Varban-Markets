@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -10,8 +11,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const TWELVE_DATA_KEY = process.env.TWELVE_DATA_API_KEY;
 const ALPHA_VANTAGE_KEY = process.env.ALPHA_VANTAGE_API_KEY;
-// Provided key used as default if environment variable is missing
-const FINNHUB_KEY = process.env.FINNHUB_API_KEY || "daqjp7pr01qott5g8tg0daqjp7pr01qott5g8tgg";
+// Provided key used as authoritative default
+const FINNHUB_KEY = "daqjp7pr01qott5g8tg0daqjp7pr01qott5g8tgg";
 
 const cache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 10000; // 10 seconds cache to preserve limits
@@ -62,7 +63,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // 4. Final Fail-Safe: Finnhub (Using provided key)
+  // 4. Final Fail-Safe: Finnhub (Using authoritative key)
   if (FINNHUB_KEY) {
     const fhResult = await fetchFinnhubData(symbol, type, interval);
     if (fhResult && !fhResult.error) {
@@ -183,7 +184,6 @@ async function fetchAlphaVantage(symbol: string, type: string) {
 
 async function fetchFinnhubData(symbol: string, type: string, interval: string) {
   try {
-    // Map symbols to Finnhub requirements
     let cleanSymbol = symbol.replace('/', '');
     if (isCryptoSymbol(symbol)) {
       cleanSymbol = `BINANCE:${symbol.replace('/', '').replace('USD', 'USDT')}`;
@@ -195,7 +195,6 @@ async function fetchFinnhubData(symbol: string, type: string, interval: string) 
       const res = await fetch(`${baseUrl}/quote?symbol=${cleanSymbol}&token=${FINNHUB_KEY}`);
       const data = await res.json();
       
-      // Error checks for Finnhub
       if (!data.c || data.c === 0) return { error: true };
       
       return {
@@ -209,7 +208,6 @@ async function fetchFinnhubData(symbol: string, type: string, interval: string) 
       };
     }
 
-    // Time-series / Candlestick logic
     const resolutionMapping: Record<string, string> = {
       '1min': '1', '5min': '5', '15min': '15', '30min': '30', '1h': '60', '1day': 'D'
     };
@@ -243,7 +241,7 @@ function isCryptoSymbol(symbol: string) {
 }
 
 function getLookbackSeconds(interval: string) {
-  const mins = 300; // Number of bars to return
+  const mins = 300; 
   if (interval.includes('day')) return mins * 24 * 60 * 60;
   if (interval.includes('h')) return mins * 60 * 60;
   const num = parseInt(interval) || 1;
