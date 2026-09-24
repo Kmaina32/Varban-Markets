@@ -1,8 +1,9 @@
+
 'use client';
 
 /**
  * @fileOverview High-precision TradingView Chart component for the Varban Terminal.
- * Integrated with Alpha Vantage Technical Indicator API for remote EMA/SMA data.
+ * Refined to consume normalized market data from the Twelve Data Proxy.
  */
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -13,7 +14,8 @@ import {
   ISeriesApi, 
   SeriesType,
   CandlestickData,
-  LineData
+  LineData,
+  CrosshairMode
 } from 'lightweight-charts';
 import { fetchHistoricalData, fetchTechnicalIndicator } from '@/app/lib/market-service';
 import { useTranslation } from '@/app/lib/i18n-context';
@@ -51,7 +53,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     const themeColors = {
       background: '#FFFFFF',
       text: '#6B7280',
-      grid: '#F0F0F0',
+      grid: '#F7F7F5',
     };
 
     const chart = createChart(chartContainerRef.current, {
@@ -64,11 +66,15 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
         vertLines: { color: themeColors.grid },
         horzLines: { color: themeColors.grid },
       },
-      width: chartContainerRef.current.clientWidth,
-      height: chartContainerRef.current.clientHeight || 500,
+      crosshair: {
+        mode: CrosshairMode.Normal,
+        vertLine: { labelBackgroundColor: '#0A0A0A' },
+        horzLine: { labelBackgroundColor: '#0A0A0A' },
+      },
       timeScale: {
         borderVisible: false,
         timeVisible: true,
+        secondsVisible: false,
       },
       rightPriceScale: {
         borderVisible: false,
@@ -83,66 +89,58 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     const loadData = async () => {
       setLoading(true);
       try {
-        // 1. Load historical price action
-        const priceData = await fetchHistoricalData(symbol);
-        if (!priceData || priceData.length === 0) throw new Error("Price data unavailable");
+        const interval = timeframe === '1D' ? '1day' : timeframe.replace('m', 'min');
+        const priceData = await fetchHistoricalData(symbol, interval);
+        
+        if (!priceData || priceData.length === 0) throw new Error("Signal Lost");
 
-        // 2. Clear existing series from refs
-        mainSeriesRef.current = null;
-        smaSeriesRef.current = null;
-        emaSeriesRef.current = null;
+        // Clean up previous series if they exist
+        if (mainSeriesRef.current) chart.removeSeries(mainSeriesRef.current);
+        if (smaSeriesRef.current) chart.removeSeries(smaSeriesRef.current);
+        if (emaSeriesRef.current) chart.removeSeries(emaSeriesRef.current);
 
-        // 3. Add primary price series
         if (chartMode === 'Candlestick') {
-          const candlestickSeries = chart.addCandlestickSeries({
+          const s = chart.addCandlestickSeries({
             upColor: '#16835B',
             downColor: '#0055FF',
             borderVisible: false,
             wickUpColor: '#16835B',
             wickDownColor: '#0055FF',
           });
-          candlestickSeries.setData(priceData as CandlestickData[]);
-          mainSeriesRef.current = candlestickSeries;
+          s.setData(priceData as CandlestickData[]);
+          mainSeriesRef.current = s;
         } else if (chartMode === 'Line') {
-          const lineSeries = chart.addLineSeries({
-            color: '#0055FF',
-            lineWidth: 2,
-          });
-          lineSeries.setData(priceData.map(d => ({ time: d.time, value: d.close })) as LineData[]);
-          mainSeriesRef.current = lineSeries;
+          const s = chart.addLineSeries({ color: '#0055FF', lineWidth: 2 });
+          s.setData(priceData.map(d => ({ time: d.time, value: d.close })) as LineData[]);
+          mainSeriesRef.current = s;
         } else {
-          const areaSeries = chart.addAreaSeries({
+          const s = chart.addAreaSeries({
             lineColor: '#0055FF',
-            topColor: 'rgba(0, 85, 255, 0.4)',
+            topColor: 'rgba(0, 85, 255, 0.2)',
             bottomColor: 'rgba(0, 85, 255, 0.0)',
             lineWidth: 2,
           });
-          areaSeries.setData(priceData.map(d => ({ time: d.time, value: d.close })) as LineData[]);
-          mainSeriesRef.current = areaSeries;
+          s.setData(priceData.map(d => ({ time: d.time, value: d.close })) as LineData[]);
+          mainSeriesRef.current = s;
         }
 
-        // 4. Load Remote Technical Indicators
         if (showSMA) {
-          const smaData = await fetchTechnicalIndicator('SMA', symbol, timeframe, 20);
-          if (smaData.length > 0) {
-            const smaSeries = chart.addLineSeries({ color: '#F59E0B', lineWidth: 1.5, title: 'SMA 20' });
-            smaSeries.setData(smaData);
-            smaSeriesRef.current = smaSeries;
-          }
+          const smaData = await fetchTechnicalIndicator('SMA', symbol, interval, 20);
+          const s = chart.addLineSeries({ color: '#F59E0B', lineWidth: 1, title: 'SMA 20' });
+          s.setData(smaData);
+          smaSeriesRef.current = s;
         }
 
         if (showEMA) {
-          const emaData = await fetchTechnicalIndicator('EMA', symbol, timeframe, 50);
-          if (emaData.length > 0) {
-            const emaSeries = chart.addLineSeries({ color: '#8B5CF6', lineWidth: 1.5, title: 'EMA 50' });
-            emaSeries.setData(emaData);
-            emaSeriesRef.current = emaSeries;
-          }
+          const emaData = await fetchTechnicalIndicator('EMA', symbol, interval, 50);
+          const s = chart.addLineSeries({ color: '#8B5CF6', lineWidth: 1, title: 'EMA 50' });
+          s.setData(emaData);
+          emaSeriesRef.current = s;
         }
 
         chart.timeScale().fitContent();
       } catch (e) {
-        console.warn("Chart data load failure:", e);
+        console.warn("Terminal chart sync failure:", e);
       } finally {
         setLoading(false);
       }
@@ -169,14 +167,13 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
   return (
     <div className="w-full h-full relative flex flex-col bg-transparent">
-      {/* Dynamic Legend */}
       <div className="absolute top-3 left-3 z-20 pointer-events-none select-none">
         <div className="flex items-center space-x-2">
           <span className="text-[10px] font-bold uppercase tracking-wider text-[#0A0A0A]">
             {symbol}
           </span>
           <span className="text-[9px] font-mono text-[#6B7280]">
-            {chartMode} ({timeframe})
+            {chartMode} &bull; {timeframe}
           </span>
         </div>
       </div>
@@ -184,10 +181,10 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       <div ref={chartContainerRef} className="flex-grow w-full h-full z-10" />
       
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/60">
-          <div className="flex flex-col items-center space-y-3">
-            <div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div>
-            <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">{t('common.loading')}</div>
+        <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/40 backdrop-blur-[1px]">
+          <div className="flex flex-col items-center space-y-2">
+            <div className="w-5 h-5 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div>
+            <div className="text-[8px] font-bold uppercase tracking-widest text-[#0055FF]">Synchronizing Signal</div>
           </div>
         </div>
       )}
