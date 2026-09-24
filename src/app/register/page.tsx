@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, collection, query, where, getDocs, limit } from "firebase/firestore";
 import { useAuth, useFirestore } from "@/firebase";
-import { Check, ShieldCheck, User, Mail, Lock, Sparkles, ChevronDown } from "lucide-react";
+import { Check, ShieldCheck, User, Mail, Lock, ChevronDown } from "lucide-react";
 import { COUNTRIES } from "@/app/lib/countries";
 
 export default function UnifiedSignupPage() {
@@ -254,8 +254,8 @@ export default function UnifiedSignupPage() {
                     <input required name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} type="password" className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none bg-white text-[#0A0A0A] focus:outline-none focus:border-[#0A0A0A]" />
                   </div>
                   <div>
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#0055FF] flex items-center gap-1 block mb-1.5">
-                      <Sparkles className="w-3 h-3" /> Referral Code (Optional)
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#0055FF] block mb-1.5">
+                      Referral Code (Optional)
                     </label>
                     <input name="referralCode" value={formData.referralCode} onChange={handleChange} type="text" className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none bg-[#F7F7F5] text-[#0A0A0A] focus:outline-none focus:border-[#0055FF] font-mono" placeholder="VRB-XXXXXX" />
                   </div>
