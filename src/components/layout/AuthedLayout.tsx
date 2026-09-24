@@ -22,7 +22,7 @@ const STRICT_PATHS = [
   '/orders', '/history', '/watchlist', '/wallet', 
   '/deposit', '/withdraw', '/transactions', '/account', 
   '/verification', '/security', '/notifications', '/preferences',
-  '/admin', '/admin/users', '/admin/transactions', '/admin/markets'
+  '/referral', '/admin', '/admin/users', '/admin/transactions', '/admin/markets'
 ];
 
 const ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
@@ -138,7 +138,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
 
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
-      <header className="relative h-16 border-b border-[#E4E4E4] bg-white flex items-center justify-between px-3 md:px-6 shrink-0 z-[150] shadow-sm">
+      <header className="relative h-16 border-b border-[#E4E4E4] bg-white flex items-center justify-between px-3 md:px-6 shrink-0 z-150 shadow-sm">
         <div className="flex items-center space-x-2 md:space-x-4">
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 

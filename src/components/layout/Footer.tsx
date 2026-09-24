@@ -20,7 +20,7 @@ export default function Footer() {
     '/orders', '/history', '/watchlist', '/wallet', 
     '/deposit', '/withdraw', '/transactions', '/account', 
     '/verification', '/security', '/notifications', '/preferences',
-    '/login', '/register', '/admin'
+    '/referral', '/login', '/register', '/admin'
   ];
   const sharedPaths = ['/markets', '/help', '/contact'];
   

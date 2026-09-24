@@ -17,7 +17,7 @@ export default function Navbar() {
     '/orders', '/history', '/watchlist', '/wallet', 
     '/deposit', '/withdraw', '/transactions', '/account', 
     '/verification', '/security', '/notifications', '/preferences',
-    '/admin'
+    '/referral', '/admin'
   ];
   const sharedPaths = ['/markets', '/help', '/contact'];
   
