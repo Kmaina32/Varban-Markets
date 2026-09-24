@@ -1,8 +1,10 @@
+
 'use client';
 
 /**
  * @fileOverview Master Authenticated Layout with integrated Mobile Drawer, Balance Matrix & Profile Dropdown.
  * Refined to strictly only show Workspace UI for internal paths.
+ * Threshold increased to lg (1024px) to prevent squeezed headers on tablets.
  */
 
 import AuthedSidebar from "./AuthedSidebar";
@@ -106,10 +108,10 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
         <AdminHeader title={title} subtitle={subtitle} />
         
         <div className="flex flex-grow overflow-hidden relative">
-          <AdminSidebar className="hidden md:flex" />
+          <AdminSidebar className="hidden lg:flex" />
           
           {isMobileMenuOpen && (
-            <div className="fixed inset-0 z-[250] md:hidden">
+            <div className="fixed inset-0 z-[250] lg:hidden">
               <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
               <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white animate-in slide-in-from-left duration-300 shadow-2xl">
                 <AdminSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
@@ -117,11 +119,11 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
             </div>
           )}
 
-          <main className="flex-grow overflow-y-auto bg-[#F7F7F5] p-4 md:p-8 no-scrollbar md:ml-16">
+          <main className="flex-grow overflow-y-auto bg-[#F7F7F5] p-4 md:p-8 no-scrollbar lg:ml-16">
             <div className="max-w-7xl mx-auto">
               <button 
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="md:hidden mb-4 px-3 py-1.5 border border-[#E4E4E4] bg-white text-[10px] font-bold uppercase tracking-wider flex items-center space-x-1.5"
+                className="lg:hidden mb-4 px-3 py-1.5 border border-[#E4E4E4] bg-white text-[10px] font-bold uppercase tracking-wider flex items-center space-x-1.5"
               >
                 <Menu className="w-3.5 h-3.5 text-[#0055FF]" />
                 <span>Control Menu</span>
@@ -142,7 +144,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
         <div className="flex items-center space-x-2 md:space-x-4">
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
-            className="p-1.5 md:hidden hover:bg-[#F7F7F5] transition-colors"
+            className="p-1.5 lg:hidden hover:bg-[#F7F7F5] transition-colors"
           >
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -151,9 +153,9 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
             <Image src="/assets/logo2.png" alt="Varban Workspace" width={110} height={26} className="h-6 md:h-7 w-auto object-contain" priority />
           </Link>
           
-          <div className="h-6 w-px bg-[#E4E4E4] hidden md:block"></div>
+          <div className="h-6 w-px bg-[#E4E4E4] hidden lg:block"></div>
           
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             <h1 className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#0A0A0A]">{title}</h1>
             {subtitle && <p className="text-[9px] text-[#6B7280] uppercase tracking-wider mt-0.5">{subtitle}</p>}
           </div>
@@ -209,10 +211,10 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
       </header>
       
       <div className="flex flex-grow overflow-hidden relative">
-        <AuthedSidebar className="hidden md:flex" />
+        <AuthedSidebar className="hidden lg:flex" />
         
         {isMobileMenuOpen && (
-          <div className="fixed inset-0 z-[250] md:hidden">
+          <div className="fixed inset-0 z-[250] lg:hidden">
             <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
             <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white animate-in slide-in-from-left duration-300 shadow-2xl">
               <AuthedSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
@@ -220,7 +222,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
           </div>
         )}
 
-        <main className="flex-grow overflow-y-auto bg-[#F7F7F5] p-3 md:p-8 no-scrollbar md:ml-16">
+        <main className="flex-grow overflow-y-auto bg-[#F7F7F5] p-3 md:p-8 no-scrollbar lg:ml-16">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>

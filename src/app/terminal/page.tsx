@@ -4,6 +4,7 @@
 /**
  * @fileOverview High-Performance Electronic Trading Terminal Workspace.
  * Simplified language for a better user experience.
+ * Threshold increased to lg (1024px) for optimized tablet views.
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
@@ -314,7 +315,7 @@ export default function TerminalWorkspace() {
       <TerminalTutorial />
       
       {isMobileNavOpen && (
-        <div className="fixed inset-0 z-[250] md:hidden">
+        <div className="fixed inset-0 z-[250] lg:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setIsMobileNavOpen(false)}></div>
           <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white text-[#0A0A0A] animate-in slide-in-from-left duration-300 shadow-2xl">
              <AuthedSidebar isMobile onLinkClick={() => setIsMobileNavOpen(false)} />
@@ -325,7 +326,7 @@ export default function TerminalWorkspace() {
       {/* COMPACT MOBILE HEADER */}
       <header className="relative h-10 md:h-16 border-b flex items-center justify-between px-3 md:px-6 shrink-0 z-50 shadow-sm transition-colors bg-white border-[#E4E4E4]">
         <div className="flex items-center space-x-2 md:space-x-4">
-          <button onClick={() => setIsMobileNavOpen(true)} className="p-1 hover:bg-[#F7F7F5] transition-colors md:hidden">
+          <button onClick={() => setIsMobileNavOpen(true)} className="p-1 hover:bg-[#F7F7F5] transition-colors lg:hidden">
             <Menu className="w-4 h-4 md:w-5 md:h-5" />
           </button>
           
@@ -380,14 +381,14 @@ export default function TerminalWorkspace() {
       </header>
 
       <div className="flex-grow flex overflow-hidden relative">
-        <AuthedSidebar className="hidden md:flex" />
+        <AuthedSidebar className="hidden lg:flex" />
         
-        <div className="flex-grow flex flex-col md:flex-row overflow-hidden md:ml-16">
+        <div className="flex-grow flex flex-col md:flex-row overflow-hidden lg:ml-16">
           
           {/* LEFT SIDE PANEL */}
           <div className={cn(
-            "fixed inset-0 z-[200] md:relative md:inset-auto md:z-0 md:flex flex-col w-full md:w-80 border-r shrink-0 transition-transform duration-300 ease-in-out bg-white border-[#E4E4E4]",
-            isMobileTradeMenuOpen || isMobileMarketMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0 hidden md:flex"
+            "fixed inset-0 z-[200] lg:relative lg:inset-auto lg:z-0 lg:flex flex-col w-full lg:w-80 border-r shrink-0 transition-transform duration-300 ease-in-out bg-white border-[#E4E4E4]",
+            isMobileTradeMenuOpen || isMobileMarketMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 hidden lg:flex"
           )}>
             
             <div className="flex border-b shrink-0 border-[#E4E4E4] bg-[#F7F7F5]">
@@ -511,7 +512,7 @@ export default function TerminalWorkspace() {
                     {liveMetrics.percent !== null ? (liveMetrics.percent >= 0 ? "+" : "") + liveMetrics.percent + "%" : "---"}
                   </span>
                 </div>
-                <button onClick={() => setIsMobilePositionsOpen(!isMobilePositionsOpen)} className="md:hidden p-0.5 border text-[7px] font-bold uppercase tracking-wider flex items-center gap-0.5 border-[#E4E4E4] bg-white rounded">
+                <button onClick={() => setIsMobilePositionsOpen(!isMobilePositionsOpen)} className="lg:hidden p-0.5 border text-[7px] font-bold uppercase tracking-wider flex items-center gap-0.5 border-[#E4E4E4] bg-white rounded">
                   <Layers className="w-2.5 h-2.5 text-[#0055FF]" /> <span>({activePositions.length})</span>
                 </button>
               </div>
@@ -570,8 +571,8 @@ export default function TerminalWorkspace() {
             </div>
 
             {/* Desktop Open Trades Tray */}
-            <div onMouseDown={startResizing} className="hidden md:flex h-1 bg-[#E4E4E4] hover:bg-[#0055FF] cursor-row-resize items-center justify-center z-[60]"><div className="w-12 h-0.5 bg-[#6B7280] rounded-full"></div></div>
-            <div style={{ height: `${trayHeight}px` }} className="hidden md:block border-t shrink-0 overflow-y-auto no-scrollbar transition-colors bg-white border-[#E4E4E4]">
+            <div onMouseDown={startResizing} className="hidden lg:flex h-1 bg-[#E4E4E4] hover:bg-[#0055FF] cursor-row-resize items-center justify-center z-[60]"><div className="w-12 h-0.5 bg-[#6B7280] rounded-full"></div></div>
+            <div style={{ height: `${trayHeight}px` }} className="hidden lg:block border-t shrink-0 overflow-y-auto no-scrollbar transition-colors bg-white border-[#E4E4E4]">
               <div className="px-4 py-1.5 border-b flex justify-between items-center sticky top-0 z-10 bg-inherit"><span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">Current Trades ({activePositions.length})</span></div>
               <div className="overflow-x-auto">
                 <table className="w-full text-[10px] text-left border-collapse">
@@ -582,7 +583,7 @@ export default function TerminalWorkspace() {
             </div>
 
             {/* MOBILE ACTION BUTTONS */}
-            <div className="md:hidden p-1 border-t grid grid-cols-2 gap-1 z-40 shadow-lg shrink-0 transition-colors bg-white border-[#E4E4E4]">
+            <div className="lg:hidden p-1 border-t grid grid-cols-2 gap-1 z-40 shadow-lg shrink-0 transition-colors bg-white border-[#E4E4E4]">
               <button onClick={() => handleVectorClick("CALL")} className="py-2 bg-[#16835B] text-white text-[9px] font-bold uppercase tracking-wider flex items-center justify-center space-x-1 rounded active:scale-[0.98]">
                 <TrendingUp className="w-3.5 h-3.5" /> <span>Higher</span>
               </button>

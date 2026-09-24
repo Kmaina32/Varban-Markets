@@ -78,7 +78,7 @@ export default function AdminSidebar({ onLinkClick, className, isMobile = false 
   }
 
   return (
-    <aside className={cn("group absolute left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-[#E4E4E4] flex flex-col transition-all duration-300 z-[40] overflow-hidden no-scrollbar py-6 px-4 hidden md:flex", className)}>
+    <aside className={cn("group absolute left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-[#E4E4E4] flex flex-col transition-all duration-300 z-[40] overflow-hidden no-scrollbar py-6 px-4 hidden lg:flex", className)}>
       {content}
     </aside>
   );

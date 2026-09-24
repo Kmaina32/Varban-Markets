@@ -50,7 +50,7 @@ export default function Navbar() {
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center space-x-8">
             {publicLinks.map((link) => (
               <Link
                 key={link.href}
@@ -64,7 +64,7 @@ export default function Navbar() {
             ))}
           </div>
 
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="hidden lg:flex items-center space-x-6">
             <Link href="/login" className="text-[10px] text-[#6B7280] hover:text-[#0A0A0A] uppercase tracking-widest font-bold transition-colors">
               Log In
             </Link>
@@ -73,7 +73,7 @@ export default function Navbar() {
             </Link>
           </div>
 
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 text-[#0A0A0A] hover:bg-[#F7F7F5] transition-colors"
@@ -87,7 +87,7 @@ export default function Navbar() {
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[200] bg-white md:hidden animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[200] bg-white lg:hidden animate-in fade-in duration-200">
           <div className="flex flex-col h-full">
             <div className="h-16 border-b border-[#E4E4E4] flex items-center justify-between px-4 shrink-0">
               <Image 
