@@ -1,12 +1,11 @@
 import Link from "next/link";
-import { DollarSign, ArrowLeft, ArrowRight, Wallet, Percent, CreditCard } from "lucide-react";
 
 export default function FeesPage() {
   const navTabs = [
-    { label: "General Terms", href: "/terms", active: false },
+    { label: "Terms of Service", href: "/terms", active: false },
     { label: "Privacy Policy", href: "/terms/privacy", active: false },
-    { label: "Risk Disclosure", href: "/terms/risk-disclosure", active: false },
-    { label: "AML & KYC", href: "/terms/aml-kyc", active: false },
+    { label: "Risk Warning", href: "/terms/risk-disclosure", active: false },
+    { label: "Identity Rules", href: "/terms/aml-kyc", active: false },
     { label: "Trading Rules", href: "/terms/trading-rules", active: false },
     { label: "Fees & Charges", href: "/terms/fees", active: true },
     { label: "Complaints", href: "/terms/complaints", active: false },
@@ -14,12 +13,12 @@ export default function FeesPage() {
   ];
 
   const feeItems = [
-    { title: "Trading Commission", value: "0.00%", desc: "Varban Markets does not charge direct commissions on option contracts." },
-    { title: "Standard Payout", value: "85% - 92%", desc: "Net profit realized on successful vector prediction contracts." },
-    { title: "Withdrawal Fee (Crypto)", value: "$1 - $8", desc: "Network-dependent mining and processing fees applied at payout." },
-    { title: "Withdrawal Fee (Fiat)", value: "1.5%", desc: "Processing fee for bank remittance via Paystack Transfers." },
-    { title: "Inactive Account", value: "$0.00", desc: "No maintenance fees are charged for dormant account profiles." },
-    { title: "Min. Withdrawal", value: "$20.00", desc: "Minimum liquid domain equity required for remittance instructions." }
+    { title: "Trading Fees", value: "0.00%", desc: "We do not charge commissions on trades." },
+    { title: "Standard Profit", value: "85% - 92%", desc: "The amount you earn on a successful trade." },
+    { title: "Withdrawal (Crypto)", value: "$1 - $8", desc: "Network fees applied when you withdraw crypto." },
+    { title: "Withdrawal (Bank)", value: "1.5%", desc: "Processing fee for bank transfers." },
+    { title: "Monthly Fee", value: "$0.00", desc: "No fees for keeping your account open." },
+    { title: "Min. Withdrawal", value: "$20.00", desc: "Minimum amount you can take out." }
   ];
 
   return (
@@ -27,15 +26,14 @@ export default function FeesPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="border-b border-[#E4E4E4] pb-8 mb-8">
-          <div className="flex items-center space-x-2 text-[10px] font-bold text-[#16835B] uppercase tracking-widest mb-2">
-            <DollarSign className="w-4 h-4" />
-            <span>Legal Suite &mdash; 6 of 8</span>
+          <div className="text-[10px] font-bold text-[#16835B] uppercase tracking-widest mb-2">
+            Legal Suite &mdash; Page 6 of 8
           </div>
           <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-tight text-[#0A0A0A]">
-            Fees & Charges Schedule
+            Fees & Charges
           </h1>
           <p className="text-xs text-[#6B7280] mt-3 leading-relaxed max-w-3xl">
-            This document outlines the cost structure for trading, currency conversion, and capital remittance on the Varban Markets platform.
+            This page lists all costs for trading and moving money on the Varban platform.
           </p>
         </div>
 
@@ -55,44 +53,42 @@ export default function FeesPage() {
           ))}
         </div>
 
-        <div className="bg-white border border-[#E4E4E4] p-8 md:p-12 space-y-12 shadow-sm">
+        <div className="bg-white border border-[#E4E4E4] p-8 md:p-12 space-y-12 shadow-sm text-xs leading-relaxed text-[#333333]">
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {feeItems.map((item, idx) => (
-              <div key={idx} className="p-6 border border-[#E4E4E4] bg-[#F7F7F5] space-y-2">
+              <div key={idx} className="border-t border-[#E4E4E4] pt-4 space-y-1">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280] block">{item.title}</span>
-                <span className="text-xl font-mono font-bold text-[#0A0A0A] block">{item.value}</span>
-                <p className="text-[10px] text-[#6B7280] leading-relaxed pt-2 border-t border-[#E4E4E4]">{item.desc}</p>
+                <span className="text-lg font-mono font-bold text-[#0A0A0A] block">{item.value}</span>
+                <p className="text-[10px] text-[#6B7280]">{item.desc}</p>
               </div>
             ))}
           </div>
 
           <section className="space-y-4">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2 flex items-center gap-2">
-              <CreditCard className="w-4 h-4 text-[#0055FF]" /> Currency Conversion
+            <h2 className="text-sm font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">
+              Currency Conversion
             </h2>
-            <p className="text-[11px] text-[#6B7280] leading-relaxed">
-              If you deposit or withdraw funds in a currency different from your Account Base Currency, a conversion fee of up to 1.5% may be applied based on the mid-market rate provided by our liquidity partners at the time of execution.
+            <p>
+              If you deposit money in a currency different from your account's base currency, a conversion fee of up to 1.5% will be applied based on current market rates.
             </p>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2 flex items-center gap-2">
-              <Percent className="w-4 h-4 text-[#0055FF]" /> Bonus Turnover Rules
+            <h2 className="text-sm font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">
+              Bonus Rules
             </h2>
-            <p className="text-[11px] text-[#6B7280] leading-relaxed">
-              Promotional credits or deposit match bonuses are subject to a minimum trading turnover requirement of 30x the bonus amount before bonus funds become eligible for withdrawal instruction.
+            <p>
+              If you receive a bonus or promotion, you must trade 30 times the bonus amount before you can withdraw those funds. For example, a $100 bonus requires $3,000 in total trades.
             </p>
           </section>
 
           <div className="pt-8 border-t border-[#E4E4E4] flex justify-between items-center text-xs">
-            <Link href="/terms/trading-rules" className="font-bold text-[#6B7280] hover:text-[#0A0A0A] flex items-center gap-1">
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Prev: Trading Rules</span>
+            <Link href="/terms/trading-rules" className="font-bold text-[#6B7280] hover:text-[#0A0A0A]">
+              Back: Trading Rules
             </Link>
-            <Link href="/terms/complaints" className="font-bold text-[#0055FF] hover:underline flex items-center gap-1">
-              <span>Next: Complaints Handling</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+            <Link href="/terms/complaints" className="px-6 py-2 bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0A0A0A] transition-colors">
+              Next: Complaints
             </Link>
           </div>
 

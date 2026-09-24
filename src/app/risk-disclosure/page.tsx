@@ -1,12 +1,11 @@
 import Link from "next/link";
-import { AlertTriangle, ShieldAlert, Gavel, ArrowRight } from "lucide-react";
 
 export default function PublicRiskDisclosurePage() {
   const disclosurePoints = [
-    { title: "1. Total Loss Exposure", text: "Traders acknowledge that individual derivatives contract stakes carry complete default boundaries. Failing to predict index vector outcomes correctly wipes out the assigned stake allocation parameter completely." },
-    { title: "2. Counterparty Operational Risk", text: "All contracts settle over-the-counter directly using Varban internal matching engine architecture. There is no outside central clearing house protection covering the internal index generation flow." },
-    { title: "3. Synthetic Latency & Volatility", text: "Synthetic calculations run via independent server models. Extreme computational load or network latency may shift execution tick intervals without warning, impacting entries and exits." },
-    { title: "4. No RECURE AGAINST PRICING ANOMALIES", text: "By utilizing the platform, you explicitly state that you are financially sophisticated and accept the algorithmic nature of over-the-counter contracts without recourse against infrastructure service operators." }
+    { title: "Possibility of Loss", text: "Trading derivatives is risky. You can lose all of the money you commit to any single trade." },
+    { title: "Internal Settlement", text: "All trades are settled directly through our system. There is no outside clearing house involved." },
+    { title: "Internet Speed", text: "Network speed can change without warning. This can affect the price you get when you open or close a trade." },
+    { title: "User Experience", text: "By using this platform, you confirm that you understand how algorithmic trading works and accept the risks." }
   ];
 
   return (
@@ -14,21 +13,20 @@ export default function PublicRiskDisclosurePage() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 bg-white border border-[#E4E4E4] p-8 md:p-12 shadow-sm">
         
         <div className="border-b border-[#E4E4E4] pb-6 mb-8">
-          <div className="flex items-center space-x-2 text-[10px] font-bold text-[#C43D3D] uppercase tracking-widest mb-2">
-            <AlertTriangle className="w-4 h-4" />
-            <span>SAINT LUCIA REGULATORY MANDATE</span>
+          <div className="text-[10px] font-bold text-[#C43D3D] uppercase tracking-widest mb-2">
+            Regulatory Notice
           </div>
-          <h1 className="text-3xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Risk Disclosure & Capital Warning</h1>
+          <h1 className="text-3xl font-bold uppercase tracking-tight text-[#0A0A0A]">Risk Warning</h1>
           <p className="text-xs text-[#6B7280] mt-2 font-mono uppercase">
-            Effective Date: January 1, 2026. Governing Jurisdiction: Saint Lucia.
+            Effective: January 1, 2026. Saint Lucia Jurisdiction.
           </p>
         </div>
 
         <div className="space-y-8 text-xs text-[#6B7280] leading-relaxed">
-          <div className="bg-[#0A0A0A] p-8 text-white">
-            <span className="font-bold text-[#C43D3D] uppercase block mb-3 text-[10px] tracking-[0.2em]">Mandatory Disclosure</span>
-            <p className="font-bold uppercase leading-relaxed text-[11px]">
-              IMPORTANT NOTICE: UNDER NO CIRCUMSTANCES COMMIT LIVE CAPITAL MONETARY DOMAINS THAT YOU CANNOT AFFORD TO FORFEIT COMPLETELY. DERIVATIVE TRADING CARRIES A HIGH PROBABILITY OF RAPID CAPITAL DEPLETION.
+          <div className="bg-[#F7F7F5] border-l-4 border-[#C43D3D] p-8">
+            <span className="font-bold text-[#C43D3D] uppercase block mb-3 text-[10px] tracking-[0.2em]">Mandatory Warning</span>
+            <p className="font-bold uppercase leading-relaxed text-[11px] text-[#0A0A0A]">
+              IMPORTANT: DO NOT TRADE WITH MONEY YOU CANNOT AFFORD TO LOSE. DERIVATIVE TRADING CARRIES A HIGH CHANCE OF LOSING ALL YOUR CAPITAL.
             </p>
           </div>
 
@@ -42,23 +40,20 @@ export default function PublicRiskDisclosurePage() {
           </div>
 
           <div className="pt-8 border-t border-[#E4E4E4] space-y-4">
-            <div className="flex items-start gap-3">
-              <Gavel className="w-5 h-5 text-[#0055FF] shrink-0" />
-              <p className="text-[10px] uppercase font-bold text-[#0A0A0A]">
-                Electronic Acceptance Notice
-              </p>
-            </div>
+            <p className="text-[10px] uppercase font-bold text-[#0A0A0A]">
+              Electronic Acceptance Notice
+            </p>
             <p className="text-[11px] leading-relaxed">
-              By opening an account on varbanmarkets.com, you confirm that you have read, understood, and agreed to this Risk Disclosure in full. This document is provided in accordance with the Saint Lucia regulatory framework for electronic financial transactions.
+              By opening an account on varbanmarkets.com, you confirm that you have read and agreed to this Risk Warning. This notice is provided according to Saint Lucia laws for electronic financial transactions.
             </p>
           </div>
 
-          <div className="pt-6 flex justify-between gap-4">
-            <Link href="/register" className="btn-institutional-primary bg-[#0055FF] border-[#0055FF] hover:bg-[#0A0A0A] flex-1">
-              Confirm & Continue &rarr;
+          <div className="pt-6 flex flex-col sm:flex-row justify-between gap-4">
+            <Link href="/register" className="flex-1 px-8 py-3 bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0A0A0A] transition-colors border border-[#0055FF] text-center">
+              Confirm & Continue
             </Link>
-            <Link href="/" className="btn-institutional-secondary flex-1 text-center">
-              Exit Protocol
+            <Link href="/" className="flex-1 px-8 py-3 border border-[#E4E4E4] text-[#0A0A0A] text-[10px] font-bold uppercase tracking-widest hover:bg-[#F7F7F5] transition-colors text-center">
+              Exit Website
             </Link>
           </div>
         </div>

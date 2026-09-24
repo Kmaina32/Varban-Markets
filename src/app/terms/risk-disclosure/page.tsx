@@ -1,12 +1,11 @@
 import Link from "next/link";
-import { AlertTriangle, ShieldAlert, ArrowRight, ArrowLeft, TrendingDown } from "lucide-react";
 
 export default function RiskDisclosurePage() {
   const navTabs = [
-    { label: "General Terms", href: "/terms", active: false },
+    { label: "Terms of Service", href: "/terms", active: false },
     { label: "Privacy Policy", href: "/terms/privacy", active: false },
-    { label: "Risk Disclosure", href: "/terms/risk-disclosure", active: true },
-    { label: "AML & KYC", href: "/terms/aml-kyc", active: false },
+    { label: "Risk Warning", href: "/terms/risk-disclosure", active: true },
+    { label: "Identity Rules", href: "/terms/aml-kyc", active: false },
     { label: "Trading Rules", href: "/terms/trading-rules", active: false },
     { label: "Fees & Charges", href: "/terms/fees", active: false },
     { label: "Complaints", href: "/terms/complaints", active: false },
@@ -17,21 +16,18 @@ export default function RiskDisclosurePage() {
     <div className="bg-[#F7F7F5] min-h-screen py-12 text-[#0A0A0A]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Page Header */}
         <div className="border-b border-[#E4E4E4] pb-8 mb-8">
-          <div className="flex items-center space-x-2 text-[10px] font-bold text-[#C43D3D] uppercase tracking-widest mb-2">
-            <AlertTriangle className="w-4 h-4" />
-            <span>Legal Suite &mdash; 3 of 8</span>
+          <div className="text-[10px] font-bold text-[#C43D3D] uppercase tracking-widest mb-2">
+            Legal Suite &mdash; Page 3 of 8
           </div>
           <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-tight text-[#0A0A0A]">
-            Risk Disclosure Statement
+            Risk Warning
           </h1>
           <p className="text-xs text-[#6B7280] mt-3 leading-relaxed max-w-3xl">
-            CRITICAL WARNING: TRADING FINANCIAL DERIVATIVES AND SYNTHETIC CONTRACTS CARRIES A HIGH PROBABILITY OF RAPID CAPITAL LOSS.
+            PLEASE READ CAREFULLY: Trading derivatives and synthetic contracts is high-risk. You can lose all of your money very quickly.
           </p>
         </div>
 
-        {/* Legal Suite Sub-Navigation */}
         <div className="flex overflow-x-auto no-scrollbar space-x-2 border-b border-[#E4E4E4] pb-4 mb-10 sticky top-0 bg-[#F7F7F5] z-10">
           {navTabs.map((tab) => (
             <Link
@@ -48,52 +44,49 @@ export default function RiskDisclosurePage() {
           ))}
         </div>
 
-        {/* Content Body */}
-        <div className="bg-white border border-[#E4E4E4] p-8 md:p-12 space-y-12 shadow-sm text-[11px] leading-relaxed text-[#333333]">
+        <div className="bg-white border border-[#E4E4E4] p-8 md:p-12 space-y-12 shadow-sm text-xs leading-relaxed text-[#333333]">
           
-          <section className="bg-[#0A0A0A] p-8 text-white space-y-4">
-            <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#C43D3D] flex items-center gap-2">
-              <TrendingDown className="w-5 h-5" /> 100% Risk Threshold
+          <section className="border-l-4 border-[#0A0A0A] pl-8 space-y-4">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-[#C43D3D]">
+              Possibility of Total Loss
             </h2>
-            <p className="text-xs leading-relaxed opacity-80 uppercase font-bold">
-              By utilizing Varban Markets, you explicitly acknowledge that you may lose the entire amount of capital committed to any individual trade order. There is no guarantee of profit or return on investment.
+            <p className="text-xs leading-relaxed uppercase font-bold text-[#0A0A0A]">
+              By using Varban Markets, you acknowledge that you could lose 100% of the money you put into any single trade. We do not guarantee that you will make a profit.
             </p>
           </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <section className="space-y-3">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">Market Volatility</h3>
-              <p className="text-[#6B7280]">Market prices can change rapidly and move against your vector prediction without warning. High volatility can lead to rapid stake liquidation.</p>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">Market Swings</h3>
+              <p className="text-[#6B7280]">Prices can change instantly and move against you without warning. High volatility can cause your entire trade amount to be lost in seconds.</p>
             </section>
             <section className="space-y-3">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">Execution Latency</h3>
-              <p className="text-[#6B7280]">Price quotes at the moment of submission may differ from the price at execution due to network latency or market gaps.</p>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">Technical Delays</h3>
+              <p className="text-[#6B7280]">The price you see when you click "Trade" might be slightly different from the execution price due to internet speed or market gaps.</p>
             </section>
             <section className="space-y-3">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">Technology Risk</h3>
-              <p className="text-[#6B7280]">Trading depends on servers, networks, and software. System outages, internet failures, or cyber incidents may impact account access.</p>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">System Reliability</h3>
+              <p className="text-[#6B7280]">Trading depends on servers and networks. Outages or software errors may affect your ability to trade or access your account.</p>
             </section>
             <section className="space-y-3">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">Counterparty Risk</h3>
-              <p className="text-[#6B7280]">Contracts are over-the-counter and depend on the operational integrity of the Varban Markets matching engine architecture.</p>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">Our Role</h3>
+              <p className="text-[#6B7280]">Trades are processed directly through our internal system. Your success depends on our system's operational integrity.</p>
             </section>
           </div>
 
-          <section className="p-6 bg-[#F7F7F5] border-t-2 border-[#C43D3D] text-[#0A0A0A]">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest mb-3">No Investment Advice</h3>
-            <p className="opacity-80 leading-relaxed">
-              All information, technical indicators, and charts provided on the platform are for operational and educational purposes only. Varban Markets does not provide personalized investment, tax, or legal advice. Every trading decision remains the sole responsibility of the User.
+          <section className="pt-6 border-t border-[#E4E4E4] text-[#0A0A0A]">
+            <h3 className="text-[10px] font-bold uppercase tracking-widest mb-3">No Financial Advice</h3>
+            <p className="text-[#6B7280] leading-relaxed">
+              We do not give personal investment or legal advice. All charts and indicators on the platform are for information only. You are responsible for every trade you place.
             </p>
           </section>
 
           <div className="pt-8 border-t border-[#E4E4E4] flex justify-between items-center text-xs">
-            <Link href="/terms/privacy" className="font-bold text-[#6B7280] hover:text-[#0A0A0A] flex items-center gap-1">
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Prev: Privacy Policy</span>
+            <Link href="/terms/privacy" className="font-bold text-[#6B7280] hover:text-[#0A0A0A]">
+              Back: Privacy Policy
             </Link>
-            <Link href="/terms/aml-kyc" className="font-bold text-[#0055FF] hover:underline flex items-center gap-1">
-              <span>Next: AML & KYC Policy</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+            <Link href="/terms/aml-kyc" className="px-6 py-2 bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0A0A0A] transition-colors">
+              Next: Identity Rules
             </Link>
           </div>
 
