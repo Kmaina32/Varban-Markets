@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -5,9 +6,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, collection, query, where, getDocs, limit } from "firebase/firestore";
 import { useAuth, useFirestore } from "@/firebase";
-import { Check, ShieldCheck, User, Mail, Lock } from "lucide-react";
+import { Check, ShieldCheck, User, Mail, Lock, Sparkles } from "lucide-react";
 
 export default function UnifiedSignupPage() {
   const router = useRouter();
@@ -26,6 +27,7 @@ export default function UnifiedSignupPage() {
     country: "United Kingdom",
     password: "",
     confirmPassword: "",
+    referralCode: "",
     assent: false
   });
 
@@ -38,7 +40,11 @@ export default function UnifiedSignupPage() {
     }));
   };
 
-  const handleNext = (e: React.FormEvent) => {
+  const generateReferralCode = () => {
+    return 'VRB-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  };
+
+  const handleNext = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -56,27 +62,42 @@ export default function UnifiedSignupPage() {
       if (!auth || !db) return;
       setLoading(true);
 
-      createUserWithEmailAndPassword(auth, formData.email, formData.password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          setDoc(doc(db, "users", user.uid), {
-            fullName: `${formData.firstName} ${formData.lastName}`,
-            email: formData.email,
-            phone: formData.phone,
-            country: formData.country,
-            balance: 1000.00,
-            equity: 1000.00,
-            currency: "USD",
-            verificationStatus: "Not Verified",
-            createdAt: new Date().toISOString()
-          }).catch(() => {});
+      try {
+        let referredByUid = "";
+        if (formData.referralCode) {
+          const q = query(collection(db, "users"), where("referralCode", "==", formData.referralCode), limit(1));
+          const querySnapshot = await getDocs(q);
+          if (!querySnapshot.empty) {
+            referredByUid = querySnapshot.docs[0].id;
+          } else {
+            setLoading(false);
+            setError("Invalid Referral Code: The provided code does not exist in our registry.");
+            return;
+          }
+        }
 
-          router.push("/dashboard");
-        })
-        .catch((err: any) => {
-          setError(err.message || "Registration Failure: Handshake could not be concluded.");
-          setLoading(false);
+        const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+        const user = userCredential.user;
+        
+        await setDoc(doc(db, "users", user.uid), {
+          fullName: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          phone: formData.phone,
+          country: formData.country,
+          balance: 1000.00,
+          equity: 1000.00,
+          currency: "USD",
+          verificationStatus: "Not Verified",
+          referralCode: generateReferralCode(),
+          referredBy: referredByUid,
+          createdAt: new Date().toISOString()
         });
+
+        router.push("/dashboard");
+      } catch (err: any) {
+        setError(err.message || "Registration Failure: Handshake could not be concluded.");
+        setLoading(false);
+      }
     }
   };
 
@@ -191,7 +212,7 @@ export default function UnifiedSignupPage() {
               {step === 3 && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <div className="border-b border-[#E4E4E4] pb-2 mb-4">
-                    <h2 className="text-[10px] font-bold text-[#0A0A0A] uppercase tracking-[0.15em]">Security Credentials</h2>
+                    <h2 className="text-[10px] font-bold text-[#0A0A0A] uppercase tracking-[0.15em]">Security & Network</h2>
                   </div>
                   <div>
                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Create Password</label>
@@ -200,6 +221,12 @@ export default function UnifiedSignupPage() {
                   <div>
                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Confirm Password</label>
                     <input required name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} type="password" className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none bg-white text-[#0A0A0A] focus:outline-none focus:border-[#0A0A0A]" />
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#0055FF] flex items-center gap-1 block mb-1.5">
+                      <Sparkles className="w-3 h-3" /> Referral Code (Optional)
+                    </label>
+                    <input name="referralCode" value={formData.referralCode} onChange={handleChange} type="text" className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none bg-[#F7F7F5] text-[#0A0A0A] focus:outline-none focus:border-[#0055FF] font-mono" placeholder="VRB-XXXXXX" />
                   </div>
                   <div className="flex items-start space-x-2 pt-2">
                     <input required type="checkbox" name="assent" checked={formData.assent} onChange={handleChange} className="mt-0.5 accent-[#0055FF]" />

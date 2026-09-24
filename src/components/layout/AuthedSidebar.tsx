@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from "next/link";
@@ -6,7 +7,8 @@ import {
   LayoutDashboard, Monitor, Globe, Briefcase, Target, 
   FileText, Clock, Star, Wallet, ArrowDownCircle, 
   ArrowUpCircle, Activity, User, ShieldCheck, Lock, 
-  Bell, Settings, HelpCircle, Mail, ShieldAlert
+  Bell, Settings, HelpCircle, Mail, ShieldAlert,
+  Share2
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -54,6 +56,12 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
         { label: t('nav.deposit'), href: "/deposit", icon: ArrowDownCircle },
         { label: t('nav.withdraw'), href: "/withdraw", icon: ArrowUpCircle },
         { label: t('nav.transactions'), href: "/transactions", icon: Activity },
+      ]
+    },
+    {
+      title: "NETWORK",
+      items: [
+        { label: "Referral Program", href: "/referral", icon: Share2 },
       ]
     },
     {

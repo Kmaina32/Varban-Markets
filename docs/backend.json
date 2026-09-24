@@ -17,7 +17,9 @@
         "fullName": { "type": "string" },
         "email": { "type": "string" },
         "phone": { "type": "string" },
-        "country": { "type": "string" }
+        "country": { "type": "string" },
+        "referralCode": { "type": "string", "description": "Unique referral code for this user." },
+        "referredBy": { "type": "string", "description": "UID of the user who referred this trader." }
       },
       "required": ["balance", "verificationStatus", "currency"]
     },
