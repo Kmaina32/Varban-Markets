@@ -2,7 +2,7 @@
 
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
-import { Share2, Users, Trophy, DollarSign, ArrowLeft, Gift } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default function ReferralDocPage() {
@@ -14,9 +14,8 @@ export default function ReferralDocPage() {
         </Link>
 
         <section className="space-y-4">
-          <div className="flex items-center space-x-3 text-[#0055FF]">
-            <Share2 className="w-6 h-6" />
-            <h2 className="text-2xl font-bold uppercase tracking-tight">Institutional Growth</h2>
+          <div className="border-b-2 border-[#0055FF] pb-2">
+            <h2 className="text-2xl font-bold uppercase tracking-tight text-[#0A0A0A]">Institutional Growth</h2>
           </div>
           <p className="text-xs text-[#6B7280] leading-relaxed">
             The Varban Markets Referral Program is designed for sophisticated traders and institutional partners looking to expand our professional community. By sharing your unique conduit, you contribute to platform growth and unlock tiered performance rewards.
@@ -24,23 +23,20 @@ export default function ReferralDocPage() {
         </section>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="p-6 bg-white border-[#E4E4E4] space-y-3">
-            <Users className="w-5 h-5 text-[#0055FF]" />
-            <h3 className="text-xs font-bold uppercase tracking-wider">Network Monitoring</h3>
+          <Card className="p-6 bg-white border-[#E4E4E4] space-y-3 border-t-4 border-t-[#0055FF]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">Network Monitoring</h3>
             <p className="text-[10px] text-[#6B7280] leading-relaxed">
               Track your direct enrollments in real-time. View registration dates and activity status of every member in your domain.
             </p>
           </Card>
-          <Card className="p-6 bg-white border-[#E4E4E4] space-y-3">
-            <DollarSign className="w-5 h-5 text-[#16835B]" />
-            <h3 className="text-xs font-bold uppercase tracking-wider">Reward Settlement</h3>
+          <Card className="p-6 bg-white border-[#E4E4E4] space-y-3 border-t-4 border-t-[#16835B]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">Reward Settlement</h3>
             <p className="text-[10px] text-[#6B7280] leading-relaxed">
               Incentives are calculated monthly based on the active trading volume within your network. Payouts credit to your Real balance.
             </p>
           </Card>
-          <Card className="p-6 bg-white border-[#E4E4E4] space-y-3">
-            <Trophy className="w-5 h-5 text-[#C9A227]" />
-            <h3 className="text-xs font-bold uppercase tracking-wider">Partner Tiers</h3>
+          <Card className="p-6 bg-white border-[#E4E4E4] space-y-3 border-t-4 border-t-[#C9A227]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">Partner Tiers</h3>
             <p className="text-[10px] text-[#6B7280] leading-relaxed">
               Advance from Standard to Premium and Institutional tiers as your network scales, unlocking higher commission percentages.
             </p>
@@ -74,12 +70,9 @@ export default function ReferralDocPage() {
           </div>
         </section>
 
-        <Card className="p-8 bg-[#0A0A0A] text-white space-y-4 rounded-none shadow-xl">
-          <div className="flex items-center space-x-2 text-[#0055FF]">
-            <Gift className="w-5 h-5" />
-            <h4 className="text-xs font-bold uppercase tracking-widest">Policy Compliance</h4>
-          </div>
-          <p className="text-[11px] text-[#9CA3AF] leading-relaxed">
+        <Card className="p-8 bg-[#F7F7F5] border border-[#0055FF] space-y-4 shadow-sm border-l-4">
+          <h4 className="text-xs font-bold uppercase tracking-widest text-[#0055FF]">Policy Compliance</h4>
+          <p className="text-[11px] text-[#6B7280] leading-relaxed">
             Referral rewards are subject to strict anti-abuse monitoring. Self-referral, circular networks, or fraudulent registration patterns will result in the immediate forfeiture of rewards and account termination. Partners are encouraged to build high-quality networks of sophisticated active traders.
           </p>
         </Card>

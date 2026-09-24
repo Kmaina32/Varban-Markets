@@ -2,7 +2,7 @@
 
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
-import { Wallet, Bitcoin, CreditCard, ShieldCheck, ArrowLeft, AlertTriangle } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default function VaultsDocPage() {
@@ -14,9 +14,8 @@ export default function VaultsDocPage() {
         </Link>
 
         <section className="space-y-4">
-          <div className="flex items-center space-x-3 text-[#16835B]">
-            <Wallet className="w-6 h-6" />
-            <h2 className="text-2xl font-bold uppercase tracking-tight">Capital Domains</h2>
+          <div className="border-b-2 border-[#16835B] pb-2">
+            <h2 className="text-2xl font-bold uppercase tracking-tight text-[#0A0A0A]">Capital Domains</h2>
           </div>
           <p className="text-xs text-[#6B7280] leading-relaxed">
             Varban Markets utilizes segregated account architecture to protect client capital. We support two primary funding pathways: Fiat Remittance via Paystack and Decentralized Settlement via Blockchain Networks.
@@ -25,10 +24,7 @@ export default function VaultsDocPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-6">
-            <div className="flex items-center space-x-2 text-[#0055FF]">
-              <CreditCard className="w-5 h-5" />
-              <h3 className="text-xs font-bold uppercase tracking-widest">Paystack Gateway (Fiat)</h3>
-            </div>
+            <h3 className="text-xs font-bold uppercase tracking-widest text-[#0055FF] border-b border-[#E4E4E4] pb-2">Paystack Gateway (Fiat)</h3>
             <div className="space-y-4 text-[11px] text-[#6B7280] leading-relaxed">
               <p>Fiat deposits are processed through the PCI-DSS compliant Paystack protocol. Supported currencies include USD, NGN, GHS, ZAR, and KES.</p>
               <ul className="list-disc pl-4 space-y-2">
@@ -40,10 +36,7 @@ export default function VaultsDocPage() {
           </div>
 
           <div className="space-y-6">
-            <div className="flex items-center space-x-2 text-[#F59E0B]">
-              <Bitcoin className="w-5 h-5" />
-              <h3 className="text-xs font-bold uppercase tracking-widest">Blockchain Networks (Crypto)</h3>
-            </div>
+            <h3 className="text-xs font-bold uppercase tracking-widest text-[#C9A227] border-b border-[#E4E4E4] pb-2">Blockchain Networks (Crypto)</h3>
             <div className="space-y-4 text-[11px] text-[#6B7280] leading-relaxed">
               <p>Cryptocurrency settlements occur directly on-chain via our dedicated monitoring nodes. We support Tether (USDT), Bitcoin (BTC), Ethereum (ETH), and Solana (SOL).</p>
               <ul className="list-disc pl-4 space-y-2">
@@ -55,21 +48,15 @@ export default function VaultsDocPage() {
           </div>
         </div>
 
-        <Card className="p-6 border-l-4 border-l-[#C43D3D] bg-white space-y-3">
-          <div className="flex items-center space-x-2 text-[#C43D3D]">
-            <AlertTriangle className="w-4 h-4" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Strict No Third-Party Policy</span>
-          </div>
+        <Card className="p-6 border-l-4 border-l-[#C43D3D] bg-white space-y-3 shadow-sm">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[#C43D3D]">Strict No Third-Party Policy</span>
           <p className="text-[11px] text-[#6B7280] leading-relaxed">
             All deposits and withdrawals must originate from and return to accounts registered in the <strong>exact same name</strong> as your Varban Markets profile. Attempts to use third-party bank accounts or wallets will result in automated account freezes and compliance audits.
           </p>
         </Card>
 
         <section className="bg-[#F7F7F5] border border-[#E4E4E4] p-8">
-          <div className="flex items-center space-x-3 mb-6">
-            <ShieldCheck className="w-5 h-5 text-[#16835B]" />
-            <h4 className="text-xs font-bold uppercase tracking-widest">Institutional Security Standards</h4>
-          </div>
+          <h4 className="text-xs font-bold uppercase tracking-widest text-[#16835B] mb-6 border-b border-[#E4E4E4] pb-2">Institutional Security Standards</h4>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div>
               <span className="text-[9px] font-bold uppercase text-[#0A0A0A] block mb-1">Segregation</span>

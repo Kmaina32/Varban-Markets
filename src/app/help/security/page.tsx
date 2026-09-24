@@ -2,7 +2,7 @@
 
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
-import { Lock, Smartphone, Key, History, ShieldCheck, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default function SecurityDocPage() {
@@ -14,9 +14,8 @@ export default function SecurityDocPage() {
         </Link>
 
         <section className="space-y-4">
-          <div className="flex items-center space-x-3 text-[#C43D3D]">
-            <Lock className="w-6 h-6" />
-            <h2 className="text-2xl font-bold uppercase tracking-tight">Security Infrastructure</h2>
+          <div className="border-b-2 border-[#C43D3D] pb-2">
+            <h2 className="text-2xl font-bold uppercase tracking-tight text-[#0A0A0A]">Security Infrastructure</h2>
           </div>
           <p className="text-xs text-[#6B7280] leading-relaxed">
             Varban Markets employs institutional-grade security protocols to protect your capital and personal data. Every account is isolated using state-of-the-art encryption and monitored for unauthorized access.
@@ -24,23 +23,20 @@ export default function SecurityDocPage() {
         </section>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="p-6 bg-white border-[#E4E4E4] space-y-3">
-            <Smartphone className="w-5 h-5 text-[#16835B]" />
-            <h3 className="text-xs font-bold uppercase tracking-wider">Two-Factor Auth</h3>
+          <Card className="p-6 bg-white border-[#E4E4E4] space-y-3 border-t-4 border-t-[#16835B]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">Two-Factor Auth</h3>
             <p className="text-[10px] text-[#6B7280] leading-relaxed">
               Mandatory for all withdrawals exceeding $1,000 USD. We recommend using Google Authenticator or Authy for maximum protection.
             </p>
           </Card>
-          <Card className="p-6 bg-white border-[#E4E4E4] space-y-3">
-            <Key className="w-5 h-5 text-[#C9A227]" />
-            <h3 className="text-xs font-bold uppercase tracking-wider">Session Control</h3>
+          <Card className="p-6 bg-white border-[#E4E4E4] space-y-3 border-t-4 border-t-[#C9A227]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">Session Control</h3>
             <p className="text-[10px] text-[#6B7280] leading-relaxed">
               Monitor active IP addresses and devices in real-time. Use "Log Out Everywhere Else" if you suspect unauthorized activity.
             </p>
           </Card>
-          <Card className="p-6 bg-white border-[#E4E4E4] space-y-3">
-            <History className="w-5 h-5 text-[#0055FF]" />
-            <h3 className="text-xs font-bold uppercase tracking-wider">Audit Logs</h3>
+          <Card className="p-6 bg-white border-[#E4E4E4] space-y-3 border-t-4 border-t-[#0055FF]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">Audit Logs</h3>
             <p className="text-[10px] text-[#6B7280] leading-relaxed">
               Every sensitive action (password change, 2FA toggle, vault move) is recorded in an immutable log for your review.
             </p>
@@ -74,12 +70,9 @@ export default function SecurityDocPage() {
           </div>
         </section>
 
-        <Card className="p-8 bg-[#0A0A0A] text-white space-y-4 rounded-none shadow-xl">
-          <div className="flex items-center space-x-2 text-[#16835B]">
-            <ShieldCheck className="w-5 h-5" />
-            <h4 className="text-xs font-bold uppercase tracking-widest">Immutable Ledger Locking</h4>
-          </div>
-          <p className="text-[11px] text-[#9CA3AF] leading-relaxed">
+        <Card className="p-8 bg-[#F7F7F5] border border-[#16835B] space-y-4 shadow-sm border-l-4">
+          <h4 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Immutable Ledger Locking</h4>
+          <p className="text-[11px] text-[#6B7280] leading-relaxed">
             All transactional metadata is protected by cryptographic hashing. Once a settlement is confirmed, the record is locked and cannot be altered by any user or administrator. This ensures a 100% auditable history for your financial records.
           </p>
         </Card>
