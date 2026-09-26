@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -213,8 +212,17 @@ export default function UnifiedSignupPage() {
   };
 
   return (
-    <div className="bg-[#F7F7F5] min-h-screen flex items-center justify-center py-8 md:py-16 px-4">
-      <div className="bg-white border border-[#E4E4E4] max-w-5xl w-full shadow-lg flex flex-col md:flex-row overflow-hidden min-h-[600px]">
+    <div className="bg-[#F7F7F5] min-h-[calc(100vh-64px)] flex items-center justify-center py-8 md:py-16 px-4">
+      <div className="bg-white border border-[#E4E4E4] max-w-5xl w-full shadow-lg flex flex-col md:flex-row overflow-hidden min-h-[600px] relative">
+        {/* Back Button */}
+        <Link 
+          href="/" 
+          className="absolute top-6 left-6 z-20 flex items-center space-x-2 text-[10px] font-bold uppercase tracking-widest text-[#6B7280] hover:text-[#0A0A0A] transition-colors lg:text-white lg:hover:text-[#0055FF]"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Home</span>
+        </Link>
+
         <div className="hidden lg:block w-1/2 relative">
           <Image
             src={placeholderImages.auth.url}
@@ -236,7 +244,7 @@ export default function UnifiedSignupPage() {
 
         <div className="w-full lg:w-1/2 flex flex-col bg-white">
           <div className="bg-[#F7F7F5] border-b border-[#E4E4E4] p-6 md:p-8 text-[#0A0A0A] relative overflow-hidden shrink-0">
-            <div className="relative z-10">
+            <div className="relative z-10 mt-6 lg:mt-0">
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF] block mb-2">Varban Markets</span>
               <h1 className="text-xl md:text-2xl font-bold uppercase tracking-tight mb-6">Create Account</h1>
               

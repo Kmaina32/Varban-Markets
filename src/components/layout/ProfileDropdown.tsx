@@ -219,7 +219,7 @@ export default function ProfileDropdown({
           <button
             onClick={() => {
               onClose();
-              router.push('/login');
+              router.push('/');
             }}
             className="w-full px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-wider text-[#C43D3D] hover:bg-[#C43D3D]/5 flex items-center justify-between"
           >

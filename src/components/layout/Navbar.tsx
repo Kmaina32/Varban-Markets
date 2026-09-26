@@ -11,7 +11,7 @@ const STRICT_PATHS = [
   '/orders', '/history', '/watchlist', '/wallet', 
   '/deposit', '/withdraw', '/transactions', '/account', 
   '/verification', '/security', '/notifications', '/preferences',
-  '/referral', '/admin', '/login', '/register', '/markets', '/news'
+  '/referral', '/admin', '/markets', '/news'
 ];
 
 export default function Navbar() {
@@ -40,8 +40,8 @@ export default function Navbar() {
               <Image 
                 src="/assets/logo2.png"
                 alt="Varban Markets"
-                width={115}
-                height={26}
+                width={100}
+                height={22}
                 style={{ height: 'auto' }}
                 className="w-auto object-contain"
                 priority
@@ -91,8 +91,8 @@ export default function Navbar() {
               <Image 
                 src="/assets/logo2.png"
                 alt="Varban Markets"
-                width={100}
-                height={22}
+                width={90}
+                height={20}
                 style={{ height: 'auto' }}
                 className="w-auto object-contain"
               />

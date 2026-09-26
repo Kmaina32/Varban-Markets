@@ -11,9 +11,9 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useAuth, useFirestore } from "@/firebase";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import placeholderImages from "@/app/lib/placeholder-images.json";
-import { Eye, EyeOff, Fingerprint, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Fingerprint, Loader2, ArrowLeft } from "lucide-react";
 import { startAuthentication } from "@simplewebauthn/browser";
 import { cn } from "@/app/lib/utils";
 
@@ -131,8 +131,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="bg-[#F7F7F5] min-h-screen flex items-center justify-center py-16 px-4">
-      <div className="bg-white border border-[#E4E4E4] max-w-4xl w-full shadow-lg flex overflow-hidden min-h-[600px]">
+    <div className="bg-[#F7F7F5] min-h-[calc(100vh-64px)] flex items-center justify-center py-16 px-4">
+      <div className="bg-white border border-[#E4E4E4] max-w-4xl w-full shadow-lg flex overflow-hidden min-h-[600px] relative">
+        {/* Back Button */}
+        <Link 
+          href="/" 
+          className="absolute top-6 left-6 z-20 flex items-center space-x-2 text-[10px] font-bold uppercase tracking-widest text-[#6B7280] hover:text-[#0A0A0A] transition-colors lg:text-white lg:hover:text-[#0055FF]"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Home</span>
+        </Link>
+
         <div className="hidden lg:block w-1/2 relative">
           <Image
             src={placeholderImages.auth.url}
@@ -153,7 +162,7 @@ export default function LoginPage() {
         </div>
 
         <div className="w-full lg:w-1/2 p-8 sm:p-12 flex flex-col justify-center bg-white">
-          <div className="border-b border-[#E4E4E4] pb-6 mb-8">
+          <div className="border-b border-[#E4E4E4] pb-6 mb-8 mt-4 lg:mt-0">
             <h1 className="text-2xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Sign In</h1>
             <p className="text-xs text-[#6B7280] mt-1 uppercase tracking-widest font-bold">Access your trading dashboard.</p>
           </div>
