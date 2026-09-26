@@ -12,11 +12,9 @@ import { Card } from "@/components/ui/card";
 import { 
   Newspaper, 
   Search, 
-  Clock, 
   Loader2, 
   ExternalLink,
-  BarChart2,
-  TrendingUp
+  BarChart2
 } from "lucide-react";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -67,7 +65,6 @@ export default function NewsHubPage() {
         <div className="p-6 bg-[#0055FF] text-white shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b-4 border-[#0A0A0A]">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-5 h-5" />
               <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Live Intelligence</span>
             </div>
             <h1 className="text-2xl font-bold uppercase tracking-tight">Global Financial Headlines</h1>
@@ -78,7 +75,6 @@ export default function NewsHubPage() {
               onClick={() => { setSearchQuery(""); setActiveAsset(undefined); loadNews(); }}
               className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2 border border-white/20"
             >
-              <Clock className="w-3.5 h-3.5" />
               <span>Refresh Feed</span>
             </button>
           </div>

@@ -11,7 +11,7 @@ const STRICT_PATHS = [
   '/orders', '/history', '/watchlist', '/wallet', 
   '/deposit', '/withdraw', '/transactions', '/account', 
   '/verification', '/security', '/notifications', '/preferences',
-  '/referral', '/admin', '/markets'
+  '/referral', '/admin', '/markets', '/news'
 ];
 
 export default function Navbar() {
