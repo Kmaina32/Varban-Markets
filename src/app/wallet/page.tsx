@@ -1,11 +1,13 @@
+
 'use client';
 
 /**
  * @fileOverview Master Capital Management Hub.
- * Consolidates Wallet Overview, Deposit, Withdraw, and Transaction Activity into one unified workspace.
+ * Consolidates Wallet Overview, Deposit, Withdraw, and Transaction Activity.
+ * Added Transaction Receipt Download Functionality.
  */
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
@@ -24,7 +26,9 @@ import {
   CreditCard,
   History,
   ArrowDownLeft,
-  ArrowUpRight
+  ArrowUpRight,
+  FileText,
+  Download
 } from "lucide-react";
 import { useUser, useDoc, useFirestore, useCollection } from "@/firebase";
 import { collection, query, orderBy, limit, where, doc, updateDoc, increment, addDoc, serverTimestamp } from "firebase/firestore";
@@ -37,6 +41,9 @@ import CryptoWithdrawForm from "@/components/CryptoWithdrawForm";
 import dynamic from "next/dynamic";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { TransactionReceipt } from "@/components/wallet/TransactionReceipt";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 const PaystackDepositForm = dynamic(() => import("@/components/PaystackDepositForm"), {
   ssr: false,
@@ -64,6 +71,11 @@ export default function WalletPage() {
   const [activeTab, setActiveTab] = useState<FundTab>('overview');
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
+
+  // Receipt State
+  const [activeReceiptTx, setActiveReceiptTx] = useState<any>(null);
+  const [isDownloadingReceipt, setIsDownloadingReceipt] = useState(false);
+  const receiptRef = useRef<HTMLDivElement>(null);
 
   // Sync state with URL params
   useEffect(() => {
@@ -112,6 +124,40 @@ export default function WalletPage() {
   }, [db, user, filterType, activeTab]);
 
   const { data: transactions, loading: transactionsLoading } = useCollection<any>(transactionsQuery);
+
+  const handleDownloadReceipt = async (tx: any) => {
+    setActiveReceiptTx(tx);
+    setIsDownloadingReceipt(true);
+
+    // Wait for DOM to render the hidden receipt
+    setTimeout(async () => {
+      const element = document.getElementById('institutional-receipt-render');
+      if (element) {
+        try {
+          const canvas = await html2canvas(element, {
+            scale: 2,
+            backgroundColor: "#FFFFFF",
+            logging: false
+          });
+          
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: [80, (canvas.height * 80) / canvas.width]
+          });
+
+          pdf.addImage(imgData, 'PNG', 0, 0, 80, (canvas.height * 80) / canvas.width);
+          pdf.save(`varban_receipt_${tx.ref || tx.id}.pdf`);
+        } catch (err) {
+          console.error("Receipt generation failure:", err);
+        } finally {
+          setIsDownloadingReceipt(false);
+          setActiveReceiptTx(null);
+        }
+      }
+    }, 100);
+  };
 
   // Fiat Withdraw Logic
   const [withdrawAmount, setWithdrawAmount] = useState("500");
@@ -179,7 +225,7 @@ export default function WalletPage() {
     {
       selector: "#tour-fund-activity",
       title: "Immutable Ledger",
-      description: "Review every deposit, withdrawal, and trade settlement in the chronological activity log."
+      description: "Review every deposit, withdrawal, and trade settlement. Download professional 80mm receipts for your records."
     }
   ];
 
@@ -192,6 +238,17 @@ export default function WalletPage() {
       subtitle="Unified financial administration and ledger workspace"
     >
       <PageTutorial steps={tutorialSteps} storageKey="varban_consolidated_funds_tutorial" />
+
+      {/* Hidden Receipt Render Node */}
+      <div className="fixed -left-[9999px] top-0 opacity-0 pointer-events-none">
+        {activeReceiptTx && (
+          <TransactionReceipt 
+            id="institutional-receipt-render"
+            transaction={activeReceiptTx} 
+            profile={{ ...profile, id: user?.uid }} 
+          />
+        )}
+      </div>
 
       <div className="max-w-6xl mx-auto space-y-6">
         
@@ -377,7 +434,7 @@ export default function WalletPage() {
 
               <Card className="bg-white border-[#E4E4E4] overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
+                  <table className="w-full text-left border-collapse min-w-[1000px]">
                     <thead>
                       <tr className="bg-[#F7F7F5] border-b border-[#E4E4E4] text-[#6B7280] text-[9px] font-bold uppercase tracking-widest">
                         <th className="p-4">Timestamp</th>
@@ -386,15 +443,16 @@ export default function WalletPage() {
                         <th className="p-4">Asset Domain</th>
                         <th className="p-4 text-right">Value</th>
                         <th className="p-4 text-center">Status</th>
+                        <th className="p-4 text-center">Receipt</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E4E4E4] text-[10px] font-mono">
                       {transactionsLoading ? (
-                        <tr><td colSpan={6} className="p-12 text-center text-[#6B7280]">Accessing platform ledger...</td></tr>
+                        <tr><td colSpan={7} className="p-12 text-center text-[#6B7280]">Accessing platform ledger...</td></tr>
                       ) : transactions?.length === 0 ? (
-                        <tr><td colSpan={6} className="p-12 text-center text-[#6B7280]">No activities recorded in this scope.</td></tr>
+                        <tr><td colSpan={7} className="p-12 text-center text-[#6B7280]">No activities recorded in this scope.</td></tr>
                       ) : transactions?.map((tx: any) => (
-                        <tr key={tx.id} className="hover:bg-[#F7F7F5] transition-colors">
+                        <tr key={tx.id} className="hover:bg-[#F7F7F5] transition-colors group">
                           <td className="p-4 text-[#6B7280]">{tx.timestamp?.toDate ? formatDate(tx.timestamp.toDate()) : '---'}</td>
                           <td className="p-4 font-bold">{tx.ref || tx.id.slice(0, 10).toUpperCase()}</td>
                           <td className="p-4 text-[#0A0A0A]">{tx.type}</td>
@@ -404,6 +462,20 @@ export default function WalletPage() {
                             <span className={cn("px-2 py-0.5 border text-[8px] font-bold uppercase", tx.status === 'Confirmed' || tx.status === 'Settled' ? "border-[#16835B] text-[#16835B]" : "border-[#0055FF] text-[#0055FF]")}>
                               {tx.status}
                             </span>
+                          </td>
+                          <td className="p-4 text-center">
+                            <button 
+                              onClick={() => handleDownloadReceipt(tx)}
+                              disabled={isDownloadingReceipt}
+                              className="p-1.5 border border-[#E4E4E4] bg-white text-[#6B7280] hover:text-[#0055FF] hover:border-[#0055FF] transition-all shadow-sm opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                              title="Download Receipt"
+                            >
+                              {isDownloadingReceipt && activeReceiptTx?.id === tx.id ? (
+                                <Activity className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Download className="w-3.5 h-3.5" />
+                              )}
+                            </button>
                           </td>
                         </tr>
                       ))}

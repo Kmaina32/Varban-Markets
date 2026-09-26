@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState } from "react";
@@ -78,11 +79,14 @@ export default function UserManagement() {
     }
   };
 
-  const filteredUsers = users?.filter(u => 
-    u.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.id?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredUsers = useMemo(() => {
+    if (!users) return [];
+    return users.filter(u => 
+      u.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.id?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [users, searchQuery]);
 
   return (
     <AuthedLayout 
@@ -135,18 +139,18 @@ export default function UserManagement() {
               <tbody className="divide-y divide-[#E4E4E4] text-xs">
                 {loading ? (
                   <tr><td colSpan={6} className="p-12 text-center text-[#6B7280] font-mono">Synchronizing Platform Records...</td></tr>
-                ) : filteredUsers?.length === 0 ? (
+                ) : filteredUsers.length === 0 ? (
                   <tr><td colSpan={6} className="p-12 text-center text-[#6B7280]">No entities found in the current scope.</td></tr>
-                ) : filteredUsers?.map((user: any) => (
-                  <tr key={user.id} className="hover:bg-[#F7F7F5] transition-colors">
+                ) : filteredUsers.map((userItem: any) => (
+                  <tr key={userItem.id} className="hover:bg-[#F7F7F5] transition-colors">
                     <td className="p-4">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-center font-bold text-[10px] text-[#0055FF]">
-                          {user.fullName?.charAt(0) || "U"}
+                          {userItem.fullName?.charAt(0) || "U"}
                         </div>
                         <div>
-                          <span className="font-bold block text-[#0A0A0A]">{user.fullName || "Unnamed Entity"}</span>
-                          <span className="text-[9px] text-[#6B7280] font-mono uppercase tracking-tighter">{user.id.slice(0, 10)}</span>
+                          <span className="font-bold block text-[#0A0A0A]">{userItem.fullName || "Unnamed Entity"}</span>
+                          <span className="text-[9px] text-[#6B7280] font-mono uppercase tracking-tighter">{userItem.id.slice(0, 10)}</span>
                         </div>
                       </div>
                     </td>
@@ -154,45 +158,45 @@ export default function UserManagement() {
                       <div className="flex flex-col space-y-1">
                         <div className="flex items-center space-x-1.5 text-[10px]">
                           <Mail className="w-3 h-3 text-[#6B7280]" />
-                          <span className="text-[#6B7280]">{user.email}</span>
+                          <span className="text-[#6B7280]">{userItem.email}</span>
                         </div>
                         <div className="flex items-center space-x-1.5 text-[10px]">
                           <Globe className="w-3 h-3 text-[#6B7280]" />
-                          <span className="uppercase text-[#6B7280]">{user.country || "Global"}</span>
+                          <span className="uppercase text-[#6B7280]">{userItem.country || "Global"}</span>
                         </div>
                       </div>
                     </td>
                     <td className="p-4 text-center">
                       <span className={cn(
                         "px-2 py-0.5 border text-[9px] font-bold uppercase",
-                        user.verificationStatus === 'Verified' ? "border-[#16835B] text-[#16835B] bg-[#16835B]/5" : "border-[#C9A227] text-[#C9A227] bg-[#C9A227]/5"
+                        userItem.verificationStatus === 'Verified' ? "border-[#16835B] text-[#16835B] bg-[#16835B]/5" : "border-[#C9A227] text-[#C9A227] bg-[#C9A227]/5"
                       )}>
-                        {user.verificationStatus || "Not Verified"}
+                        {userItem.verificationStatus || "Not Verified"}
                       </span>
                     </td>
                     <td className="p-4 text-center">
                       <button 
-                        onClick={() => handleToggleRole(user.id, user.role)}
+                        onClick={() => handleToggleRole(userItem.id, userItem.role)}
                         className={cn(
                           "px-2 py-0.5 border text-[9px] font-bold uppercase transition-all",
-                          user.role === 'Admin' 
+                          userItem.role === 'Admin' 
                             ? "bg-[#0055FF] text-white border-[#0055FF]" 
                             : "bg-white text-[#6B7280] border-[#E4E4E4] hover:border-[#0055FF] hover:text-[#0055FF]"
                         )}
                       >
-                        {user.role === 'Admin' ? "Root" : "Trader"}
+                        {userItem.role === 'Admin' ? "Root" : "Trader"}
                       </button>
                     </td>
                     <td className="p-4 text-right font-mono font-bold">
-                      ${formatNumber(user.balance || 0, { minimumFractionDigits: 2 })}
+                      ${formatNumber(userItem.balance || 0, { minimumFractionDigits: 2 })}
                     </td>
                     <td className="p-4 text-center">
                       <div className="flex items-center justify-center space-x-2">
                         <button 
-                          onClick={() => handleVerify(user.id, user.verificationStatus)}
+                          onClick={() => handleVerify(userItem.id, userItem.verificationStatus)}
                           className="text-[9px] font-bold uppercase px-3 py-1.5 border border-[#E4E4E4] hover:bg-[#0055FF] hover:text-white transition-colors"
                         >
-                          {user.verificationStatus === 'Verified' ? "Revoke KYC" : "Verify KYC"}
+                          {userItem.verificationStatus === 'Verified' ? "Revoke KYC" : "Verify KYC"}
                         </button>
                       </div>
                     </td>
@@ -204,7 +208,6 @@ export default function UserManagement() {
         </Card>
       </div>
 
-      {/* Grant Authority Modal */}
       {isAddAdminModalOpen && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-[#0A0A0A]/40 backdrop-blur-sm animate-in fade-in duration-300">
           <Card className="w-full max-w-md bg-white border-[#E4E4E4] shadow-2xl relative overflow-hidden">
@@ -249,6 +252,6 @@ export default function UserManagement() {
           </Card>
         </div>
       )}
-    </div>
+    </AuthedLayout>
   );
 }
