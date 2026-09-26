@@ -32,7 +32,7 @@ export default function AdminHeader({ title, subtitle }: AdminHeaderProps) {
     <header className="relative h-16 border-b border-[#E4E4E4] bg-white flex items-center justify-between px-4 md:px-6 shrink-0 z-[150] shadow-sm">
       <div className="flex items-center space-x-4">
         <Link href="/admin" className="flex items-center space-x-2">
-          <Image src="/assets/logo.png" alt="Varban Corporate" width={110} height={26} className="h-6 w-auto object-contain" priority />
+          <Image src="/assets/logo.png" alt="Varban Corporate" width={90} height={20} style={{ height: 'auto' }} className="w-auto object-contain" priority />
           <span className="text-[8px] font-bold bg-[#0055FF] text-white px-1.5 py-0.5 tracking-widest uppercase">
             Admin
           </span>
@@ -42,7 +42,7 @@ export default function AdminHeader({ title, subtitle }: AdminHeaderProps) {
         
         <div className="hidden md:block">
           <h1 className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#0055FF] flex items-center space-x-1.5">
-            <ShieldAlert className="w-3 h-3" />
+            <ShieldAlert className="w-3" />
             <span>{title}</span>
           </h1>
           {subtitle && <p className="text-[9px] text-[#6B7280] uppercase tracking-wider mt-0.5">{subtitle}</p>}

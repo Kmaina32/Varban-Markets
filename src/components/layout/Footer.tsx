@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -31,9 +30,10 @@ export default function Footer() {
               <Image 
                 src="/assets/logo2.png"
                 alt="Varban Markets"
-                width={120}
-                height={28}
-                className="h-7 w-auto object-contain"
+                width={100}
+                height={22}
+                style={{ height: 'auto' }}
+                className="w-auto object-contain"
               />
             </div>
             <p className="text-xs text-[#6B7280] leading-relaxed max-w-xs">

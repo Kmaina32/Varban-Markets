@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -521,7 +520,7 @@ export default function TerminalWorkspace() {
           </button>
           
           <Link href="/dashboard" className="flex items-center">
-            <Image src="/assets/logo2.png" alt="Varban" width={90} height={22} className="h-5 md:h-7 w-auto object-contain" priority />
+            <Image src="/assets/logo2.png" alt="Varban" width={75} height={18} style={{ height: 'auto' }} className="w-auto object-contain" priority />
           </Link>
         </div>
 

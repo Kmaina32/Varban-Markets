@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -41,8 +40,8 @@ export default function Navbar() {
               <Image 
                 src="/assets/logo2.png"
                 alt="Varban Markets"
-                width={140}
-                height={32}
+                width={115}
+                height={26}
                 style={{ height: 'auto' }}
                 className="w-auto object-contain"
                 priority
@@ -92,8 +91,8 @@ export default function Navbar() {
               <Image 
                 src="/assets/logo2.png"
                 alt="Varban Markets"
-                width={120}
-                height={28}
+                width={100}
+                height={22}
                 style={{ height: 'auto' }}
                 className="w-auto object-contain"
               />

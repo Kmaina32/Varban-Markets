@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -174,8 +173,8 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
             <Image 
               src="/assets/logo2.png" 
               alt="Varban Workspace" 
-              width={110} 
-              height={26} 
+              width={95} 
+              height={22} 
               style={{ height: 'auto' }}
               className="w-auto object-contain" 
               priority 
