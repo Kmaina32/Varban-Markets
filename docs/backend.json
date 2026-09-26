@@ -15,7 +15,7 @@
         },
         "language": { "type": "string", "enum": ["ENGLISH", "FRENCH", "SPANISH", "PORTUGUESE"] },
         "timezone": { "type": "string", "description": "Preferred timezone for market clocks." },
-        "verificationStatus": { "type": "string", "enum": ["Not Verified", "Pending", "Verified"] },
+        "verificationStatus": { "type": "string", "enum": ["Not Verified", "Pending", "Verified", "Rejected"] },
         "fullName": { "type": "string" },
         "email": { "type": "string" },
         "phone": { "type": "string" },

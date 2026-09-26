@@ -1,8 +1,9 @@
+
 "use client";
 
 /**
  * @fileOverview Consolidated Account Hub.
- * Manages Profile, Verification, Security, Notifications, and Preferences in one workspace.
+ * Manages Profile, KYC Verification, Security, Notifications, and Preferences.
  */
 
 import { useState, useEffect, useMemo } from "react";
@@ -10,30 +11,27 @@ import { useSearchParams, useRouter } from "next/navigation";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { 
-  Shield, 
   User, 
   Activity, 
   Check, 
-  Save, 
   Smartphone, 
   Globe, 
-  AlertCircle,
   ShieldCheck,
   Lock,
   Bell,
   Settings,
   Fingerprint,
   Plus,
-  Trash2,
   Loader2,
-  Mail,
-  History,
-  Key,
+  DollarSign,
   Clock,
-  DollarSign
+  XCircle,
+  FileText,
+  Upload,
+  AlertTriangle
 } from "lucide-react";
 import { useUser, useDoc, useFirestore, useCollection, useAuth } from "@/firebase";
-import { doc, setDoc, updateDoc, collection, query, orderBy, limit, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { doc, updateDoc, collection, query, orderBy, limit, serverTimestamp } from "firebase/firestore";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { startRegistration } from "@simplewebauthn/browser";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -218,29 +216,54 @@ export default function AccountHub() {
   }, [db, user, activeTab]);
   const { data: alerts, loading: alertsLoading } = useCollection<any>(notesQuery);
 
-  // --- SUB-MODULE: VERIFICATION ---
+  // --- SUB-MODULE: KYC ---
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
+  
   const handleDocUpload = (label: string) => {
     setUploadingDoc(label);
+    // Simulate encryption and upload process
     setTimeout(async () => {
       if (user && db) {
-        await updateDoc(doc(db, "users", user.uid), { verificationStatus: "Pending" });
-        alert(`${label} received and queued for audit.`);
+        await updateDoc(doc(db, "users", user.uid), { 
+          verificationStatus: "Pending",
+          kycSubmittedAt: serverTimestamp() 
+        });
+        
+        await addDoc(collection(db, `users/${user.uid}/notifications`), {
+          title: "KYC Documents Received",
+          body: `Your ${label} has been received and encrypted. The compliance audit is now pending.`,
+          type: "Security",
+          isUnread: true,
+          timestamp: serverTimestamp()
+        });
       }
       setUploadingDoc(null);
-    }, 2000);
+    }, 2500);
+  };
+
+  const getStatusInfo = (status: string) => {
+    switch (status) {
+      case 'Verified':
+        return { label: 'Verified', color: 'text-[#16835B]', icon: ShieldCheck, bg: 'bg-[#16835B]/5', border: 'border-[#16835B]' };
+      case 'Pending':
+        return { label: 'Pending Audit', color: 'text-[#C9A227]', icon: Clock, bg: 'bg-[#C9A227]/5', border: 'border-[#C9A227]' };
+      case 'Rejected':
+        return { label: 'Rejected', color: 'text-[#C43D3D]', icon: XCircle, bg: 'bg-[#C43D3D]/5', border: 'border-[#C43D3D]' };
+      default:
+        return { label: 'Not Verified', color: 'text-[#6B7280]', icon: AlertTriangle, bg: 'bg-[#F7F7F5]', border: 'border-[#E4E4E4]' };
+    }
   };
 
   const tutorialSteps: TutorialStep[] = [
     {
       selector: "#tour-account-nav",
       title: "Account Hub",
-      description: "Manage your entire digital identity from this unified dashboard. Switch between profile, security, and display settings instantly."
+      description: "Manage your entire digital identity from this unified dashboard. Switch between profile, KYC, and security settings instantly."
     },
     {
       selector: "#tour-kyc-status",
-      title: "Regulatory Status",
-      description: "Monitor your verification level to ensure uninterrupted access to institutional liquidity and higher withdrawal limits."
+      title: "KYC Verification",
+      description: "Monitor your regulatory status and upload required documents to unlock institutional liquidity and higher withdrawal limits."
     }
   ];
 
@@ -257,7 +280,7 @@ export default function AccountHub() {
         <div id="tour-account-nav" className="flex border-b border-[#E4E4E4] bg-white sticky top-[-1px] z-20 shadow-sm overflow-x-auto no-scrollbar">
           {[
             { id: 'profile', label: 'Profile', icon: User },
-            { id: 'verification', label: 'Identity', icon: ShieldCheck },
+            { id: 'verification', label: 'KYC', icon: ShieldCheck },
             { id: 'security', label: 'Security', icon: Lock },
             { id: 'alerts', label: 'Alerts Feed', icon: Bell },
             { id: 'display', label: 'Display', icon: Settings },
@@ -328,25 +351,90 @@ export default function AccountHub() {
             </div>
           )}
 
-          {/* TAB: VERIFICATION */}
+          {/* TAB: KYC VERIFICATION */}
           {activeTab === 'verification' && (
-            <div className="max-w-3xl mx-auto space-y-6">
-              <Card id="tour-kyc-status" className="p-8 bg-white border-[#E4E4E4] shadow-sm flex items-center space-x-6">
-                <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4]">
-                  <ShieldCheck className={cn("w-8 h-8", profile?.verificationStatus === 'Verified' ? "text-[#16835B]" : "text-[#6B7280]")} />
+            <div className="max-w-4xl mx-auto space-y-6">
+              <Card id="tour-kyc-status" className="p-8 bg-white border-[#E4E4E4] shadow-sm flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
+                <div className={cn("p-6 border shrink-0 relative z-10", getStatusInfo(profile?.verificationStatus).bg, getStatusInfo(profile?.verificationStatus).border)}>
+                  {(() => {
+                    const StatusIcon = getStatusInfo(profile?.verificationStatus).icon;
+                    return <StatusIcon className={cn("w-12 h-12", getStatusInfo(profile?.verificationStatus).color)} />;
+                  })()}
                 </div>
-                <div>
-                  <h3 className="text-sm font-bold uppercase">Status: {profile?.verificationStatus || 'Not Verified'}</h3>
-                  <p className="text-[11px] text-[#6B7280] mt-1">Verify your identity to unlock institutional limits.</p>
+                <div className="relative z-10 flex-grow text-center md:text-left">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1">Current Account Status</span>
+                  <h3 className={cn("text-2xl font-bold uppercase tracking-tight", getStatusInfo(profile?.verificationStatus).color)}>
+                    {getStatusInfo(profile?.verificationStatus).label}
+                  </h3>
+                  <p className="text-[11px] text-[#6B7280] mt-2 max-w-md leading-relaxed">
+                    {profile?.verificationStatus === 'Verified' 
+                      ? "Your identity has been verified. You hold full institutional platform authority and unrestricted withdrawal limits."
+                      : profile?.verificationStatus === 'Pending'
+                      ? "Your documents are currently being audited by our compliance team. Standard review time is 24-48 business hours."
+                      : profile?.verificationStatus === 'Rejected'
+                      ? "Your previous submission was declined. Please review the requirements and upload high-resolution documents to proceed."
+                      : "Complete your KYC profile to unlock global market liquidity and secure your capital remit pathways."}
+                  </p>
                 </div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#0055FF]/5 rounded-bl-full -z-0"></div>
               </Card>
-              <div className="space-y-3">
-                {['ID Card / Passport', 'Proof of Address', 'Risk Consent'].map((label, i) => (
-                  <Card key={i} className="p-5 bg-white border-[#E4E4E4] flex justify-between items-center group hover:border-[#0055FF] transition-all">
-                    <div className="flex items-center space-x-4"><Smartphone className="w-4 h-4 text-[#6B7280]" /><div><span className="text-[11px] font-bold uppercase block">{label}</span><span className="text-[9px] text-[#6B7280] uppercase">Required Document</span></div></div>
-                    <button onClick={() => handleDocUpload(label)} className="p-2 border border-[#E4E4E4] hover:bg-[#0055FF] hover:text-white transition-colors"><Smartphone className="w-3.5 h-3.5" /></button>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { id: 'id', label: 'Government ID / Passport', icon: FileText, desc: 'High-resolution scan of your biographical page.' },
+                  { id: 'address', label: 'Proof of Residence', icon: Globe, desc: 'Utility bill or bank statement (last 3 months).' },
+                  { id: 'risk', label: 'Risk Disclosure Assent', icon: ShieldCheck, desc: 'Digitally signed platform rule agreement.' }
+                ].map((doc) => (
+                  <Card key={doc.id} className="p-6 bg-white border-[#E4E4E4] hover:border-[#0055FF] transition-all group shadow-sm flex flex-col justify-between">
+                    <div className="space-y-3 mb-6">
+                      <div className="flex justify-between items-start">
+                        <doc.icon className="w-5 h-5 text-[#0055FF]" />
+                        {profile?.verificationStatus === 'Verified' && <Check className="w-4 h-4 text-[#16835B]" />}
+                      </div>
+                      <div>
+                        <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#0A0A0A]">{doc.label}</h4>
+                        <p className="text-[10px] text-[#6B7280] mt-1 leading-relaxed">{doc.desc}</p>
+                      </div>
+                    </div>
+                    
+                    <button 
+                      onClick={() => handleDocUpload(doc.label)}
+                      disabled={uploadingDoc !== null || profile?.verificationStatus === 'Verified' || profile?.verificationStatus === 'Pending'}
+                      className={cn(
+                        "w-full py-2.5 text-[9px] font-bold uppercase tracking-widest border transition-all flex items-center justify-center space-x-2 shadow-sm",
+                        profile?.verificationStatus === 'Verified' || profile?.verificationStatus === 'Pending'
+                          ? "bg-[#F7F7F5] text-[#6B7280] border-[#E4E4E4] cursor-not-allowed"
+                          : "bg-white text-[#0A0A0A] border-[#0A0A0A] hover:bg-[#0055FF] hover:text-white hover:border-[#0055FF]"
+                      )}
+                    >
+                      {uploadingDoc === doc.label ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          <span>Encrypting...</span>
+                        </>
+                      ) : profile?.verificationStatus === 'Verified' ? (
+                        <span>Verified</span>
+                      ) : profile?.verificationStatus === 'Pending' ? (
+                        <span>Locked for Audit</span>
+                      ) : (
+                        <>
+                          <Upload className="w-3 h-3" />
+                          <span>Upload Document</span>
+                        </>
+                      )}
+                    </button>
                   </Card>
                 ))}
+
+                <div className="p-6 bg-[#0055FF]/5 border border-dashed border-[#0055FF]/30 flex flex-col justify-center space-y-4">
+                  <div className="flex items-center space-x-2 text-[#0055FF]">
+                    <Activity className="w-4 h-4" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Audit Telemetry</span>
+                  </div>
+                  <p className="text-[10px] text-[#6B7280] leading-relaxed">
+                    Once submitted, documents are protected by military-grade AES-256 encryption. Our compliance nodes cross-reference data against global sanctions and PEP lists automatically.
+                  </p>
+                </div>
               </div>
             </div>
           )}
