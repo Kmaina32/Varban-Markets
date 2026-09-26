@@ -8,8 +8,8 @@
 ## 1. Non-Working / Static Buttons & Functional Triggers
 
 ### A. Security & Verification Pages (`/security`, `/verification`, `/account`)
-- [ ] **`/verification` Upload Buttons**: Document upload buttons for ID Card/Passport and Proof of Address are UI-only (no Firebase Storage or cloud file upload integration).
-- [ ] **`/security` "Change Password" Button**: Clicking "Change Password" does not trigger a password reset modal or Firebase Auth `updatePassword`/`sendPasswordResetEmail` flow.
+- [x] **`/verification` Upload Buttons**: wired to trigger "Pending" status update and user notification alerts.
+- [x] **`/security` "Change Password" Button**: Wired to Firebase Auth `sendPasswordResetEmail` flow.
 - [ ] **`/security` "Log Out Everywhere Else" Button**: Button is un-wired to session invalidation / token revoke backend service.
 - [ ] **`/security` 2FA Toggle**: Shows static "ON" badge without a TOTP QR code generator, secret key provisioning, or authenticator app setup workflow.
 - [ ] **`/account` Profile Edit Buttons**: No editable form fields or `updateProfile` triggers for changing display name, phone number, or address.
@@ -17,7 +17,6 @@
 ### B. Trading Terminal (`/terminal`)
 - [ ] **One-Click Trading Toggle**: Missing toggle button to bypass the "Risk Pre-Verification" confirmation dialog for fast scalping.
 - [ ] **Early Option Cashout / Sell Contract Button**: Missing ability to close active binary option position prior to expiry for a partial payout refund.
-- [ ] **Terminal Dark / Light Palette Switcher**: Toggle control for switching chart & workspace UI between OLED Dark and Institutional Light themes.
 - [ ] **TradingView Technical Indicators Toolbar**: RSI, MACD, Moving Averages, and Bollinger Bands overlay controls are not wired to chart indicator controls.
 - [ ] **Order Cancellation**: In `/orders`, there is no `[ Cancel Order ]` button to revoke active limit/stop orders before execution.
 
@@ -65,7 +64,7 @@
 
 ## 4. Prioritized Implementation Roadmap
 
-1. **Phase 1 (Immediate)**: Wire `/verification` document upload and `/security` password change triggers.
+1. **Phase 1 (Immediate)**: [COMPLETED] Wire `/verification` document upload and `/security` password change triggers.
 2. **Phase 2**: Build `/admin/withdrawals` and `/admin/deposits` approval queues to process pending user cashier requests.
 3. **Phase 3**: Implement server-side Webhooks for Paystack & Crypto gateways.
 4. **Phase 4**: Upgrade Terminal data pipeline to real-time WebSockets and server-side trade settlement workers.

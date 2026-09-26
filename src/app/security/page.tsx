@@ -1,27 +1,29 @@
-
 "use client";
 
 /**
  * @fileOverview Security Management Workspace.
- * Integrated with Passkey/WebAuthn biometric registration.
+ * Integrated with Passkey/WebAuthn biometric registration and wired password recovery.
  */
 
 import { useState } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
-import { Lock, Shield, Key, Smartphone, History, Fingerprint, Plus, Trash2, CheckCircle2 } from "lucide-react";
+import { Lock, Shield, Key, Smartphone, History, Fingerprint, Plus, Trash2, CheckCircle2, Loader2, Mail } from "lucide-react";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { startRegistration } from "@simplewebauthn/browser";
-import { useUser, useFirestore, useCollection } from "@/firebase";
+import { useUser, useFirestore, useCollection, useAuth } from "@/firebase";
 import { collection, doc, deleteDoc } from "firebase/firestore";
+import { sendPasswordResetEmail } from "firebase/auth";
 import { cn } from "@/app/lib/utils";
 
 export default function SecurityManagementPage() {
   const { t } = useTranslation();
   const { user } = useUser();
+  const auth = useAuth();
   const db = useFirestore();
   
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isResetingPassword, setIsResetingPassword] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
   const { data: passkeys, loading: passkeysLoading } = useCollection<any>(
@@ -39,17 +41,12 @@ export default function SecurityManagementPage() {
     setFeedback(null);
 
     try {
-      // 1. Get options from server
       const resp = await fetch('/api/auth/passkey/register/generate-options', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
       const options = await resp.json();
-
-      // 2. Browser biometric prompt
       const attResp = await startRegistration({ optionsJSON: options });
-
-      // 3. Verify with server
       const verifyResp = await fetch('/api/auth/passkey/register/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -70,6 +67,28 @@ export default function SecurityManagementPage() {
     }
   };
 
+  const handlePasswordReset = async () => {
+    if (!user?.email || !auth) return;
+    
+    setIsResetingPassword(true);
+    setFeedback(null);
+
+    try {
+      await sendPasswordResetEmail(auth, user.email);
+      setFeedback({ 
+        type: 'success', 
+        message: `Recovery link transmitted to ${user.email}. Please check your inbox to modify your password.` 
+      });
+    } catch (e) {
+      setFeedback({ 
+        type: 'error', 
+        message: 'Authority failure: Could not initiate password recovery.' 
+      });
+    } finally {
+      setIsResetingPassword(false);
+    }
+  };
+
   const handleDeletePasskey = async (id: string) => {
     if (!db || !user || !window.confirm("Confirm deletion of this biometric credential?")) return;
     await deleteDoc(doc(db, `users/${user.uid}/passkeys`, id));
@@ -83,6 +102,16 @@ export default function SecurityManagementPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           
+          {feedback && (
+            <div className={cn(
+              "p-4 border text-[10px] font-bold uppercase tracking-wide flex items-center gap-2 animate-in fade-in slide-in-from-top-1",
+              feedback.type === 'success' ? "bg-[#16835B]/5 border-[#16835B]/20 text-[#16835B]" : "bg-[#C43D3D]/5 border-[#C43D3D]/20 text-[#C43D3D]"
+            )}>
+              {feedback.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
+              {feedback.message}
+            </div>
+          )}
+
           {/* Biometric Passkeys Section */}
           <Card className="bg-white border-[#E4E4E4] p-6 shadow-sm">
             <div className="flex justify-between items-center border-b border-[#E4E4E4] pb-3 mb-6">
@@ -95,20 +124,10 @@ export default function SecurityManagementPage() {
                 disabled={isRegistering}
                 className="text-[10px] font-bold uppercase tracking-widest bg-[#0A0A0A] text-white px-3 py-1.5 flex items-center gap-1.5 hover:bg-[#0055FF] transition-colors disabled:opacity-50"
               >
-                <Plus className="w-3.5 h-3.5" />
+                {isRegistering ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
                 {isRegistering ? "Wait..." : "Add Passkey"}
               </button>
             </div>
-
-            {feedback && (
-              <div className={cn(
-                "mb-6 p-4 border text-[10px] font-bold uppercase tracking-wide flex items-center gap-2",
-                feedback.type === 'success' ? "bg-[#16835B]/5 border-[#16835B]/20 text-[#16835B]" : "bg-[#C43D3D]/5 border-[#C43D3D]/20 text-[#C43D3D]"
-              )}>
-                {feedback.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
-                {feedback.message}
-              </div>
-            )}
 
             <div className="space-y-3">
               {passkeysLoading ? (
@@ -146,9 +165,16 @@ export default function SecurityManagementPage() {
               <div className="flex justify-between items-center p-4 border border-[#F7F7F5] bg-[#F7F7F5]">
                 <div className="flex items-center space-x-4">
                   <Key className="w-4 h-4 text-[#C9A227]" />
-                  <span className="text-[11px] font-bold uppercase">Password</span>
+                  <span className="text-[11px] font-bold uppercase">Standard Password</span>
                 </div>
-                <button className="text-[10px] font-bold uppercase underline">Change</button>
+                <button 
+                  onClick={handlePasswordReset}
+                  disabled={isResetingPassword}
+                  className="text-[10px] font-bold uppercase underline decoration-[#0055FF] decoration-2 underline-offset-4 hover:text-[#0055FF] transition-colors flex items-center gap-1.5"
+                >
+                  {isResetingPassword && <Loader2 className="w-3 h-3 animate-spin" />}
+                  Change
+                </button>
               </div>
               <div className="flex justify-between items-center p-4 border border-[#F7F7F5] bg-[#F7F7F5]">
                 <div className="flex items-center space-x-4">
@@ -196,6 +222,13 @@ export default function SecurityManagementPage() {
               <div className="h-full bg-[#16835B] w-full"></div>
             </div>
           </Card>
+
+          <div className="p-4 bg-[#0055FF]/5 border border-[#0055FF]/20 flex items-start space-x-3">
+            <Mail className="w-4 h-4 text-[#0055FF] shrink-0 mt-0.5" />
+            <p className="text-[9px] text-[#6B7280] leading-relaxed uppercase font-bold">
+              Account modifications are verified via registered email domain to prevent unauthorized authority escalation.
+            </p>
+          </div>
         </div>
       </div>
     </AuthedLayout>
