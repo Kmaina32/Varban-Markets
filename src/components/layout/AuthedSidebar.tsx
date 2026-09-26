@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from "next/link";
@@ -55,19 +56,10 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
       ]
     },
     {
-      title: "NETWORK",
-      items: [
-        { label: "Referral Program", href: "/referral", icon: Share2 },
-      ]
-    },
-    {
       title: "ACCOUNT",
       items: [
         { label: t('nav.account'), href: "/account", icon: User },
-        { label: t('nav.verification'), href: "/verification", icon: ShieldCheck },
-        { label: t('nav.security'), href: "/security", icon: Lock },
-        { label: t('nav.notifications'), href: "/notifications", icon: Bell },
-        { label: t('nav.preferences'), href: "/preferences", icon: Settings },
+        { label: "Referral Program", href: "/referral", icon: Share2 },
       ]
     }
   ];
@@ -103,7 +95,10 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
               </h3>
               <div className="space-y-1">
                 {section.items.map((item) => {
-                  const isActive = pathname === item.href || (item.href === '/admin' && pathname?.startsWith('/admin')) || (item.href === '/wallet' && pathname?.startsWith('/wallet'));
+                  const isActive = pathname === item.href || 
+                    (item.href === '/admin' && pathname?.startsWith('/admin')) || 
+                    (item.href === '/wallet' && pathname?.startsWith('/wallet')) ||
+                    (item.href === '/account' && pathname?.startsWith('/account'));
                   return (
                     <Link
                       key={item.href}
@@ -140,7 +135,10 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
             </h3>
             <div className="space-y-0.5">
               {section.items.map((item) => {
-                const isActive = pathname === item.href || (item.href === '/admin' && pathname?.startsWith('/admin')) || (item.href === '/wallet' && pathname?.startsWith('/wallet'));
+                const isActive = pathname === item.href || 
+                  (item.href === '/admin' && pathname?.startsWith('/admin')) || 
+                  (item.href === '/wallet' && pathname?.startsWith('/wallet')) ||
+                  (item.href === '/account' && pathname?.startsWith('/account'));
                 return (
                   <Link
                     key={item.href}
