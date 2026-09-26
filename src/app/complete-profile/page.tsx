@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -16,7 +17,9 @@ export default function CompleteProfilePage() {
   const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
 
   const [formData, setFormData] = useState({
-    fullName: "",
+    firstName: "",
+    middleName: "",
+    lastName: "",
     phone: "",
     country: "United Kingdom",
     dialCode: "+44"
@@ -27,7 +30,9 @@ export default function CompleteProfilePage() {
   useEffect(() => {
     if (profile) {
       setFormData({
-        fullName: profile.fullName || "",
+        firstName: profile.firstName || profile.fullName?.split(' ')[0] || "",
+        middleName: profile.middleName || "",
+        lastName: profile.lastName || profile.fullName?.split(' ').slice(1).join(' ') || "",
         phone: profile.phone?.split(' ').pop() || "",
         country: profile.country || "United Kingdom",
         dialCode: profile.phone?.split(' ')[0] || "+44"
@@ -39,7 +44,7 @@ export default function CompleteProfilePage() {
     if (!authLoading && !user) {
       router.push('/login');
     }
-    if (!authLoading && !profileLoading && profile?.fullName && profile?.phone && profile?.country) {
+    if (!authLoading && !profileLoading && profile?.firstName && profile?.lastName && profile?.phone && profile?.country) {
       router.push('/dashboard');
     }
   }, [authLoading, profileLoading, user, profile, router]);
@@ -51,9 +56,14 @@ export default function CompleteProfilePage() {
     setLoading(true);
     setError(null);
 
+    const fullName = `${formData.firstName} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.lastName}`.trim();
+
     try {
       await updateDoc(doc(db, "users", user.uid), {
-        fullName: formData.fullName,
+        fullName: fullName,
+        firstName: formData.firstName,
+        middleName: formData.middleName,
+        lastName: formData.lastName,
         phone: `${formData.dialCode} ${formData.phone}`,
         country: formData.country,
         updatedAt: new Date().toISOString()
@@ -89,17 +99,45 @@ export default function CompleteProfilePage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5 flex items-center gap-1.5">
+                <User className="w-3 h-3" /> First Name
+              </label>
+              <input 
+                required 
+                type="text" 
+                value={formData.firstName}
+                onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                className="w-full text-xs p-3 border border-[#E4E4E4] focus:outline-none focus:border-[#0A0A0A] bg-[#F7F7F5]" 
+                placeholder="Legal first name"
+              />
+            </div>
+            <div>
+              <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5 flex items-center gap-1.5">
+                Middle Name
+              </label>
+              <input 
+                type="text" 
+                value={formData.middleName}
+                onChange={(e) => setFormData({...formData, middleName: e.target.value})}
+                className="w-full text-xs p-3 border border-[#E4E4E4] focus:outline-none focus:border-[#0A0A0A] bg-[#F7F7F5]" 
+                placeholder="Optional"
+              />
+            </div>
+          </div>
+
           <div>
             <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5 flex items-center gap-1.5">
-              <User className="w-3 h-3" /> Full Name
+              Last Name
             </label>
             <input 
               required 
               type="text" 
-              value={formData.fullName}
-              onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+              value={formData.lastName}
+              onChange={(e) => setFormData({...formData, lastName: e.target.value})}
               className="w-full text-xs p-3 border border-[#E4E4E4] focus:outline-none focus:border-[#0A0A0A] bg-[#F7F7F5]" 
-              placeholder="Enter your legal name"
+              placeholder="Legal last name"
             />
           </div>
 

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -31,6 +32,7 @@ export default function UnifiedSignupPage() {
 
   const [formData, setFormData] = useState({
     firstName: "",
+    middleName: "",
     lastName: "",
     email: "",
     phone: "",
@@ -126,8 +128,13 @@ export default function UnifiedSignupPage() {
         const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
         const user = userCredential.user;
         
+        const fullName = `${formData.firstName} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.lastName}`.trim();
+
         await setDoc(doc(db, "users", user.uid), {
-          fullName: `${formData.firstName} ${formData.lastName}`,
+          fullName: fullName,
+          firstName: formData.firstName,
+          middleName: formData.middleName,
+          lastName: formData.lastName,
           email: formData.email.toLowerCase(),
           phone: `${formData.dialCode} ${formData.phone}`,
           country: formData.country,
@@ -283,9 +290,15 @@ export default function UnifiedSignupPage() {
                   <div className="border-b border-[#E4E4E4] pb-2 mb-4">
                     <h2 className="text-[10px] font-bold text-[#0A0A0A] uppercase tracking-[0.15em]">Personal Details</h2>
                   </div>
-                  <div>
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">First Name</label>
-                    <input required name="firstName" value={formData.firstName} onChange={handleChange} type="text" className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none bg-white text-[#0A0A0A] focus:outline-none focus:border-[#0A0A0A] placeholder:text-[#6B7280]/30" placeholder="e.g. John" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">First Name</label>
+                      <input required name="firstName" value={formData.firstName} onChange={handleChange} type="text" className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none bg-white text-[#0A0A0A] focus:outline-none focus:border-[#0A0A0A] placeholder:text-[#6B7280]/30" placeholder="e.g. John" />
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Middle Name</label>
+                      <input name="middleName" value={formData.middleName} onChange={handleChange} type="text" className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none bg-white text-[#0A0A0A] focus:outline-none focus:border-[#0A0A0A] placeholder:text-[#6B7280]/30" placeholder="Optional" />
+                    </div>
                   </div>
                   <div>
                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Last Name</label>
