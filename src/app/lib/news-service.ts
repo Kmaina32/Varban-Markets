@@ -15,6 +15,7 @@ export interface NewsItem {
 
 /**
  * Fetches recent news articles from the Free News API.
+ * Optimized for financial relevance by searching specific market keywords if no query is provided.
  * @param query Optional search term for specific assets or topics.
  */
 export async function fetchMarketNews(query?: string): Promise<NewsItem[]> {
@@ -23,15 +24,19 @@ export async function fetchMarketNews(query?: string): Promise<NewsItem[]> {
     let url = `${BASE_URL}/news?language=en&order_by=recent`;
     
     if (query && query.length > 2) {
-      const cleanQuery = query.split('/')[0]; // Handle pairs like BTC/USD
+      // Handle pairs like BTC/USD or symbols with slashes
+      const cleanQuery = query.split('/')[0].trim();
       url += `&in_title=${encodeURIComponent(cleanQuery)}`;
+    } else {
+      // Default to general financial market context if no specific asset is requested
+      url += `&in_title=${encodeURIComponent('Fed Market Stocks Gold Crypto')}`;
     }
     
     const res = await fetch(url, {
       headers: {
         'x-api-key': NEWS_API_KEY
       },
-      next: { revalidate: 300 } // Cache for 5 minutes
+      next: { revalidate: 300 } // Cache for 5 minutes (300 seconds)
     });
     
     if (!res.ok) {

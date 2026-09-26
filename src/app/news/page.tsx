@@ -1,9 +1,9 @@
 'use client';
 
 /**
- * @fileOverview News Registry Workspace.
+ * @fileOverview News Hub Workspace.
  * Professional financial news feed delivering real-time headlines.
- * AI analysis has been completely removed.
+ * Strictly accessible for authenticated users. AI analysis disabled.
  */
 
 import { useState, useEffect } from "react";
@@ -15,8 +15,8 @@ import {
   Clock, 
   Loader2, 
   ExternalLink,
-  Filter,
-  BarChart2
+  BarChart2,
+  TrendingUp
 } from "lucide-react";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -59,39 +59,63 @@ export default function NewsHubPage() {
   return (
     <AuthedLayout 
       title={t('nav.news')} 
-      subtitle="Global Financial News Registry"
+      subtitle="Institutional Market Intelligence Hub"
     >
-      <div className="space-y-6 max-w-6xl mx-auto">
+      <div className="space-y-6 max-w-6xl mx-auto pb-12">
         
-        {/* Intelligence Controls */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white border border-[#E4E4E4] p-4 shadow-sm">
-          <form onSubmit={handleSearch} className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]" />
-            <input 
-              type="text" 
-              placeholder="Search news by asset (e.g. BTC, Gold, EUR)..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-[#F7F7F5] border border-[#E4E4E4] text-xs focus:outline-none focus:border-[#0055FF] transition-all"
-            />
-          </form>
-
-          <div className="flex items-center space-x-4">
+        {/* News Feed Banner */}
+        <div className="p-6 bg-[#0055FF] text-white shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b-4 border-[#0A0A0A]">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-5 h-5" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Live Intelligence</span>
+            </div>
+            <h1 className="text-2xl font-bold uppercase tracking-tight">Global Financial Headlines</h1>
+            <p className="text-[10px] uppercase font-bold text-white/70 mt-1">Real-time telemetry from top tier-1 financial data nodes</p>
+          </div>
+          <div className="flex items-center gap-3">
             <button 
               onClick={() => { setSearchQuery(""); setActiveAsset(undefined); loadNews(); }}
-              className="px-4 py-2 border border-[#E4E4E4] bg-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#F7F7F5] transition-colors flex items-center space-x-2"
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2 border border-white/20"
             >
-              <Clock className="w-3.5 h-3.5 text-[#6B7280]" />
+              <Clock className="w-3.5 h-3.5" />
               <span>Refresh Feed</span>
             </button>
           </div>
         </div>
 
+        {/* Intelligence Controls */}
+        <Card className="bg-white border-[#E4E4E4] p-4 shadow-sm">
+          <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-grow">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]" />
+              <input 
+                type="text" 
+                placeholder="Search by asset (e.g. BTC, Gold, EUR, NVDA)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-[#F7F7F5] border border-[#E4E4E4] text-xs focus:outline-none focus:border-[#0055FF] transition-all"
+              />
+            </div>
+            <button 
+              type="submit" 
+              className="px-8 py-3 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0055FF] transition-colors"
+            >
+              Fetch Market News
+            </button>
+          </form>
+        </Card>
+
         {activeAsset && (
           <div className="flex items-center space-x-2 px-1">
-            <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">Filtering for:</span>
+            <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">Active Scope:</span>
             <span className="bg-[#0A0A0A] text-white text-[10px] font-mono font-bold px-2 py-0.5 uppercase tracking-wider">{activeAsset}</span>
-            <button onClick={() => { setSearchQuery(""); setActiveAsset(undefined); loadNews(); }} className="text-[10px] font-bold text-[#0055FF] uppercase hover:underline ml-2">Clear Filter</button>
+            <button 
+              onClick={() => { setSearchQuery(""); setActiveAsset(undefined); loadNews(); }} 
+              className="text-[9px] font-bold text-[#0055FF] uppercase hover:underline ml-2 flex items-center gap-1"
+            >
+              Clear Scope
+            </button>
           </div>
         )}
 
@@ -123,11 +147,11 @@ export default function NewsHubPage() {
                     <div className="lg:w-48 shrink-0 space-y-4 border-b lg:border-b-0 lg:border-r border-[#E4E4E4] pb-4 lg:pb-0 lg:pr-6">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-[9px] font-bold uppercase text-[#6B7280] tracking-wider">
-                          <span>Source</span>
+                          <span>Publisher</span>
                           <span className="text-[#0A0A0A] font-bold">{item.publisher}</span>
                         </div>
                         <div className="flex items-center justify-between text-[9px] font-bold uppercase text-[#6B7280] tracking-wider">
-                          <span>Time</span>
+                          <span>Timestamp</span>
                           <span className="text-[#0A0A0A]">{new Date(item.published_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                         <div className="flex items-center justify-between text-[9px] font-bold uppercase text-[#6B7280] tracking-wider">
@@ -149,9 +173,9 @@ export default function NewsHubPage() {
                       </div>
 
                       <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#F7F7F5]">
-                        <span className="text-[8px] font-mono text-[#6B7280] uppercase">Ref: {item.uuid.substring(0,8)}</span>
+                        <span className="text-[8px] font-mono text-[#6B7280] uppercase">Token ID: {item.uuid.substring(0,8).toUpperCase()}</span>
                         <button className="text-[10px] font-bold uppercase tracking-widest text-[#0055FF] hover:underline flex items-center gap-1">
-                          <span>View Story</span>
+                          <span>Analyze Full Report</span>
                           <ExternalLink className="w-3 h-3" />
                         </button>
                       </div>
@@ -163,16 +187,12 @@ export default function NewsHubPage() {
           )}
         </div>
 
-        {/* Registry Footer */}
-        <div className="bg-[#0A0A0A] text-white p-8 border-b-4 border-[#E4E4E4] shadow-lg">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="space-y-1">
-              <h4 className="text-sm font-bold uppercase tracking-widest">Market Information Oversight</h4>
-              <p className="text-[10px] text-[#9CA3AF] uppercase font-bold leading-relaxed max-w-xl">
-                News data is provided by external data nodes. All headlines are logged for institutional auditability. Varban Markets does not provide financial advice.
-              </p>
-            </div>
-          </div>
+        {/* Audit Disclosure */}
+        <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-start space-x-3">
+          <div className="w-2 h-2 rounded-full bg-[#16835B] mt-1 shrink-0 animate-pulse"></div>
+          <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
+            Market intelligence data is sourced from global exchanges and tier-1 news providers. All headlines are timestamped and logged for internal auditing. Varban Markets delivers raw information without speculative processing.
+          </p>
         </div>
 
       </div>
