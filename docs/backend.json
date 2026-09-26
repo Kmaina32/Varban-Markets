@@ -28,6 +28,19 @@
       },
       "required": ["balance", "verificationStatus", "currency"]
     },
+    "UserPasskey": {
+      "title": "User Passkey",
+      "description": "WebAuthn credential for biometric login.",
+      "type": "object",
+      "properties": {
+        "credentialID": { "type": "string" },
+        "publicKey": { "type": "string" },
+        "counter": { "type": "number" },
+        "transports": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "deviceName": { "type": "string" }
+      }
+    },
     "UserCryptoWallet": {
       "title": "User Crypto Wallet",
       "description": "Assigned blockchain deposit addresses for a user.",
@@ -109,6 +122,10 @@
     "/users/{userId}": {
       "schema": "UserProfile",
       "description": "Primary user profile and balance data"
+    },
+    "/users/{userId}/passkeys/{credId}": {
+      "schema": "UserPasskey",
+      "description": "Registered biometric credentials"
     },
     "/users/{userId}/crypto_wallets/{walletId}": {
       "schema": "UserCryptoWallet",

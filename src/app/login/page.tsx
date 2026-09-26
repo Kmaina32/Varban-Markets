@@ -1,6 +1,11 @@
 
 "use client";
 
+/**
+ * @fileOverview Login Workspace.
+ * Integrated with Passkey/WebAuthn for passwordless biometric entry.
+ */
+
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -8,7 +13,9 @@ import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useAuth } from "@/firebase";
 import placeholderImages from "@/app/lib/placeholder-images.json";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Fingerprint, Loader2 } from "lucide-react";
+import { startAuthentication } from "@simplewebauthn/browser";
+import { cn } from "@/app/lib/utils";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,6 +24,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -33,6 +41,52 @@ export default function LoginPage() {
       setError("The email or password you entered is incorrect.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePasskeySignIn = async () => {
+    if (!email) {
+      setError("Please enter your email address to sign in with a passkey.");
+      return;
+    }
+
+    setPasskeyLoading(true);
+    setError(null);
+
+    try {
+      // 1. Get options from server
+      const resp = await fetch('/api/auth/passkey/authenticate/generate-options', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.toLowerCase() }),
+      });
+      
+      const options = await resp.json();
+      if (options.error) throw new Error(options.error);
+
+      // 2. Browser biometric prompt
+      const asseResp = await startAuthentication({ optionsJSON: options });
+
+      // 3. Verify with server
+      const verifyResp = await fetch('/api/auth/passkey/authenticate/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...asseResp, email: email.toLowerCase() }),
+      });
+
+      const verificationJSON = await verifyResp.json();
+
+      if (verificationJSON && verificationJSON.verified) {
+        // Success - in a real app, this would use a Firebase Custom Token
+        // For MVP, we proceed to dashboard if verified
+        router.push("/dashboard");
+      } else {
+        throw new Error('Verification failed.');
+      }
+    } catch (err: any) {
+      setError(err.message || "Passkey authentication failed.");
+    } finally {
+      setPasskeyLoading(false);
     }
   };
 
@@ -108,13 +162,30 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full btn-institutional-primary py-4 shadow-sm"
-            >
-              {loading ? "Logging in..." : "Log in to Account"}
-            </button>
+            <div className="space-y-3">
+              <button
+                type="submit"
+                disabled={loading || passkeyLoading}
+                className="w-full btn-institutional-primary py-4 shadow-sm"
+              >
+                {loading ? "Logging in..." : "Log in to Account"}
+              </button>
+
+              <div className="relative py-2 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-[#E4E4E4]"></span></div>
+                <span className="relative bg-white px-3 text-[8px] font-bold uppercase text-[#6B7280] tracking-[0.2em]">Institutional Access</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={handlePasskeySignIn}
+                disabled={loading || passkeyLoading}
+                className="w-full py-4 border border-[#0A0A0A] text-[#0A0A0A] text-[10px] font-bold uppercase tracking-widest flex items-center justify-center space-x-2 hover:bg-[#F7F7F5] transition-colors"
+              >
+                {passkeyLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Fingerprint className="w-4 h-4" />}
+                <span>Sign in with Passkey</span>
+              </button>
+            </div>
           </form>
 
           <div className="mt-10 pt-6 border-t border-[#E4E4E4] text-center">

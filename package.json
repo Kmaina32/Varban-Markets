@@ -22,7 +22,9 @@
     "lightweight-charts": "^4.2.1",
     "react-paystack": "^6.0.0",
     "genkit": "^1.0.0",
-    "@genkit-ai/google-genai": "^1.0.0"
+    "@genkit-ai/google-genai": "^1.0.0",
+    "@simplewebauthn/browser": "^13.1.1",
+    "@simplewebauthn/server": "^13.1.1"
   },
   "overrides": {
     "react-paystack": {
