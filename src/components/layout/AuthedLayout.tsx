@@ -80,7 +80,9 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   // Robust profile completion check
   const isProfileComplete = useMemo(() => {
     if (!profile) return false;
-    return !!(profile.firstName && profile.lastName && profile.phone && profile.country);
+    const hasFirstName = !!(profile.firstName || profile.fullName?.split(' ')[0]);
+    const hasLastName = !!(profile.lastName || profile.fullName?.split(' ').slice(1).join(' '));
+    return !!(hasFirstName && hasLastName && profile.phone && profile.country);
   }, [profile]);
 
   useEffect(() => {

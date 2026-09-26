@@ -61,9 +61,15 @@ export default function LoginPage() {
       const userSnap = await getDoc(userRef);
 
       if (!userSnap.exists()) {
+        const nameParts = (user.displayName || "").trim().split(' ');
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.slice(1).join(' ') || "";
+
         // Create skeleton profile for Google sign-ups
         await setDoc(userRef, {
           fullName: user.displayName || "",
+          firstName: firstName,
+          lastName: lastName,
           email: user.email?.toLowerCase() || "",
           balance: 1000.00,
           equity: 1000.00,
