@@ -30,9 +30,9 @@ export default function CompleteProfilePage() {
   useEffect(() => {
     if (profile && !isSaving) {
       setFormData({
-        firstName: profile.firstName || profile.fullName?.split(' ')[0] || "",
+        firstName: profile.firstName || "",
         middleName: profile.middleName || "",
-        lastName: profile.lastName || profile.fullName?.split(' ').slice(1).join(' ') || "",
+        lastName: profile.lastName || "",
         phone: profile.phone?.includes(' ') ? profile.phone.split(' ').slice(1).join(' ') : profile.phone || "",
         country: profile.country || "United Kingdom",
         dialCode: profile.phone?.includes(' ') ? profile.phone.split(' ')[0] : "+44"
@@ -40,12 +40,10 @@ export default function CompleteProfilePage() {
     }
   }, [profile, isSaving]);
 
-  // Robust completion check matching AuthedLayout
+  // Robust completion check using explicit fields
   const isProfileComplete = useMemo(() => {
     if (!profile) return false;
-    const hasFirstName = !!(profile.firstName || profile.fullName?.split(' ')[0]);
-    const hasLastName = !!(profile.lastName || profile.fullName?.split(' ').slice(1).join(' '));
-    return !!(hasFirstName && hasLastName && profile.phone && profile.country);
+    return !!(profile.firstName && profile.lastName && profile.phone && profile.country);
   }, [profile]);
 
   useEffect(() => {
@@ -53,7 +51,7 @@ export default function CompleteProfilePage() {
       router.push('/login');
       return;
     }
-    // Only redirect if complete AND we are not currently in the middle of a save process
+    // Only redirect automatically if complete AND we are not currently saving
     if (!authLoading && !profileLoading && isProfileComplete && !isSaving) {
       router.push('/dashboard');
     }
@@ -81,7 +79,7 @@ export default function CompleteProfilePage() {
 
     setDoc(doc(db, "users", user.uid), data, { merge: true })
       .then(() => {
-        // Use router.replace to avoid back-button issues
+        // Success: Trigger deterministic redirect
         router.replace("/dashboard");
       })
       .catch(async (serverError) => {

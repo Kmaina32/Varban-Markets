@@ -77,12 +77,10 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   const isAdminPath = pathname?.startsWith('/admin');
   const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
-  // Robust profile completion check
+  // Strict check for profile completeness using explicit fields
   const isProfileComplete = useMemo(() => {
     if (!profile) return false;
-    const hasFirstName = !!(profile.firstName || profile.fullName?.split(' ')[0]);
-    const hasLastName = !!(profile.lastName || profile.fullName?.split(' ').slice(1).join(' '));
-    return !!(hasFirstName && hasLastName && profile.phone && profile.country);
+    return !!(profile.firstName && profile.lastName && profile.phone && profile.country);
   }, [profile]);
 
   useEffect(() => {
@@ -94,6 +92,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
       }
 
       // 2. Profile Completion Guard
+      // Only redirect if we are in a strict area and not already on the setup page
       if (user && isStrict && pathname !== '/complete-profile') {
         if (!isProfileComplete) {
           router.push('/complete-profile');
