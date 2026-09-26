@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useFirestore, useDoc, errorEmitter, FirestorePermissionError } from "@/firebase";
 import { doc, setDoc } from "firebase/firestore";
@@ -23,54 +23,64 @@ export default function CompleteProfilePage() {
     country: "United Kingdom",
     dialCode: "+44"
   });
-  const [loading, setLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Sync initial form data from existing profile (especially for Google users)
   useEffect(() => {
-    if (profile) {
+    if (profile && !isSaving) {
       setFormData({
         firstName: profile.firstName || profile.fullName?.split(' ')[0] || "",
         middleName: profile.middleName || "",
         lastName: profile.lastName || profile.fullName?.split(' ').slice(1).join(' ') || "",
-        phone: profile.phone?.split(' ').pop() || "",
+        phone: profile.phone?.includes(' ') ? profile.phone.split(' ').slice(1).join(' ') : profile.phone || "",
         country: profile.country || "United Kingdom",
-        dialCode: profile.phone?.split(' ')[0] || "+44"
+        dialCode: profile.phone?.includes(' ') ? profile.phone.split(' ')[0] : "+44"
       });
     }
+  }, [profile, isSaving]);
+
+  // Robust completion check
+  const isProfileComplete = useMemo(() => {
+    if (!profile) return false;
+    return !!(profile.firstName && profile.lastName && profile.phone && profile.country);
   }, [profile]);
 
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
+      return;
     }
-    // Synchronized completion criteria: Must have first/last name, phone and country
-    if (!authLoading && !profileLoading && profile?.firstName && profile?.lastName && profile?.phone && profile?.country) {
+    // Only redirect if complete AND we are not currently in the middle of a save process
+    if (!authLoading && !profileLoading && isProfileComplete && !isSaving) {
       router.push('/dashboard');
     }
-  }, [authLoading, profileLoading, user, profile, router]);
+  }, [authLoading, profileLoading, isProfileComplete, user, isSaving, router]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !db) return;
+    if (!user || !db || isSaving) return;
 
-    setLoading(true);
+    setIsSaving(true);
     setError(null);
 
     const fullName = `${formData.firstName} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.lastName}`.trim();
+    const cleanPhone = `${formData.dialCode} ${formData.phone}`.trim();
+    
     const data = {
       fullName: fullName,
-      firstName: formData.firstName,
-      middleName: formData.middleName,
-      lastName: formData.lastName,
-      phone: `${formData.dialCode} ${formData.phone}`,
+      firstName: formData.firstName.trim(),
+      middleName: formData.middleName.trim(),
+      lastName: formData.lastName.trim(),
+      phone: cleanPhone,
       country: formData.country,
       updatedAt: new Date().toISOString()
     };
 
-    // Use setDoc with merge instead of updateDoc to ensure document existence
     setDoc(doc(db, "users", user.uid), data, { merge: true })
       .then(() => {
-        router.push("/dashboard");
+        // Use router.replace to avoid back-button issues
+        router.replace("/dashboard");
       })
       .catch(async (serverError) => {
         const permissionError = new FirestorePermissionError({
@@ -79,15 +89,13 @@ export default function CompleteProfilePage() {
           requestResourceData: data,
         });
 
-        // Emit for institutional auditing
         errorEmitter.emit('permission-error', permissionError);
-        
-        setError("Failed to update profile. Please check your network connection or permissions.");
-        setLoading(false);
+        setError("Setup failure: The security vault could not be updated. Check your connection.");
+        setIsSaving(false);
       });
   };
 
-  if (authLoading || profileLoading) {
+  if (authLoading || (profileLoading && !profile)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F7F7F5]">
         <div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div>
@@ -210,10 +218,10 @@ export default function CompleteProfilePage() {
 
           <button 
             type="submit" 
-            disabled={loading}
+            disabled={isSaving}
             className="w-full btn-institutional-primary py-4"
           >
-            {loading ? "Updating..." : "Complete Setup"}
+            {isSaving ? "Updating Ledger..." : "Complete Setup"}
           </button>
         </form>
       </Card>

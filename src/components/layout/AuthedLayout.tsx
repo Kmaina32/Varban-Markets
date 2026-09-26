@@ -15,7 +15,7 @@ import Image from "next/image";
 import { useUser, useDoc, useFirestore } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { cn } from "@/app/lib/utils";
 
 const STRICT_PATHS = [
@@ -77,27 +77,34 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   const isAdminPath = pathname?.startsWith('/admin');
   const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
+  // Robust profile completion check
+  const isProfileComplete = useMemo(() => {
+    if (!profile) return false;
+    return !!(profile.firstName && profile.lastName && profile.phone && profile.country);
+  }, [profile]);
+
   useEffect(() => {
     if (!loading && !profileLoading) {
+      // 1. Auth Guard
       if (!user && isStrict) {
         router.push('/login');
         return;
       }
 
+      // 2. Profile Completion Guard
       if (user && isStrict && pathname !== '/complete-profile') {
-        // Synchronized completion criteria: Must have first/last name, phone and country
-        const isIncomplete = !profile?.firstName || !profile?.lastName || !profile?.phone || !profile?.country;
-        if (isIncomplete) {
+        if (!isProfileComplete) {
           router.push('/complete-profile');
           return;
         }
       }
 
+      // 3. Admin Guard
       if (user && isAdminPath && !isAdmin) {
         router.push('/dashboard');
       }
     }
-  }, [user, loading, profileLoading, profile, isStrict, isAdminPath, isAdmin, router, pathname]);
+  }, [user, loading, profileLoading, isProfileComplete, isStrict, isAdminPath, isAdmin, router, pathname]);
 
   if (isTerminal || !isStrict) return <>{children}</>;
 
