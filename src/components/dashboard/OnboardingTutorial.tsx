@@ -1,12 +1,12 @@
-
 'use client';
 
 /**
  * @fileOverview Redesigned Feature Spotlight Tutorial for the Dashboard.
  * Guides users with natural English tooltips anchored to UI components.
+ * Fixed viewport logic to prevent clipping.
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/app/lib/utils';
 import { X } from 'lucide-react';
@@ -21,6 +21,7 @@ export default function OnboardingTutorial() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
+  const [tooltipPlacement, setTooltipPlacement] = useState<'top' | 'bottom'>('bottom');
 
   const steps: Step[] = [
     {
@@ -53,7 +54,16 @@ export default function OnboardingTutorial() {
       const updateRect = () => {
         const el = document.querySelector(steps[currentStep].selector);
         if (el) {
-          setTargetRect(el.getBoundingClientRect());
+          const rect = el.getBoundingClientRect();
+          setTargetRect(rect);
+          
+          // Determine if we should show tooltip above or below
+          const tooltipHeight = 200;
+          if (rect.bottom + tooltipHeight > window.innerHeight && rect.top > tooltipHeight) {
+            setTooltipPlacement('top');
+          } else {
+            setTooltipPlacement('bottom');
+          }
         } else {
           setTargetRect(null);
         }
@@ -61,7 +71,11 @@ export default function OnboardingTutorial() {
       
       updateRect();
       window.addEventListener('resize', updateRect);
-      return () => window.removeEventListener('resize', updateRect);
+      window.addEventListener('scroll', updateRect);
+      return () => {
+        window.removeEventListener('resize', updateRect);
+        window.removeEventListener('scroll', updateRect);
+      };
     }
   }, [isVisible, currentStep]);
 
@@ -103,7 +117,9 @@ export default function OnboardingTutorial() {
         <div 
           className="absolute z-[1100] w-72 pointer-events-auto transition-all duration-300 ease-in-out"
           style={{
-            top: targetRect.bottom + 20 > window.innerHeight - 200 ? targetRect.top - 180 : targetRect.bottom + 20,
+            top: tooltipPlacement === 'bottom' 
+              ? Math.min(window.innerHeight - 220, targetRect.bottom + 20) 
+              : Math.max(20, targetRect.top - 200),
             left: Math.max(16, Math.min(window.innerWidth - 304, targetRect.left + (targetRect.width / 2) - 144))
           }}
         >
@@ -117,7 +133,7 @@ export default function OnboardingTutorial() {
             <div className="p-5 space-y-3">
               <div className="flex justify-between items-start">
                 <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest">
-                  Step {currentStep + 1} of {steps.length}
+                  Module {currentStep + 1} of {steps.length}
                 </span>
                 <button onClick={handleDismiss} className="text-[#6B7280] hover:text-[#0A0A0A]">
                   <X className="w-3.5 h-3.5" />
@@ -140,7 +156,7 @@ export default function OnboardingTutorial() {
                   onClick={handleNext}
                   className="px-6 py-2 bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0A0A0A] transition-colors shadow-md"
                 >
-                  {currentStep === steps.length - 1 ? "Done" : "Next"}
+                  {currentStep === steps.length - 1 ? "Start" : "Next"}
                 </button>
               </div>
             </div>
@@ -150,7 +166,7 @@ export default function OnboardingTutorial() {
           <div 
             className={cn(
               "absolute w-4 h-4 bg-white rotate-45 -z-10",
-              targetRect.bottom + 20 > window.innerHeight - 200 ? "-bottom-2 left-1/2 -translate-x-1/2" : "-top-2 left-1/2 -translate-x-1/2"
+              tooltipPlacement === 'top' ? "-bottom-2 left-1/2 -translate-x-1/2" : "-top-2 left-1/2 -translate-x-1/2"
             )}
           />
         </div>
