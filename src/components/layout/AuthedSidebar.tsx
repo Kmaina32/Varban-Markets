@@ -80,7 +80,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     title: "SUPPORT",
     items: [
       { label: t('nav.help'), href: "/help", icon: HelpCircle },
-      { label: t('nav.contact'), href: "/contact", icon: Mail },
+      { label: t('nav.contact'), href: "/about/contact", icon: Mail },
     ]
   });
 
