@@ -1,4 +1,3 @@
-
 "use client";
 
 /**
@@ -142,7 +141,7 @@ export default function LoginPage() {
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">Password</label>
-                <Link href="/forgot-password" disableNav className="text-[9px] text-[#6B7280] uppercase underline font-bold">Forgot Password?</Link>
+                <Link href="/forgot-password" title="Forgot Password" className="text-[9px] text-[#6B7280] uppercase underline font-bold">Forgot Password?</Link>
               </div>
               <div className="relative">
                 <input
