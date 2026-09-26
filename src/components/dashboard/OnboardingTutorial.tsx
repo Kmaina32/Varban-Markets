@@ -3,17 +3,16 @@
 /**
  * @fileOverview Redesigned Onboarding Tutorial with Overview Outline.
  * Provides a structured guide for the dashboard workspace.
+ * Minimalist design: Removed all icons.
  */
 
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { X, ChevronRight, ChevronLeft, Zap, Target, Wallet, BarChart3, Check } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 
 interface Step {
   title: string;
   description: string;
-  icon: any;
   label: string;
 }
 
@@ -25,26 +24,22 @@ export default function OnboardingTutorial() {
     {
       label: "Ledger Metrics",
       title: "Real-time Account Results",
-      description: "Monitor your Total Value and Risk in real-time. These metrics reflect your current market exposure and historical performance curves.",
-      icon: BarChart3
+      description: "Monitor your Total Value and Risk in real-time. These metrics reflect your current market exposure and historical performance curves."
     },
     {
       label: "Asset Watchlist",
       title: "Priority Market Tracking",
-      description: "Keep track of your favorite instruments. You can add or remove assets directly from the global registry to customize your view.",
-      icon: Target
+      description: "Keep track of your favorite instruments. You can add or remove assets directly from the global registry to customize your view."
     },
     {
       label: "Terminal Access",
       title: "Professional Execution Center",
-      description: "Access the institutional terminal to place Higher or Lower trades with deterministic rules and millisecond accuracy.",
-      icon: Zap
+      description: "Access the institutional terminal to place Higher or Lower trades with deterministic rules and millisecond accuracy."
     },
     {
       label: "Capital Control",
       title: "Funding & Remittance",
-      description: "Manage your capital with ease. All money transfers utilize secure PCI-DSS card gateways or monitored blockchain nodes.",
-      icon: Wallet
+      description: "Manage your capital with ease. All money transfers utilize secure PCI-DSS card gateways or monitored blockchain nodes."
     }
   ];
 
@@ -77,8 +72,6 @@ export default function OnboardingTutorial() {
 
   if (!isVisible) return null;
 
-  const StepIcon = steps[currentStep].icon;
-
   return (
     <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-300">
       <Card className="w-full max-w-3xl bg-white border-[#E4E4E4] shadow-2xl relative overflow-hidden flex flex-col md:flex-row min-h-[400px]">
@@ -108,7 +101,7 @@ export default function OnboardingTutorial() {
                   "w-5 h-5 flex items-center justify-center text-[10px] font-bold border",
                   i === currentStep ? "border-[#0055FF]" : i < currentStep ? "border-[#16835B]" : "border-[#E4E4E4]"
                 )}>
-                  {i < currentStep ? <Check className="w-3 h-3" /> : i + 1}
+                  {i + 1}
                 </div>
                 <span className="text-[9px] font-bold uppercase tracking-wider">{step.label}</span>
               </button>
@@ -126,16 +119,12 @@ export default function OnboardingTutorial() {
         <div className="flex-grow p-8 md:p-12 flex flex-col justify-between relative bg-white">
           <button 
             onClick={handleDismiss}
-            className="absolute top-6 right-6 text-[#6B7280] hover:text-[#0A0A0A] transition-colors"
+            className="absolute top-6 right-6 text-[9px] font-bold uppercase tracking-widest text-[#6B7280] hover:text-[#0A0A0A] transition-colors"
           >
-            <X className="w-5 h-5" />
+            Close
           </button>
 
           <div className="animate-in slide-in-from-right-4 duration-300">
-            <div className="w-12 h-12 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-center mb-6">
-              <StepIcon className="w-6 h-6 text-[#0055FF]" />
-            </div>
-
             <span className="text-[9px] font-bold text-[#0055FF] uppercase tracking-[0.3em] block mb-2">
               Step 0{currentStep + 1}
             </span>
@@ -158,7 +147,6 @@ export default function OnboardingTutorial() {
                   onClick={handlePrev}
                   className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-widest text-[#6B7280] hover:text-[#0A0A0A] transition-colors px-4"
                 >
-                  <ChevronLeft className="w-4 h-4" />
                   <span>Back</span>
                 </button>
               )}
@@ -167,7 +155,6 @@ export default function OnboardingTutorial() {
                 className="btn-institutional-primary flex items-center space-x-2 py-3 px-8 bg-[#0055FF] border-[#0055FF] hover:bg-[#0A0A0A] hover:border-[#0A0A0A]"
               >
                 <span>{currentStep === steps.length - 1 ? "Finish Guide" : "Next Module"}</span>
-                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>

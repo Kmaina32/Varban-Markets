@@ -3,17 +3,16 @@
 /**
  * @fileOverview Redesigned Terminal Tutorial with Navigation Outline.
  * Explains high-performance execution protocols.
+ * Minimalist design: Removed all icons.
  */
 
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { X, ChevronRight, ChevronLeft, BarChart3, Sliders, ShieldCheck, Zap, Check } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 
 interface Step {
   title: string;
   description: string;
-  icon: any;
   label: string;
 }
 
@@ -25,26 +24,22 @@ export default function TerminalTutorial() {
     {
       label: "Market Registry",
       title: "Asset Selection",
-      description: "Switch between diverse markets including synthetic indices, forex, and crypto. On mobile, use the ticker dropdown for instant navigation.",
-      icon: BarChart3
+      description: "Switch between diverse markets including synthetic indices, forex, and crypto. On mobile, use the ticker dropdown for instant navigation."
     },
     {
       label: "Visual Feed",
       title: "Price Signal Charts",
-      description: "Monitor real-time market movement. Use the toolbar to switch chart modes (Candlestick/Line) and add technical indicators for precision analysis.",
-      icon: Zap
+      description: "Monitor real-time market movement. Use the toolbar to switch chart modes (Candlestick/Line) and add technical indicators for precision analysis."
     },
     {
       label: "Trade Setup",
       title: "Order Configuration",
-      description: "Define your stake amount and contract duration. The execution engine calculates your potential 85% return before you commit capital.",
-      icon: Sliders
+      description: "Define your stake amount and contract duration. The execution engine calculates your potential 85% return before you commit capital."
     },
     {
       label: "Domain Switch",
       title: "Practice vs. Real",
-      description: "Toggle between your Real and Practice account domains. The Practice sandbox allows for risk-free testing of execution strategies.",
-      icon: ShieldCheck
+      description: "Toggle between your Real and Practice account domains. The Practice sandbox allows for risk-free testing of execution strategies."
     }
   ];
 
@@ -77,8 +72,6 @@ export default function TerminalTutorial() {
 
   if (!isVisible) return null;
 
-  const StepIcon = steps[currentStep].icon;
-
   return (
     <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-300">
       <Card className="w-full max-w-3xl bg-white border-[#E4E4E4] shadow-2xl relative overflow-hidden flex flex-col md:flex-row min-h-[400px]">
@@ -108,7 +101,7 @@ export default function TerminalTutorial() {
                   "w-5 h-5 flex items-center justify-center text-[10px] font-bold border",
                   i === currentStep ? "border-[#0055FF]" : i < currentStep ? "border-[#16835B]" : "border-[#E4E4E4]"
                 )}>
-                  {i < currentStep ? <Check className="w-3 h-3" /> : i + 1}
+                  {i + 1}
                 </div>
                 <span className="text-[9px] font-bold uppercase tracking-wider">{step.label}</span>
               </button>
@@ -120,16 +113,12 @@ export default function TerminalTutorial() {
         <div className="flex-grow p-8 md:p-12 flex flex-col justify-between relative bg-white">
           <button 
             onClick={handleDismiss}
-            className="absolute top-6 right-6 text-[#6B7280] hover:text-[#0A0A0A] transition-colors"
+            className="absolute top-6 right-6 text-[9px] font-bold uppercase tracking-widest text-[#6B7280] hover:text-[#0A0A0A] transition-colors"
           >
-            <X className="w-5 h-5" />
+            Close
           </button>
 
           <div className="animate-in slide-in-from-right-4 duration-300">
-            <div className="w-12 h-12 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-center mb-6">
-              <StepIcon className="w-6 h-6 text-[#0055FF]" />
-            </div>
-
             <span className="text-[9px] font-bold text-[#0055FF] uppercase tracking-[0.3em] block mb-2">
               Module 0{currentStep + 1}
             </span>
@@ -152,7 +141,6 @@ export default function TerminalTutorial() {
                   onClick={handlePrev}
                   className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-widest text-[#6B7280] hover:text-[#0A0A0A] transition-colors px-4"
                 >
-                  <ChevronLeft className="w-4 h-4" />
                   <span>Prev</span>
                 </button>
               )}
@@ -161,7 +149,6 @@ export default function TerminalTutorial() {
                 className="btn-institutional-primary flex items-center space-x-2 py-3 px-8 bg-[#0A0A0A] border-[#0A0A0A] hover:bg-[#0055FF] hover:border-[#0055FF]"
               >
                 <span>{currentStep === steps.length - 1 ? "Start Trading" : "Next Module"}</span>
-                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>
