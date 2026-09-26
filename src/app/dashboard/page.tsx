@@ -179,15 +179,15 @@ export default function UserDashboard() {
           <div className="lg:col-span-4 space-y-6">
             <MarketNewsFeed />
             
-            <Card className="bg-[#0A0A0A] text-white p-6 shadow-lg border-b-4 border-[#0055FF]">
+            <Card className="bg-white text-[#0A0A0A] p-6 shadow-sm border border-[#E4E4E4] border-b-4 border-b-[#0055FF]">
               <div className="flex items-center space-x-2 text-[#0055FF] mb-4">
                 <Shield className="w-5 h-5" />
-                <h3 className="text-xs font-bold uppercase tracking-widest">Platform Integrity</h3>
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Platform Integrity</h3>
               </div>
-              <p className="text-[11px] text-[#D1D5DB] leading-relaxed">
+              <p className="text-[11px] text-[#6B7280] leading-relaxed">
                 Varban Markets operates with 99.98% execution uptime. All price feeds are subject to deterministic multi-source auditing.
               </p>
-              <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
+              <div className="mt-4 pt-4 border-t border-[#F7F7F5] flex justify-between items-center">
                 <span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">Node Status:</span>
                 <span className="text-[10px] font-mono font-bold text-[#16835B]">OPERATIONAL</span>
               </div>

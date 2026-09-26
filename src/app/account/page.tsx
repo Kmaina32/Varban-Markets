@@ -317,11 +317,11 @@ export default function AccountHub() {
                 </form>
               </Card>
               <div className="space-y-6">
-                <Card className="p-6 bg-[#0A0A0A] text-white border-l-4 border-[#0055FF]">
+                <Card className="p-6 bg-white text-[#0A0A0A] border-[#E4E4E4] border-l-4 border-l-[#0055FF] shadow-sm">
                   <span className="text-[8px] font-bold uppercase text-[#6B7280] block mb-4">Identity Meta</span>
                   <div className="space-y-4">
-                    <div><span className="text-[8px] uppercase text-[#6B7280]">Account UID</span><p className="text-xs font-mono font-bold truncate">{user?.uid}</p></div>
-                    <div><span className="text-[8px] uppercase text-[#6B7280]">Email Domain</span><p className="text-xs font-mono font-bold truncate">{user?.email}</p></div>
+                    <div><span className="text-[8px] uppercase text-[#6B7280]">Account UID</span><p className="text-xs font-mono font-bold truncate text-[#0A0A0A]">{user?.uid}</p></div>
+                    <div><span className="text-[8px] uppercase text-[#6B7280]">Email Domain</span><p className="text-xs font-mono font-bold truncate text-[#0A0A0A]">{user?.email}</p></div>
                   </div>
                 </Card>
               </div>

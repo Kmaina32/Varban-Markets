@@ -249,19 +249,19 @@ export default function WalletPage() {
                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#0055FF]/5 rounded-bl-full -z-0"></div>
                 </Card>
 
-                <Card className="bg-[#0A0A0A] text-white p-8 shadow-sm border-l-4 border-[#0055FF]">
+                <Card className="bg-white text-[#0A0A0A] border-[#E4E4E4] p-8 shadow-sm border-l-4 border-l-[#0055FF]">
                   <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-6">Account Metrics</span>
                   <div className="space-y-6">
                     <div>
                       <span className="text-[9px] text-[#6B7280] uppercase block mb-1">Total Equity</span>
-                      <span className="text-xl font-mono font-bold">${formatNumber(activeEquity, { minimumFractionDigits: 2 })}</span>
+                      <span className="text-xl font-mono font-bold text-[#0A0A0A]">${formatNumber(activeEquity, { minimumFractionDigits: 2 })}</span>
                     </div>
                     <div>
                       <span className="text-[9px] text-[#6B7280] uppercase block mb-1">Market Risk</span>
                       <span className="text-xl font-mono font-bold text-[#C43D3D]">${formatNumber(accountMode === 'REAL' ? (profile?.openRisk || 0) : 0, { minimumFractionDigits: 2 })}</span>
                     </div>
-                    <div className="pt-4 border-t border-white/10">
-                      <span className="text-[8px] font-bold uppercase text-[#6B7280]">Currency: <span className="text-white ml-1">{profile?.currency || 'USD'}</span></span>
+                    <div className="pt-4 border-t border-[#F7F7F5]">
+                      <span className="text-[8px] font-bold uppercase text-[#6B7280]">Currency: <span className="text-[#0A0A0A] ml-1">{profile?.currency || 'USD'}</span></span>
                     </div>
                   </div>
                 </Card>
@@ -428,4 +428,3 @@ export default function WalletPage() {
     </AuthedLayout>
   );
 }
-
