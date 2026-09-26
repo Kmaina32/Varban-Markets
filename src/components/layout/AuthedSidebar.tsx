@@ -52,13 +52,13 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     {
       title: "MONEY",
       items: [
-        { label: t('nav.wallet'), href: "/wallet", icon: Wallet },
+        { label: "Wallet", href: "/wallet", icon: Wallet },
       ]
     },
     {
       title: "ACCOUNT",
       items: [
-        { label: t('nav.account'), href: "/account", icon: User },
+        { label: "Account Hub", href: "/account", icon: User },
         { label: "Referral Program", href: "/referral", icon: Share2 },
       ]
     }
@@ -67,7 +67,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
   const adminSection = {
     title: "ADMINISTRATION",
     items: [
-      { label: t('nav.admin'), href: "/admin", icon: ShieldAlert },
+      { label: "Administration", href: "/admin", icon: ShieldAlert },
     ]
   };
 
@@ -79,8 +79,8 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
   finalSections.push({
     title: "SUPPORT",
     items: [
-      { label: t('nav.help'), href: "/help", icon: HelpCircle },
-      { label: t('nav.contact'), href: "/about/contact", icon: Mail },
+      { label: "Help Center", href: "/help", icon: HelpCircle },
+      { label: "Contact Support", href: "/about/contact", icon: Mail },
     ]
   });
 
