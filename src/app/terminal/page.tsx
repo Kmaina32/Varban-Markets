@@ -1,3 +1,4 @@
+
 'use client';
 
 /**
@@ -315,7 +316,9 @@ export default function TerminalWorkspace() {
         status: "Settled",
         output: `+${cashoutAmount.toFixed(2)}`,
         timestamp: serverTimestamp()
-      }).catch(() => {});
+      }).catch((err) => {
+        console.error("Failed to update transactions:", err);
+      });
     } else {
       const currentDemoBal = demoBalance + cashoutAmount;
       setDemoBalance(currentDemoBal);
@@ -524,6 +527,7 @@ export default function TerminalWorkspace() {
 
         <div className="flex items-center space-x-2 md:space-x-4">
           <button
+            id="tour-mode"
             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
             className="flex items-center space-x-1.5 border px-1.5 md:px-3 py-0.5 md:py-1 transition-colors shadow-sm select-none bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
           >
@@ -573,7 +577,7 @@ export default function TerminalWorkspace() {
         <div className="flex-grow flex flex-col md:flex-row overflow-hidden lg:ml-16">
           
           {/* LEFT SIDE PANEL */}
-          <div className={cn(
+          <div id="tour-settings" className={cn(
             "fixed inset-0 z-[200] lg:relative lg:inset-auto lg:z-0 lg:flex flex-col w-full lg:w-80 border-r shrink-0 transition-transform duration-300 ease-in-out bg-white border-[#E4E4E4]",
             isMobileTradeMenuOpen || isMobileMarketMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 hidden lg:flex"
           )}>
@@ -607,7 +611,6 @@ export default function TerminalWorkspace() {
                 </button>
               </div>
 
-              {/* ONE-CLICK TOGGLE IN SIDEBAR CONTROLS HEADER */}
               <button
                 type="button"
                 onClick={() => setOneClickEnabled(!oneClickEnabled)}
@@ -678,7 +681,6 @@ export default function TerminalWorkspace() {
                   <input type="number" min={activeInst.minStake} max={activeInst.maxStake} value={stake} onChange={(e) => setStake(Number(e.target.value))} className="w-full p-2.5 border text-sm font-mono font-bold focus:border-[#0A0A0A] outline-none bg-white border-[#E4E4E4]" />
                 </div>
 
-                {/* ONE-CLICK TOGGLE PANEL IN CONTROLS AREA */}
                 <div className="p-3 border flex items-center justify-between bg-[#F7F7F5] border-[#E4E4E4]">
                   <div className="flex items-center space-x-2">
                     <Zap className={cn("w-4 h-4", oneClickEnabled ? "text-[#0055FF]" : "text-[#6B7280]")} />
@@ -740,7 +742,7 @@ export default function TerminalWorkspace() {
           {/* MAIN CHART AREA */}
           <main className={`flex-grow flex flex-col overflow-hidden relative shrink-0 ${isResizing ? 'select-none' : ''}`}>
             
-            <div className="flex items-center justify-between p-1 md:p-2 border-b z-40 shrink-0 transition-colors bg-white border-[#E4E4E4]">
+            <div id="tour-market-select" className="flex items-center justify-between p-1 md:p-2 border-b z-40 shrink-0 transition-colors bg-white border-[#E4E4E4]">
               <div className="flex items-center space-x-2">
                 <button onClick={() => { setLeftTab('MARKETS'); setIsMobileMarketMenuOpen(true); }} className="flex items-center space-x-1 text-[8px] md:text-[10px] font-bold uppercase tracking-wider border px-1.5 py-0.5 transition-colors border-[#E4E4E4] bg-white hover:bg-[#F7F7F5]">
                   <BarChart3 className="w-2.5 md:w-3.5 h-2.5 md:h-3.5 text-[#0055FF]" /> <span>{activeInst.symbol}</span> <ChevronDown className="w-2 md:w-3 h-2 md:h-3 text-[#6B7280]" />
@@ -803,7 +805,7 @@ export default function TerminalWorkspace() {
               </div>
             </div>
 
-            <div className="flex-grow relative w-full min-h-0 bg-transparent overflow-hidden">
+            <div id="tour-chart" className="flex-grow relative w-full min-h-0 bg-transparent overflow-hidden">
               <TradingViewChart 
                 symbol={activeInst.symbol} 
                 chartMode={chartMode}

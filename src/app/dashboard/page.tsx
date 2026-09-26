@@ -71,7 +71,7 @@ export default function UserDashboard() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div id="tour-metrics" className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {metrics.map((m, idx) => (
             <Card key={idx} className="bg-white border-[#E4E4E4] p-4 flex flex-col justify-between shadow-sm">
               <div className="flex flex-row items-center justify-between mb-2">
@@ -88,7 +88,7 @@ export default function UserDashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-4">
+          <div id="tour-trades" className="lg:col-span-2 space-y-4">
             <div className="flex justify-between items-center px-1">
               <h3 className="text-xs font-bold uppercase tracking-wider">{t('dashboard.recentTrades')}</h3>
               <Link href="/history" className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest flex items-center">
@@ -139,7 +139,7 @@ export default function UserDashboard() {
             </Card>
           </div>
 
-          <div className="space-y-4">
+          <div id="tour-watchlist" className="space-y-4">
             <div className="flex justify-between items-center px-1">
               <h3 className="text-xs font-bold uppercase tracking-wider">{t('dashboard.watchlist')}</h3>
               <Link href="/watchlist" className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest flex items-center">
