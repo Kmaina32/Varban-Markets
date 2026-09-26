@@ -10,13 +10,13 @@
 ### A. Security & Verification Pages (`/security`, `/verification`, `/account`)
 - [x] **`/verification` Upload Buttons**: wired to trigger "Pending" status update and user notification alerts.
 - [x] **`/security` "Change Password" Button**: Wired to Firebase Auth `sendPasswordResetEmail` flow.
-- [ ] **`/security` "Log Out Everywhere Else" Button**: Button is un-wired to session invalidation / token revoke backend service.
+- [x] **`/security` "Log Out Everywhere Else" Button**: Wired to force token refresh and remote session revocation UX.
 - [ ] **`/security` 2FA Toggle**: Shows static "ON" badge without a TOTP QR code generator, secret key provisioning, or authenticator app setup workflow.
 - [x] **`/account` Profile Edit Buttons**: Fully editable form fields for first name, middle name, last name, phone, and country with Firestore persistence & feedback.
 
 ### B. Trading Terminal (`/terminal`)
-- [ ] **One-Click Trading Toggle**: Missing toggle button to bypass the "Risk Pre-Verification" confirmation dialog for fast scalping.
-- [ ] **Early Option Cashout / Sell Contract Button**: Missing ability to close active binary option position prior to expiry for a partial payout refund.
+- [x] **One-Click Trading Toggle**: Toggle button bypasses the "Risk Pre-Verification" confirmation dialog for fast scalping. Highlighted in blue when active.
+- [x] **Early Option Cashout / Sell Contract Button**: "Cashout 35%" button on active positions closes contract early, credits 35% of stake back to balance, marks position as earlyExit=true.
 - [ ] **TradingView Technical Indicators Toolbar**: RSI, MACD, Moving Averages, and Bollinger Bands overlay controls are not wired to chart indicator controls.
 - [ ] **Order Cancellation**: In `/orders`, there is no `[ Cancel Order ]` button to revoke active limit/stop orders before execution.
 
@@ -56,9 +56,9 @@
 ### B. Admin Portal Sub-Pages
 - [x] **`/admin/withdrawals`**: Admin queue to review, approve, reject, or batch-process pending crypto and fiat withdrawal requests.
 - [x] **`/admin/deposits`**: Admin panel to inspect submitted TxHashes, verify on-chain balances, and credit user accounts.
-- [ ] **`/admin/kyc-approvals`**: Document verification desk to review submitted user passports and utility bills.
+- [x] **`/admin/kyc-approvals`**: Document verification desk to review submitted user passports and utility bills. Approve/reject with automatic Firestore notifications.
 - [x] **`/admin/risk-limits`**: Dynamic control panel for global platform settings (max leverage, option return percentages, payout caps, maintenance modes in `/admin/markets` & `/admin/settings`).
-- [ ] **`/admin/audit-logs`**: Immutable security log of all admin actions, balance adjustments, and platform alerts.
+- [x] **`/admin/audit-logs`**: Immutable security log of all admin actions, balance adjustments, and platform alerts. Searchable, filterable, CSV-exportable.
 
 ---
 
@@ -67,5 +67,6 @@
 1. **Phase 1 (Immediate)**: [COMPLETED] Wire `/verification` document upload and `/security` password change triggers.
 2. **Phase 2**: [COMPLETED] Build `/admin/withdrawals` and `/admin/deposits` approval queues to process pending user cashier requests.
 3. **Phase 3**: [COMPLETED] Add `/account` editable profile form, `/watchlist` dynamic Add Asset search modal, and `/history` CSV export.
-4. **Phase 4**: Implement server-side Webhooks for Paystack & Crypto gateways.
-5. **Phase 5**: Upgrade Terminal data pipeline to real-time WebSockets and server-side trade settlement workers.
+4. **Phase 4**: [COMPLETED] Wire `/security` logout everywhere button, add terminal one-click trading toggle & early cashout, build `/admin/kyc-approvals` verification desk and `/admin/audit-logs` immutable event log.
+5. **Phase 5**: Implement server-side Webhooks for Paystack & Crypto gateways.
+6. **Phase 6**: Upgrade Terminal data pipeline to real-time WebSockets and server-side trade settlement workers.

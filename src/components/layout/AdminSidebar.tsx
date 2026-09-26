@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShieldAlert, Users, FileSpreadsheet, Database, ArrowLeftRight, Settings, Inbox, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
+import { ShieldAlert, Users, FileSpreadsheet, Database, ArrowLeftRight, Settings, Inbox, ArrowDownCircle, ArrowUpCircle, ShieldCheck } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 
 interface AdminSidebarProps {
@@ -18,6 +18,7 @@ export default function AdminSidebar({ onLinkClick, className, isMobile = false 
   const items = [
     { label: "Oversight Node", href: "/admin", icon: ShieldAlert },
     { label: "User Directory", href: "/admin/users", icon: Users },
+    { label: "KYC Approvals", href: "/admin/kyc-approvals", icon: ShieldCheck },
     { label: "Deposit Queue", href: "/admin/deposits", icon: ArrowDownCircle },
     { label: "Withdrawal Queue", href: "/admin/withdrawals", icon: ArrowUpCircle },
     { label: "Support Inbox", href: "/admin/inbox", icon: Inbox },

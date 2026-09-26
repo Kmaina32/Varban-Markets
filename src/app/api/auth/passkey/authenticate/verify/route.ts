@@ -42,10 +42,11 @@ export async function POST(req: NextRequest) {
       expectedChallenge,
       expectedOrigin: origin,
       expectedRPID: rpID,
-      authenticator: {
-        credentialID: Buffer.from(dbKey.credentialID, 'base64'),
-        credentialPublicKey: Buffer.from(dbKey.publicKey, 'base64'),
+      credential: {
+        id: dbKey.credentialID,
+        publicKey: Buffer.from(dbKey.publicKey, 'base64'),
         counter: dbKey.counter,
+        transports: dbKey.transports,
       },
     });
 

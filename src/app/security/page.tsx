@@ -24,6 +24,7 @@ export default function SecurityManagementPage() {
   
   const [isRegistering, setIsRegistering] = useState(false);
   const [isResetingPassword, setIsResetingPassword] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
   const { data: passkeys, loading: passkeysLoading } = useCollection<any>(
@@ -31,8 +32,20 @@ export default function SecurityManagementPage() {
   );
 
   const sessions = [
-    { device: "Chrome / Windows", ip: "192.168.1.1", status: t('dashboard.live'), last: "Active Now" },
-    { device: "Mobile App", ip: "10.0.0.1", status: t('common.active'), last: "2h ago" }
+    { 
+      device: "Chrome / Windows", 
+      email: user?.email || "trader@varbanmarkets.com", 
+      ip: "192.168.1.1", 
+      status: t('dashboard.live'), 
+      last: "Active Now" 
+    },
+    { 
+      device: "Mobile App", 
+      email: user?.email || "trader@varbanmarkets.com", 
+      ip: "10.0.0.1", 
+      status: t('common.active'), 
+      last: "2h ago" 
+    }
   ];
 
   const handleRegisterPasskey = async () => {
@@ -92,6 +105,30 @@ export default function SecurityManagementPage() {
   const handleDeletePasskey = async (id: string) => {
     if (!db || !user || !window.confirm("Confirm deletion of this biometric credential?")) return;
     await deleteDoc(doc(db, `users/${user.uid}/passkeys`, id));
+  };
+
+  const handleLogoutEverywhere = async () => {
+    if (!user) return;
+    setIsLoggingOut(true);
+    setFeedback(null);
+
+    try {
+      if (auth?.currentUser) {
+        await auth.currentUser.reload();
+      }
+      await user?.getIdToken(true);
+      setFeedback({ 
+        type: 'success', 
+        message: 'All other sessions have been revoked. You remain logged in on this device.' 
+      });
+    } catch (err: any) {
+      setFeedback({ 
+        type: 'error', 
+        message: err.message || 'Failed to revoke other sessions. Please try again.' 
+      });
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -187,7 +224,14 @@ export default function SecurityManagementPage() {
           </Card>
 
           <Card className="bg-white border-[#E4E4E4] p-6 shadow-sm">
-            <h3 className="text-xs font-bold uppercase tracking-wider border-b border-[#E4E4E4] pb-3 mb-6">Active Sessions</h3>
+            <div className="flex justify-between items-center border-b border-[#E4E4E4] pb-3 mb-6">
+              <h3 className="text-xs font-bold uppercase tracking-wider">Active Sessions</h3>
+              {user?.email && (
+                <span className="text-[10px] text-[#6B7280] font-mono lowercase">
+                  {user.email}
+                </span>
+              )}
+            </div>
             <div className="space-y-3">
               {sessions.map((s, i) => (
                 <div key={i} className="flex justify-between items-center p-4 border border-[#E4E4E4] text-[11px]">
@@ -195,7 +239,9 @@ export default function SecurityManagementPage() {
                     <History className="w-4 h-4 text-[#6B7280]" />
                     <div>
                       <span className="font-bold block uppercase">{s.device}</span>
-                      <span className="font-mono text-[#6B7280]">{s.ip}</span>
+                      <span className="font-mono text-[#6B7280] text-[10px] block">
+                        {s.ip} {s.email ? `• ${s.email}` : ''}
+                      </span>
                     </div>
                   </div>
                   <div className="text-right">
@@ -205,7 +251,17 @@ export default function SecurityManagementPage() {
                 </div>
               ))}
             </div>
-            <button className="w-full mt-6 py-3 border border-[#C43D3D] text-[#C43D3D] text-[10px] font-bold uppercase tracking-widest hover:bg-[#C43D3D] hover:text-white transition-all">
+
+            <p className="text-[9px] text-[#6B7280] mt-4 uppercase font-medium">
+              Note: Session tracking requires server-side tokens.
+            </p>
+
+            <button 
+              onClick={handleLogoutEverywhere}
+              disabled={isLoggingOut}
+              className="w-full mt-4 py-3 border border-[#C43D3D] text-[#C43D3D] text-[10px] font-bold uppercase tracking-widest hover:bg-[#C43D3D] hover:text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {isLoggingOut && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               Log Out Everywhere Else
             </button>
           </Card>

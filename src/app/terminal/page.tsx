@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -63,7 +62,7 @@ export default function TerminalWorkspace() {
   const [reviewActive, setReviewActive] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   
-  const [oneClickTrade, setOneClickTrade] = useState<boolean>(false);
+  const [oneClickEnabled, setOneClickEnabled] = useState<boolean>(false);
   const [leftTab, setLeftTab] = useState<'TICKET' | 'MARKETS'>('TICKET');
 
   const [chartMode, setChartMode] = useState<ChartMode>('Candlestick');
@@ -242,7 +241,7 @@ export default function TerminalWorkspace() {
       setSuccessMessage(`${activeInst.symbol} ${selectedVector} Practice Trade Placed`);
       setReviewActive(false);
       setIsMobileTradeMenuOpen(false);
-      setTimeout(() => setSuccessMessage(null), 3000);
+      setTimeout(() => setSuccessMessage(null), 3500);
       return;
     }
 
@@ -273,7 +272,7 @@ export default function TerminalWorkspace() {
 
   const handleVectorClick = (vec: "CALL" | "PUT") => {
     setDirection(vec);
-    if (oneClickTrade) {
+    if (oneClickEnabled) {
       handleExecute(vec);
     } else {
       setReviewActive(true);
@@ -283,28 +282,49 @@ export default function TerminalWorkspace() {
 
   const handleEarlyCashout = (pos: any) => {
     if (!user || !db) return;
-    const partialPayout = pos.stake * 0.35;
+    // a. Calculate early cashout amount as stake * 0.35
+    const cashoutAmount = pos.stake * 0.35;
     const positionDocRef = doc(db, `users/${user.uid}/positions`, pos.id);
     
+    // b. Call updateDoc on position doc: status='Closed', profit=-(stake * 0.65), earlyExit=true, closedAt=new Date().toISOString()
     updateDoc(positionDocRef, {
       status: "Closed",
-      profit: partialPayout - pos.stake,
-      settledAt: new Date().toISOString(),
-      closedEarly: true
-    }).catch(() => {});
+      profit: -(pos.stake * 0.65),
+      earlyExit: true,
+      closedEarly: true,
+      closedAt: new Date().toISOString(),
+      settledAt: new Date().toISOString()
+    }).catch((err) => {
+      console.error("Failed to update position doc:", err);
+    });
 
+    // c. Call updateDoc on users/{uid} to add cashout amount back to balance (use increment)
     if (accountMode === 'REAL') {
       updateDoc(doc(db, "users", user.uid), {
-        balance: increment(partialPayout),
-        equity: increment(partialPayout)
+        balance: increment(cashoutAmount),
+        equity: increment(cashoutAmount)
+      }).catch((err) => {
+        console.error("Failed to update balance:", err);
+      });
+
+      addDoc(collection(db, `users/${user.uid}/transactions`), {
+        type: "Early Cashout",
+        asset: pos.instrument,
+        amount: pos.stake,
+        cashout: cashoutAmount,
+        status: "Settled",
+        output: `+${cashoutAmount.toFixed(2)}`,
+        timestamp: serverTimestamp()
       }).catch(() => {});
     } else {
-      const currentDemoBal = demoBalance + partialPayout;
+      const currentDemoBal = demoBalance + cashoutAmount;
       setDemoBalance(currentDemoBal);
       localStorage.setItem('varban_demo_balance', currentDemoBal.toString());
+      window.dispatchEvent(new Event('varban_account_mode_changed'));
     }
 
-    setSuccessMessage(`Closed Early: Trade finished for $${partialPayout.toFixed(2)}`);
+    // d. Show brief success toast/message
+    setSuccessMessage(`Cashout 35% Executed: +$${cashoutAmount.toFixed(2)} returned to balance`);
     setTimeout(() => setSuccessMessage(null), 3500);
   };
 
@@ -313,6 +333,173 @@ export default function TerminalWorkspace() {
   return (
     <div className="h-screen h-[100dvh] flex flex-col overflow-hidden font-sans relative transition-colors duration-200 bg-white text-[#0A0A0A]">
       <TerminalTutorial />
+
+      {/* FLOATING SUCCESS NOTIFICATION TOAST */}
+      {successMessage && (
+        <div className="fixed top-14 right-4 z-[260] bg-white border-2 border-[#16835B] text-[#16835B] px-4 py-3 shadow-xl flex items-center space-x-2 animate-in fade-in slide-in-from-top-2 duration-200">
+          <CheckCircle2 className="w-4 h-4 text-[#16835B] shrink-0" />
+          <span className="text-[11px] font-bold uppercase tracking-wider">{successMessage}</span>
+        </div>
+      )}
+
+      {/* RISK PRE-VERIFICATION / TRADE CONFIRMATION DIALOG */}
+      {reviewActive && direction && (
+        <div className="fixed inset-0 z-[300] bg-[#0A0A0A]/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white border border-[#E4E4E4] shadow-2xl max-w-md w-full p-6 space-y-4 animate-in zoom-in-95 duration-150 relative">
+            <button 
+              onClick={() => setReviewActive(false)} 
+              className="absolute top-4 right-4 p-1 text-[#6B7280] hover:text-[#0A0A0A] transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center space-x-3 border-b border-[#E4E4E4] pb-3">
+              <div className="w-8 h-8 rounded-full bg-[#0055FF]/10 text-[#0055FF] flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">Risk Pre-Verification</h3>
+                <p className="text-[10px] text-[#6B7280]">Review contract parameters before execution</p>
+              </div>
+            </div>
+
+            <div className="bg-[#F7F7F5] border border-[#E4E4E4] p-3 space-y-2 text-[11px]">
+              <div className="flex justify-between items-center">
+                <span className="text-[#6B7280] uppercase text-[9px] font-bold">Instrument</span>
+                <span className="font-mono font-bold text-[#0A0A0A]">{activeInst.symbol} ({activeInst.name})</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[#6B7280] uppercase text-[9px] font-bold">Direction Vector</span>
+                <span className={cn(
+                  "font-bold uppercase px-2 py-0.5 text-[9px] border rounded",
+                  direction === 'CALL' ? "bg-[#16835B]/10 text-[#16835B] border-[#16835B]" : "bg-[#0055FF]/10 text-[#0055FF] border-[#0055FF]"
+                )}>
+                  {direction === 'CALL' ? 'Higher (CALL)' : 'Lower (PUT)'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[#6B7280] uppercase text-[9px] font-bold">Current Strike Price</span>
+                <span className="font-mono font-bold text-[#0A0A0A]">
+                  {livePrice !== null ? `$${livePrice.toFixed(2)}` : "---"}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[#6B7280] uppercase text-[9px] font-bold">Contract Duration</span>
+                <span className="font-mono font-bold text-[#0A0A0A]">{duration}</span>
+              </div>
+              <div className="flex justify-between items-center border-t border-dashed border-[#E4E4E4] pt-2">
+                <span className="text-[#6B7280] uppercase text-[9px] font-bold">Committed Stake</span>
+                <span className="font-mono font-bold text-[#0A0A0A]">${formatNumber(stake, { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[#6B7280] uppercase text-[9px] font-bold">Expected Payout (+85%)</span>
+                <span className="font-mono font-bold text-[#16835B]">${formatNumber(stake * 1.85, { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[#6B7280] uppercase text-[9px] font-bold">Account</span>
+                <span className="font-bold text-[9px] uppercase text-[#6B7280]">
+                  {accountMode === 'REAL' ? 'Real Account' : 'Demo Account'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-2.5 bg-white border border-[#E4E4E4]">
+              <div className="flex items-center space-x-2">
+                <Zap className={cn("w-3.5 h-3.5", oneClickEnabled ? "text-[#0055FF]" : "text-[#6B7280]")} />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0A0A0A]">Enable One-Click Mode</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOneClickEnabled(!oneClickEnabled)}
+                className={cn(
+                  "px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest border transition-colors",
+                  oneClickEnabled ? "bg-[#0055FF] text-white border-[#0055FF]" : "bg-[#F7F7F5] text-[#6B7280] border-[#E4E4E4]"
+                )}
+              >
+                {oneClickEnabled ? "ENABLED" : "DISABLED"}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => setReviewActive(false)}
+                className="py-2.5 border border-[#E4E4E4] text-[10px] font-bold uppercase tracking-wider text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleExecute()}
+                className={cn(
+                  "py-2.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-md transition-all flex items-center justify-center space-x-1.5",
+                  direction === 'CALL' ? "bg-[#16835B] hover:bg-[#16835B]/90" : "bg-[#0055FF] hover:bg-[#0055FF]/90"
+                )}
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Confirm & Execute</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MOBILE OPEN POSITIONS BOTTOM DRAWER */}
+      {isMobilePositionsOpen && (
+        <div className="fixed inset-0 z-[220] lg:hidden flex flex-col justify-end">
+          <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setIsMobilePositionsOpen(false)}></div>
+          <div className="relative bg-white border-t border-[#E4E4E4] max-h-[75vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom duration-300">
+            <div className="p-3 border-b border-[#E4E4E4] flex items-center justify-between bg-[#F7F7F5]">
+              <div className="flex items-center space-x-2">
+                <Layers className="w-4 h-4 text-[#0055FF]" />
+                <span className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">
+                  Open Positions ({activePositions.length})
+                </span>
+              </div>
+              <button onClick={() => setIsMobilePositionsOpen(false)} className="p-1 text-[#6B7280] hover:text-[#0A0A0A]">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-3 overflow-y-auto space-y-2">
+              {activePositions.length === 0 ? (
+                <div className="p-6 text-center text-[10px] font-bold uppercase text-[#6B7280]">
+                  No active positions
+                </div>
+              ) : (
+                activePositions.map((pos: any) => (
+                  <div key={pos.id} className="p-3 border border-[#E4E4E4] bg-white rounded space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="font-mono font-bold text-xs">{pos.instrument}</span>
+                      <span className={cn(
+                        "px-1.5 py-0.5 text-[8px] font-bold uppercase border rounded",
+                        pos.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#0055FF] text-[#0055FF]'
+                      )}>
+                        {pos.vector === 'CALL' ? 'Higher' : 'Lower'}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 text-[10px] text-[#6B7280]">
+                      <div>Stake: <span className="font-mono font-bold text-[#0A0A0A]">${formatNumber(pos.stake, { minimumFractionDigits: 2 })}</span></div>
+                      <div className="text-right">Entry: <span className="font-mono font-bold text-[#0A0A0A]">${formatNumber(pos.entryPrice, { minimumFractionDigits: 2 })}</span></div>
+                    </div>
+                    <div className="pt-2 border-t border-[#E4E4E4] flex items-center justify-between">
+                      <span className="text-[9px] text-[#6B7280]">
+                        Cashout (35%): <span className="font-mono font-bold text-amber-600">${formatNumber(pos.stake * 0.35, { minimumFractionDigits: 2 })}</span>
+                      </span>
+                      <button
+                        onClick={() => handleEarlyCashout(pos)}
+                        className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white text-[9px] font-bold uppercase tracking-wider rounded transition-colors shadow-sm"
+                      >
+                        Cashout 35%
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       
       {isMobileNavOpen && (
         <div className="fixed inset-0 z-[250] lg:hidden">
@@ -391,31 +578,56 @@ export default function TerminalWorkspace() {
             isMobileTradeMenuOpen || isMobileMarketMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 hidden lg:flex"
           )}>
             
-            <div className="flex border-b shrink-0 border-[#E4E4E4] bg-[#F7F7F5]">
+            <div className="flex border-b shrink-0 border-[#E4E4E4] bg-[#F7F7F5] items-center justify-between pr-2">
+              <div className="flex flex-1">
+                <button
+                  onClick={() => setLeftTab('TICKET')}
+                  className={cn(
+                    "flex-1 py-3 px-2.5 text-[10px] font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 transition-colors border-b-2",
+                    leftTab === 'TICKET' 
+                      ? "border-[#0055FF] text-[#0055FF] bg-white" 
+                      : "border-transparent text-[#6B7280] hover:text-[#0A0A0A]"
+                  )}
+                >
+                  <Sliders className="w-3.5 h-3.5 text-[#0055FF]" />
+                  <span>Trade Settings</span>
+                </button>
+                
+                <button
+                  onClick={() => setLeftTab('MARKETS')}
+                  className={cn(
+                    "flex-1 py-3 px-2.5 text-[10px] font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 transition-colors border-b-2",
+                    leftTab === 'MARKETS' 
+                      ? "border-[#0055FF] text-[#0055FF] bg-white" 
+                      : "border-transparent text-[#6B7280] hover:text-[#0A0A0A]"
+                  )}
+                >
+                  <BarChart3 className="w-3.5 h-3.5 text-[#16835B]" />
+                  <span>Market List</span>
+                </button>
+              </div>
+
+              {/* ONE-CLICK TOGGLE IN SIDEBAR CONTROLS HEADER */}
               <button
-                onClick={() => setLeftTab('TICKET')}
+                type="button"
+                onClick={() => setOneClickEnabled(!oneClickEnabled)}
                 className={cn(
-                  "flex-1 py-3 px-3 text-[10px] font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 transition-colors border-b-2",
-                  leftTab === 'TICKET' 
-                    ? "border-[#0055FF] text-[#0055FF] bg-white" 
-                    : "border-transparent text-[#6B7280] hover:text-[#0A0A0A]"
+                  "px-2 py-1 text-[8px] font-bold uppercase tracking-wider border rounded transition-all flex items-center space-x-1 shrink-0 ml-1",
+                  oneClickEnabled 
+                    ? "bg-[#0055FF] text-white border-[#0055FF] shadow-sm" 
+                    : "bg-white text-[#6B7280] border-[#E4E4E4] hover:text-[#0A0A0A]"
                 )}
+                title={oneClickEnabled ? "One-Click Trading is ON" : "One-Click Trading is OFF"}
               >
-                <Sliders className="w-3.5 h-3.5 text-[#0055FF]" />
-                <span>Trade Settings</span>
+                <Zap className={cn("w-2.5 h-2.5", oneClickEnabled ? "text-white" : "text-[#6B7280]")} />
+                <span>ONE-CLICK</span>
               </button>
-              
+
               <button
-                onClick={() => setLeftTab('MARKETS')}
-                className={cn(
-                  "flex-1 py-3 px-3 text-[10px] font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 transition-colors border-b-2",
-                  leftTab === 'MARKETS' 
-                    ? "border-[#0055FF] text-[#0055FF] bg-white" 
-                    : "border-transparent text-[#6B7280] hover:text-[#0A0A0A]"
-                )}
+                onClick={() => { setIsMobileTradeMenuOpen(false); setIsMobileMarketMenuOpen(false); }}
+                className="lg:hidden p-1 text-[#6B7280] hover:text-[#0A0A0A] ml-1"
               >
-                <BarChart3 className="w-3.5 h-3.5 text-[#16835B]" />
-                <span>Market List</span>
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -466,9 +678,27 @@ export default function TerminalWorkspace() {
                   <input type="number" min={activeInst.minStake} max={activeInst.maxStake} value={stake} onChange={(e) => setStake(Number(e.target.value))} className="w-full p-2.5 border text-sm font-mono font-bold focus:border-[#0A0A0A] outline-none bg-white border-[#E4E4E4]" />
                 </div>
 
+                {/* ONE-CLICK TOGGLE PANEL IN CONTROLS AREA */}
                 <div className="p-3 border flex items-center justify-between bg-[#F7F7F5] border-[#E4E4E4]">
-                  <div><span className="text-[9px] font-bold uppercase tracking-wider block">One-Click Trading</span></div>
-                  <button onClick={() => setOneClickTrade(!oneClickTrade)} className={cn("w-10 h-5 rounded-full transition-colors relative", oneClickTrade ? 'bg-[#0055FF]' : 'bg-[#E4E4E4]')}><span className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all", oneClickTrade ? 'left-5.5' : 'left-0.5')} /></button>
+                  <div className="flex items-center space-x-2">
+                    <Zap className={cn("w-4 h-4", oneClickEnabled ? "text-[#0055FF]" : "text-[#6B7280]")} />
+                    <div>
+                      <span className="text-[9px] font-bold uppercase tracking-wider block">One-Click Trading</span>
+                      <span className="text-[8px] text-[#6B7280] block">Bypass confirmation dialog</span>
+                    </div>
+                  </div>
+                  <button 
+                    type="button"
+                    onClick={() => setOneClickEnabled(!oneClickEnabled)} 
+                    className={cn(
+                      "px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider border rounded transition-all shadow-sm",
+                      oneClickEnabled 
+                        ? "bg-[#0055FF] text-white border-[#0055FF]" 
+                        : "bg-white text-[#6B7280] border-[#E4E4E4] hover:text-[#0A0A0A]"
+                    )}
+                  >
+                    ONE-CLICK
+                  </button>
                 </div>
 
                 <div className="p-3 border space-y-2 text-[10px] bg-[#F7F7F5] border-[#E4E4E4]">
@@ -476,7 +706,20 @@ export default function TerminalWorkspace() {
                   <div className="flex justify-between border-t border-dashed border-[#E4E4E4] pt-1.5"><span className="text-[#6B7280] uppercase font-bold">Total Payout</span><span className="font-mono font-bold text-[#16835B]">${(stake * 1.85).toFixed(2)}</span></div>
                 </div>
 
-                <button onClick={() => handleExecute()} disabled={!direction || livePrice === null} className={cn("w-full py-3 text-xs font-bold uppercase tracking-widest border flex items-center justify-center space-x-2 transition-all shadow-md", direction === "CALL" ? "bg-[#16835B] text-white border-[#16835B]" : direction === "PUT" ? "bg-[#0055FF] text-white border-[#0055FF]" : "bg-[#E4E4E4] text-[#6B7280]")}>
+                <button 
+                  onClick={() => {
+                    if (oneClickEnabled) {
+                      handleExecute();
+                    } else {
+                      setReviewActive(true);
+                    }
+                  }} 
+                  disabled={!direction || livePrice === null} 
+                  className={cn(
+                    "w-full py-3 text-xs font-bold uppercase tracking-widest border flex items-center justify-center space-x-2 transition-all shadow-md", 
+                    direction === "CALL" ? "bg-[#16835B] text-white border-[#16835B]" : direction === "PUT" ? "bg-[#0055FF] text-white border-[#0055FF]" : "bg-[#E4E4E4] text-[#6B7280]"
+                  )}
+                >
                   <ShieldCheck className="w-4 h-4" /> <span>{livePrice === null ? "SYNCING..." : `PLACE ${direction || ''} TRADE`}</span>
                 </button>
               </div>
@@ -570,14 +813,63 @@ export default function TerminalWorkspace() {
               />
             </div>
 
-            {/* Desktop Open Trades Tray */}
+            {/* Desktop Open Trades Tray / Active Positions Panel */}
             <div onMouseDown={startResizing} className="hidden lg:flex h-1 bg-[#E4E4E4] hover:bg-[#0055FF] cursor-row-resize items-center justify-center z-[60]"><div className="w-12 h-0.5 bg-[#6B7280] rounded-full"></div></div>
             <div style={{ height: `${trayHeight}px` }} className="hidden lg:block border-t shrink-0 overflow-y-auto no-scrollbar transition-colors bg-white border-[#E4E4E4]">
-              <div className="px-4 py-1.5 border-b flex justify-between items-center sticky top-0 z-10 bg-inherit"><span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">Current Trades ({activePositions.length})</span></div>
+              <div className="px-4 py-1.5 border-b flex justify-between items-center sticky top-0 z-10 bg-inherit">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">
+                  Current Trades ({activePositions.length})
+                </span>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-[10px] text-left border-collapse">
-                  <thead><tr className="uppercase border-b text-[#6B7280]"><th className="p-2 font-bold">Market</th><th className="p-2 font-bold">Side</th><th className="p-2 font-bold text-right">Amount</th><th className="p-2 font-bold text-right">Entry</th><th className="p-2 font-bold text-center">Status</th><th className="p-2 font-bold text-center">Action</th></tr></thead>
-                  <tbody className="divide-y divide-[#E4E4E4]">{activePositions.length === 0 ? <tr><td colSpan={6} className="p-4 text-center uppercase font-bold text-[9px]">No open trades</td></tr> : activePositions.map((pos: any) => (<tr key={pos.id} className="hover:bg-[#F7F7F5]"><td className="p-2 font-mono font-bold">{pos.instrument}</td><td className="p-2"><span className={cn("px-1.5 py-0.5 border text-[9px] font-bold", pos.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#0055FF] text-[#0055FF]')}>{pos.vector === 'CALL' ? 'Higher' : 'Lower'}</span></td><td className="p-2 text-right font-mono">${formatNumber(pos.stake, { minimumFractionDigits: 2 })}</td><td className="p-2 text-right font-mono">${formatNumber(pos.entryPrice, { minimumFractionDigits: 2 })}</td><td className="p-2 text-center"><span className="text-[8px] font-bold uppercase text-[#0055FF] animate-pulse">Live</span></td><td className="p-2 text-center"><button onClick={() => handleEarlyCashout(pos)} className="px-2 py-0.5 text-[8px] font-bold uppercase bg-amber-500 text-white rounded">Close Now</button></td></tr>))}</tbody>
+                  <thead>
+                    <tr className="uppercase border-b text-[#6B7280]">
+                      <th className="p-2 font-bold">Market</th>
+                      <th className="p-2 font-bold">Side</th>
+                      <th className="p-2 font-bold text-right">Amount</th>
+                      <th className="p-2 font-bold text-right">Entry</th>
+                      <th className="p-2 font-bold text-center">Status</th>
+                      <th className="p-2 font-bold text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#E4E4E4]">
+                    {activePositions.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="p-4 text-center uppercase font-bold text-[9px] text-[#6B7280]">
+                          No open trades
+                        </td>
+                      </tr>
+                    ) : (
+                      activePositions.map((pos: any) => (
+                        <tr key={pos.id} className="hover:bg-[#F7F7F5]">
+                          <td className="p-2 font-mono font-bold">{pos.instrument}</td>
+                          <td className="p-2">
+                            <span className={cn(
+                              "px-1.5 py-0.5 border text-[9px] font-bold", 
+                              pos.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#0055FF] text-[#0055FF]'
+                            )}>
+                              {pos.vector === 'CALL' ? 'Higher' : 'Lower'}
+                            </span>
+                          </td>
+                          <td className="p-2 text-right font-mono">${formatNumber(pos.stake, { minimumFractionDigits: 2 })}</td>
+                          <td className="p-2 text-right font-mono">${formatNumber(pos.entryPrice, { minimumFractionDigits: 2 })}</td>
+                          <td className="p-2 text-center">
+                            <span className="text-[8px] font-bold uppercase text-[#0055FF] animate-pulse">Live</span>
+                          </td>
+                          <td className="p-2 text-center">
+                            <button 
+                              onClick={() => handleEarlyCashout(pos)} 
+                              className="px-2.5 py-1 text-[8px] font-bold uppercase tracking-wider bg-amber-500 hover:bg-amber-600 text-white rounded transition-colors shadow-sm whitespace-nowrap"
+                              title={`Cash out 35% early: $${(pos.stake * 0.35).toFixed(2)}`}
+                            >
+                              Cashout 35%
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
                 </table>
               </div>
             </div>
