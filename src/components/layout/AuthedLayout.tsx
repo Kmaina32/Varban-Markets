@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Master Authenticated Layout.
- * Includes profile completeness enforcement for forced data capture.
+ * Handles authentication guards, admin authorization, and profile completeness monitoring via notifications.
  */
 
 import AuthedSidebar from "./AuthedSidebar";
@@ -17,6 +17,7 @@ import { useTranslation } from "@/app/lib/i18n-context";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import { cn } from "@/app/lib/utils";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 const STRICT_PATHS = [
   '/terminal', '/dashboard', '/portfolio', '/positions', 
@@ -77,7 +78,6 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   const isAdminPath = pathname?.startsWith('/admin');
   const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
-  // Strict check for profile completeness using explicit fields
   const isProfileComplete = useMemo(() => {
     if (!profile) return false;
     return !!(profile.firstName && profile.lastName && profile.phone && profile.country);
@@ -91,21 +91,36 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
         return;
       }
 
-      // 2. Profile Completion Guard
-      // Only redirect if we are in a strict area and not already on the setup page
-      if (user && isStrict && pathname !== '/complete-profile') {
-        if (!isProfileComplete) {
-          router.push('/complete-profile');
-          return;
-        }
-      }
-
-      // 3. Admin Guard
+      // 2. Admin Guard
       if (user && isAdminPath && !isAdmin) {
         router.push('/dashboard');
       }
     }
-  }, [user, loading, profileLoading, isProfileComplete, isStrict, isAdminPath, isAdmin, router, pathname]);
+  }, [user, loading, profileLoading, isStrict, isAdminPath, isAdmin, router]);
+
+  // Handle Profile Incomplete Notification
+  useEffect(() => {
+    if (user && profile && !isProfileComplete && db) {
+      const triggerNotification = async () => {
+        // Prevent spamming notification in the same session
+        if (sessionStorage.getItem('varban_profile_alert_sent')) return;
+
+        try {
+          await addDoc(collection(db, `users/${user.uid}/notifications`), {
+            title: "Profile Completion Required",
+            body: "Your identity profile is currently incomplete. Please update your phone number and country in Account Settings to ensure uninterrupted service.",
+            type: "Security",
+            isUnread: true,
+            timestamp: serverTimestamp()
+          });
+          sessionStorage.setItem('varban_profile_alert_sent', 'true');
+        } catch (e) {
+          console.error("Failed to transmit profile alert:", e);
+        }
+      };
+      triggerNotification();
+    }
+  }, [user, profile, isProfileComplete, db]);
 
   if (isTerminal || !isStrict) return <>{children}</>;
 
