@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -176,10 +175,10 @@ export default function UnifiedSignupPage() {
             priority
             data-ai-hint={placeholderImages.auth.hint}
           />
-          <div className="absolute inset-0 bg-white/5"></div>
+          <div className="absolute inset-0 bg-black/30"></div>
           <div className="absolute bottom-12 left-12 right-12 z-10">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF] block mb-2">Create Account</span>
-            <h2 className="text-2xl font-bold uppercase text-[#0A0A0A] tracking-tight leading-tight">
+            <h2 className="text-2xl font-bold uppercase text-white tracking-tight leading-tight">
               Join thousands of traders worldwide.
             </h2>
             <div className="w-12 h-1 bg-[#0055FF] mt-4"></div>
