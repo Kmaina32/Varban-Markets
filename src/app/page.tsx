@@ -3,17 +3,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { TrendingUp, TrendingDown, CheckCircle2, ArrowRight, Monitor, Smartphone, Globe, Briefcase } from "lucide-react";
 import placeholderImages from "@/app/lib/placeholder-images.json";
+import { MarketIcon } from "@/components/MarketIcon";
 
 export default function HomePage() {
   const marketTickers = [
-    { symbol: "XAU/USD", name: "Gold", price: "2,743.21", change: "+1.25%", isUp: true, icon: "https://picsum.photos/seed/gold/32/32" },
-    { symbol: "EUR/USD", name: "Euro / US Dollar", price: "1.0512", change: "+0.45%", isUp: true, icon: "https://picsum.photos/seed/eur/32/32" },
-    { symbol: "GBP/USD", name: "British Pound / USD", price: "1.2734", change: "-0.12%", isUp: false, icon: "https://picsum.photos/seed/gbp/32/32" },
-    { symbol: "BTC/USD", name: "Bitcoin", price: "67,842.20", change: "+2.50%", isUp: true, icon: "https://picsum.photos/seed/btc/32/32" },
-    { symbol: "AAPL", name: "Apple Inc.", price: "189.47", change: "+1.15%", isUp: true, icon: "https://picsum.photos/seed/aapl/32/32" },
-    { symbol: "TSLA", name: "Tesla, Inc.", price: "241.73", change: "+2.37%", isUp: true, icon: "https://picsum.photos/seed/tsla/32/32" },
-    { symbol: "DJI", name: "Dow Jones", price: "38,742.63", change: "-0.25%", isUp: false, icon: "https://picsum.photos/seed/dji/32/32" },
-    { symbol: "NAS100", name: "Nasdaq 100", price: "15,434.20", change: "+1.42%", isUp: true, icon: "https://picsum.photos/seed/nas/32/32" }
+    { symbol: "XAU/USD", name: "Gold Spot", price: "2,743.21", change: "+1.25%", isUp: true },
+    { symbol: "EUR/USD", name: "Euro / US Dollar", price: "1.0512", change: "+0.45%", isUp: true },
+    { symbol: "GBP/USD", name: "British Pound / USD", price: "1.2734", change: "-0.12%", isUp: false },
+    { symbol: "BTC/USD", name: "Bitcoin", price: "67,842.20", change: "+2.50%", isUp: true },
+    { symbol: "AAPL", name: "Apple Inc.", price: "189.47", change: "+1.15%", isUp: true },
+    { symbol: "TSLA", name: "Tesla, Inc.", price: "241.73", change: "+2.37%", isUp: true },
+    { symbol: "US30", name: "Dow Jones 30", price: "38,742.63", change: "-0.25%", isUp: false },
+    { symbol: "NAS100", name: "Nasdaq 100", price: "15,434.20", change: "+1.42%", isUp: true }
   ];
 
   return (
@@ -76,9 +77,7 @@ export default function HomePage() {
                 {marketTickers.map((ticker) => (
                   <div key={ticker.symbol} className="bg-[#F7F7F5] border border-[#E4E4E4] p-4 group hover:border-[#0055FF] transition-all">
                     <div className="flex items-center justify-between mb-4">
-                      <div className="w-8 h-8 rounded-full overflow-hidden border border-[#E4E4E4] bg-white">
-                        <img src={ticker.icon} alt={ticker.name} className="w-full h-full object-cover" />
-                      </div>
+                      <MarketIcon symbol={ticker.symbol} />
                       <span className="text-[10px] font-mono font-bold text-[#0A0A0A] uppercase">{ticker.symbol}</span>
                     </div>
                     <div className="space-y-1">

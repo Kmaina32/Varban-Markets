@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, use, useEffect } from "react";
@@ -10,6 +11,7 @@ import { TradingViewChart } from "@/components/terminal/TradingViewChart";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { useUser } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
+import { MarketIcon } from "@/components/MarketIcon";
 
 export default function MarketDetailPage({ params }: { params: Promise<{ symbol: string }> }) {
   const resolvedParams = use(params);
@@ -91,13 +93,16 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
           </div>
         )}
 
-        <div className="bg-white border border-[#E4E4E4] p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <div className="flex items-center space-x-3">
-              <span className="text-xs font-mono bg-[#0A0A0A] text-white px-2 py-0.5 font-bold tracking-wider">{inst.symbol}</span>
-              <span className="text-xs text-[#6B7280] uppercase tracking-wider font-bold">{inst.category}</span>
+        <div className="bg-white border border-[#E4E4E4] p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
+          <div className="flex items-center space-x-4">
+            <MarketIcon symbol={inst.symbol} size="lg" />
+            <div>
+              <div className="flex items-center space-x-3">
+                <span className="text-xs font-mono bg-[#0A0A0A] text-white px-2 py-0.5 font-bold tracking-wider">{inst.symbol}</span>
+                <span className="text-xs text-[#6B7280] uppercase tracking-wider font-bold">{inst.category}</span>
+              </div>
+              <h1 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A] mt-1">{inst.name}</h1>
             </div>
-            <h1 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A] mt-1">{inst.name}</h1>
           </div>
 
           <div className="flex items-center space-x-8">
@@ -118,11 +123,11 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white border border-[#E4E4E4] p-4">
+            <div className="bg-white border border-[#E4E4E4] p-4 shadow-sm">
               <TradingViewChart symbol={inst.symbol} />
             </div>
 
-            <div className="bg-white border border-[#E4E4E4] p-6">
+            <div className="bg-white border border-[#E4E4E4] p-6 shadow-sm">
               <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2 mb-4">
                 {t('trading.specs')}
               </h3>
@@ -148,7 +153,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
           </div>
 
           <div>
-            <div className="bg-white border border-[#E4E4E4] p-6 space-y-4">
+            <div className="bg-white border border-[#E4E4E4] p-6 space-y-4 shadow-sm">
               <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">
                 {t('trading.setup')}
               </h3>

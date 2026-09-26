@@ -1,3 +1,4 @@
+
 "use client";
 
 /**
@@ -24,6 +25,7 @@ import { useUser, useFirestore, useCollection } from "@/firebase";
 import { doc, setDoc, deleteDoc, collection } from "firebase/firestore";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { useTranslation } from "@/app/lib/i18n-context";
+import { MarketIcon } from "@/components/MarketIcon";
 
 export default function MarketsPage() {
   const { user } = useUser();
@@ -170,9 +172,12 @@ export default function MarketsPage() {
                       </button>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-mono font-bold text-[#0A0A0A]">{inst.symbol}</span>
-                        <span className="text-[10px] text-[#6B7280] uppercase tracking-tighter">{inst.name}</span>
+                      <div className="flex items-center space-x-3">
+                        <MarketIcon symbol={inst.symbol} size="sm" />
+                        <div className="flex flex-col">
+                          <span className="font-mono font-bold text-[#0A0A0A]">{inst.symbol}</span>
+                          <span className="text-[10px] text-[#6B7280] uppercase tracking-tighter">{inst.name}</span>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell className="text-[#6B7280] text-[10px] uppercase tracking-wider">
