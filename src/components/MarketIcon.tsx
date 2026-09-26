@@ -1,8 +1,10 @@
+
 'use client';
 
 /**
  * @fileOverview Institutional Market Icon Resolver.
  * Dynamically renders Forex flags, Crypto logos, and Stock brand icons.
+ * Priority: Commodities > Indices > Crypto > Stocks > Forex Flags.
  */
 
 import React from 'react';
@@ -15,7 +17,10 @@ interface MarketIconProps {
 }
 
 export const MarketIcon: React.FC<MarketIconProps> = ({ symbol, className, size = 'md' }) => {
-  const parts = symbol.split('/');
+  const parts = symbol.includes('/') 
+    ? symbol.split('/') 
+    : (symbol.length === 6 ? [symbol.substring(0, 3), symbol.substring(3)] : [symbol, '']);
+    
   const cleanSymbol = parts[0].toUpperCase();
   const quote = parts[1]?.toUpperCase();
 
@@ -25,44 +30,33 @@ export const MarketIcon: React.FC<MarketIconProps> = ({ symbol, className, size 
     lg: 'w-12 h-12'
   };
 
-  // Helper for Flag mapping
-  const getFlagCode = (curr: string) => {
-    const map: Record<string, string> = {
-      'USD': 'us',
-      'EUR': 'eu',
-      'GBP': 'gb',
-      'JPY': 'jp',
-      'AUD': 'au',
-      'CAD': 'ca',
-      'CHF': 'ch',
-      'NZD': 'nz',
-      'ZAR': 'za',
-      'NGN': 'ng',
-      'GHS': 'gh',
-      'KES': 'ke'
-    };
-    return map[curr] || curr.toLowerCase().substring(0, 2);
-  };
-
-  // 1. Forex Pairing Logic (FlagCDN)
-  if (symbol.includes('/') && !['BTC', 'ETH', 'SOL', 'XRP', 'USDT'].includes(cleanSymbol)) {
+  // 1. Commodities & Indices Priority (Prevents fallback to broken flags)
+  if (cleanSymbol === 'XAU' || cleanSymbol === 'GOLD') {
     return (
-      <div className={cn("flex items-center -space-x-3", className)}>
-        <img 
-          src={`https://flagcdn.io/w80/${getFlagCode(cleanSymbol)}.png`} 
-          alt={cleanSymbol}
-          className={cn(dimensions[size], "rounded-full border-2 border-white shadow-sm object-cover bg-white z-10")} 
-        />
-        <img 
-          src={`https://flagcdn.io/w80/${getFlagCode(quote)}.png`} 
-          alt={quote}
-          className={cn(dimensions[size], "rounded-full border-2 border-white shadow-sm object-cover bg-white")} 
-        />
+      <div className={cn(dimensions[size], "rounded-full bg-gradient-to-br from-[#C9A227] to-[#E5C158] flex items-center justify-center text-white text-[9px] font-bold border-2 border-white shadow-sm", className)}>
+        GOLD
       </div>
     );
   }
 
-  // 2. Crypto Logic (Cryptocurrency Icons)
+  if (cleanSymbol === 'XAG' || cleanSymbol === 'SILV') {
+    return (
+      <div className={cn(dimensions[size], "rounded-full bg-gradient-to-br from-[#94A3B8] to-[#CBD5E1] flex items-center justify-center text-white text-[9px] font-bold border-2 border-white shadow-sm", className)}>
+        SILV
+      </div>
+    );
+  }
+
+  const indexSymbols = ['US30', 'DJI', 'NAS100', 'NAS', 'SPY', 'QQQ', 'US500', 'SPX'];
+  if (indexSymbols.includes(cleanSymbol)) {
+    return (
+      <div className={cn(dimensions[size], "rounded-full border-2 border-[#E4E4E4] bg-white flex items-center justify-center font-bold text-[8px] text-[#0A0A0A] shadow-sm uppercase", className)}>
+        {cleanSymbol.substring(0, 3)}
+      </div>
+    );
+  }
+
+  // 2. Crypto Logic
   const cryptoSymbols = ['BTC', 'ETH', 'SOL', 'XRP', 'LTC', 'BNB', 'ADA', 'USDT', 'USDC'];
   if (cryptoSymbols.includes(cleanSymbol)) {
     return (
@@ -76,7 +70,7 @@ export const MarketIcon: React.FC<MarketIconProps> = ({ symbol, className, size 
     );
   }
 
-  // 3. Stock Brands (Simple Icons)
+  // 3. Stock Brands
   const stockMap: Record<string, string> = {
     'AAPL': 'apple',
     'TSLA': 'tesla',
@@ -101,35 +95,38 @@ export const MarketIcon: React.FC<MarketIconProps> = ({ symbol, className, size 
     );
   }
 
-  // 4. Commodities & Indices
-  if (cleanSymbol === 'XAU') {
-    return (
-      <div className={cn(dimensions[size], "rounded-full bg-gradient-to-br from-[#C9A227] to-[#E5C158] flex items-center justify-center text-white text-[9px] font-bold border-2 border-white shadow-sm", className)}>
-        GOLD
-      </div>
-    );
-  }
+  // 4. Forex Flag-Pairing
+  const getFlagCode = (curr: string) => {
+    const map: Record<string, string> = {
+      'USD': 'us',
+      'EUR': 'eu',
+      'GBP': 'gb',
+      'JPY': 'jp',
+      'AUD': 'au',
+      'CAD': 'ca',
+      'CHF': 'ch',
+      'NZD': 'nz',
+      'ZAR': 'za',
+      'NGN': 'ng',
+      'GHS': 'gh',
+      'KES': 'ke'
+    };
+    return map[curr] || curr.toLowerCase().substring(0, 2);
+  };
 
-  if (cleanSymbol === 'XAG') {
+  if (quote && quote.length === 3) {
     return (
-      <div className={cn(dimensions[size], "rounded-full bg-gradient-to-br from-[#94A3B8] to-[#CBD5E1] flex items-center justify-center text-white text-[9px] font-bold border-2 border-white shadow-sm", className)}>
-        SILV
-      </div>
-    );
-  }
-
-  if (cleanSymbol === 'US30' || cleanSymbol === 'DJI') {
-    return (
-      <div className={cn(dimensions[size], "rounded-full border-2 border-[#E4E4E4] bg-white flex items-center justify-center font-bold text-[8px] text-[#0A0A0A] shadow-sm", className)}>
-        US30
-      </div>
-    );
-  }
-
-  if (cleanSymbol === 'NAS100') {
-    return (
-      <div className={cn(dimensions[size], "rounded-full border-2 border-[#E4E4E4] bg-white flex items-center justify-center font-bold text-[8px] text-[#0A0A0A] shadow-sm", className)}>
-        NAS
+      <div className={cn("flex items-center -space-x-3", className)}>
+        <img 
+          src={`https://flagcdn.io/w80/${getFlagCode(cleanSymbol)}.png`} 
+          alt={cleanSymbol}
+          className={cn(dimensions[size], "rounded-full border-2 border-white shadow-sm object-cover bg-white z-10")} 
+        />
+        <img 
+          src={`https://flagcdn.io/w80/${getFlagCode(quote)}.png`} 
+          alt={quote}
+          className={cn(dimensions[size], "rounded-full border-2 border-white shadow-sm object-cover bg-white")} 
+        />
       </div>
     );
   }

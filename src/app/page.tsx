@@ -1,7 +1,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { TrendingUp, TrendingDown, CheckCircle2, ArrowRight, Monitor, Smartphone, Globe, Briefcase } from "lucide-react";
+import { TrendingUp, TrendingDown, CheckCircle2, ArrowRight } from "lucide-react";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { MarketIcon } from "@/components/MarketIcon";
 
@@ -78,12 +78,12 @@ export default function HomePage() {
                   <div key={ticker.symbol} className="bg-[#F7F7F5] border border-[#E4E4E4] p-4 group hover:border-[#0055FF] transition-all">
                     <div className="flex items-center justify-between mb-4">
                       <MarketIcon symbol={ticker.symbol} />
-                      <span className="text-[10px] font-mono font-bold text-[#0A0A0A] uppercase">{ticker.symbol}</span>
+                      <span className="text-[10px] font-bold text-[#0A0A0A] uppercase tracking-tighter font-display">{ticker.symbol}</span>
                     </div>
                     <div className="space-y-1">
                       <span className="text-[9px] text-[#6B7280] uppercase tracking-wider block font-bold">{ticker.name}</span>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-mono font-bold text-[#0A0A0A]">{ticker.price}</span>
+                        <span className="text-base font-bold text-[#0A0A0A] font-display">{ticker.price}</span>
                         <div className={`flex items-center gap-0.5 text-[10px] font-bold ${ticker.isUp ? 'text-[#16835B]' : 'text-[#C43D3D]'}`}>
                           {ticker.isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                           <span>{ticker.change}</span>
@@ -99,11 +99,11 @@ export default function HomePage() {
       </section>
 
       {/* Powerful Trading Technology Section */}
-      <section className="py-24 bg-[#0A0A0A] text-white">
+      <section className="py-24 bg-white text-[#0A0A0A] border-t border-[#E4E4E4]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
             <div className="lg:col-span-6 relative">
-              <div className="relative z-10 rounded-none border border-white/10 overflow-hidden shadow-2xl shadow-blue-500/10">
+              <div className="relative z-10 rounded-none border border-[#E4E4E4] overflow-hidden shadow-2xl">
                 <Image 
                   src={placeholderImages.terminal_showcase.url}
                   alt="Terminal Interface"
@@ -113,16 +113,16 @@ export default function HomePage() {
                   data-ai-hint={placeholderImages.terminal_showcase.hint}
                 />
               </div>
-              <div className="absolute -top-10 -left-10 w-40 h-40 bg-[#0055FF] opacity-10 blur-[80px]"></div>
+              <div className="absolute -top-10 -left-10 w-40 h-40 bg-[#0055FF] opacity-5 blur-[80px]"></div>
             </div>
 
             <div className="lg:col-span-6 space-y-8">
               <div className="space-y-4">
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">Platform</span>
-                <h2 className="text-4xl font-bold uppercase tracking-tight text-white font-display leading-[1.1]">
+                <h2 className="text-4xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display leading-[1.1]">
                   Powerful Trading Technology
                 </h2>
-                <p className="text-sm text-[#9CA3AF] leading-relaxed max-w-xl">
+                <p className="text-sm text-[#6B7280] leading-relaxed max-w-xl">
                   Get advanced trading software give you the edge. Charts and insights you need to make profitable decisions. Trade anywhere from desktop, mobile, anywhere, anytime.
                 </p>
               </div>
@@ -138,13 +138,13 @@ export default function HomePage() {
                     <div className="w-5 h-5 rounded-none bg-[#0055FF]/10 flex items-center justify-center border border-[#0055FF]/30">
                       <CheckCircle2 className="w-3.5 h-3.5 text-[#0055FF]" />
                     </div>
-                    <span className="text-xs font-bold uppercase tracking-widest text-white/90">{feature}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">{feature}</span>
                   </div>
                 ))}
               </div>
 
               <div className="pt-4">
-                <Link href="/technology" className="btn-institutional-primary bg-white text-[#0A0A0A] border-white hover:bg-[#0055FF] hover:border-[#0055FF] hover:text-white px-10">
+                <Link href="/technology" className="btn-institutional-primary bg-[#0A0A0A] text-white border-[#0A0A0A] hover:bg-[#0055FF] hover:border-[#0055FF] px-10">
                   Learn More
                 </Link>
               </div>
