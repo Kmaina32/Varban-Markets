@@ -24,6 +24,28 @@ export default function TradeHistoryPage() {
 
   const { data: history, loading } = useCollection<any>(historyQuery);
 
+  const exportCSV = () => {
+    if (!history || history.length === 0) return;
+    const headers = ["Timestamp", "Reference ID", "Instrument", "Vector", "Stake (USD)", "Profit/Loss (USD)"];
+    const rows = history.map(h => [
+      h.timestamp?.toDate ? h.timestamp.toDate().toISOString() : 'N/A',
+      h.id,
+      h.instrument,
+      h.vector,
+      h.stake || 0,
+      h.profit || 0
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `varban_trade_history_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <AuthedLayout title={t('pages.historyTitle')}>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -40,9 +62,13 @@ export default function TradeHistoryPage() {
             <Filter className="w-3 h-3" />
             <span>{t('common.filter')}</span>
           </button>
-          <button className="flex items-center space-x-2 px-4 py-2 bg-white border border-[#E4E4E4] text-[10px] font-bold uppercase tracking-wider hover:bg-[#F7F7F5] transition-colors">
+          <button 
+            onClick={exportCSV}
+            disabled={!history || history.length === 0}
+            className="flex items-center space-x-2 px-4 py-2 bg-white border border-[#E4E4E4] text-[10px] font-bold uppercase tracking-wider hover:bg-[#F7F7F5] transition-colors disabled:opacity-40"
+          >
             <Download className="w-3 h-3" />
-            <span>{t('common.export')}</span>
+            <span>{t('common.export')} CSV</span>
           </button>
         </div>
       </div>
@@ -72,7 +98,7 @@ export default function TradeHistoryPage() {
                 <td className="p-4">{h.id.slice(0, 8).toUpperCase()}</td>
                 <td className="p-4 font-bold">{h.instrument}</td>
                 <td className="p-4">
-                  <span className={`px-1.5 py-0.5 border text-[9px] font-bold ${h.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#C43D3D] text-[#C43D3D]'}`}>
+                  <span className={`px-1.5 py-0.5 border text-[9px] font-bold ${h.vector === 'CALL' ? 'border-[#16835B]' : 'border-[#C43D3D]'}`}>
                     {h.vector}
                   </span>
                 </td>
