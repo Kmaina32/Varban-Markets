@@ -1,12 +1,10 @@
-
 'use client';
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, Monitor, Globe, Briefcase, Target, 
-  FileText, Clock, Star, Wallet, ArrowDownCircle, 
-  ArrowUpCircle, Activity, User, ShieldCheck, Lock, 
+  FileText, Clock, Star, Wallet, Activity, User, ShieldCheck, Lock, 
   Bell, Settings, HelpCircle, Mail, ShieldAlert,
   Share2, Newspaper
 } from "lucide-react";
@@ -51,12 +49,9 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
       ]
     },
     {
-      title: "FUNDS",
+      title: "MONEY",
       items: [
         { label: t('nav.wallet'), href: "/wallet", icon: Wallet },
-        { label: t('nav.deposit'), href: "/deposit", icon: ArrowDownCircle },
-        { label: t('nav.withdraw'), href: "/withdraw", icon: ArrowUpCircle },
-        { label: t('nav.transactions'), href: "/transactions", icon: Activity },
       ]
     },
     {
@@ -77,7 +72,6 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     }
   ];
 
-  // Single admin link to transition entirely into the admin role architecture
   const adminSection = {
     title: "ADMINISTRATION",
     items: [
@@ -109,7 +103,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
               </h3>
               <div className="space-y-1">
                 {section.items.map((item) => {
-                  const isActive = pathname === item.href || (item.href === '/admin' && pathname?.startsWith('/admin'));
+                  const isActive = pathname === item.href || (item.href === '/admin' && pathname?.startsWith('/admin')) || (item.href === '/wallet' && pathname?.startsWith('/wallet'));
                   return (
                     <Link
                       key={item.href}
@@ -146,7 +140,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
             </h3>
             <div className="space-y-0.5">
               {section.items.map((item) => {
-                const isActive = pathname === item.href || (item.href === '/admin' && pathname?.startsWith('/admin'));
+                const isActive = pathname === item.href || (item.href === '/admin' && pathname?.startsWith('/admin')) || (item.href === '/wallet' && pathname?.startsWith('/wallet'));
                 return (
                   <Link
                     key={item.href}
