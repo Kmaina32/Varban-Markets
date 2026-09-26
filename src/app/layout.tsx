@@ -4,6 +4,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { FirebaseProvider } from "@/firebase";
 import { I18nProvider } from "@/app/lib/i18n-context";
+import CookieConsent from "@/components/layout/CookieConsent";
 
 export const metadata: Metadata = {
   title: "Varban Markets | Institutional Electronic Trading Protocol",
@@ -30,6 +31,7 @@ export default function RootLayout({
               {children}
             </main>
             <Footer />
+            <CookieConsent />
           </I18nProvider>
         </FirebaseProvider>
       </body>
