@@ -1,13 +1,7 @@
 
-import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
-
 /**
- * @fileOverview Genkit Initialization for Varban Markets.
- * Configures the primary AI instance with the Google AI plugin.
+ * @fileOverview AI INITIALIZATION (DECOMMISSIONED).
+ * This module has been disabled as per institutional protocol requirements for Zero-AI operations.
  */
 
-export const ai = genkit({
-  plugins: [googleAI()],
-  model: 'googleai/gemini-1.5-flash',
-});
+export const ai = null;

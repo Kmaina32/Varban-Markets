@@ -3,6 +3,7 @@
 /**
  * @fileOverview AI Support Agent Flow (DECOMMISSIONED).
  * Conversational AI has been disabled. All support redirected to ticket system.
+ * This file is kept as an inert stub to satisfy imports.
  */
 
 export async function supportChat(input: any): Promise<string> {

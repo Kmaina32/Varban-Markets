@@ -1,8 +1,9 @@
+
 'use client';
 
 /**
  * @fileOverview Master Authenticated Layout.
- * Handles authentication guards, admin authorization, and profile completeness monitoring via notifications.
+ * Verified and hardened with Zero-AI architecture.
  */
 
 import AuthedSidebar from "./AuthedSidebar";
@@ -85,26 +86,20 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
 
   useEffect(() => {
     if (!loading && !profileLoading) {
-      // 1. Auth Guard
       if (!user && isStrict) {
         router.push('/login');
         return;
       }
-
-      // 2. Admin Guard
       if (user && isAdminPath && !isAdmin) {
         router.push('/dashboard');
       }
     }
   }, [user, loading, profileLoading, isStrict, isAdminPath, isAdmin, router]);
 
-  // Handle Profile Incomplete Notification
   useEffect(() => {
     if (user && profile && !isProfileComplete && db) {
       const triggerNotification = async () => {
-        // Prevent spamming notification in the same session
         if (sessionStorage.getItem('varban_profile_alert_sent')) return;
-
         try {
           await addDoc(collection(db, `users/${user.uid}/notifications`), {
             title: "Profile Completion Required",
@@ -114,9 +109,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
             timestamp: serverTimestamp()
           });
           sessionStorage.setItem('varban_profile_alert_sent', 'true');
-        } catch (e) {
-          console.error("Failed to transmit profile alert:", e);
-        }
+        } catch (e) {}
       };
       triggerNotification();
     }
@@ -178,7 +171,15 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
           <Link href="/dashboard" className="flex items-center">
-            <Image src="/assets/logo2.png" alt="Varban Workspace" width={110} height={26} className="h-6 md:h-7 w-auto object-contain" priority />
+            <Image 
+              src="/assets/logo2.png" 
+              alt="Varban Workspace" 
+              width={110} 
+              height={26} 
+              style={{ height: 'auto' }}
+              className="w-auto object-contain" 
+              priority 
+            />
           </Link>
           <div className="h-6 w-px bg-[#E4E4E4] hidden lg:block"></div>
           <div className="hidden lg:block">

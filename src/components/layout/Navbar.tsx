@@ -21,7 +21,6 @@ export default function Navbar() {
   
   const isStrict = STRICT_PATHS.some(path => pathname === path || pathname?.startsWith(path + '/'));
 
-  // Navbar should show on all public/shared pages even if logged in
   if (isStrict) return null;
 
   const publicLinks = [
@@ -44,7 +43,8 @@ export default function Navbar() {
                 alt="Varban Markets"
                 width={140}
                 height={32}
-                className="h-8 w-auto object-contain"
+                style={{ height: 'auto' }}
+                className="w-auto object-contain"
                 priority
               />
             </Link>
@@ -85,7 +85,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[200] bg-white lg:hidden animate-in fade-in duration-200">
           <div className="flex flex-col h-full">
@@ -95,7 +94,8 @@ export default function Navbar() {
                 alt="Varban Markets"
                 width={120}
                 height={28}
-                className="h-7 w-auto object-contain"
+                style={{ height: 'auto' }}
+                className="w-auto object-contain"
               />
               <button 
                 onClick={() => setIsMobileMenuOpen(false)}
