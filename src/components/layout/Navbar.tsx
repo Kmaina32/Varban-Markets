@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -11,7 +12,7 @@ const STRICT_PATHS = [
   '/orders', '/history', '/watchlist', '/wallet', 
   '/deposit', '/withdraw', '/transactions', '/account', 
   '/verification', '/security', '/notifications', '/preferences',
-  '/referral', '/admin', '/markets', '/news'
+  '/referral', '/admin', '/login', '/register', '/markets', '/news'
 ];
 
 export default function Navbar() {
