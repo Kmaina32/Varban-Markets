@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useAuth } from "@/firebase";
 import placeholderImages from "@/app/lib/placeholder-images.json";
-import { Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -119,11 +119,6 @@ export default function LoginPage() {
           <div className="mt-10 pt-6 border-t border-[#E4E4E4] text-center">
             <span className="text-[11px] text-[#6B7280] uppercase tracking-wide">New to the platform? </span>
             <Link href="/register" className="text-[11px] font-bold text-[#0A0A0A] uppercase tracking-widest underline decoration-[#0055FF] decoration-2 underline-offset-4 ml-1">Create Account</Link>
-          </div>
-
-          <div className="mt-8 flex items-center justify-center space-x-2 opacity-50">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#16835B]" />
-            <span className="text-[8px] font-bold uppercase tracking-widest text-[#6B7280]">Safe and Secure Connection</span>
           </div>
         </div>
       </div>

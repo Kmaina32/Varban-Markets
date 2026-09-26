@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, collection, query, where, getDocs, limit } from "firebase/firestore";
 import { useAuth, useFirestore } from "@/firebase";
-import { Check, ShieldCheck, User, Mail, Lock, ChevronDown, Eye, EyeOff, X, ArrowRight, ArrowLeft, FileText } from "lucide-react";
+import { Check, User, Mail, Lock, ChevronDown, Eye, EyeOff, X, ArrowRight, ArrowLeft, FileText } from "lucide-react";
 import { COUNTRIES } from "@/app/lib/countries";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { cn } from "@/app/lib/utils";
@@ -421,11 +421,6 @@ export default function UnifiedSignupPage() {
               <span className="text-[11px] text-[#6B7280] uppercase tracking-wide">Already have an account? </span>
               <Link href="/login" className="text-[11px] font-bold text-[#0A0A0A] uppercase tracking-widest underline decoration-[#0055FF] decoration-2 underline-offset-4 ml-1">Sign In</Link>
             </div>
-          </div>
-
-          <div className="bg-[#F7F7F5] border-t border-[#E4E4E4] p-4 flex items-center justify-center space-x-2 shrink-0">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#16835B]" />
-            <span className="text-[8px] font-bold text-[#6B7280] uppercase tracking-[0.2em]">Safe and Secure Connection</span>
           </div>
         </div>
       </div>
