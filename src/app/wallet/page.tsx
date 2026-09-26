@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -28,7 +27,8 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   FileText,
-  Download
+  Download,
+  Check
 } from "lucide-react";
 import { useUser, useDoc, useFirestore, useCollection } from "@/firebase";
 import { collection, query, orderBy, limit, where, doc, updateDoc, increment, addDoc, serverTimestamp } from "firebase/firestore";
@@ -293,10 +293,10 @@ export default function WalletPage() {
                         {profileLoading ? "..." : `$${formatNumber(activeBalance, { minimumFractionDigits: 2 })}`}
                       </h2>
                       <div className="mt-6 flex gap-4">
-                        <button onClick={() => handleTabChange('deposit')} className="px-5 py-2.5 bg-[#0A0A0A] text-white text-[9px] font-bold uppercase tracking-widest hover:bg-[#0055FF] transition-all flex items-center gap-2">
+                        <button onClick={() => handleTabChange('deposit')} className="px-5 py-2.5 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0055FF] transition-all flex items-center gap-2">
                           <ArrowDownLeft className="w-3 h-3 text-[#16835B]" /> Add Funds
                         </button>
-                        <button onClick={() => handleTabChange('withdraw')} className="px-5 py-2.5 bg-white border border-[#E4E4E4] text-[#0A0A0A] text-[9px] font-bold uppercase tracking-widest hover:bg-[#F7F7F5] transition-all flex items-center gap-2">
+                        <button onClick={() => handleTabChange('withdraw')} className="px-5 py-2.5 bg-white border border-[#E4E4E4] text-[#0A0A0A] text-[10px] font-bold uppercase tracking-widest hover:bg-[#F7F7F5] transition-all flex items-center gap-2">
                           <ArrowUpRight className="w-3 h-3 text-[#0055FF]" /> Withdraw
                         </button>
                       </div>
