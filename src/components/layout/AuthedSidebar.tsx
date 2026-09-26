@@ -8,7 +8,7 @@ import {
   FileText, Clock, Star, Wallet, ArrowDownCircle, 
   ArrowUpCircle, Activity, User, ShieldCheck, Lock, 
   Bell, Settings, HelpCircle, Mail, ShieldAlert,
-  Share2
+  Share2, Newspaper
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -35,6 +35,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
       title: "OVERVIEW",
       items: [
         { label: t('nav.dashboard'), href: "/dashboard", icon: LayoutDashboard },
+        { label: t('nav.news'), href: "/news", icon: Newspaper },
       ]
     },
     {
