@@ -85,7 +85,8 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
       }
 
       if (user && isStrict && pathname !== '/complete-profile') {
-        const isIncomplete = !profile?.fullName || !profile?.phone || !profile?.country;
+        // Synchronized completion criteria: Must have first/last name, phone and country
+        const isIncomplete = !profile?.firstName || !profile?.lastName || !profile?.phone || !profile?.country;
         if (isIncomplete) {
           router.push('/complete-profile');
           return;

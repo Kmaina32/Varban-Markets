@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -44,6 +43,7 @@ export default function CompleteProfilePage() {
     if (!authLoading && !user) {
       router.push('/login');
     }
+    // Synchronized completion criteria: Must have first/last name, phone and country
     if (!authLoading && !profileLoading && profile?.firstName && profile?.lastName && profile?.phone && profile?.country) {
       router.push('/dashboard');
     }
