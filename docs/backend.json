@@ -28,6 +28,22 @@
       },
       "required": ["balance", "verificationStatus", "currency"]
     },
+    "Article": {
+      "title": "Intelligence Article",
+      "description": "Internal market insight or strategy briefing published by admins.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "body": { "type": "string" },
+        "category": { "type": "string", "enum": ["Insight", "Strategy", "Market Update"] },
+        "assetTag": { "type": "string" },
+        "author": { "type": "string" },
+        "status": { "type": "string", "enum": ["Draft", "Published"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "body", "category", "status"]
+    },
     "UserPasskey": {
       "title": "User Passkey",
       "description": "WebAuthn credential for biometric login.",
@@ -150,6 +166,10 @@
     "/contact_messages/{msgId}": {
       "schema": "ContactMessage",
       "description": "Global inbox for platform inquiries"
+    },
+    "/articles/{articleId}": {
+      "schema": "Article",
+      "description": "Platform intelligence reports and briefings"
     }
   }
 }
