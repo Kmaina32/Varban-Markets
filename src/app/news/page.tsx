@@ -3,10 +3,10 @@
 /**
  * @fileOverview News Hub Workspace.
  * Professional financial news feed delivering real-time headlines.
- * Strictly accessible for authenticated users. AI analysis disabled.
+ * Implements 10-minute automated background synchronization.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { 
@@ -14,7 +14,8 @@ import {
   Search, 
   Loader2, 
   ExternalLink,
-  BarChart2
+  BarChart2,
+  RefreshCw
 } from "lucide-react";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -25,11 +26,14 @@ export default function NewsHubPage() {
   const { t } = useTranslation();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeAsset, setActiveAsset] = useState<string | undefined>(undefined);
 
-  const loadNews = async (asset?: string) => {
-    setIsLoading(true);
+  const loadNews = useCallback(async (asset?: string, silent = false) => {
+    if (!silent) setIsLoading(true);
+    else setIsRefreshing(true);
+    
     try {
       const newsItems = await fetchMarketNews(asset);
       setNews(newsItems);
@@ -37,29 +41,41 @@ export default function NewsHubPage() {
       console.error("News sync failure:", err);
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
-  };
-
-  useEffect(() => {
-    loadNews();
   }, []);
+
+  // Initial load and 10-minute auto-refresh logic
+  useEffect(() => {
+    loadNews(activeAsset);
+
+    const intervalId = setInterval(() => {
+      console.log(`[Auto-Refresh] Synchronizing News Feed for: ${activeAsset || 'General Markets'}`);
+      loadNews(activeAsset, true);
+    }, 600000); // 10 minutes
+
+    return () => clearInterval(intervalId);
+  }, [loadNews, activeAsset]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      setActiveAsset(searchQuery.trim());
-      loadNews(searchQuery.trim());
+    const query = searchQuery.trim();
+    if (query) {
+      setActiveAsset(query);
     } else {
       setActiveAsset(undefined);
-      loadNews();
     }
+  };
+
+  const handleManualRefresh = () => {
+    loadNews(activeAsset);
   };
 
   const tutorialSteps: TutorialStep[] = [
     {
       selector: "#tour-news-banner",
       title: "Live Intelligence",
-      description: "Monitor high-precision headlines from tier-1 financial data nodes worldwide."
+      description: "Monitor high-precision headlines from tier-1 financial data nodes worldwide. Updated automatically every 10 minutes."
     },
     {
       selector: "#tour-news-search",
@@ -69,7 +85,7 @@ export default function NewsHubPage() {
     {
       selector: "#tour-news-feed",
       title: "Real-time Telemetry",
-      description: " हेडलाइंस are timestamped and source-verified to ensure maximum data integrity for your trades."
+      description: "Headlines are timestamped and source-verified to ensure maximum data integrity for your trades."
     }
   ];
 
@@ -86,15 +102,22 @@ export default function NewsHubPage() {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Live Intelligence</span>
+              {isRefreshing && (
+                <span className="flex items-center gap-1.5 text-[8px] bg-white/20 px-2 py-0.5 rounded font-bold uppercase">
+                  <RefreshCw className="w-2.5 h-2.5 animate-spin" /> Syncing
+                </span>
+              )}
             </div>
             <h1 className="text-2xl font-bold uppercase tracking-tight">Global Financial Headlines</h1>
             <p className="text-[10px] uppercase font-bold text-white/70 mt-1">Real-time telemetry from top tier-1 financial data nodes</p>
           </div>
           <div className="flex items-center gap-3">
             <button 
-              onClick={() => { setSearchQuery(""); setActiveAsset(undefined); loadNews(); }}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2 border border-white/20"
+              onClick={handleManualRefresh}
+              disabled={isLoading || isRefreshing}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2 border border-white/20 disabled:opacity-50"
             >
+              <RefreshCw className={cn("w-3 h-3", isRefreshing && "animate-spin")} />
               <span>Refresh Feed</span>
             </button>
           </div>
@@ -122,11 +145,11 @@ export default function NewsHubPage() {
         </Card>
 
         {activeAsset && (
-          <div className="flex items-center space-x-2 px-1">
+          <div className="flex items-center space-x-2 px-1 animate-in fade-in duration-200">
             <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">Active Scope:</span>
             <span className="bg-[#0A0A0A] text-white text-[10px] font-mono font-bold px-2 py-0.5 uppercase tracking-wider">{activeAsset}</span>
             <button 
-              onClick={() => { setSearchQuery(""); setActiveAsset(undefined); loadNews(); }} 
+              onClick={() => { setSearchQuery(""); setActiveAsset(undefined); }} 
               className="text-[9px] font-bold text-[#0055FF] uppercase hover:underline ml-2 flex items-center gap-1"
             >
               Clear Scope
@@ -148,9 +171,9 @@ export default function NewsHubPage() {
               <Newspaper className="w-12 h-12 text-[#E4E4E4] mx-auto mb-4" />
               <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A]">No News Records Detected</h3>
               <p className="text-xs text-[#6B7280] max-w-xs mx-auto mt-2 leading-relaxed">
-                We couldn't find any significant news records for <span className="font-bold text-[#0A0A0A]">"{activeAsset}"</span> in the current session.
+                We couldn't find any significant news records for <span className="font-bold text-[#0A0A0A]">"{activeAsset || 'the market'}"</span> in the current session.
               </p>
-              <button onClick={() => { setSearchQuery(""); setActiveAsset(undefined); loadNews(); }} className="mt-6 text-[10px] font-bold text-[#0055FF] uppercase tracking-widest hover:underline">View General Markets Feed</button>
+              <button onClick={() => { setSearchQuery(""); setActiveAsset(undefined); }} className="mt-6 text-[10px] font-bold text-[#0055FF] uppercase tracking-widest hover:underline">View General Markets Feed</button>
             </Card>
           ) : (
             <div className="space-y-4">
@@ -161,7 +184,7 @@ export default function NewsHubPage() {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-[9px] font-bold uppercase text-[#6B7280] tracking-wider">
                           <span>Publisher</span>
-                          <span className="text-[#0A0A0A] font-bold">{item.publisher}</span>
+                          <span className="text-[#0A0A0A] font-bold">{item.publisher || 'REUTERS'}</span>
                         </div>
                         <div className="flex items-center justify-between text-[9px] font-bold uppercase text-[#6B7280] tracking-wider">
                           <span>Timestamp</span>
@@ -199,10 +222,10 @@ export default function NewsHubPage() {
           )}
         </div>
 
-        <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-start space-x-3">
+        <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-start space-x-3 shadow-sm">
           <div className="w-2 h-2 rounded-full bg-[#16835B] mt-1 shrink-0 animate-pulse"></div>
           <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
-            Market intelligence data is sourced from global exchanges and tier-1 news providers. All headlines are timestamped and logged for internal auditing. Varban Markets delivers raw information without speculative processing.
+            Market intelligence data is sourced from global exchanges and tier-1 news providers. All headlines are timestamped and logged for internal auditing. This feed refreshes automatically every 10 minutes to maintain data precision.
           </p>
         </div>
 
