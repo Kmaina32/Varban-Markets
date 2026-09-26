@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState } from "react";
@@ -16,7 +15,7 @@ import { cn } from "@/app/lib/utils";
  */
 
 export default function UserManagement() {
-  const { t, formatNumber } = useTranslation();
+  const { formatNumber } = useTranslation();
   const db = useFirestore();
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddAdminModalOpen, setIsAddAdminModalOpen] = useState(false);
@@ -81,11 +80,13 @@ export default function UserManagement() {
 
   const filteredUsers = useMemo(() => {
     if (!users) return [];
-    return users.filter(u => 
-      u.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.id?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const q = searchQuery.toLowerCase();
+    return users.filter(u => {
+      const nameMatch = (u.fullName || "").toLowerCase().includes(q);
+      const emailMatch = (u.email || "").toLowerCase().includes(q);
+      const idMatch = (u.id || "").toLowerCase().includes(q);
+      return nameMatch || emailMatch || idMatch;
+    });
   }, [users, searchQuery]);
 
   return (
@@ -141,67 +142,69 @@ export default function UserManagement() {
                   <tr><td colSpan={6} className="p-12 text-center text-[#6B7280] font-mono">Synchronizing Platform Records...</td></tr>
                 ) : filteredUsers.length === 0 ? (
                   <tr><td colSpan={6} className="p-12 text-center text-[#6B7280]">No entities found in the current scope.</td></tr>
-                ) : filteredUsers.map((userItem: any) => (
-                  <tr key={userItem.id} className="hover:bg-[#F7F7F5] transition-colors">
-                    <td className="p-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-center font-bold text-[10px] text-[#0055FF]">
-                          {userItem.fullName?.charAt(0) || "U"}
+                ) : (
+                  filteredUsers.map((userItem: any) => (
+                    <tr key={userItem.id} className="hover:bg-[#F7F7F5] transition-colors">
+                      <td className="p-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-center font-bold text-[10px] text-[#0055FF]">
+                            {userItem.fullName?.charAt(0) || "U"}
+                          </div>
+                          <div>
+                            <span className="font-bold block text-[#0A0A0A]">{userItem.fullName || "Unnamed Entity"}</span>
+                            <span className="text-[9px] text-[#6B7280] font-mono uppercase tracking-tighter">{userItem.id.slice(0, 10)}</span>
+                          </div>
                         </div>
-                        <div>
-                          <span className="font-bold block text-[#0A0A0A]">{userItem.fullName || "Unnamed Entity"}</span>
-                          <span className="text-[9px] text-[#6B7280] font-mono uppercase tracking-tighter">{userItem.id.slice(0, 10)}</span>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex flex-col space-y-1">
+                          <div className="flex items-center space-x-1.5 text-[10px]">
+                            <Mail className="w-3 h-3 text-[#6B7280]" />
+                            <span className="text-[#6B7280]">{userItem.email}</span>
+                          </div>
+                          <div className="flex items-center space-x-1.5 text-[10px]">
+                            <Globe className="w-3 h-3 text-[#6B7280]" />
+                            <span className="uppercase text-[#6B7280]">{userItem.country || "Global"}</span>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex flex-col space-y-1">
-                        <div className="flex items-center space-x-1.5 text-[10px]">
-                          <Mail className="w-3 h-3 text-[#6B7280]" />
-                          <span className="text-[#6B7280]">{userItem.email}</span>
-                        </div>
-                        <div className="flex items-center space-x-1.5 text-[10px]">
-                          <Globe className="w-3 h-3 text-[#6B7280]" />
-                          <span className="uppercase text-[#6B7280]">{userItem.country || "Global"}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4 text-center">
-                      <span className={cn(
-                        "px-2 py-0.5 border text-[9px] font-bold uppercase",
-                        userItem.verificationStatus === 'Verified' ? "border-[#16835B] text-[#16835B] bg-[#16835B]/5" : "border-[#C9A227] text-[#C9A227] bg-[#C9A227]/5"
-                      )}>
-                        {userItem.verificationStatus || "Not Verified"}
-                      </span>
-                    </td>
-                    <td className="p-4 text-center">
-                      <button 
-                        onClick={() => handleToggleRole(userItem.id, userItem.role)}
-                        className={cn(
-                          "px-2 py-0.5 border text-[9px] font-bold uppercase transition-all",
-                          userItem.role === 'Admin' 
-                            ? "bg-[#0055FF] text-white border-[#0055FF]" 
-                            : "bg-white text-[#6B7280] border-[#E4E4E4] hover:border-[#0055FF] hover:text-[#0055FF]"
-                        )}
-                      >
-                        {userItem.role === 'Admin' ? "Root" : "Trader"}
-                      </button>
-                    </td>
-                    <td className="p-4 text-right font-mono font-bold">
-                      ${formatNumber(userItem.balance || 0, { minimumFractionDigits: 2 })}
-                    </td>
-                    <td className="p-4 text-center">
-                      <div className="flex items-center justify-center space-x-2">
+                      </td>
+                      <td className="p-4 text-center">
+                        <span className={cn(
+                          "px-2 py-0.5 border text-[9px] font-bold uppercase",
+                          userItem.verificationStatus === 'Verified' ? "border-[#16835B] text-[#16835B] bg-[#16835B]/5" : "border-[#C9A227] text-[#C9A227] bg-[#C9A227]/5"
+                        )}>
+                          {userItem.verificationStatus || "Not Verified"}
+                        </span>
+                      </td>
+                      <td className="p-4 text-center">
                         <button 
-                          onClick={() => handleVerify(userItem.id, userItem.verificationStatus)}
-                          className="text-[9px] font-bold uppercase px-3 py-1.5 border border-[#E4E4E4] hover:bg-[#0055FF] hover:text-white transition-colors"
+                          onClick={() => handleToggleRole(userItem.id, userItem.role)}
+                          className={cn(
+                            "px-2 py-0.5 border text-[9px] font-bold uppercase transition-all",
+                            userItem.role === 'Admin' 
+                              ? "bg-[#0055FF] text-white border-[#0055FF]" 
+                              : "bg-white text-[#6B7280] border-[#E4E4E4] hover:border-[#0055FF] hover:text-[#0055FF]"
+                          )}
                         >
-                          {userItem.verificationStatus === 'Verified' ? "Revoke KYC" : "Verify KYC"}
+                          {userItem.role === 'Admin' ? "Root" : "Trader"}
                         </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="p-4 text-right font-mono font-bold">
+                        ${formatNumber(userItem.balance || 0, { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="p-4 text-center">
+                        <div className="flex items-center justify-center space-x-2">
+                          <button 
+                            onClick={() => handleVerify(userItem.id, userItem.verificationStatus)}
+                            className="text-[9px] font-bold uppercase px-3 py-1.5 border border-[#E4E4E4] hover:bg-[#0055FF] hover:text-white transition-colors"
+                          >
+                            {userItem.verificationStatus === 'Verified' ? "Revoke KYC" : "Verify KYC"}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
