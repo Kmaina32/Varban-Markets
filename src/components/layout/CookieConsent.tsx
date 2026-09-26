@@ -44,18 +44,23 @@ export default function CookieConsent() {
         {/* Message Area */}
         <div className="flex-grow">
           <div className="space-y-1">
+            <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.2em] block mb-1">
+              Cookies & Privacy
+            </span>
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">
               Personalize Your Experience
             </h3>
-            <p className="text-[11px] text-[#6B7280] leading-relaxed max-w-2xl">
-              We use website settings to ensure our systems work reliably, analyze performance, and provide a professional trading environment. By choosing "Accept All," you help us improve the platform for everyone.
+            <p className="text-[11px] text-[#6B7280] leading-relaxed max-w-2xl mt-2">
+              We use cookies to ensure our systems work reliably, analyze performance, and provide a professional trading environment. By choosing "Accept All," you help us improve the platform for everyone.
             </p>
-            <Link 
-              href="/terms/privacy" 
-              className="inline-flex items-center text-[9px] font-bold text-[#0055FF] uppercase tracking-widest hover:underline"
-            >
-              Read our Privacy Rules
-            </Link>
+            <div className="mt-3">
+              <Link 
+                href="/terms/privacy" 
+                className="inline-flex items-center text-[9px] font-bold text-[#0055FF] uppercase tracking-widest hover:underline"
+              >
+                Read our Privacy Rules
+              </Link>
+            </div>
           </div>
         </div>
 
