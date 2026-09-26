@@ -1,9 +1,8 @@
 'use client';
 
 /**
- * @fileOverview Master Authenticated Layout with integrated Mobile Drawer, Balance Matrix & Profile Dropdown.
- * Refined to strictly only show Workspace UI for internal paths.
- * Threshold increased to lg (1024px) to prevent squeezed headers on tablets.
+ * @fileOverview Master Authenticated Layout.
+ * Includes profile completeness enforcement for forced data capture.
  */
 
 import AuthedSidebar from "./AuthedSidebar";
@@ -39,7 +38,7 @@ interface AuthedLayoutProps {
 export default function AuthedLayout({ children, title, subtitle, isTerminal = false }: AuthedLayoutProps) {
   const { user, loading } = useUser();
   const db = useFirestore();
-  const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
+  const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   const { formatNumber } = useTranslation();
   const pathname = usePathname();
   const router = useRouter();
@@ -79,19 +78,29 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
   useEffect(() => {
-    if (!loading) {
+    if (!loading && !profileLoading) {
       if (!user && isStrict) {
         router.push('/login');
-      } else if (user && isAdminPath && !isAdmin) {
+        return;
+      }
+
+      if (user && isStrict && pathname !== '/complete-profile') {
+        const isIncomplete = !profile?.fullName || !profile?.phone || !profile?.country;
+        if (isIncomplete) {
+          router.push('/complete-profile');
+          return;
+        }
+      }
+
+      if (user && isAdminPath && !isAdmin) {
         router.push('/dashboard');
       }
     }
-  }, [user, loading, isStrict, isAdminPath, isAdmin, router]);
+  }, [user, loading, profileLoading, profile, isStrict, isAdminPath, isAdmin, router, pathname]);
 
-  // Handle Terminal bypass or non-strict paths (like Help, Contact)
   if (isTerminal || !isStrict) return <>{children}</>;
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <div className="flex-grow flex items-center justify-center bg-[#F7F7F5] min-h-[400px]">
         <div className="w-5 h-5 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div>
@@ -99,16 +108,14 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
     );
   }
 
-  if (!user) return null; // Let the redirect logic handle it
+  if (!user) return null;
 
   if (isAdminPath) {
     return (
       <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
         <AdminHeader title={title} subtitle={subtitle} />
-        
         <div className="flex flex-grow overflow-hidden relative">
           <AdminSidebar className="hidden lg:flex" />
-          
           {isMobileMenuOpen && (
             <div className="fixed inset-0 z-[250] lg:hidden">
               <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
@@ -117,7 +124,6 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
               </div>
             </div>
           )}
-
           <main className="flex-grow overflow-y-auto bg-[#F7F7F5] p-4 md:p-8 no-scrollbar lg:ml-16">
             <div className="max-w-7xl mx-auto">
               <button 
@@ -147,13 +153,10 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
           >
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
-          
           <Link href="/dashboard" className="flex items-center">
             <Image src="/assets/logo2.png" alt="Varban Workspace" width={110} height={26} className="h-6 md:h-7 w-auto object-contain" priority />
           </Link>
-          
           <div className="h-6 w-px bg-[#E4E4E4] hidden lg:block"></div>
-          
           <div className="hidden lg:block">
             <h1 className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#0A0A0A]">{title}</h1>
             {subtitle && <p className="text-[9px] text-[#6B7280] uppercase tracking-wider mt-0.5">{subtitle}</p>}
@@ -181,7 +184,6 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
               <Bell className="w-4 h-4 text-[#6B7280]" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-[#0055FF] rounded-full border border-white"></span>
             </Link>
-
             <div className="relative">
               <button 
                 onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)} 
@@ -194,7 +196,6 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
                   {user?.email ? user.email.substring(0, 2).toUpperCase() : 'VM'}
                 </div>
               </button>
-
               <ProfileDropdown 
                 user={user}
                 profile={profile}
@@ -211,7 +212,6 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
       
       <div className="flex flex-grow overflow-hidden relative">
         <AuthedSidebar className="hidden lg:flex" />
-        
         {isMobileMenuOpen && (
           <div className="fixed inset-0 z-[250] lg:hidden">
             <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
@@ -220,7 +220,6 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
             </div>
           </div>
         )}
-
         <main className="flex-grow overflow-y-auto bg-[#F7F7F5] p-3 md:p-8 no-scrollbar lg:ml-16">
           <div className="max-w-7xl mx-auto">
             {children}

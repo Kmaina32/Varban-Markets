@@ -2,15 +2,16 @@
 
 /**
  * @fileOverview Login Workspace.
- * Integrated with Passkey/WebAuthn for passwordless biometric entry.
+ * Integrated with Passkey/WebAuthn and Google Authentication.
  */
 
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { useAuth } from "@/firebase";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useAuth, useFirestore } from "@/firebase";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { Eye, EyeOff, Fingerprint, Loader2 } from "lucide-react";
 import { startAuthentication } from "@simplewebauthn/browser";
@@ -19,11 +20,13 @@ import { cn } from "@/app/lib/utils";
 export default function LoginPage() {
   const router = useRouter();
   const auth = useAuth();
+  const db = useFirestore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [passkeyLoading, setPasskeyLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -43,6 +46,43 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    if (!auth || !db) return;
+    setGoogleLoading(true);
+    setError(null);
+
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Check if profile exists
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        // Create skeleton profile for Google sign-ups
+        await setDoc(userRef, {
+          fullName: user.displayName || "",
+          email: user.email?.toLowerCase() || "",
+          balance: 1000.00,
+          equity: 1000.00,
+          currency: "USD",
+          verificationStatus: "Not Verified",
+          role: "Trader",
+          referralCode: 'VRB-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+          createdAt: new Date().toISOString()
+        });
+      }
+      
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError("Google authentication failed. Please try again.");
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   const handlePasskeySignIn = async () => {
     if (!email) {
       setError("Please enter your email address to sign in with a passkey.");
@@ -53,7 +93,6 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      // 1. Get options from server
       const resp = await fetch('/api/auth/passkey/authenticate/generate-options', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -63,10 +102,8 @@ export default function LoginPage() {
       const options = await resp.json();
       if (options.error) throw new Error(options.error);
 
-      // 2. Browser biometric prompt
       const asseResp = await startAuthentication({ optionsJSON: options });
 
-      // 3. Verify with server
       const verifyResp = await fetch('/api/auth/passkey/authenticate/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -76,8 +113,6 @@ export default function LoginPage() {
       const verificationJSON = await verifyResp.json();
 
       if (verificationJSON && verificationJSON.verified) {
-        // Success - in a real app, this would use a Firebase Custom Token
-        // For MVP, we proceed to dashboard if verified
         router.push("/dashboard");
       } else {
         throw new Error('Verification failed.');
@@ -92,7 +127,6 @@ export default function LoginPage() {
   return (
     <div className="bg-[#F7F7F5] min-h-screen flex items-center justify-center py-16 px-4">
       <div className="bg-white border border-[#E4E4E4] max-w-4xl w-full shadow-lg flex overflow-hidden min-h-[600px]">
-        {/* Left Side: Full Color Auth Image */}
         <div className="hidden lg:block w-1/2 relative">
           <Image
             src={placeholderImages.auth.url}
@@ -112,7 +146,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Right Side: Login Form */}
         <div className="w-full lg:w-1/2 p-8 sm:p-12 flex flex-col justify-center bg-white">
           <div className="border-b border-[#E4E4E4] pb-6 mb-8">
             <h1 className="text-2xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Sign In</h1>
@@ -164,7 +197,7 @@ export default function LoginPage() {
             <div className="space-y-3">
               <button
                 type="submit"
-                disabled={loading || passkeyLoading}
+                disabled={loading || passkeyLoading || googleLoading}
                 className="w-full btn-institutional-primary py-4 shadow-sm"
               >
                 {loading ? "Logging in..." : "Log in to Account"}
@@ -172,18 +205,30 @@ export default function LoginPage() {
 
               <div className="relative py-2 flex items-center justify-center">
                 <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-[#E4E4E4]"></span></div>
-                <span className="relative bg-white px-3 text-[8px] font-bold uppercase text-[#6B7280] tracking-[0.2em]">Institutional Access</span>
+                <span className="relative bg-white px-3 text-[8px] font-bold uppercase text-[#6B7280] tracking-[0.2em]">Other ways to sign in</span>
               </div>
 
-              <button
-                type="button"
-                onClick={handlePasskeySignIn}
-                disabled={loading || passkeyLoading}
-                className="w-full py-4 border border-[#0A0A0A] text-[#0A0A0A] text-[10px] font-bold uppercase tracking-widest flex items-center justify-center space-x-2 hover:bg-[#F7F7F5] transition-colors"
-              >
-                {passkeyLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Fingerprint className="w-4 h-4" />}
-                <span>Sign in with Passkey</span>
-              </button>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  disabled={loading || passkeyLoading || googleLoading}
+                  className="py-3.5 border border-[#E4E4E4] text-[#0A0A0A] text-[10px] font-bold uppercase tracking-widest flex items-center justify-center space-x-2 hover:bg-[#F7F7F5] transition-colors"
+                >
+                  {googleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-4 h-4" alt="Google" />}
+                  <span>Google</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handlePasskeySignIn}
+                  disabled={loading || passkeyLoading || googleLoading}
+                  className="py-3.5 border border-[#E4E4E4] text-[#0A0A0A] text-[10px] font-bold uppercase tracking-widest flex items-center justify-center space-x-2 hover:bg-[#F7F7F5] transition-colors"
+                >
+                  {passkeyLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Fingerprint className="w-4 h-4" />}
+                  <span>Passkey</span>
+                </button>
+              </div>
             </div>
           </form>
 

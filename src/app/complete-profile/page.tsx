@@ -1,0 +1,170 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useUser, useFirestore, useDoc } from "@/firebase";
+import { doc, updateDoc } from "firebase/firestore";
+import { Card } from "@/components/ui/card";
+import { COUNTRIES } from "@/app/lib/countries";
+import { ChevronDown, User, Smartphone, Globe, ShieldCheck } from "lucide-react";
+import { cn } from "@/app/lib/utils";
+
+export default function CompleteProfilePage() {
+  const router = useRouter();
+  const { user, loading: authLoading } = useUser();
+  const db = useFirestore();
+  const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
+
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phone: "",
+    country: "United Kingdom",
+    dialCode: "+44"
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        fullName: profile.fullName || "",
+        phone: profile.phone?.split(' ').pop() || "",
+        country: profile.country || "United Kingdom",
+        dialCode: profile.phone?.split(' ')[0] || "+44"
+      });
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+    if (!authLoading && !profileLoading && profile?.fullName && profile?.phone && profile?.country) {
+      router.push('/dashboard');
+    }
+  }, [authLoading, profileLoading, user, profile, router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !db) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await updateDoc(doc(db, "users", user.uid), {
+        fullName: formData.fullName,
+        phone: `${formData.dialCode} ${formData.phone}`,
+        country: formData.country,
+        updatedAt: new Date().toISOString()
+      });
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError("Failed to update profile. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  if (authLoading || profileLoading) {
+    return <div className="min-h-screen flex items-center justify-center bg-[#F7F7F5]">
+      <div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div>
+    </div>;
+  }
+
+  return (
+    <div className="bg-[#F7F7F5] min-h-screen py-16 px-4 flex items-center justify-center">
+      <Card className="max-w-md w-full bg-white border-[#E4E4E4] shadow-2xl p-8 space-y-8">
+        <div className="text-center space-y-2">
+          <div className="w-12 h-12 bg-[#0055FF]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="w-6 h-6 text-[#0055FF]" />
+          </div>
+          <h1 className="text-2xl font-bold uppercase tracking-tight text-[#0A0A0A]">Complete Your Profile</h1>
+          <p className="text-xs text-[#6B7280] uppercase tracking-widest font-bold">Action required to access the platform</p>
+        </div>
+
+        {error && (
+          <div className="p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide text-center">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5 flex items-center gap-1.5">
+              <User className="w-3 h-3" /> Full Name
+            </label>
+            <input 
+              required 
+              type="text" 
+              value={formData.fullName}
+              onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+              className="w-full text-xs p-3 border border-[#E4E4E4] focus:outline-none focus:border-[#0A0A0A] bg-[#F7F7F5]" 
+              placeholder="Enter your legal name"
+            />
+          </div>
+
+          <div>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5 flex items-center gap-1.5">
+              <Smartphone className="w-3 h-3" /> Phone Number
+            </label>
+            <div className="flex gap-2">
+              <div className="relative w-28 shrink-0">
+                <select 
+                  value={formData.dialCode}
+                  onChange={(e) => setFormData({...formData, dialCode: e.target.value})}
+                  className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none bg-[#F7F7F5] text-[#0A0A0A] appearance-none focus:outline-none"
+                >
+                  {COUNTRIES.map(c => (
+                    <option key={c.code} value={c.dial_code}>{c.flag} {c.dial_code}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-[#6B7280] pointer-events-none" />
+              </div>
+              <input 
+                required 
+                type="tel" 
+                value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                className="flex-grow text-xs p-3 border border-[#E4E4E4] focus:outline-none focus:border-[#0A0A0A] bg-[#F7F7F5]" 
+                placeholder="7912 345678" 
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5 flex items-center gap-1.5">
+              <Globe className="w-3 h-3" /> Country of Residence
+            </label>
+            <div className="relative">
+              <select 
+                value={formData.country}
+                onChange={(e) => setFormData({...formData, country: e.target.value})}
+                className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none bg-[#F7F7F5] text-[#0A0A0A] appearance-none focus:outline-none"
+              >
+                {COUNTRIES.map(c => (
+                  <option key={c.code} value={c.name}>{c.flag} {c.name}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280] pointer-events-none" />
+            </div>
+          </div>
+
+          <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-start space-x-3">
+            <ShieldCheck className="w-5 h-5 text-[#16835B] shrink-0" />
+            <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
+              To keep our community safe, we need these details to confirm your identity and follow international rules.
+            </p>
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full btn-institutional-primary py-4"
+          >
+            {loading ? "Updating..." : "Complete Setup"}
+          </button>
+        </form>
+      </Card>
+    </div>
+  );
+}

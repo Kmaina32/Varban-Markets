@@ -4,10 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc, collection, query, where, getDocs, limit } from "firebase/firestore";
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { doc, setDoc, collection, query, where, getDocs, limit, getDoc } from "firebase/firestore";
 import { useAuth, useFirestore } from "@/firebase";
-import { Check, User, Mail, Lock, ChevronDown, Eye, EyeOff, X, ArrowRight, ArrowLeft, FileText } from "lucide-react";
+import { Check, User, Mail, Lock, ChevronDown, Eye, EyeOff, X, ArrowRight, ArrowLeft, FileText, Loader2 } from "lucide-react";
 import { COUNTRIES } from "@/app/lib/countries";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { cn } from "@/app/lib/utils";
@@ -19,6 +19,7 @@ export default function UnifiedSignupPage() {
   
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -52,6 +53,42 @@ export default function UnifiedSignupPage() {
 
   const generateReferralCode = () => {
     return 'VRB-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  };
+
+  const handleGoogleSignUp = async () => {
+    if (!auth || !db) return;
+    setGoogleLoading(true);
+    setError(null);
+
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Check if profile exists
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          fullName: user.displayName || "",
+          email: user.email?.toLowerCase() || "",
+          balance: 1000.00,
+          equity: 1000.00,
+          currency: "USD",
+          verificationStatus: "Not Verified",
+          role: "Trader",
+          referralCode: generateReferralCode(),
+          createdAt: new Date().toISOString()
+        });
+      }
+      
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError("Google sign up failed. Please try again.");
+    } finally {
+      setGoogleLoading(false);
+    }
   };
 
   const handleNext = async (e: React.FormEvent) => {
@@ -113,7 +150,7 @@ export default function UnifiedSignupPage() {
   };
 
   const steps = [
-    { title: "Personal", icon: User },
+    { title: "Details", icon: User },
     { title: "Contact", icon: Mail },
     { title: "Security", icon: Lock }
   ];
@@ -165,7 +202,6 @@ export default function UnifiedSignupPage() {
   return (
     <div className="bg-[#F7F7F5] min-h-screen flex items-center justify-center py-8 md:py-16 px-4">
       <div className="bg-white border border-[#E4E4E4] max-w-5xl w-full shadow-lg flex flex-col md:flex-row overflow-hidden min-h-[600px]">
-        {/* Left Side: Full Color Image */}
         <div className="hidden lg:block w-1/2 relative">
           <Image
             src={placeholderImages.auth.url}
@@ -185,7 +221,6 @@ export default function UnifiedSignupPage() {
           </div>
         </div>
 
-        {/* Right Side: Step-by-step Registration */}
         <div className="w-full lg:w-1/2 flex flex-col bg-white">
           <div className="bg-[#F7F7F5] border-b border-[#E4E4E4] p-6 md:p-8 text-[#0A0A0A] relative overflow-hidden shrink-0">
             <div className="relative z-10">
@@ -221,6 +256,24 @@ export default function UnifiedSignupPage() {
             {error && (
               <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide">
                 {error}
+              </div>
+            )}
+
+            {step === 1 && (
+              <div className="mb-8 space-y-4 animate-in fade-in duration-300">
+                <button
+                  type="button"
+                  onClick={handleGoogleSignUp}
+                  disabled={googleLoading}
+                  className="w-full py-4 border border-[#E4E4E4] text-[#0A0A0A] text-[10px] font-bold uppercase tracking-widest flex items-center justify-center space-x-2 hover:bg-[#F7F7F5] transition-colors"
+                >
+                  {googleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-4 h-4" alt="Google" />}
+                  <span>Sign up with Google</span>
+                </button>
+                <div className="relative py-2 flex items-center justify-center">
+                  <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-[#E4E4E4]"></span></div>
+                  <span className="relative bg-white px-3 text-[8px] font-bold uppercase text-[#6B7280] tracking-[0.2em]">Or use email</span>
+                </div>
               </div>
             )}
 
@@ -425,7 +478,6 @@ export default function UnifiedSignupPage() {
         </div>
       </div>
 
-      {/* Mandatory Terms Review Wizard Modal */}
       {showTermsWizard && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white border border-[#E4E4E4] w-full max-w-2xl shadow-2xl relative flex flex-col max-h-[80vh]">
