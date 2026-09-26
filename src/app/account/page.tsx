@@ -1,4 +1,3 @@
-
 "use client";
 
 /**
@@ -135,7 +134,12 @@ export default function AccountHub() {
   // --- SUB-MODULE: SECURITY ---
   const [isBiometricLoading, setIsBiometricLoading] = useState(false);
   const [isPwdResetLoading, setIsPwdResetLoading] = useState(false);
-  const { data: passkeys } = useCollection<any>(user && db ? collection(db, `users/${user.uid}/passkeys`) : null);
+  
+  const passkeysQuery = useMemo(() => {
+    if (!db || !user) return null;
+    return collection(db, `users/${user.uid}/passkeys`);
+  }, [db, user]);
+  const { data: passkeys } = useCollection<any>(passkeysQuery);
 
   const handleRegisterPasskey = async () => {
     if (!user) return;

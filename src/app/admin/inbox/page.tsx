@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -12,7 +11,7 @@ import { Mail, Search, Clock, Trash2, CheckCircle2, ChevronRight, User } from "l
 import { useTranslation } from "@/app/lib/i18n-context";
 import { useCollection, useFirestore } from "@/firebase";
 import { collection, query, orderBy, limit, doc, updateDoc, deleteDoc } from "firebase/firestore";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { cn } from "@/app/lib/utils";
 
 export default function AdminInbox() {
@@ -20,9 +19,12 @@ export default function AdminInbox() {
   const db = useFirestore();
   const [selectedMsgId, setSelectedMsgId] = useState<string | null>(null);
 
-  const { data: messages, loading } = useCollection<any>(
-    db ? query(collection(db, "contact_messages"), orderBy("timestamp", "desc"), limit(50)) : null
-  );
+  const messagesQuery = useMemo(() => {
+    if (!db) return null;
+    return query(collection(db, "contact_messages"), orderBy("timestamp", "desc"), limit(50));
+  }, [db]);
+
+  const { data: messages, loading } = useCollection<any>(messagesQuery);
 
   const selectedMessage = messages?.find(m => m.id === selectedMsgId);
 

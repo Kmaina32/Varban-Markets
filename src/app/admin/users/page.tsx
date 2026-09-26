@@ -1,12 +1,12 @@
 'use client';
 
+import { useMemo, useState } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { Search, Mail, Globe, ShieldAlert, Plus, ShieldCheck, X } from "lucide-react";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { useCollection, useFirestore } from "@/firebase";
 import { collection, doc, updateDoc, query, where, getDocs } from "firebase/firestore";
-import { useState } from "react";
 import { cn } from "@/app/lib/utils";
 
 /**
@@ -22,9 +22,12 @@ export default function UserManagement() {
   const [adminEmail, setAdminEmail] = useState("");
   const [isProcessingAdmin, setIsProcessingAdmin] = useState(false);
 
-  const { data: users, loading } = useCollection<any>(
-    db ? collection(db, "users") : null
-  );
+  const usersQuery = useMemo(() => {
+    if (!db) return null;
+    return collection(db, "users");
+  }, [db]);
+
+  const { data: users, loading } = useCollection<any>(usersQuery);
 
   const handleVerify = (userId: string, currentStatus: string) => {
     if (!db) return;
@@ -246,6 +249,6 @@ export default function UserManagement() {
           </Card>
         </div>
       )}
-    </AuthedLayout>
+    </div>
   );
 }

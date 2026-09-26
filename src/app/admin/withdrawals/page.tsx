@@ -5,6 +5,7 @@
  * Allows administrators to review, approve, or reject outgoing remittance requests.
  */
 
+import { useMemo } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { Search, CheckCircle2, XCircle, User, Wallet, AlertTriangle } from "lucide-react";
@@ -17,14 +18,17 @@ export default function AdminWithdrawalQueue() {
   const { formatDate, formatNumber } = useTranslation();
   const db = useFirestore();
 
-  const { data: withdrawals, loading } = useCollection<any>(
-    db ? query(
+  const withdrawalsQuery = useMemo(() => {
+    if (!db) return null;
+    return query(
       collectionGroup(db, "transactions"),
       where("type", "in", ["Withdrawal", "Crypto Withdrawal"]),
       where("status", "==", "Pending Verification"),
       orderBy("timestamp", "desc")
-    ) : null
-  );
+    );
+  }, [db]);
+
+  const { data: withdrawals, loading } = useCollection<any>(withdrawalsQuery);
 
   const handleApprove = async (tx: any) => {
     if (!db || !window.confirm(`Finalize payout for $${tx.amount}? Ensure funds are sent on-chain first.`)) return;

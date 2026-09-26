@@ -7,6 +7,7 @@ import { useTranslation } from "@/app/lib/i18n-context";
 import { useCollection, useFirestore } from "@/firebase";
 import { collection, query, limit, orderBy } from "firebase/firestore";
 import Link from "next/link";
+import { useMemo } from "react";
 
 /**
  * @fileOverview Administrative Oversight Node.
@@ -18,9 +19,11 @@ export default function AdminDashboard() {
   const db = useFirestore();
 
   // Platform-wide metrics allocation from Firestore
-  const { data: users, loading: usersLoading } = useCollection<any>(
-    db ? query(collection(db, "users"), limit(100)) : null
-  );
+  const usersQuery = useMemo(() => {
+    if (!db) return null;
+    return query(collection(db, "users"), limit(100));
+  }, [db]);
+  const { data: users, loading: usersLoading } = useCollection<any>(usersQuery);
 
   const totalBalance = users?.reduce((acc: number, u: any) => acc + (u.balance || 0), 0) || 0;
   const verifiedCount = users?.filter((u: any) => u.verificationStatus === 'Verified').length || 0;

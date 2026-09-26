@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { Download, Filter, Search } from "lucide-react";
@@ -18,9 +19,11 @@ export default function GlobalLedger() {
   const db = useFirestore();
 
   // Use collectionGroup for platform-wide transaction monitoring (Requires index)
-  const { data: transactions, loading } = useCollection<any>(
-    db ? query(collectionGroup(db, "transactions"), orderBy("timestamp", "desc"), limit(100)) : null
-  );
+  const transactionsQuery = useMemo(() => {
+    if (!db) return null;
+    return query(collectionGroup(db, "transactions"), orderBy("timestamp", "desc"), limit(100));
+  }, [db]);
+  const { data: transactions, loading } = useCollection<any>(transactionsQuery);
 
   return (
     <AuthedLayout 

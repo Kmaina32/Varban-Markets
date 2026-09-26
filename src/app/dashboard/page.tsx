@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useUser, useDoc, useCollection, useFirestore } from "@/firebase";
 import { collection, query, limit, orderBy } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import OnboardingTutorial from "@/components/dashboard/OnboardingTutorial";
 import MarketNewsFeed from "@/components/dashboard/MarketNewsFeed";
 
@@ -40,14 +40,20 @@ export default function UserDashboard() {
     return () => window.removeEventListener('varban_account_mode_changed', handleGlobalChange);
   }, []);
 
-  const tradesQuery = user ? query(
-    collection(db!, `users/${user.uid}/positions`),
-    orderBy("timestamp", "desc"),
-    limit(5)
-  ) : null;
+  const tradesQuery = useMemo(() => {
+    if (!db || !user) return null;
+    return query(
+      collection(db, `users/${user.uid}/positions`),
+      orderBy("timestamp", "desc"),
+      limit(5)
+    );
+  }, [db, user]);
   const { data: recentTrades, loading: tradesLoading } = useCollection<any>(tradesQuery);
 
-  const watchlistQuery = user ? collection(db!, `users/${user.uid}/watchlist`) : null;
+  const watchlistQuery = useMemo(() => {
+    if (!db || !user) return null;
+    return collection(db, `users/${user.uid}/watchlist`);
+  }, [db, user]);
   const { data: watchlist, loading: watchlistLoading } = useCollection<any>(watchlistQuery);
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;

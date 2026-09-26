@@ -5,6 +5,7 @@
  * Allows administrators to review submitted TxHashes and confirm crypto deposits.
  */
 
+import { useMemo } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { Search, CheckCircle2, XCircle, ExternalLink, Clock, DollarSign } from "lucide-react";
@@ -17,14 +18,17 @@ export default function AdminDepositQueue() {
   const { formatDate, formatNumber } = useTranslation();
   const db = useFirestore();
 
-  const { data: deposits, loading } = useCollection<any>(
-    db ? query(
+  const depositsQuery = useMemo(() => {
+    if (!db) return null;
+    return query(
       collectionGroup(db, "transactions"),
       where("type", "==", "Crypto Deposit"),
       where("status", "==", "Pending Verification"),
       orderBy("timestamp", "desc")
-    ) : null
-  );
+    );
+  }, [db]);
+
+  const { data: deposits, loading } = useCollection<any>(depositsQuery);
 
   const handleApprove = async (tx: any) => {
     if (!db || !window.confirm(`Approve $${tx.amount} deposit for user?`)) return;
