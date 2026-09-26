@@ -5,7 +5,6 @@ import { Mail, ShieldCheck, MapPin, Phone, Send, Check } from "lucide-react";
 import { useUser, useFirestore } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import ChatSupport from "@/components/ChatSupport";
 
 export default function ContactPage() {
   const { user } = useUser();
@@ -183,8 +182,6 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
-
-      <ChatSupport />
     </div>
   );
 }
