@@ -7,6 +7,7 @@ import { Briefcase, TrendingUp, PieChart, Activity } from "lucide-react";
 import { useUser, useDoc, useCollection, useFirestore } from "@/firebase";
 import { collection, query, where } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
+import PageTutorial, { TutorialStep } from "@/components/shared/PageTutorial";
 
 export default function PortfolioPage() {
   const { user } = useUser();
@@ -34,9 +35,29 @@ export default function PortfolioPage() {
     { label: t('pages.riskLimit'), value: openRisk > 0 ? t('common.active') : t('common.stable'), icon: Activity, prefix: "" }
   ];
 
+  const tutorialSteps: TutorialStep[] = [
+    {
+      selector: "#tour-portfolio-stats",
+      title: "Portfolio Summary",
+      description: "Monitor your total equity, open risk, and active positions in real-time."
+    },
+    {
+      selector: "#tour-asset-allocation",
+      title: "Asset Distribution",
+      description: "Visualize how your capital is divided across different market sectors."
+    },
+    {
+      selector: "#tour-performance-curve",
+      title: "Growth Progress",
+      description: "Track your account performance and stability over time."
+    }
+  ];
+
   return (
     <AuthedLayout title={t('pages.portfolioTitle')}>
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
+      <PageTutorial steps={tutorialSteps} storageKey="varban_portfolio_tutorial" />
+      
+      <div id="tour-portfolio-stats" className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
         {stats.map((stat, i) => (
           <Card key={i} className="bg-white border-[#E4E4E4] p-4 shadow-sm">
             <div className="flex items-center justify-between mb-2">
@@ -51,7 +72,7 @@ export default function PortfolioPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="bg-white border-[#E4E4E4] p-6 shadow-sm">
+        <Card id="tour-asset-allocation" className="bg-white border-[#E4E4E4] p-6 shadow-sm">
           <h3 className="text-xs font-bold uppercase tracking-wider border-b border-[#E4E4E4] pb-4 mb-4">{t('pages.assetAllocation')}</h3>
           <div className="h-64 flex flex-col items-center justify-center bg-[#F7F7F5] border border-dashed border-[#E4E4E4] text-center p-6">
             <PieChart className="w-8 h-8 text-[#E4E4E4] mb-3" />
@@ -61,7 +82,7 @@ export default function PortfolioPage() {
           </div>
         </Card>
 
-        <Card className="bg-white border-[#E4E4E4] p-6 shadow-sm">
+        <Card id="tour-performance-curve" className="bg-white border-[#E4E4E4] p-6 shadow-sm">
           <h3 className="text-xs font-bold uppercase tracking-wider border-b border-[#E4E4E4] pb-4 mb-4">{t('pages.performanceCurve')}</h3>
           <div className="h-64 flex flex-col items-center justify-center bg-[#F7F7F5] border border-dashed border-[#E4E4E4] text-center p-6">
             <TrendingUp className="w-8 h-8 text-[#E4E4E4] mb-3" />

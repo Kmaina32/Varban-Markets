@@ -11,6 +11,7 @@ import { fetchLivePrice } from "@/app/lib/market-service";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { AVAILABLE_INSTRUMENTS } from "@/app/lib/instruments";
 import { cn } from "@/app/lib/utils";
+import PageTutorial, { TutorialStep } from "@/components/shared/PageTutorial";
 
 export default function WatchlistPage() {
   const { user } = useUser();
@@ -25,7 +26,6 @@ export default function WatchlistPage() {
   const { data: watchlist, loading } = useCollection<any>(watchlistQuery);
   const [prices, setPrices] = useState<Record<string, any>>({});
   
-  // Modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -88,10 +88,24 @@ export default function WatchlistPage() {
     });
   }, [searchQuery, selectedCategory]);
 
+  const tutorialSteps: TutorialStep[] = [
+    {
+      selector: "#tour-watchlist-grid",
+      title: "Your Workspace",
+      description: "Manage and monitor your prioritized market instruments here."
+    },
+    {
+      selector: "#tour-add-instrument",
+      title: "Expand Your View",
+      description: "Search the global registry to add new indices or pairs to your tracking list."
+    }
+  ];
+
   return (
     <AuthedLayout title={t('nav.watchlist')} subtitle={t('pages.watchlistSubtitle')}>
+      <PageTutorial steps={tutorialSteps} storageKey="varban_watchlist_tutorial" />
+
       <div className="space-y-6">
-        {/* Header Action Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E4E4E4]">
           <div>
             <h2 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">
@@ -102,6 +116,7 @@ export default function WatchlistPage() {
             </p>
           </div>
           <button
+            id="tour-add-instrument"
             onClick={() => setIsAddModalOpen(true)}
             className="btn-institutional-primary py-2.5 px-4 flex items-center justify-center space-x-2 text-[10px] shadow-sm"
           >
@@ -110,8 +125,7 @@ export default function WatchlistPage() {
           </button>
         </div>
 
-        {/* Watchlist Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div id="tour-watchlist-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {loading ? (
             <div className="col-span-full py-20 text-center">
               <div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -186,7 +200,6 @@ export default function WatchlistPage() {
         </div>
       </div>
 
-      {/* Add Asset Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white border border-[#E4E4E4] w-full max-w-xl shadow-2xl relative flex flex-col max-h-[85vh]">
@@ -203,7 +216,6 @@ export default function WatchlistPage() {
               </button>
             </div>
 
-            {/* Modal Controls */}
             <div className="p-4 border-b border-[#E4E4E4] space-y-3 bg-white shrink-0">
               <div className="relative">
                 <Search className="w-4 h-4 text-[#6B7280] absolute left-3 top-1/2 -translate-y-1/2" />
@@ -234,7 +246,6 @@ export default function WatchlistPage() {
               </div>
             </div>
 
-            {/* Instrument List */}
             <div className="p-4 overflow-y-auto flex-grow divide-y divide-[#E4E4E4]">
               {filteredInstruments.length === 0 ? (
                 <div className="py-12 text-center text-[#6B7280] text-xs uppercase font-bold tracking-widest">

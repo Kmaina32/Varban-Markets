@@ -15,6 +15,7 @@ import { useUser, useFirestore, useCollection, useAuth } from "@/firebase";
 import { collection, doc, deleteDoc } from "firebase/firestore";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { cn } from "@/app/lib/utils";
+import PageTutorial, { TutorialStep } from "@/components/shared/PageTutorial";
 
 export default function SecurityManagementPage() {
   const { t } = useTranslation();
@@ -131,11 +132,26 @@ export default function SecurityManagementPage() {
     }
   };
 
+  const tutorialSteps: TutorialStep[] = [
+    {
+      selector: "#tour-biometrics",
+      title: "Biometric Protection",
+      description: "Register your device's fingerprint or Face ID for ultra-secure, passwordless authentication."
+    },
+    {
+      selector: "#tour-sessions",
+      title: "Active Sessions",
+      description: "Monitor every device logged into your account and revoke unauthorized access instantly."
+    }
+  ];
+
   return (
     <AuthedLayout 
       title={t('nav.security')} 
       subtitle={t('pages.securitySubtitle')}
     >
+      <PageTutorial steps={tutorialSteps} storageKey="varban_security_tutorial" />
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           
@@ -149,8 +165,7 @@ export default function SecurityManagementPage() {
             </div>
           )}
 
-          {/* Biometric Passkeys Section */}
-          <Card className="bg-white border-[#E4E4E4] p-6 shadow-sm">
+          <Card id="tour-biometrics" className="bg-white border-[#E4E4E4] p-6 shadow-sm">
             <div className="flex justify-between items-center border-b border-[#E4E4E4] pb-3 mb-6">
               <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
                 <Fingerprint className="w-4 h-4 text-[#0055FF]" />
@@ -223,7 +238,7 @@ export default function SecurityManagementPage() {
             </div>
           </Card>
 
-          <Card className="bg-white border-[#E4E4E4] p-6 shadow-sm">
+          <Card id="tour-sessions" className="bg-white border-[#E4E4E4] p-6 shadow-sm">
             <div className="flex justify-between items-center border-b border-[#E4E4E4] pb-3 mb-6">
               <h3 className="text-xs font-bold uppercase tracking-wider">Active Sessions</h3>
               {user?.email && (

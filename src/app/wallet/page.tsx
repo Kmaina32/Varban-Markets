@@ -9,6 +9,7 @@ import { collection, query, orderBy, limit } from "firebase/firestore";
 import Link from "next/link";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
+import PageTutorial, { TutorialStep } from "@/components/shared/PageTutorial";
 
 export default function WalletPage() {
   const { user } = useUser();
@@ -17,7 +18,6 @@ export default function WalletPage() {
 
   const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   
-  // High-performance account mode allocation
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
 
@@ -40,16 +40,23 @@ export default function WalletPage() {
     return () => window.removeEventListener('varban_account_mode_changed', handleGlobalChange);
   }, []);
 
-  const txQuery = useMemo(() => {
-    if (!db || !user) return null;
-    return query(
-      collection(db, `users/${user.uid}/transactions`),
-      orderBy("timestamp", "desc"),
-      limit(5)
-    );
-  }, [db, user]);
-
-  const { data: recentTxs, loading: txLoading } = useCollection<any>(txQuery);
+  const tutorialSteps: TutorialStep[] = [
+    {
+      selector: "#tour-wallet-main",
+      title: "Liquid Assets",
+      description: "View your available balance and current value for the selected account mode."
+    },
+    {
+      selector: "#tour-wallet-actions",
+      title: "Cashier Controls",
+      description: "Easily add money via Paystack or request withdrawals to your crypto wallet."
+    },
+    {
+      selector: "#tour-wallet-summary",
+      title: "Account Summary",
+      description: "Monitor your total equity and money currently at risk in the markets."
+    }
+  ];
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
   const activeEquity = accountMode === 'REAL' ? (profile?.equity || profile?.balance || 0) : demoBalance;
@@ -59,6 +66,8 @@ export default function WalletPage() {
       title={t('nav.wallet')} 
       subtitle="Capital allocation and historical balance accounting"
     >
+      <PageTutorial steps={tutorialSteps} storageKey="varban_wallet_tutorial" />
+
       <div className="max-w-5xl mx-auto space-y-8 text-[#0A0A0A]">
         {accountMode === 'DEMO' && (
           <div className="bg-[#0055FF]/10 border border-[#0055FF] p-3 text-[10px] font-bold uppercase tracking-wider text-[#0055FF] flex justify-between items-center">
@@ -77,7 +86,7 @@ export default function WalletPage() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-white border-[#E4E4E4] p-6 shadow-sm md:col-span-2">
+          <Card id="tour-wallet-main" className="bg-white border-[#E4E4E4] p-6 shadow-sm md:col-span-2">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-1">
@@ -90,7 +99,7 @@ export default function WalletPage() {
               <Wallet className="w-6 h-6 text-[#0055FF]" />
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div id="tour-wallet-actions" className="grid grid-cols-2 gap-4">
               <Link href="/deposit" className="flex items-center justify-center space-x-2 p-4 border border-[#E4E4E4] bg-[#F7F7F5] hover:bg-white transition-colors">
                 <ArrowDownCircle className="w-4 h-4 text-[#16835B]" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">{t('wallet.depositBtn')}</span>
@@ -102,7 +111,7 @@ export default function WalletPage() {
             </div>
           </Card>
 
-          <Card className="bg-[#0A0A0A] text-white p-6 shadow-sm border border-[#0A0A0A]">
+          <Card id="tour-wallet-summary" className="bg-[#0A0A0A] text-white p-6 shadow-sm border border-[#0A0A0A]">
             <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-4">
               {t('wallet.metrics')}
             </span>

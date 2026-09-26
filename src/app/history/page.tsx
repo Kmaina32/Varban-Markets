@@ -7,6 +7,7 @@ import { Search, Filter, Download } from "lucide-react";
 import { useUser, useFirestore, useCollection } from "@/firebase";
 import { collection, query, where, orderBy } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
+import PageTutorial, { TutorialStep } from "@/components/shared/PageTutorial";
 
 export default function TradeHistoryPage() {
   const { user } = useUser();
@@ -46,8 +47,23 @@ export default function TradeHistoryPage() {
     document.body.removeChild(link);
   };
 
+  const tutorialSteps: TutorialStep[] = [
+    {
+      selector: "#tour-history-table",
+      title: "Trade Archive",
+      description: "Review your full execution history, including entry prices, durations, and final outcomes."
+    },
+    {
+      selector: "#tour-export-history",
+      title: "External Audit",
+      description: "Download your entire trade record as a CSV file for personal accounting and performance analysis."
+    }
+  ];
+
   return (
     <AuthedLayout title={t('pages.historyTitle')}>
+      <PageTutorial steps={tutorialSteps} storageKey="varban_history_tutorial" />
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div className="relative w-full sm:max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6B7280]" />
@@ -63,6 +79,7 @@ export default function TradeHistoryPage() {
             <span>{t('common.filter')}</span>
           </button>
           <button 
+            id="tour-export-history"
             onClick={exportCSV}
             disabled={!history || history.length === 0}
             className="flex items-center space-x-2 px-4 py-2 bg-white border border-[#E4E4E4] text-[10px] font-bold uppercase tracking-wider hover:bg-[#F7F7F5] transition-colors disabled:opacity-40"
@@ -73,7 +90,7 @@ export default function TradeHistoryPage() {
         </div>
       </div>
 
-      <Card className="bg-white border-[#E4E4E4] shadow-sm overflow-hidden">
+      <Card id="tour-history-table" className="bg-white border-[#E4E4E4] shadow-sm overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-[#F7F7F5] border-b border-[#E4E4E4]">

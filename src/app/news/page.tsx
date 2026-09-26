@@ -19,6 +19,7 @@ import {
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
+import PageTutorial, { TutorialStep } from "@/components/shared/PageTutorial";
 
 export default function NewsHubPage() {
   const { t } = useTranslation();
@@ -54,15 +55,34 @@ export default function NewsHubPage() {
     }
   };
 
+  const tutorialSteps: TutorialStep[] = [
+    {
+      selector: "#tour-news-banner",
+      title: "Live Intelligence",
+      description: "Monitor high-precision headlines from tier-1 financial data nodes worldwide."
+    },
+    {
+      selector: "#tour-news-search",
+      title: "Asset-Aware Filtering",
+      description: "Search for specific assets like 'Gold', 'BTC', or 'EUR' to view relevant market-moving events."
+    },
+    {
+      selector: "#tour-news-feed",
+      title: "Real-time Telemetry",
+      description: " हेडलाइंस are timestamped and source-verified to ensure maximum data integrity for your trades."
+    }
+  ];
+
   return (
     <AuthedLayout 
       title={t('nav.news')} 
       subtitle="Institutional Market Intelligence Hub"
     >
+      <PageTutorial steps={tutorialSteps} storageKey="varban_news_tutorial" />
+
       <div className="space-y-6 max-w-6xl mx-auto pb-12">
         
-        {/* News Feed Banner */}
-        <div className="p-6 bg-[#0055FF] text-white shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b-4 border-[#0A0A0A]">
+        <div id="tour-news-banner" className="p-6 bg-[#0055FF] text-white shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b-4 border-[#0A0A0A]">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Live Intelligence</span>
@@ -80,8 +100,7 @@ export default function NewsHubPage() {
           </div>
         </div>
 
-        {/* Intelligence Controls */}
-        <Card className="bg-white border-[#E4E4E4] p-4 shadow-sm">
+        <Card id="tour-news-search" className="bg-white border-[#E4E4E4] p-4 shadow-sm">
           <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-grow">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]" />
@@ -115,8 +134,7 @@ export default function NewsHubPage() {
           </div>
         )}
 
-        {/* Headlines Feed */}
-        <div className="grid grid-cols-1 gap-4">
+        <div id="tour-news-feed" className="grid grid-cols-1 gap-4">
           {isLoading ? (
             <div className="py-24 flex flex-col items-center justify-center space-y-4">
               <Loader2 className="w-8 h-8 text-[#0055FF] animate-spin" />
@@ -139,7 +157,6 @@ export default function NewsHubPage() {
               {news.map((item) => (
                 <Card key={item.uuid} className="bg-white border-[#E4E4E4] p-6 hover:border-[#0055FF] transition-all group shadow-sm">
                   <div className="flex flex-col lg:flex-row gap-6">
-                    {/* Metadata Sidebar */}
                     <div className="lg:w-48 shrink-0 space-y-4 border-b lg:border-b-0 lg:border-r border-[#E4E4E4] pb-4 lg:pb-0 lg:pr-6">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-[9px] font-bold uppercase text-[#6B7280] tracking-wider">
@@ -157,7 +174,6 @@ export default function NewsHubPage() {
                       </div>
                     </div>
 
-                    {/* Content Area */}
                     <div className="flex-grow space-y-3">
                       <div className="flex justify-between items-start gap-4">
                         <h2 className="text-lg font-bold text-[#0A0A0A] leading-tight group-hover:text-[#0055FF] transition-colors">
@@ -183,7 +199,6 @@ export default function NewsHubPage() {
           )}
         </div>
 
-        {/* Audit Disclosure */}
         <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-start space-x-3">
           <div className="w-2 h-2 rounded-full bg-[#16835B] mt-1 shrink-0 animate-pulse"></div>
           <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">

@@ -18,11 +18,7 @@ import { useUser, useDoc, useFirestore, useCollection } from "@/firebase";
 import { collection, query, where, orderBy } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
-
-/**
- * @fileOverview Referral Management Portal.
- * Allows users to monitor their growth network and copy unique invitation links.
- */
+import PageTutorial, { TutorialStep } from "@/components/shared/PageTutorial";
 
 export default function ReferralPortal() {
   const { user } = useUser();
@@ -44,7 +40,6 @@ export default function ReferralPortal() {
   const { data: referredUsers, loading: referralsLoading } = useCollection<any>(referralsQuery);
 
   const referralCode = profile?.referralCode || "---";
-  // Updated to use the requested domain
   const referralLink = `https://varbanmarkets.com/register?ref=${referralCode}`;
 
   const copyToClipboard = () => {
@@ -60,15 +55,34 @@ export default function ReferralPortal() {
     { label: "Partner Level", value: "Standard", icon: Trophy, color: "text-[#C9A227]" }
   ];
 
+  const tutorialSteps: TutorialStep[] = [
+    {
+      selector: "#tour-referral-banner",
+      title: "Growth Conduit",
+      description: "Copy your unique invitation link to build your professional trading network."
+    },
+    {
+      selector: "#tour-referral-metrics",
+      title: "Partner Performance",
+      description: "Track network size, activity status, and upcoming partner rewards."
+    },
+    {
+      selector: "#tour-referral-ledger",
+      title: "Enrollment Log",
+      description: "Monitor every new trader that enters our ecosystem through your domain."
+    }
+  ];
+
   return (
     <AuthedLayout 
       title="Referral Program" 
       subtitle="Expand your network and earn institutional rewards"
     >
+      <PageTutorial steps={tutorialSteps} storageKey="varban_referral_tutorial" />
+
       <div className="max-w-5xl mx-auto space-y-8">
         
-        {/* Banner Section - Updated to White Background */}
-        <Card className="bg-white text-[#0A0A0A] p-8 md:p-12 relative overflow-hidden border-[#E4E4E4] shadow-sm">
+        <Card id="tour-referral-banner" className="bg-white text-[#0A0A0A] p-8 md:p-12 relative overflow-hidden border-[#E4E4E4] shadow-sm">
           <div className="relative z-10 max-w-2xl">
             <div className="flex items-center gap-2 text-[#0055FF] mb-4">
               <Gift className="w-5 h-5" />
@@ -101,8 +115,7 @@ export default function ReferralPortal() {
           </div>
         </Card>
 
-        {/* Stats Matrix */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div id="tour-referral-metrics" className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {metrics.map((m, idx) => (
             <Card key={idx} className="bg-white border-[#E4E4E4] p-5 shadow-sm">
               <div className="flex items-center justify-between mb-2">
@@ -117,10 +130,9 @@ export default function ReferralPortal() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Referral Ledger */}
           <div className="lg:col-span-2 space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-wider px-1">Network Enrollment Ledger</h3>
-            <Card className="bg-white border-[#E4E4E4] overflow-hidden">
+            <Card id="tour-referral-ledger" className="bg-white border-[#E4E4E4] overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
@@ -173,7 +185,6 @@ export default function ReferralPortal() {
             </Card>
           </div>
 
-          {/* Program Overview */}
           <div className="space-y-6">
             <Card className="bg-white border-[#E4E4E4] p-6 shadow-sm">
               <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2 mb-4">
