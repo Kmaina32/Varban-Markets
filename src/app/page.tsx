@@ -1,12 +1,23 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Shield, Database, Sliders, ArrowRight } from "lucide-react";
+import { TrendingUp, TrendingDown, CheckCircle2, ArrowRight, Monitor, Smartphone, Globe, Briefcase } from "lucide-react";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 
 export default function HomePage() {
+  const marketTickers = [
+    { symbol: "XAU/USD", name: "Gold", price: "2,743.21", change: "+1.25%", isUp: true, icon: "https://picsum.photos/seed/gold/32/32" },
+    { symbol: "EUR/USD", name: "Euro / US Dollar", price: "1.0512", change: "+0.45%", isUp: true, icon: "https://picsum.photos/seed/eur/32/32" },
+    { symbol: "GBP/USD", name: "British Pound / USD", price: "1.2734", change: "-0.12%", isUp: false, icon: "https://picsum.photos/seed/gbp/32/32" },
+    { symbol: "BTC/USD", name: "Bitcoin", price: "67,842.20", change: "+2.50%", isUp: true, icon: "https://picsum.photos/seed/btc/32/32" },
+    { symbol: "AAPL", name: "Apple Inc.", price: "189.47", change: "+1.15%", isUp: true, icon: "https://picsum.photos/seed/aapl/32/32" },
+    { symbol: "TSLA", name: "Tesla, Inc.", price: "241.73", change: "+2.37%", isUp: true, icon: "https://picsum.photos/seed/tsla/32/32" },
+    { symbol: "DJI", name: "Dow Jones", price: "38,742.63", change: "-0.25%", isUp: false, icon: "https://picsum.photos/seed/dji/32/32" },
+    { symbol: "NAS100", name: "Nasdaq 100", price: "15,434.20", change: "+1.42%", isUp: true, icon: "https://picsum.photos/seed/nas/32/32" }
+  ];
+
   return (
-    <div className="flex flex-col bg-[#F7F7F5]">
+    <div className="flex flex-col bg-white">
       {/* Hero Section */}
       <section className="relative bg-[#0A0A0A] text-white min-h-[600px] flex items-center overflow-hidden">
         <div className="absolute inset-0">
@@ -19,12 +30,12 @@ export default function HomePage() {
             data-ai-hint={placeholderImages.hero.hint}
           />
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 py-20">
           <div className="max-w-3xl">
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#0055FF] block mb-4">
               Varban Markets
             </span>
-            <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-white uppercase mb-6 leading-[1.1]">
+            <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-white uppercase mb-6 leading-[1.1] font-display">
               Professional Trading for Global Markets.
             </h1>
             <p className="text-sm sm:text-base text-[#D1D5DB] mb-8 leading-relaxed max-w-2xl">
@@ -38,72 +49,115 @@ export default function HomePage() {
                 View Markets
               </Link>
             </div>
-            <div className="mt-8 flex items-center space-x-4">
-              <Link href="/login" className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest hover:text-white transition-colors">
-                Sign in to your account &rarr;
-              </Link>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Value Proposition Section */}
-      <section className="py-24 bg-white border-b border-[#E4E4E4]">
+      {/* Global Market Access Section */}
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            <div className="lg:col-span-4">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280] block mb-2">Our System</span>
-              <h2 className="text-3xl font-bold uppercase tracking-tight text-[#0A0A0A]">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-4 space-y-6">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">Outstanding Markets</span>
+              <h2 className="text-4xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display leading-[1.1]">
                 Global Market Access
               </h2>
+              <p className="text-sm text-[#6B7280] leading-relaxed">
+                Access 25+ global markets including Forex, Stocks, Indices, Commodities and Digital Currencies. Trade with real-time data and low execution time-frames across the world's leading financial markets.
+              </p>
+              <Link href="/markets" className="btn-institutional-primary bg-[#0055FF] border-[#0055FF] hover:bg-[#0A0A0A] hover:border-[#0A0A0A] inline-flex items-center gap-2 group">
+                <span>View Markets</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Link>
             </div>
-            <div className="lg:col-span-8 text-sm text-[#6B7280] space-y-6 leading-relaxed">
-              <p>
-                Varban Markets gives you a direct link to the world's financial markets. Our system provides reliable prices and fast trading across all asset classes, 24 hours a day.
-              </p>
-              <p>
-                Every trade shows you the potential profit and risk before you start. We've built a system that gives you the control you need to trade with confidence and clarity.
-              </p>
+
+            <div className="lg:col-span-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                {marketTickers.map((ticker) => (
+                  <div key={ticker.symbol} className="bg-[#F7F7F5] border border-[#E4E4E4] p-4 group hover:border-[#0055FF] transition-all">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-8 h-8 rounded-full overflow-hidden border border-[#E4E4E4] bg-white">
+                        <img src={ticker.icon} alt={ticker.name} className="w-full h-full object-cover" />
+                      </div>
+                      <span className="text-[10px] font-mono font-bold text-[#0A0A0A] uppercase">{ticker.symbol}</span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-[#6B7280] uppercase tracking-wider block font-bold">{ticker.name}</span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-mono font-bold text-[#0A0A0A]">{ticker.price}</span>
+                        <div className={`flex items-center gap-0.5 text-[10px] font-bold ${ticker.isUp ? 'text-[#16835B]' : 'text-[#C43D3D]'}`}>
+                          {ticker.isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                          <span>{ticker.change}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Safety Section */}
-      <section className="py-24 bg-white border-b border-[#E4E4E4]">
+      {/* Powerful Trading Technology Section */}
+      <section className="py-24 bg-[#0A0A0A] text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mb-16">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280] block mb-2">Account Protection</span>
-            <h2 className="text-4xl font-bold uppercase tracking-tight text-[#0A0A0A] mb-6">Fixed Risk Trading</h2>
-            <p className="text-sm text-[#6B7280] leading-relaxed">
-              We use simple rules to protect your balance. Before you confirm any trade, you can see exactly how much you stand to win or lose.
-            </p>
-          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+            <div className="lg:col-span-6 relative">
+              <div className="relative z-10 rounded-none border border-white/10 overflow-hidden shadow-2xl shadow-blue-500/10">
+                <Image 
+                  src={placeholderImages.terminal_showcase.url}
+                  alt="Terminal Interface"
+                  width={placeholderImages.terminal_showcase.width}
+                  height={placeholderImages.terminal_showcase.height}
+                  className="w-full h-auto object-cover"
+                  data-ai-hint={placeholderImages.terminal_showcase.hint}
+                />
+              </div>
+              <div className="absolute -top-10 -left-10 w-40 h-40 bg-[#0055FF] opacity-10 blur-[80px]"></div>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="border border-[#E4E4E4] p-8 bg-[#F7F7F5]">
-              <Shield className="w-6 h-6 text-[#0055FF] mb-6" />
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A] mb-3">Limited Risk</h4>
-              <p className="text-[11px] text-[#6B7280] leading-relaxed">You can only lose the amount you put into a trade. There are no hidden fees or unexpected losses beyond your initial amount.</p>
-            </div>
-            <div className="border border-[#E4E4E4] p-8 bg-[#F7F7F5]">
-              <Database className="w-6 h-6 text-[#0055FF] mb-6" />
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A] mb-3">Fair Prices</h4>
-              <p className="text-[11px] text-[#6B7280] leading-relaxed">We record the exact price the moment you click trade. This ensures you always get a fair and honest result every time.</p>
-            </div>
-            <div className="border border-[#E4E4E4] p-8 bg-[#F7F7F5]">
-              <Sliders className="w-6 h-6 text-[#0055FF] mb-6" />
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A] mb-3">Flexible Times</h4>
-              <p className="text-[11px] text-[#6B7280] leading-relaxed">Choose a time that works for you. Place trades that last anywhere from one minute to a full day, depending on your needs.</p>
+            <div className="lg:col-span-6 space-y-8">
+              <div className="space-y-4">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">Platform</span>
+                <h2 className="text-4xl font-bold uppercase tracking-tight text-white font-display leading-[1.1]">
+                  Powerful Trading Technology
+                </h2>
+                <p className="text-sm text-[#9CA3AF] leading-relaxed max-w-xl">
+                  Get advanced trading software give you the edge. Charts and insights you need to make profitable decisions. Trade anywhere from desktop, mobile, anywhere, anytime.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
+                {[
+                  "Personalized interface",
+                  "Fast execution",
+                  "Powerful platform",
+                  "Multi-platform access"
+                ].map((feature) => (
+                  <div key={feature} className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-none bg-[#0055FF]/10 flex items-center justify-center border border-[#0055FF]/30">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#0055FF]" />
+                    </div>
+                    <span className="text-xs font-bold uppercase tracking-widest text-white/90">{feature}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-4">
+                <Link href="/technology" className="btn-institutional-primary bg-white text-[#0A0A0A] border-white hover:bg-[#0055FF] hover:border-[#0055FF] hover:text-white px-10">
+                  Learn More
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Blue CTA Section */}
       <section className="py-24 bg-[#0055FF] text-white text-center">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h3 className="text-3xl sm:text-4xl font-bold uppercase tracking-tight mb-8">
+          <h3 className="text-3xl sm:text-4xl font-bold uppercase tracking-tight mb-8 font-display">
             Start Trading with Varban Markets Today.
           </h3>
           <div className="flex justify-center gap-4">

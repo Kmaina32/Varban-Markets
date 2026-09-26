@@ -23,5 +23,11 @@
     "width": 180,
     "height": 40,
     "hint": "company logo"
+  },
+  "terminal_showcase": {
+    "url": "https://picsum.photos/seed/varban_terminal/800/500",
+    "width": 800,
+    "height": 500,
+    "hint": "laptop phone trading"
   }
 }
