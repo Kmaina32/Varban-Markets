@@ -7,7 +7,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, X, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/app/lib/utils';
 
@@ -42,11 +41,8 @@ export default function CookieConsent() {
         "max-w-4xl mx-auto bg-white border border-[#E4E4E4] shadow-2xl p-6 md:p-8 pointer-events-auto",
         "animate-in slide-in-from-bottom-4 duration-500 flex flex-col md:flex-row items-start md:items-center gap-6"
       )}>
-        {/* Icon & Message */}
-        <div className="flex items-start space-x-4 flex-grow">
-          <div className="p-2.5 bg-[#0055FF]/5 border border-[#0055FF]/20 shrink-0">
-            <ShieldCheck className="w-5 h-5 text-[#0055FF]" />
-          </div>
+        {/* Message Area */}
+        <div className="flex-grow">
           <div className="space-y-1">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">
               Personalize Your Experience
@@ -58,7 +54,7 @@ export default function CookieConsent() {
               href="/terms/privacy" 
               className="inline-flex items-center text-[9px] font-bold text-[#0055FF] uppercase tracking-widest hover:underline"
             >
-              Read our Privacy Rules <ChevronRight className="w-2.5 h-2.5 ml-0.5" />
+              Read our Privacy Rules
             </Link>
           </div>
         </div>
@@ -82,10 +78,10 @@ export default function CookieConsent() {
         {/* Close Button */}
         <button 
           onClick={() => setIsVisible(false)}
-          className="absolute top-2 right-2 p-1 text-[#6B7280] hover:text-[#0A0A0A] transition-colors"
+          className="absolute top-2 right-4 text-[10px] font-bold uppercase text-[#6B7280] hover:text-[#0A0A0A] transition-colors"
           aria-label="Close"
         >
-          <X className="w-4 h-4" />
+          Close
         </button>
       </div>
     </div>
