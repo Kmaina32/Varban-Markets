@@ -3,8 +3,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useUser, useFirestore, useDoc } from "@/firebase";
-import { doc, updateDoc } from "firebase/firestore";
+import { useUser, useFirestore, useDoc, errorEmitter, FirestorePermissionError } from "@/firebase";
+import { doc, setDoc } from "firebase/firestore";
 import { Card } from "@/components/ui/card";
 import { COUNTRIES } from "@/app/lib/countries";
 import { ChevronDown, User, Smartphone, Globe, ShieldCheck } from "lucide-react";
@@ -49,7 +49,7 @@ export default function CompleteProfilePage() {
     }
   }, [authLoading, profileLoading, user, profile, router]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !db) return;
 
@@ -57,28 +57,42 @@ export default function CompleteProfilePage() {
     setError(null);
 
     const fullName = `${formData.firstName} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.lastName}`.trim();
+    const data = {
+      fullName: fullName,
+      firstName: formData.firstName,
+      middleName: formData.middleName,
+      lastName: formData.lastName,
+      phone: `${formData.dialCode} ${formData.phone}`,
+      country: formData.country,
+      updatedAt: new Date().toISOString()
+    };
 
-    try {
-      await updateDoc(doc(db, "users", user.uid), {
-        fullName: fullName,
-        firstName: formData.firstName,
-        middleName: formData.middleName,
-        lastName: formData.lastName,
-        phone: `${formData.dialCode} ${formData.phone}`,
-        country: formData.country,
-        updatedAt: new Date().toISOString()
+    // Use setDoc with merge instead of updateDoc to ensure document existence
+    setDoc(doc(db, "users", user.uid), data, { merge: true })
+      .then(() => {
+        router.push("/dashboard");
+      })
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: `users/${user.uid}`,
+          operation: 'write',
+          requestResourceData: data,
+        });
+
+        // Emit for institutional auditing
+        errorEmitter.emit('permission-error', permissionError);
+        
+        setError("Failed to update profile. Please check your network connection or permissions.");
+        setLoading(false);
       });
-      router.push("/dashboard");
-    } catch (err: any) {
-      setError("Failed to update profile. Please try again.");
-      setLoading(false);
-    }
   };
 
   if (authLoading || profileLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-[#F7F7F5]">
-      <div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div>
-    </div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F7F5]">
+        <div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
   return (
