@@ -22,7 +22,9 @@
         "referralCode": { "type": "string" },
         "referredBy": { "type": "string" },
         "openRisk": { "type": "number" },
-        "dailyPL": { "type": "number" }
+        "dailyPL": { "type": "number" },
+        "cookieConsent": { "type": "string", "enum": ["Accepted", "Declined"] },
+        "cookieConsentAt": { "type": "string", "format": "date-time" }
       },
       "required": ["balance", "verificationStatus", "currency"]
     },

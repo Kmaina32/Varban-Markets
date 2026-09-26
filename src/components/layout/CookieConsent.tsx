@@ -1,35 +1,58 @@
+
 'use client';
 
 /**
  * @fileOverview Institutional Cookie Consent Module.
  * Provides a professional, non-intrusive way to handle website settings and data privacy.
- * Uses Natural English and aligns with the Institutional White design system.
+ * Choices are registered in the database for authenticated users.
  */
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { cn } from '@/app/lib/utils';
+import { useUser, useFirestore, useDoc } from '@/firebase';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
 export default function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);
+  const { user } = useUser();
+  const db = useFirestore();
+  const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
 
   useEffect(() => {
-    // Check if user has already made a selection
+    // 1. Priority check: Database Record (for cross-device consistency)
+    if (user && profile) {
+      if (profile.cookieConsent) {
+        setIsVisible(false);
+        return;
+      }
+    }
+
+    // 2. Secondary check: Local Storage (for guest/new users)
     const consent = localStorage.getItem('varban_cookie_consent');
     if (!consent) {
       // Delay appearance for better UX
-      const timer = setTimeout(() => setIsVisible(true), 2000);
+      const timer = setTimeout(() => setIsVisible(true), 2500);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [user, profile]);
 
-  const handleAccept = () => {
-    localStorage.setItem('varban_cookie_consent', 'accepted');
-    setIsVisible(false);
-  };
+  const handleConsent = async (choice: 'accepted' | 'declined') => {
+    // Persist locally for instant closure
+    localStorage.setItem('varban_cookie_consent', choice);
+    
+    // Persist to Database if authenticated (for compliance ledger)
+    if (user && db) {
+      try {
+        updateDoc(doc(db, "users", user.uid), {
+          cookieConsent: choice === 'accepted' ? 'Accepted' : 'Declined',
+          cookieConsentAt: serverTimestamp()
+        });
+      } catch (err) {
+        // Fail silently - non-critical background operation
+      }
+    }
 
-  const handleDecline = () => {
-    localStorage.setItem('varban_cookie_consent', 'declined');
     setIsVisible(false);
   };
 
@@ -39,7 +62,7 @@ export default function CookieConsent() {
     <div className="fixed bottom-0 left-0 right-0 z-[1000] p-4 md:p-6 pointer-events-none">
       <div className={cn(
         "max-w-4xl mx-auto bg-white border border-[#E4E4E4] shadow-2xl p-6 md:p-8 pointer-events-auto",
-        "animate-in slide-in-from-bottom-4 duration-500 flex flex-col md:flex-row items-start md:items-center gap-6"
+        "animate-in slide-in-from-bottom-4 duration-500 flex flex-col md:flex-row items-start md:items-center gap-6 relative"
       )}>
         {/* Message Area */}
         <div className="flex-grow">
@@ -67,13 +90,13 @@ export default function CookieConsent() {
         {/* Actions */}
         <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto shrink-0">
           <button 
-            onClick={handleAccept}
+            onClick={() => handleConsent('accepted')}
             className="flex-1 md:w-40 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest py-3 hover:bg-[#0055FF] transition-colors shadow-sm"
           >
             Accept All
           </button>
           <button 
-            onClick={handleDecline}
+            onClick={() => handleConsent('declined')}
             className="flex-1 md:w-40 bg-white border border-[#E4E4E4] text-[#6B7280] text-[10px] font-bold uppercase tracking-widest py-3 hover:bg-[#F7F7F5] hover:text-[#0A0A0A] transition-colors"
           >
             Necessary Only
