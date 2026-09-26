@@ -4,6 +4,7 @@
 /**
  * @fileOverview Consolidated Account Hub.
  * Manages Profile, KYC Verification, Security, Notifications, and Preferences.
+ * Icons removed from KYC section as per institutional standard.
  */
 
 import { useState, useEffect, useMemo } from "react";
@@ -31,7 +32,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { useUser, useDoc, useFirestore, useCollection, useAuth } from "@/firebase";
-import { doc, updateDoc, collection, query, orderBy, limit, serverTimestamp } from "firebase/firestore";
+import { doc, updateDoc, collection, query, orderBy, limit, serverTimestamp, addDoc } from "firebase/firestore";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { startRegistration } from "@simplewebauthn/browser";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -244,13 +245,13 @@ export default function AccountHub() {
   const getStatusInfo = (status: string) => {
     switch (status) {
       case 'Verified':
-        return { label: 'Verified', color: 'text-[#16835B]', icon: ShieldCheck, bg: 'bg-[#16835B]/5', border: 'border-[#16835B]' };
+        return { label: 'Verified', color: 'text-[#16835B]', bg: 'bg-[#16835B]/5', border: 'border-[#16835B]' };
       case 'Pending':
-        return { label: 'Pending Audit', color: 'text-[#C9A227]', icon: Clock, bg: 'bg-[#C9A227]/5', border: 'border-[#C9A227]' };
+        return { label: 'Pending Audit', color: 'text-[#C9A227]', bg: 'bg-[#C9A227]/5', border: 'border-[#C9A227]' };
       case 'Rejected':
-        return { label: 'Rejected', color: 'text-[#C43D3D]', icon: XCircle, bg: 'bg-[#C43D3D]/5', border: 'border-[#C43D3D]' };
+        return { label: 'Rejected', color: 'text-[#C43D3D]', bg: 'bg-[#C43D3D]/5', border: 'border-[#C43D3D]' };
       default:
-        return { label: 'Not Verified', color: 'text-[#6B7280]', icon: AlertTriangle, bg: 'bg-[#F7F7F5]', border: 'border-[#E4E4E4]' };
+        return { label: 'Not Verified', color: 'text-[#6B7280]', bg: 'bg-[#F7F7F5]', border: 'border-[#E4E4E4]' };
     }
   };
 
@@ -351,15 +352,12 @@ export default function AccountHub() {
             </div>
           )}
 
-          {/* TAB: KYC VERIFICATION */}
+          {/* TAB: KYC VERIFICATION (ICON-FREE) */}
           {activeTab === 'verification' && (
             <div className="max-w-4xl mx-auto space-y-6">
               <Card id="tour-kyc-status" className="p-8 bg-white border-[#E4E4E4] shadow-sm flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
-                <div className={cn("p-6 border shrink-0 relative z-10", getStatusInfo(profile?.verificationStatus).bg, getStatusInfo(profile?.verificationStatus).border)}>
-                  {(() => {
-                    const StatusIcon = getStatusInfo(profile?.verificationStatus).icon;
-                    return <StatusIcon className={cn("w-12 h-12", getStatusInfo(profile?.verificationStatus).color)} />;
-                  })()}
+                <div className={cn("p-8 border shrink-0 relative z-10 flex flex-col items-center justify-center font-bold uppercase tracking-widest text-[10px]", getStatusInfo(profile?.verificationStatus).bg, getStatusInfo(profile?.verificationStatus).border, getStatusInfo(profile?.verificationStatus).color)}>
+                  Status
                 </div>
                 <div className="relative z-10 flex-grow text-center md:text-left">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1">Current Account Status</span>
@@ -381,15 +379,15 @@ export default function AccountHub() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                  { id: 'id', label: 'Government ID / Passport', icon: FileText, desc: 'High-resolution scan of your biographical page.' },
-                  { id: 'address', label: 'Proof of Residence', icon: Globe, desc: 'Utility bill or bank statement (last 3 months).' },
-                  { id: 'risk', label: 'Risk Disclosure Assent', icon: ShieldCheck, desc: 'Digitally signed platform rule agreement.' }
+                  { id: 'id', label: 'Government ID / Passport', desc: 'High-resolution scan of your biographical page.' },
+                  { id: 'address', label: 'Proof of Residence', desc: 'Utility bill or bank statement (last 3 months).' },
+                  { id: 'risk', label: 'Risk Disclosure Assent', desc: 'Digitally signed platform rule agreement.' }
                 ].map((doc) => (
                   <Card key={doc.id} className="p-6 bg-white border-[#E4E4E4] hover:border-[#0055FF] transition-all group shadow-sm flex flex-col justify-between">
                     <div className="space-y-3 mb-6">
                       <div className="flex justify-between items-start">
-                        <doc.icon className="w-5 h-5 text-[#0055FF]" />
-                        {profile?.verificationStatus === 'Verified' && <Check className="w-4 h-4 text-[#16835B]" />}
+                        <span className="text-[9px] font-bold uppercase text-[#0055FF] tracking-[0.2em]">{doc.id}</span>
+                        {profile?.verificationStatus === 'Verified' && <span className="text-[8px] font-bold uppercase text-[#16835B]">Validated</span>}
                       </div>
                       <div>
                         <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#0A0A0A]">{doc.label}</h4>
@@ -417,10 +415,7 @@ export default function AccountHub() {
                       ) : profile?.verificationStatus === 'Pending' ? (
                         <span>Locked for Audit</span>
                       ) : (
-                        <>
-                          <Upload className="w-3 h-3" />
-                          <span>Upload Document</span>
-                        </>
+                        <span>Upload Document</span>
                       )}
                     </button>
                   </Card>
@@ -428,7 +423,6 @@ export default function AccountHub() {
 
                 <div className="p-6 bg-[#0055FF]/5 border border-dashed border-[#0055FF]/30 flex flex-col justify-center space-y-4">
                   <div className="flex items-center space-x-2 text-[#0055FF]">
-                    <Activity className="w-4 h-4" />
                     <span className="text-[10px] font-bold uppercase tracking-widest">Audit Telemetry</span>
                   </div>
                   <p className="text-[10px] text-[#6B7280] leading-relaxed">

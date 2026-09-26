@@ -30,12 +30,8 @@ export default function KycDocPage() {
               <span className="px-2 py-0.5 bg-[#F7F7F5] border border-[#E4E4E4] text-[8px] font-bold uppercase">Standard</span>
             </div>
             <div className="space-y-2 text-[10px] text-[#6B7280] font-bold uppercase">
-              <div className="flex items-center space-x-2">
-                <span>&bull; Email Address Validation</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span>&bull; Phone Number Verification</span>
-              </div>
+              <p>&bull; Email Address Validation</p>
+              <p>&bull; Phone Number Verification</p>
             </div>
             <p className="text-[10px] text-[#6B7280] pt-2 italic">Limits: Up to $2,000 USD cumulative deposits.</p>
           </Card>
@@ -46,12 +42,8 @@ export default function KycDocPage() {
               <span className="px-2 py-0.5 bg-[#0055FF]/10 border border-[#0055FF] text-[8px] font-bold uppercase text-[#0055FF]">Required</span>
             </div>
             <div className="space-y-2 text-[10px] text-[#6B7280] font-bold uppercase">
-              <div className="flex items-center space-x-2">
-                <span>&bull; Government ID (Passport/National ID)</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span>&bull; Biometric Selfie Verification</span>
-              </div>
+              <p>&bull; Government ID (Passport/National ID)</p>
+              <p>&bull; Biometric Selfie Verification</p>
             </div>
             <p className="text-[10px] text-[#6B7280] pt-2 italic">Limits: Unlocks standard withdrawals up to $50k/day.</p>
           </Card>
