@@ -13,6 +13,8 @@
           "description": "Base account currency supported by Paystack.",
           "enum": ["USD", "NGN", "GHS", "ZAR", "KES"]
         },
+        "language": { "type": "string", "enum": ["ENGLISH", "FRENCH", "SPANISH", "PORTUGUESE"] },
+        "timezone": { "type": "string", "description": "Preferred timezone for market clocks." },
         "verificationStatus": { "type": "string", "enum": ["Not Verified", "Pending", "Verified"] },
         "fullName": { "type": "string" },
         "email": { "type": "string" },
@@ -24,7 +26,16 @@
         "openRisk": { "type": "number" },
         "dailyPL": { "type": "number" },
         "cookieConsent": { "type": "string", "enum": ["Accepted", "Declined"] },
-        "cookieConsentAt": { "type": "string", "format": "date-time" }
+        "cookieConsentAt": { "type": "string", "format": "date-time" },
+        "alerts": {
+          "type": "object",
+          "properties": {
+            "newTrades": { "type": "boolean" },
+            "withdrawSuccess": { "type": "boolean" },
+            "securityAlerts": { "type": "boolean" },
+            "systemStatus": { "type": "boolean" }
+          }
+        }
       },
       "required": ["balance", "verificationStatus", "currency"]
     },

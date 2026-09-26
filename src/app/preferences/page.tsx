@@ -12,6 +12,19 @@ import { cn } from "@/app/lib/utils";
 
 const PAYSTACK_CURRENCIES = ["USD", "NGN", "GHS", "ZAR", "KES"];
 const LANGUAGES = ["ENGLISH", "FRENCH", "SPANISH", "PORTUGUESE"];
+const TIMEZONES = [
+  { label: "UTC -12:00", value: "UTC-12" },
+  { label: "UTC -08:00 (PT)", value: "UTC-8" },
+  { label: "UTC -05:00 (ET)", value: "UTC-5" },
+  { label: "UTC +00:00 (GMT)", value: "UTC+0" },
+  { label: "UTC +01:00 (CET)", value: "UTC+1" },
+  { label: "UTC +02:00 (EET)", value: "UTC+2" },
+  { label: "UTC +03:00 (MSK)", value: "UTC+3" },
+  { label: "UTC +05:30 (IST)", value: "UTC+5.5" },
+  { label: "UTC +08:00 (HKT)", value: "UTC+8" },
+  { label: "UTC +09:00 (JST)", value: "UTC+9" },
+  { label: "UTC +12:00 (NZDT)", value: "UTC+12" }
+];
 
 export default function PreferencesPage() {
   const { user } = useUser();
@@ -25,6 +38,7 @@ export default function PreferencesPage() {
   const [formData, setFormData] = useState({
     currency: "USD",
     language: "ENGLISH",
+    timezone: "UTC+0",
     newTrades: true,
     withdrawSuccess: true,
     securityAlerts: true,
@@ -36,6 +50,7 @@ export default function PreferencesPage() {
       setFormData({
         currency: profile.currency || "USD",
         language: profile.language || "ENGLISH",
+        timezone: profile.timezone || "UTC+0",
         newTrades: profile.alerts?.newTrades ?? true,
         withdrawSuccess: profile.alerts?.withdrawSuccess ?? true,
         securityAlerts: profile.alerts?.securityAlerts ?? true,
@@ -53,6 +68,7 @@ export default function PreferencesPage() {
       await updateDoc(doc(db, "users", user.uid), {
         currency: formData.currency,
         language: formData.language,
+        timezone: formData.timezone,
         alerts: {
           newTrades: formData.newTrades,
           withdrawSuccess: formData.withdrawSuccess,
@@ -70,7 +86,9 @@ export default function PreferencesPage() {
   };
 
   const toggleAlert = (key: keyof typeof formData) => {
-    setFormData(prev => ({ ...prev, [key]: !prev[key] }));
+    if (typeof formData[key] === 'boolean') {
+      setFormData(prev => ({ ...prev, [key]: !prev[key] }));
+    }
   };
 
   return (
@@ -129,12 +147,23 @@ export default function PreferencesPage() {
               <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#0A0A0A] mb-8 border-b border-[#F7F7F5] pb-4">
                 Market Settings
               </h3>
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center group">
                 <div className="flex items-center space-x-4">
                   <Clock className="w-4 h-4 text-[#6B7280]" />
                   <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Time Zone</span>
                 </div>
-                <span className="text-[10px] font-bold uppercase text-[#0A0A0A]">UTC +0</span>
+                <div className="relative flex items-center">
+                  <select 
+                    value={formData.timezone}
+                    onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+                    className="text-[10px] font-bold uppercase bg-transparent focus:outline-none appearance-none cursor-pointer pr-5 text-right"
+                  >
+                    {TIMEZONES.map(tz => (
+                      <option key={tz.value} value={tz.value}>{tz.label}</option>
+                    ))}
+                  </select>
+                  <Check className="w-3 h-3 text-[#0A0A0A] absolute right-0 pointer-events-none" />
+                </div>
               </div>
             </Card>
           </div>
@@ -173,7 +202,7 @@ export default function PreferencesPage() {
               <Card className="bg-[#0055FF]/5 border border-[#0055FF]/20 p-8 shadow-sm">
                 <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#0A0A0A] mb-4">Save Changes</h4>
                 <p className="text-[10px] text-[#6B7280] leading-relaxed mb-8 uppercase font-bold">
-                  Currency changes will affect how your balance and stakes are displayed throughout the workspace.
+                  Modifying your domain parameters will update your terminal clock and display language instantly across all active nodes.
                 </p>
                 <button 
                   onClick={handleSave}
