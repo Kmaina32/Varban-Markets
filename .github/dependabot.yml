@@ -3,11 +3,22 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     open-pull-requests-limit: 10
     reviewers:
       - "Kmaina32"
     groups:
-      dependencies:
+      production-dependencies:
+        patterns:
+          - "next"
+          - "react*"
+          - "firebase"
+          - "genkit"
+      security-updates:
         patterns:
           - "*"
+        update-types:
+          - "security:patch"
+    labels:
+      - "security"
+      - "dependencies"

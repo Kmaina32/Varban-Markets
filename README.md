@@ -34,6 +34,7 @@ Varban Markets is a professional electronic trading protocol engineered for adva
 - [Full API Documentation](./API_DOCS.md)
 - [Design Style Guide](./SKILLS.md)
 - [Backend Schema](./docs/backend.json)
+- [Security Policy](./SECURITY.md)
 
 ---
 
@@ -44,6 +45,8 @@ Varban Markets is a professional electronic trading protocol engineered for adva
 - [x] Multi-Node Market Data Failover
 - [x] In-App Intelligence Reports
 - [x] Passkey Biometric Authentication
+- [x] Automated Security Auditing (Dependabot)
+- [x] Hardened Security Disclosure Policy
 
 ---
 *Operational Ledger Status: Finalized, Synchronized & Locked.*

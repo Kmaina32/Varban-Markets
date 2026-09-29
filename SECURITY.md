@@ -1,8 +1,11 @@
 # Security Policy
 
+## Institutional Security Commitment
+Varban Markets prioritizes the absolute integrity of trader data and capital. Our systems undergo continuous auditing to ensure compliance with international financial security standards.
+
 ## Supported Versions
 
-Only the latest stable release of Varban Markets is supported for security updates.
+Only the latest stable release of the Varban Markets protocol is supported for critical security updates.
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -11,18 +14,21 @@ Only the latest stable release of Varban Markets is supported for security updat
 
 ## Reporting a Vulnerability
 
-We take the security of Varban Markets seriously. If you believe you have found a security vulnerability, please report it to us by emailing security@varbanmarkets.com.
+We take the security of Varban Markets seriously. If you believe you have found a security vulnerability in our infrastructure or execution engine, please report it immediately to our security response team.
 
-Please include the following information in your report:
+**Email:** security@varbanmarkets.com
 
-- Type of issue (e.g., cross-site scripting, SQL injection, remote code execution)
-- Step-by-step instructions to reproduce the issue
-- Any potential impact of the vulnerability
+### Required Information
+To help us triage and resolve the issue quickly, please include:
+- Type of issue (e.g., cross-site scripting, authentication bypass, data leakage).
+- Step-by-step instructions to reproduce the issue in a safe environment.
+- Potential impact on the platform or user entities.
 
-We will acknowledge receipt of your report within 48 hours and provide a timeline for resolution.
+We will acknowledge receipt of your report within 24 hours and provide a deterministic timeline for resolution.
 
 ### Responsible Disclosure Guidelines
+- Do not attempt to access or modify data that does not belong to your domain.
+- Do not perform any actions that could degrade the performance of the matching engine or public nodes (e.g. DoS/DDoS).
+- Provide our team a reasonable amount of time to deploy a patch before making any information public.
 
-- Do not attempt to access or modify data that does not belong to you.
-- Do not perform any actions that could degrade the performance of our services (e.g., DoS/DDoS).
-- Give us a reasonable amount of time to fix the issue before making any information public.
+*Status: Security Node Synchronized & Active.*
