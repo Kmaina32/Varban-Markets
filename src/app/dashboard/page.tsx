@@ -1,3 +1,4 @@
+
 'use client';
 
 import AuthedLayout from "@/components/layout/AuthedLayout";
@@ -44,11 +45,15 @@ export default function UserDashboard() {
     if (!db || !user) return null;
     return query(
       collection(db, `users/${user.uid}/positions`),
-      orderBy("timestamp", "desc"),
-      limit(5)
+      orderBy("timestamp", "desc")
     );
   }, [db, user]);
-  const { data: recentTrades, loading: tradesLoading } = useCollection<any>(tradesQuery);
+  
+  const { data: allTrades, loading: tradesLoading } = useCollection<any>(tradesQuery);
+  
+  const recentTrades = useMemo(() => {
+    return allTrades?.filter((t: any) => (t.isDemo || false) === (accountMode === 'DEMO')).slice(0, 5) || [];
+  }, [allTrades, accountMode]);
 
   const watchlistQuery = useMemo(() => {
     if (!db || !user) return null;
@@ -116,13 +121,7 @@ export default function UserDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E4E4E4] text-xs font-mono">
-                      {accountMode === 'DEMO' ? (
-                        <tr>
-                          <td colSpan={5} className="p-4 text-center text-[#6B7280]">
-                            Practice trade history is stored locally. Switch to your Real Account to see your live history.
-                          </td>
-                        </tr>
-                      ) : tradesLoading ? (
+                      {tradesLoading ? (
                         <tr><td colSpan={5} className="p-4 text-center text-[#6B7280]">{t('common.loading')}</td></tr>
                       ) : recentTrades?.length === 0 ? (
                         <tr><td colSpan={5} className="p-4 text-center text-[#6B7280]">{t('trading.noPositions')}</td></tr>

@@ -94,8 +94,8 @@ export default function TerminalWorkspace() {
   const { data: allPositions, loading: positionsLoading } = useCollection<any>(tradesQuery);
 
   const activePositions = useMemo(() => {
-    return allPositions?.filter((p: any) => p.status === "Open") || [];
-  }, [allPositions]);
+    return allPositions?.filter((p: any) => p.status === "Open" && (p.isDemo === (accountMode === 'DEMO'))) || [];
+  }, [allPositions, accountMode]);
 
   useEffect(() => {
     if (!user || !db || !allPositions || allPositions.length === 0 || livePrice === null) return;
@@ -103,16 +103,18 @@ export default function TerminalWorkspace() {
     const openItems = allPositions.filter((p: any) => p.status === "Open");
     if (openItems.length === 0) return;
 
-    const latest = openItems[0];
-    const timestampMs = latest.timestamp?.seconds ? latest.timestamp.seconds * 1000 : Date.now();
-    
-    if (Date.now() - timestampMs > 18000) {
-      const entry = latest.entryPrice || livePrice;
-      const isCall = latest.vector === "CALL";
-      const isWin = isCall ? livePrice >= entry : livePrice < entry;
-      const netProfit = isWin ? latest.stake * 0.85 : -latest.stake;
+    const expiredItems = openItems.filter(p => {
+      const ts = p.timestamp?.seconds ? p.timestamp.seconds * 1000 : Date.now();
+      return Date.now() - ts > 18000;
+    });
 
-      const positionDocRef = doc(db, `users/${user.uid}/positions`, latest.id);
+    expiredItems.forEach(item => {
+      const entry = item.entryPrice || livePrice;
+      const isCall = item.vector === "CALL";
+      const isWin = isCall ? livePrice >= entry : livePrice < entry;
+      const netProfit = isWin ? item.stake * 0.85 : -item.stake;
+
+      const positionDocRef = doc(db, `users/${user.uid}/positions`, item.id);
       updateDoc(positionDocRef, {
         status: "Closed",
         currentPrice: livePrice,
@@ -120,8 +122,7 @@ export default function TerminalWorkspace() {
         settledAt: new Date().toISOString()
       }).catch(() => {});
 
-      if (accountMode === 'REAL') {
-        // Use setDoc merge with increment to prevent "No document to update" error
+      if (!item.isDemo) {
         setDoc(doc(db, "users", user.uid), {
           balance: increment(netProfit),
           equity: increment(netProfit)
@@ -129,24 +130,30 @@ export default function TerminalWorkspace() {
 
         addDoc(collection(db, `users/${user.uid}/transactions`), {
           type: "Trade Settlement",
-          asset: latest.instrument,
-          amount: latest.stake,
-          vector: latest.vector,
+          asset: item.instrument,
+          amount: item.stake,
+          vector: item.vector,
           status: "Settled",
           output: netProfit >= 0 ? `+${netProfit.toFixed(2)}` : `${netProfit.toFixed(2)}`,
           timestamp: serverTimestamp()
         }).catch(() => {});
+      } else {
+        const currentSavedDemo = parseFloat(localStorage.getItem('varban_demo_balance') || "10000");
+        const newDemoBal = currentSavedDemo + netProfit;
+        setDemoBalance(newDemoBal);
+        localStorage.setItem('varban_demo_balance', newDemoBal.toString());
+        window.dispatchEvent(new Event('varban_account_mode_changed'));
       }
 
       addDoc(collection(db, `users/${user.uid}/notifications`), {
-        title: netProfit >= 0 ? "Trade Profit Added" : "Trade Lost",
-        body: `Your trade ${latest.id.slice(0,6).toUpperCase()} on ${latest.instrument} has finished. Result: $${Math.abs(netProfit).toFixed(2)} ${netProfit >= 0 ? 'Gain' : 'Loss'}.`,
+        title: netProfit >= 0 ? `${item.isDemo ? 'Practice' : 'Trade'} Profit Added` : `${item.isDemo ? 'Practice' : 'Trade'} Lost`,
+        body: `Your trade ${item.id.slice(0,6).toUpperCase()} on ${item.instrument} has finished. Result: $${Math.abs(netProfit).toFixed(2)} ${netProfit >= 0 ? 'Gain' : 'Loss'}.`,
         type: "Trade",
         isUnread: true,
         timestamp: serverTimestamp()
       }).catch(() => {});
-    }
-  }, [allPositions, livePrice, user, db, accountMode]);
+    });
+  }, [allPositions, livePrice, user, db]);
 
   const startResizing = useCallback(() => {
     setIsResizing(true);
@@ -232,9 +239,26 @@ export default function TerminalWorkspace() {
 
   const handleExecute = (overrideDirection?: "CALL" | "PUT") => {
     const selectedVector = overrideDirection || direction;
-    if (!selectedVector || livePrice === null) return;
+    if (!selectedVector || livePrice === null || !user || !db) return;
 
     if (accountMode === 'DEMO') {
+      if (stake > demoBalance) {
+        alert("Practice Balance Exhausted: Reset your practice account to continue.");
+        return;
+      }
+
+      addDoc(collection(db, `users/${user.uid}/positions`), {
+        instrument: activeInst.symbol,
+        vector: selectedVector,
+        entryPrice: livePrice,
+        stake: stake,
+        duration: duration,
+        status: "Open",
+        profit: 0,
+        isDemo: true,
+        timestamp: serverTimestamp()
+      }).catch(() => {});
+
       const currentDemoBal = demoBalance - stake;
       setDemoBalance(currentDemoBal);
       localStorage.setItem('varban_demo_balance', currentDemoBal.toString());
@@ -247,8 +271,6 @@ export default function TerminalWorkspace() {
       return;
     }
 
-    if (!user || !db) return;
-    
     if (stake > (profile?.balance || 0)) {
       alert("Not Enough Money: Please add more funds to your account to place this trade.");
       return;
@@ -264,6 +286,7 @@ export default function TerminalWorkspace() {
       duration: duration,
       status: "Open",
       profit: 0,
+      isDemo: false,
       timestamp: serverTimestamp()
     }).catch(() => {});
 
@@ -284,11 +307,9 @@ export default function TerminalWorkspace() {
 
   const handleEarlyCashout = (pos: any) => {
     if (!user || !db) return;
-    // a. Calculate early cashout amount as stake * 0.35
     const cashoutAmount = pos.stake * 0.35;
     const positionDocRef = doc(db, `users/${user.uid}/positions`, pos.id);
     
-    // b. Call updateDoc on position doc: status='Closed', profit=-(stake * 0.65), earlyExit=true, closedAt=new Date().toISOString()
     updateDoc(positionDocRef, {
       status: "Closed",
       profit: -(pos.stake * 0.65),
@@ -300,8 +321,7 @@ export default function TerminalWorkspace() {
       console.error("Failed to update position doc:", err);
     });
 
-    // c. Call setDoc merge on users/{uid} to add cashout amount back to balance safely
-    if (accountMode === 'REAL') {
+    if (!pos.isDemo) {
       setDoc(doc(db, "users", user.uid), {
         balance: increment(cashoutAmount),
         equity: increment(cashoutAmount)
@@ -321,13 +341,13 @@ export default function TerminalWorkspace() {
         console.error("Failed to update transactions:", err);
       });
     } else {
-      const currentDemoBal = demoBalance + cashoutAmount;
-      setDemoBalance(currentDemoBal);
-      localStorage.setItem('varban_demo_balance', currentDemoBal.toString());
+      const currentSavedDemo = parseFloat(localStorage.getItem('varban_demo_balance') || "10000");
+      const newDemoBal = currentSavedDemo + cashoutAmount;
+      setDemoBalance(newDemoBal);
+      localStorage.setItem('varban_demo_balance', newDemoBal.toString());
       window.dispatchEvent(new Event('varban_account_mode_changed'));
     }
 
-    // d. Show brief success toast/message
     setSuccessMessage(`Cashout 35% Executed: +$${cashoutAmount.toFixed(2)} returned to balance`);
     setTimeout(() => setSuccessMessage(null), 3500);
   };

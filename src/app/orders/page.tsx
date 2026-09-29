@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { Clock } from "lucide-react";
@@ -12,6 +13,20 @@ export default function OrderManagementPage() {
   const { user } = useUser();
   const db = useFirestore();
   const { t, formatNumber, formatDate } = useTranslation();
+
+  const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
+
+  useEffect(() => {
+    const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
+    if (savedMode) setAccountMode(savedMode);
+
+    const handleModeChange = () => {
+      const mode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
+      if (mode) setAccountMode(mode);
+    };
+    window.addEventListener('varban_account_mode_changed', handleModeChange);
+    return () => window.removeEventListener('varban_account_mode_changed', handleModeChange);
+  }, []);
   
   const ordersQuery = useMemo(() => {
     if (!db || !user) return null;
@@ -22,10 +37,14 @@ export default function OrderManagementPage() {
     );
   }, [db, user]);
 
-  const { data: orders, loading } = useCollection<any>(ordersQuery);
+  const { data: allOrders, loading } = useCollection<any>(ordersQuery);
+
+  const orders = useMemo(() => {
+    return allOrders?.filter((o: any) => (o.isDemo || false) === (accountMode === 'DEMO')) || [];
+  }, [allOrders, accountMode]);
 
   return (
-    <AuthedLayout title={t('pages.ordersTitle')}>
+    <AuthedLayout title={t('pages.ordersTitle')} subtitle={`${accountMode === 'DEMO' ? 'Practice' : 'Real'} Pending Contracts`}>
       <div className="flex space-x-2 mb-6">
         <button className="px-4 py-2 border text-[10px] font-bold uppercase tracking-widest bg-[#0A0A0A] text-white border-[#0A0A0A]">
           {t('common.all')}
@@ -50,7 +69,7 @@ export default function OrderManagementPage() {
               <tr><td colSpan={7} className="p-4 text-center text-[#6B7280]">{t('common.loading')}</td></tr>
             ) : orders?.length === 0 ? (
               <tr><td colSpan={7} className="p-4 text-center text-[#6B7280]">{t('trading.noPositions')}</td></tr>
-            ) : orders?.map((order) => (
+            ) : orders?.map((order: any) => (
               <tr key={order.id} className="hover:bg-[#F7F7F5]">
                 <td className="p-4 text-[#6B7280]">{order.id.slice(0, 8).toUpperCase()}</td>
                 <td className="p-4">

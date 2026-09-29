@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { Search, Filter, Download } from "lucide-react";
@@ -14,6 +15,20 @@ export default function TradeHistoryPage() {
   const db = useFirestore();
   const { t, formatNumber, formatDate } = useTranslation();
 
+  const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
+
+  useEffect(() => {
+    const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
+    if (savedMode) setAccountMode(savedMode);
+
+    const handleModeChange = () => {
+      const mode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
+      if (mode) setAccountMode(mode);
+    };
+    window.addEventListener('varban_account_mode_changed', handleModeChange);
+    return () => window.removeEventListener('varban_account_mode_changed', handleModeChange);
+  }, []);
+
   const historyQuery = useMemo(() => {
     if (!db || !user) return null;
     return query(
@@ -23,25 +38,30 @@ export default function TradeHistoryPage() {
     );
   }, [db, user]);
 
-  const { data: history, loading } = useCollection<any>(historyQuery);
+  const { data: allHistory, loading } = useCollection<any>(historyQuery);
+
+  const history = useMemo(() => {
+    return allHistory?.filter((h: any) => (h.isDemo || false) === (accountMode === 'DEMO')) || [];
+  }, [allHistory, accountMode]);
 
   const exportCSV = () => {
     if (!history || history.length === 0) return;
-    const headers = ["Timestamp", "Reference ID", "Instrument", "Vector", "Stake (USD)", "Profit/Loss (USD)"];
+    const headers = ["Timestamp", "Reference ID", "Instrument", "Vector", "Stake (USD)", "Profit/Loss (USD)", "Mode"];
     const rows = history.map(h => [
       h.timestamp?.toDate ? h.timestamp.toDate().toISOString() : 'N/A',
       h.id,
       h.instrument,
       h.vector,
       h.stake || 0,
-      h.profit || 0
+      h.profit || 0,
+      h.isDemo ? 'Practice' : 'Real'
     ]);
 
     const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `varban_trade_history_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute("download", `varban_${accountMode.toLowerCase()}_trade_history_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -61,7 +81,7 @@ export default function TradeHistoryPage() {
   ];
 
   return (
-    <AuthedLayout title={t('pages.historyTitle')}>
+    <AuthedLayout title={t('pages.historyTitle')} subtitle={`${accountMode === 'DEMO' ? 'Practice' : 'Real'} Execution Records`}>
       <PageTutorial steps={tutorialSteps} storageKey="varban_history_tutorial" />
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">

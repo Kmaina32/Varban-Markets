@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { Target, Activity, ShieldAlert, ArrowUpRight } from "lucide-react";
@@ -14,6 +15,20 @@ export default function ActivePositionsPage() {
   const db = useFirestore();
   const { t, formatNumber } = useTranslation();
 
+  const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
+
+  useEffect(() => {
+    const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
+    if (savedMode) setAccountMode(savedMode);
+
+    const handleModeChange = () => {
+      const mode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
+      if (mode) setAccountMode(mode);
+    };
+    window.addEventListener('varban_account_mode_changed', handleModeChange);
+    return () => window.removeEventListener('varban_account_mode_changed', handleModeChange);
+  }, []);
+
   const positionsQuery = useMemo(() => {
     if (!db || !user) return null;
     return query(
@@ -23,7 +38,11 @@ export default function ActivePositionsPage() {
     );
   }, [db, user]);
 
-  const { data: positions, loading } = useCollection<any>(positionsQuery);
+  const { data: allPositions, loading } = useCollection<any>(positionsQuery);
+
+  const positions = useMemo(() => {
+    return allPositions?.filter((p: any) => (p.isDemo || false) === (accountMode === 'DEMO')) || [];
+  }, [allPositions, accountMode]);
 
   const totalStake = useMemo(() => {
     if (!positions) return 0;
@@ -31,7 +50,7 @@ export default function ActivePositionsPage() {
   }, [positions]);
 
   return (
-    <AuthedLayout title={t('pages.positionsTitle')}>
+    <AuthedLayout title={t('pages.positionsTitle')} subtitle={`${accountMode === 'DEMO' ? 'Practice' : 'Real'} Live Exposure`}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <Card className="bg-white border-[#E4E4E4] p-6 shadow-sm">
           <div className="flex justify-between items-center mb-2">
@@ -78,7 +97,7 @@ export default function ActivePositionsPage() {
                 <td className="p-4 text-[#6B7280]">{pos.id.slice(0, 8).toUpperCase()}</td>
                 <td className="p-4 font-bold">{pos.instrument}</td>
                 <td className="p-4">
-                  <span className={`px-1.5 py-0.5 border text-[9px] font-bold ${pos.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#C43D3D] text-[#C43D3D]'}`}>
+                  <span className={`px-1.5 py-0.5 border text-[9px] font-bold ${pos.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#0055FF] text-[#0055FF]'}`}>
                     {pos.vector}
                   </span>
                 </td>
