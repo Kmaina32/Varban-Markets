@@ -5,6 +5,7 @@
  * @fileOverview Institutional KYC Document Verification Desk.
  * Monitors and audits unverified user entities, handling KYC approvals,
  * rejections, and direct document inspection via Cloudflare R2.
+ * Hardened: Manual approval protocol only. Embedded in-house viewer.
  */
 
 import { useState, useMemo, useEffect } from "react";
@@ -17,7 +18,9 @@ import {
   ExternalLink,
   FileText,
   ShieldCheck,
-  AlertTriangle
+  AlertTriangle,
+  Eye,
+  Check
 } from "lucide-react";
 import { useCollection, useFirestore } from "@/firebase";
 import {
@@ -73,6 +76,12 @@ export default function AdminKycApprovalsPage() {
   const [inspectDocs, setInspectDocs] = useState<KycDocument[]>([]);
   const [docsLoading, setDocsLoading] = useState(false);
   const [fallbackToAll, setFallbackToAll] = useState(false);
+  
+  // Viewer States
+  const [viewingDocUrl, setViewingDocUrl] = useState<string | null>(null);
+  const [viewingDocId, setViewingDocType] = useState<string | null>(null);
+  const [isViewerLoading, setIsViewerLoading] = useState(false);
+
   const [actionFeedback, setActionFeedback] = useState<{
     type: 'success' | 'error';
     text: string;
@@ -142,6 +151,8 @@ export default function AdminKycApprovalsPage() {
   const handleInspectUser = async (userItem: UserEntity) => {
     setInspectUser(userItem);
     setInspectDocs([]);
+    setViewingDocUrl(null);
+    setViewingDocType(null);
     setDocsLoading(true);
     
     if (!db) return;
@@ -157,24 +168,30 @@ export default function AdminKycApprovalsPage() {
     }
   };
 
-  const openDocument = async (storageKey?: string) => {
-    if (!storageKey) return;
+  const openInHouseViewer = async (docItem: KycDocument) => {
+    if (!docItem.storageKey) return;
+    
+    setIsViewerLoading(true);
+    setViewingDocType(docItem.id);
+    
     try {
       const resp = await fetch('/api/storage/view-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ storageKey })
+        body: JSON.stringify({ storageKey: docItem.storageKey })
       });
       const { viewUrl } = await resp.json();
-      window.open(viewUrl, '_blank');
+      setViewingDocUrl(viewUrl);
     } catch (e) {
       alert("Handshake Failure: Could not generate secure viewing token.");
+    } finally {
+      setIsViewerLoading(false);
     }
   };
 
   const handleApprove = async (userItem: UserEntity) => {
     if (!db) return;
-    if (!window.confirm(`Approve KYC verification for ${userItem.email}?`)) return;
+    if (!window.confirm(`DETERMINISTIC ACTION: Manually approve KYC verification for ${userItem.email}? This action grants full platform authority.`)) return;
 
     setProcessingId(userItem.id);
     try {
@@ -185,13 +202,13 @@ export default function AdminKycApprovalsPage() {
 
       await addDoc(collection(db, `users/${userItem.id}/notifications`), {
         title: "KYC Verification Approved",
-        body: "Your identity has been verified. You now have full institutional platform access.",
+        body: "Your identity has been manually verified by our compliance team. You now have full institutional platform access.",
         type: "Security",
         isUnread: true,
         timestamp: serverTimestamp(),
       });
 
-      setActionFeedback({ type: "success", text: `KYC Approved for ${userItem.email}` });
+      setActionFeedback({ type: "success", text: `KYC Manually Approved for ${userItem.email}` });
       setInspectUser(null);
     } catch (err) {
       alert("Handshake Failure.");
@@ -202,7 +219,7 @@ export default function AdminKycApprovalsPage() {
 
   const handleReject = async (userItem: UserEntity) => {
     if (!db) return;
-    if (!window.confirm(`Reject KYC for ${userItem.email}?`)) return;
+    if (!window.confirm(`DETERMINISTIC ACTION: Reject KYC for ${userItem.email}?`)) return;
 
     setProcessingId(userItem.id);
     try {
@@ -213,7 +230,7 @@ export default function AdminKycApprovalsPage() {
 
       await addDoc(collection(db, `users/${userItem.id}/notifications`), {
         title: "KYC Verification Rejected",
-        body: "Your identity documents were not accepted. Please resubmit clear copies via the Account Hub.",
+        body: "Your identity documents were reviewed and not accepted. Please resubmit clear, high-resolution copies via the Account Hub.",
         type: "Security",
         isUnread: true,
         timestamp: serverTimestamp(),
@@ -320,7 +337,7 @@ export default function AdminKycApprovalsPage() {
 
       {inspectUser && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-[#0A0A0A]/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <Card className="w-full max-w-xl bg-white border-[#E4E4E4] shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+          <Card className="w-full max-w-4xl bg-white border-[#E4E4E4] shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-5 border-b border-[#E4E4E4] flex justify-between items-center bg-[#F7F7F5]">
               <div className="flex items-center space-x-2">
                 <ShieldCheck className="w-4 h-4 text-[#0055FF]" />
@@ -329,66 +346,102 @@ export default function AdminKycApprovalsPage() {
               <button onClick={() => setInspectUser(null)} className="text-[#6B7280] hover:text-[#0A0A0A]"><X className="w-4 h-4" /></button>
             </div>
 
-            <div className="p-8 space-y-8 overflow-y-auto no-scrollbar">
-              <div className="grid grid-cols-2 gap-6 pb-6 border-b border-[#E4E4E4]">
-                <div><span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Entity Name</span><span className="text-sm font-bold text-[#0A0A0A]">{inspectUser.fullName || "Unnamed"}</span></div>
-                <div><span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Email Domain</span><span className="text-xs font-mono text-[#0A0A0A]">{inspectUser.email}</span></div>
-                <div><span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Jurisdiction</span><span className="text-xs font-bold text-[#0A0A0A] uppercase">{inspectUser.country || "Global"}</span></div>
-                <div><span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Status</span><span className={cn("px-2 py-0.5 border text-[9px] font-bold uppercase", getStatusBadge(inspectUser.verificationStatus))}>{inspectUser.verificationStatus || "Not Verified"}</span></div>
+            <div className="flex-grow overflow-hidden flex flex-col md:flex-row">
+              {/* Sidebar: Details & Document List */}
+              <div className="w-full md:w-80 border-r border-[#E4E4E4] overflow-y-auto no-scrollbar bg-white shrink-0">
+                <div className="p-6 space-y-6">
+                   <div>
+                      <span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Entity Name</span>
+                      <span className="text-sm font-bold text-[#0A0A0A]">{inspectUser.fullName || "Unnamed"}</span>
+                   </div>
+                   <div>
+                      <span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Email Domain</span>
+                      <span className="text-xs font-mono text-[#0A0A0A] break-all">{inspectUser.email}</span>
+                   </div>
+                   <div className="pt-4 border-t border-[#F7F7F5] space-y-4">
+                      <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] flex items-center gap-2">
+                        <FileText className="w-3.5 h-3.5 text-[#0055FF]" /> Documentation
+                      </h4>
+                      
+                      {docsLoading ? (
+                        <div className="p-8 text-center text-[#6B7280] animate-pulse uppercase text-[9px] font-bold">Synchronizing Evidence...</div>
+                      ) : inspectDocs.length === 0 ? (
+                        <div className="p-8 border border-dashed border-[#E4E4E4] text-center text-[#6B7280] uppercase text-[9px] font-bold">No documents</div>
+                      ) : (
+                        <div className="space-y-2">
+                          {inspectDocs.map((docItem) => (
+                            <button 
+                              key={docItem.id} 
+                              onClick={() => openInHouseViewer(docItem)}
+                              className={cn(
+                                "w-full p-3 text-left border transition-all flex items-center justify-between group",
+                                viewingDocId === docItem.id ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-[#F7F7F5] border-[#E4E4E4] hover:border-[#0055FF]"
+                              )}
+                            >
+                              <div className="flex items-center gap-2 overflow-hidden">
+                                <FileText className={cn("w-3.5 h-3.5 shrink-0", viewingDocId === docItem.id ? "text-white" : "text-[#6B7280]")} />
+                                <span className="text-[9px] font-bold uppercase truncate">{docItem.type.replace('_', ' ')}</span>
+                              </div>
+                              <Eye className={cn("w-3 h-3 shrink-0", viewingDocId === docItem.id ? "text-white" : "text-[#6B7280] opacity-0 group-hover:opacity-100")} />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                   </div>
+                </div>
               </div>
 
-              <div className="space-y-4">
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5 text-[#0055FF]" /> Transmitted Documentation
-                </h4>
-                
-                {docsLoading ? (
-                  <div className="p-12 text-center text-[#6B7280] animate-pulse uppercase text-[9px] font-bold">Synchronizing Evidence...</div>
-                ) : inspectDocs.length === 0 ? (
-                  <div className="p-12 border border-dashed border-[#E4E4E4] text-center text-[#6B7280] uppercase text-[9px] font-bold">No documents submitted</div>
+              {/* Main Content: Document Viewer */}
+              <div className="flex-grow bg-[#F7F7F5] overflow-hidden flex flex-col">
+                {isViewerLoading ? (
+                  <div className="flex-grow flex flex-col items-center justify-center space-y-3">
+                    <Loader2 className="w-8 h-8 text-[#0055FF] animate-spin" />
+                    <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#6B7280]">Generating Secure Token...</span>
+                  </div>
+                ) : viewingDocUrl ? (
+                  <div className="flex-grow p-4 md:p-8 overflow-hidden flex flex-col">
+                    <div className="flex-grow bg-white border-2 border-[#0A0A0A] p-2 relative shadow-lg overflow-hidden flex items-center justify-center">
+                       <div className="absolute top-2 left-4 px-2 py-0.5 bg-[#0A0A0A] text-white text-[8px] font-bold uppercase tracking-widest z-10 shadow">
+                          Institutional Audit Frame
+                       </div>
+                       <img 
+                        src={viewingDocUrl} 
+                        className="max-w-full max-h-full object-contain animate-in zoom-in-95 duration-300" 
+                        alt="KYC Source Proof" 
+                       />
+                    </div>
+                    <div className="mt-4 flex items-center justify-between text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">
+                       <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> Deterministic Review Protocol</span>
+                       <button onClick={() => setViewingDocUrl(null)} className="hover:text-[#0A0A0A] flex items-center gap-1">Clear Frame <X className="w-3.5 h-3.5" /></button>
+                    </div>
+                  </div>
                 ) : (
-                  <div className="space-y-3">
-                    {inspectDocs.map((docItem) => (
-                      <div key={docItem.id} className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-between group">
-                        <div className="flex items-center gap-3">
-                           <div className="w-8 h-8 bg-white border border-[#E4E4E4] flex items-center justify-center">
-                              <FileText className="w-4 h-4 text-[#6B7280]" />
-                           </div>
-                           <div>
-                              <span className="text-[10px] font-bold uppercase text-[#0A0A0A] block">{docItem.type.replace('_', ' ')}</span>
-                              <span className="text-[9px] text-[#6B7280] font-mono">{docItem.fileName || 'document_scan.jpg'}</span>
-                           </div>
-                        </div>
-                        {docItem.storageKey ? (
-                          <button 
-                            onClick={() => openDocument(docItem.storageKey)}
-                            className="px-3 py-1.5 bg-white border border-[#E4E4E4] text-[9px] font-bold uppercase tracking-widest hover:bg-[#0055FF] hover:text-white transition-all flex items-center gap-2 shadow-sm"
-                          >
-                            <span>View Source</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </button>
-                        ) : (
-                          <span className="text-[8px] font-bold text-[#16835B] uppercase px-2 py-1 bg-[#16835B]/10 border border-[#16835B]">Validated</span>
-                        )}
-                      </div>
-                    ))}
+                  <div className="flex-grow flex flex-col items-center justify-center p-12 text-center space-y-4">
+                    <div className="w-16 h-16 border-2 border-dashed border-[#E4E4E4] flex items-center justify-center text-[#E4E4E4]">
+                      <Eye className="w-8 h-8" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Source Review Active</h4>
+                      <p className="text-[10px] text-[#6B7280] uppercase mt-1">Select a document from the registry list to initiate inspection</p>
+                    </div>
                   </div>
                 )}
               </div>
-
-              <div className="p-4 bg-[#0055FF]/5 border border-[#0055FF]/20 flex items-start gap-3">
-                <AlertTriangle className="w-4 h-4 text-[#0055FF] shrink-0 mt-0.5" />
-                <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
-                  Audit Protocol: Ensure all IDs match the profile name and are within validity dates. Approve only clear, high-resolution transmissions.
-                </p>
-              </div>
             </div>
 
-            <div className="p-6 border-t border-[#E4E4E4] bg-[#F7F7F5] flex justify-between gap-4">
-              <button onClick={() => setInspectUser(null)} className="px-6 py-3 border border-[#E4E4E4] bg-white text-[10px] font-bold uppercase tracking-widest hover:text-[#0A0A0A]">Close</button>
+            <div className="p-6 border-t border-[#E4E4E4] bg-[#F7F7F5] flex flex-col sm:flex-row justify-between gap-4 shrink-0">
+              <div className="flex items-start gap-3 max-w-md">
+                 <AlertTriangle className="w-4 h-4 text-[#0055FF] shrink-0 mt-0.5" />
+                 <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
+                    Audit Notice: This action requires manual verification. Auto-approval protocols are decommissioned to ensure total financial integrity.
+                 </p>
+              </div>
               <div className="flex gap-3">
-                <button onClick={() => handleReject(inspectUser)} disabled={!!processingId} className="px-6 py-3 border border-[#C43D3D] text-[#C43D3D] text-[10px] font-bold uppercase tracking-widest hover:bg-[#C43D3D] hover:text-white transition-all shadow-sm">Reject KYC</button>
-                <button onClick={() => handleApprove(inspectUser)} disabled={!!processingId} className="px-8 py-3 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0A0A0A] transition-all shadow-md">Approve Identity</button>
+                <button onClick={() => handleReject(inspectUser)} disabled={!!processingId} className="px-6 py-3 border border-[#C43D3D] text-[#C43D3D] text-[10px] font-bold uppercase tracking-widest hover:bg-[#C43D3D] hover:text-white transition-all shadow-sm">Reject Account</button>
+                <button onClick={() => handleApprove(inspectUser)} disabled={!!processingId} className="px-8 py-3 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0A0A0A] transition-all shadow-md flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Approve Entity</span>
+                </button>
               </div>
             </div>
           </Card>
