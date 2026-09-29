@@ -14,10 +14,9 @@ import {
   Newspaper, 
   Search, 
   Loader2, 
-  ExternalLink,
-  BarChart2,
   RefreshCw,
-  FileText
+  FileText,
+  ArrowRight
 } from "lucide-react";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -137,7 +136,7 @@ export default function NewsHubPage() {
             </div>
           ) : news.length === 0 ? (
             <Card className="p-20 text-center border-dashed border-2 bg-white">
-              <Newspaper className="w-12 h-12 text-[#E4E4E4] mx-auto mb-4" />
+              <Newspaper className="w-12 h-12 text-[#E4E4E4] mx-auto mb-4 opacity-20" />
               <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A]">No News Records Detected</h3>
             </Card>
           ) : (

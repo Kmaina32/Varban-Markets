@@ -26,7 +26,8 @@ import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 
 export default function NewsReportPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+  const resolvedParams = use(params);
+  const id = resolvedParams.id;
   const db = useFirestore();
   const router = useRouter();
   const { formatDate } = useTranslation();
@@ -49,8 +50,8 @@ export default function NewsReportPage({ params }: { params: Promise<{ id: strin
   if (!article) {
     return (
       <AuthedLayout title="Analysis Failed" subtitle="Document Registry Error">
-        <Card className="max-w-2xl mx-auto p-12 text-center border-dashed">
-          <ShieldCheck className="w-12 h-12 text-[#E4E4E4] mx-auto mb-4" />
+        <Card className="max-w-2xl mx-auto p-12 text-center border-dashed border-2 bg-white">
+          <ShieldCheck className="w-12 h-12 text-[#E4E4E4] mx-auto mb-4 opacity-20" />
           <h2 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A]">Record Not Found</h2>
           <p className="text-xs text-[#6B7280] mt-2 leading-relaxed">
             The requested intelligence token does not exist in the current session domain. The record may have expired or was purged during system maintenance.
