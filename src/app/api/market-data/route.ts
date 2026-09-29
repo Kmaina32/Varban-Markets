@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * @fileOverview Secure Market Data Proxy with Multi-Provider Auto-Switching.
- * Logic: Coinbase CDP -> Twelve Data -> Binance (Crypto Only) -> Alpha Vantage -> Finnhub (Fail-safe).
- * 
- * Auto-Switching Principle: Each fetch function returns null or an error object if 
- * rate-limited or unreachable. The GET handler catches these and cycles to the next.
+ * @fileOverview Secure Market Data Proxy with Expanded Multi-Provider Failover.
+ * Chain: Coinbase CDP -> Twelve Data -> Polygon.io -> Binance -> Alpha Vantage -> Finnhub.
  */
 
 const TWELVE_DATA_KEY = process.env.TWELVE_DATA_API_KEY;
-const ALPHA_VANTAGE_KEY = "48SDEBM5X6L6WBVV"; // Provided Alpha Vantage Key
+const POLYGON_KEY = process.env.POLYGON_API_KEY || "L6l_p6v_A3_kP_r_4_f_X_z_g_m_k_7_v_9_z"; // Placeholder
+const ALPHA_VANTAGE_KEY = "48SDEBM5X6L6WBVV";
 const FINNHUB_KEY = "daqjp7pr01qott5g8tg0daqjp7pr01qott5g8tgg";
-const COINBASE_VERSION = "2022-01-06"; // Institutional Implementation Version
+const COINBASE_VERSION = "2022-01-06";
 
 const cache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_TTL = 10000; // 10 seconds cache to preserve limits
+const CACHE_TTL = 10000;
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -30,9 +28,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(cached.data);
   }
 
-  // Provider Chain Iteration
-  
-  // 1. Try Coinbase CDP (Institutional High Priority for major pairs)
+  // 1. Try Coinbase CDP (Institutional High Priority)
   const isMajor = ['BTC', 'ETH', 'SOL', 'EUR', 'GBP'].some(s => symbol.startsWith(s));
   if (isMajor && type === 'quote') {
     const cbResult = await fetchCoinbaseData(symbol);
@@ -42,7 +38,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // 2. Try Primary: Twelve Data
+  // 2. Try Twelve Data
   if (TWELVE_DATA_KEY) {
     const result = await fetchTwelveData(symbol, type, interval);
     if (result && !result.error) {
@@ -51,7 +47,16 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // 3. Crypto Specialization: Binance Public (Zero Key Required)
+  // 3. Try Polygon.io (Tier-1 Failover)
+  if (POLYGON_KEY) {
+    const polyResult = await fetchPolygonData(symbol, type);
+    if (polyResult && !polyResult.error) {
+      cache.set(cacheKey, { data: polyResult, timestamp: Date.now() });
+      return NextResponse.json(polyResult);
+    }
+  }
+
+  // 4. Try Binance Fallback
   const isCrypto = symbol.includes('/') || ['BTC', 'ETH', 'SOL', 'XRP'].some(s => symbol.startsWith(s));
   if (isCrypto) {
     const cryptoResult = await fetchBinanceFallback(symbol);
@@ -62,7 +67,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // 4. Fallback for Stocks/Forex: Alpha Vantage
+  // 5. Try Alpha Vantage
   if (ALPHA_VANTAGE_KEY) {
     const avResult = await fetchAlphaVantage(symbol, type);
     if (avResult) {
@@ -72,7 +77,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // 5. Final Fail-Safe: Finnhub (Using authoritative key)
+  // 6. Final Fail-Safe: Finnhub
   if (FINNHUB_KEY) {
     const fhResult = await fetchFinnhubData(symbol, type, interval);
     if (fhResult && !fhResult.error) {
@@ -82,37 +87,57 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({ 
-    error: 'Market data providers unavailable or rate limited', 
+    error: 'Market data providers unavailable', 
     status: 503 
   }, { status: 503 });
+}
+
+async function fetchPolygonData(symbol: string, type: string) {
+  try {
+    const cleanSymbol = symbol.replace('/', '');
+    const isCrypto = symbol.includes('/') || ['BTC', 'ETH'].some(s => symbol.startsWith(s));
+    const prefix = isCrypto ? 'X:' : 'C:';
+    
+    if (type === 'quote') {
+      const url = `https://api.polygon.io/v2/last/crypto/${prefix}${cleanSymbol}?apiKey=${POLYGON_KEY}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      
+      if (data.status !== 'OK' || !data.last) return { error: true };
+      
+      return {
+        data: {
+          price: data.last.price,
+          change: 0,
+          changePercent: 0,
+          timestamp: data.last.timestamp,
+          status: 'Open'
+        }
+      };
+    }
+    return { error: true }; // Polygon time_series requires plan-specific endpoints
+  } catch (e) {
+    return null;
+  }
 }
 
 async function fetchCoinbaseData(symbol: string) {
   try {
     const baseAsset = symbol.split('/')[0] || symbol.substring(0, 3);
     const url = `https://api.coinbase.com/v2/prices/${baseAsset}-USD/spot`;
-    
-    const res = await fetch(url, {
-      headers: {
-        'CB-VERSION': COINBASE_VERSION
-      }
-    });
+    const res = await fetch(url, { headers: { 'CB-VERSION': COINBASE_VERSION } });
     const json = await res.json();
-
     if (!json.data || !json.data.amount) return null;
-
     return {
       data: {
         price: parseFloat(json.data.amount),
-        change: 0, // Spot endpoint doesn't return 24h change
+        change: 0,
         changePercent: 0,
         timestamp: Date.now(),
         status: 'Open'
       }
     };
-  } catch (e) {
-    return null;
-  }
+  } catch (e) { return null; }
 }
 
 async function fetchTwelveData(symbol: string, type: string, interval: string) {
@@ -121,15 +146,11 @@ async function fetchTwelveData(symbol: string, type: string, interval: string) {
     if (symbol.length === 6 && !symbol.includes('/')) {
       providerSymbol = `${symbol.substring(0, 3)}/${symbol.substring(3, 6)}`;
     }
-
     const endpoint = type === 'quote' ? 'quote' : 'time_series';
     const url = `https://api.twelvedata.com/${endpoint}?symbol=${providerSymbol}&interval=${interval}&apikey=${TWELVE_DATA_KEY}&order=asc&outputsize=300`;
-    
     const res = await fetch(url);
     const data = await res.json();
-
     if (data.status === 'error' || data.code === 429) return { error: true };
-
     if (type === 'quote') {
       return {
         data: {
@@ -141,7 +162,6 @@ async function fetchTwelveData(symbol: string, type: string, interval: string) {
         }
       };
     }
-
     return {
       data: (data.values || []).map((v: any) => ({
         time: new Date(v.datetime).getTime() / 1000,
@@ -151,9 +171,7 @@ async function fetchTwelveData(symbol: string, type: string, interval: string) {
         close: parseFloat(v.close)
       }))
     };
-  } catch (e) {
-    return null;
-  }
+  } catch (e) { return null; }
 }
 
 async function fetchBinanceFallback(symbol: string) {
@@ -162,7 +180,6 @@ async function fetchBinanceFallback(symbol: string) {
     const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${cleanSymbol}`);
     const data = await res.json();
     if (!data.lastPrice) return null;
-
     return {
       price: parseFloat(data.lastPrice),
       change: parseFloat(data.priceChange),
@@ -170,9 +187,7 @@ async function fetchBinanceFallback(symbol: string) {
       timestamp: Date.now(),
       status: 'Open'
     };
-  } catch (e) {
-    return null;
-  }
+  } catch (e) { return null; }
 }
 
 async function fetchAlphaVantage(symbol: string, type: string) {
@@ -180,7 +195,6 @@ async function fetchAlphaVantage(symbol: string, type: string) {
     const isForex = symbol.includes('/') || symbol.length === 6;
     const functionName = isForex ? 'CURRENCY_EXCHANGE_RATE' : 'GLOBAL_QUOTE';
     let url = `https://www.alphavantage.co/query?function=${functionName}&apikey=${ALPHA_VANTAGE_KEY}`;
-
     if (isForex) {
       const from = symbol.substring(0, 3);
       const to = symbol.includes('/') ? symbol.split('/')[1] : symbol.substring(3, 6);
@@ -188,10 +202,8 @@ async function fetchAlphaVantage(symbol: string, type: string) {
     } else {
       url += `&symbol=${symbol}`;
     }
-
     const res = await fetch(url);
     const data = await res.json();
-
     if (isForex && data['Realtime Currency Exchange Rate']) {
       const rate = data['Realtime Currency Exchange Rate'];
       return {
@@ -202,7 +214,6 @@ async function fetchAlphaVantage(symbol: string, type: string) {
         status: 'Open'
       };
     }
-
     if (data['Global Quote']) {
       const quote = data['Global Quote'];
       return {
@@ -214,26 +225,20 @@ async function fetchAlphaVantage(symbol: string, type: string) {
       };
     }
     return null;
-  } catch (e) {
-    return null;
-  }
+  } catch (e) { return null; }
 }
 
 async function fetchFinnhubData(symbol: string, type: string, interval: string) {
   try {
     let cleanSymbol = symbol.replace('/', '');
-    if (isCryptoSymbol(symbol)) {
+    if (symbol.includes('/') || ['BTC', 'ETH', 'SOL', 'XRP'].some(s => symbol.startsWith(s))) {
       cleanSymbol = `BINANCE:${symbol.replace('/', '').replace('USD', 'USDT')}`;
     }
-
     const baseUrl = "https://finnhub.io/api/v1";
-    
     if (type === 'quote') {
       const res = await fetch(`${baseUrl}/quote?symbol=${cleanSymbol}&token=${FINNHUB_KEY}`);
       const data = await res.json();
-      
       if (!data.c || data.c === 0) return { error: true };
-      
       return {
         data: {
           price: data.c,
@@ -244,43 +249,15 @@ async function fetchFinnhubData(symbol: string, type: string, interval: string) 
         }
       };
     }
-
-    const resolutionMapping: Record<string, string> = {
-      '1min': '1', '5min': '5', '15min': '15', '30min': '30', '1h': '60', '1day': 'D'
-    };
-    const resolution = resolutionMapping[interval.replace('m', 'min')] || '5';
-    
+    const resMapping: Record<string, string> = { '1min': '1', '5min': '5', '15min': '15', '30min': '30', '1h': '60', '1day': 'D' };
+    const resolution = resMapping[interval.replace('m', 'min')] || '5';
     const to = Math.floor(Date.now() / 1000);
-    const lookback = getLookbackSeconds(interval);
-    const from = to - lookback;
-    
+    const from = to - (300 * (parseInt(interval) || 1) * 60);
     const res = await fetch(`${baseUrl}/stock/candle?symbol=${cleanSymbol}&resolution=${resolution}&from=${from}&to=${to}&token=${FINNHUB_KEY}`);
     const data = await res.json();
-    
     if (data.s !== 'ok' || !data.t) return { error: true };
-
     return {
-      data: data.t.map((time: number, i: number) => ({
-        time,
-        open: data.o[i],
-        high: data.h[i],
-        low: data.l[i],
-        close: data.c[i]
-      }))
+      data: data.t.map((time: number, i: number) => ({ time, open: data.o[i], high: data.h[i], low: data.l[i], close: data.c[i] }))
     };
-  } catch (e) {
-    return null;
-  }
-}
-
-function isCryptoSymbol(symbol: string) {
-  return symbol.includes('/') || ['BTC', 'ETH', 'SOL', 'XRP'].some(s => symbol.startsWith(s));
-}
-
-function getLookbackSeconds(interval: string) {
-  const mins = 300; 
-  if (interval.includes('day')) return mins * 24 * 60 * 60;
-  if (interval.includes('h')) return mins * 60 * 60;
-  const num = parseInt(interval) || 1;
-  return mins * num * 60;
+  } catch (e) { return null; }
 }
