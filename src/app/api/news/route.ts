@@ -2,12 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * @fileOverview Institutional News Proxy with Multi-Node Redundancy.
- * Primary: Currents API
- * Secondary: Free News API (Tier-2 Fallback)
+ * Keys are strictly consumed via environment variables to ensure repository security.
  */
 
-const CURRENTS_API_KEY = process.env.CURRENTS_NEWS_API_KEY || "OSVWG7fkMI86yl-mRSR49GrBA2_SoY0SwcQ9_82d2n-e0CWZ";
-const FREE_NEWS_API_KEY = process.env.FREE_NEWS_API_KEY; // Optional Tier-2 Key
+const CURRENTS_API_KEY = process.env.CURRENTS_NEWS_API_KEY;
+const FREE_NEWS_API_KEY = process.env.FREE_NEWS_API_KEY;
 
 const DEFAULT_MARKET_QUERY = "(forex OR crypto OR stocks OR markets OR commodities OR indices OR inflation OR central bank)";
 
@@ -32,6 +31,14 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const query = searchParams.get('query');
   const activeQuery = (query && query.trim().length > 1) ? query.trim() : DEFAULT_MARKET_QUERY;
+
+  if (!CURRENTS_API_KEY) {
+    return NextResponse.json({ 
+      status: "500", 
+      msg: "Configuration Error",
+      details: { message: "Primary news intelligence key is missing from environment." }
+    }, { status: 500 });
+  }
 
   // 1. Try Primary Node: Currents API
   try {
@@ -71,7 +78,7 @@ export async function GET(req: NextRequest) {
     try {
       const freeNewsUrl = new URL("https://api.freenewsapi.io/v1/news");
       freeNewsUrl.searchParams.set('language', 'en');
-      freeNewsUrl.searchParams.set('in_title', activeQuery.replace(/[()]/g, '').split(' OR ')[0]); // Simplified search for v1
+      freeNewsUrl.searchParams.set('in_title', activeQuery.replace(/[()]/g, '').split(' OR ')[0]);
 
       const res = await fetch(freeNewsUrl.toString(), {
         headers: { 'x-api-key': FREE_NEWS_API_KEY }
@@ -85,7 +92,7 @@ export async function GET(req: NextRequest) {
             title: item.title,
             published_at: item.published_at,
             publisher: item.publisher || 'Global Finance News',
-            description: item.title, // v1 list doesn't return full body
+            description: item.title,
             url: `https://freenewsapi.io/news/${item.uuid}`,
             image: null,
             category: ['Market Update']

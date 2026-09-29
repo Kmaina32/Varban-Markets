@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * @fileOverview Secure Market Data Proxy with Expanded Multi-Provider Failover.
- * Chain: Coinbase CDP -> Twelve Data -> Polygon.io -> Binance -> Alpha Vantage -> Finnhub.
+ * All keys are strictly consumed via environment variables.
  */
 
 const TWELVE_DATA_KEY = process.env.TWELVE_DATA_API_KEY;
-const POLYGON_KEY = process.env.POLYGON_API_KEY || "L6l_p6v_A3_kP_r_4_f_X_z_g_m_k_7_v_9_z"; // Placeholder
-const ALPHA_VANTAGE_KEY = "48SDEBM5X6L6WBVV";
-const FINNHUB_KEY = "daqjp7pr01qott5g8tg0daqjp7pr01qott5g8tgg";
+const POLYGON_KEY = process.env.POLYGON_API_KEY;
+const ALPHA_VANTAGE_KEY = process.env.ALPHA_VANTAGE_API_KEY;
+const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
 const COINBASE_VERSION = "2022-01-06";
 
 const cache = new Map<string, { data: any; timestamp: number }>();
@@ -115,7 +115,7 @@ async function fetchPolygonData(symbol: string, type: string) {
         }
       };
     }
-    return { error: true }; // Polygon time_series requires plan-specific endpoints
+    return { error: true };
   } catch (e) {
     return null;
   }
