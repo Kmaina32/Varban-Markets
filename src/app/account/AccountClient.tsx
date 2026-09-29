@@ -24,7 +24,6 @@ import {
   ShieldAlert,
   FileText,
   Upload,
-  ShieldQuestion,
   Smartphone,
   Laptop,
   X
@@ -286,9 +285,18 @@ export default function AccountClient() {
         })
       });
 
+      if (!resp.ok) {
+        throw new Error("Handshake Failure: Could not generate secure upload token.");
+      }
+
       const { uploadUrl, key } = await resp.json();
+      
+      // DEBUG: Verify URL structure in dev console
+      console.log(`[Institutional Upload] Target Node: ${activeUploadType}`);
+      console.log(`[Institutional Upload] URL:`, uploadUrl);
 
       // 2. Perform direct institutional upload to R2
+      // Using standard fetch PUT as required for presigned URLs
       const uploadResp = await fetch(uploadUrl, {
         method: 'PUT',
         body: file,
@@ -298,10 +306,10 @@ export default function AccountClient() {
       });
 
       if (!uploadResp.ok) {
-        if (uploadResp.status === 403 || uploadResp.status === 0) {
-          throw new Error("CORS Security Restriction: Please ensure R2 Bucket CORS policy allows PUT methods.");
+        if (uploadResp.status === 403) {
+          throw new Error("Security Access Denied: Please verify R2 CORS settings allow PUT/POST from this origin.");
         }
-        throw new Error("Handshake Failure: Cloudflare R2 rejected the transmission.");
+        throw new Error(`Transmission Failure: Cloudflare R2 rejected the packet (Status: ${uploadResp.status})`);
       }
 
       // 3. Register transmission in Firestore Ledger
@@ -330,7 +338,7 @@ export default function AccountClient() {
 
     } catch (err: any) {
       console.error("KYC Transmission Error:", err);
-      alert(`Transmission Failure: ${err.message || "Could not establish secure link to storage node."}`);
+      alert(`Transmission Failure: ${err.message || "Check your internet connection and R2 CORS configuration."}`);
     } finally {
       setUploadingDoc(null);
       setActiveUploadType(null);
