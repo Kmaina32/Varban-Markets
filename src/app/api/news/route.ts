@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * @fileOverview Institutional News Proxy (Currents API Integration).
- * Migrated from Free News API to Currents API v1.
+ * Optimized for secure server-side execution and Bearer token authentication.
  * Adheres to documentation at https://api.currentsapi.services/v1
  */
 
@@ -11,8 +11,8 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const query = searchParams.get('query');
   
-  // Currents API requires a dedicated key. Fallback to old key name for migration safety.
-  const CURRENTS_API_KEY = process.env.CURRENTS_NEWS_API_KEY || process.env.FREE_NEWS_API_KEY;
+  // Currents API requires a dedicated key.
+  const CURRENTS_API_KEY = process.env.CURRENTS_NEWS_API_KEY;
   const BASE_URL = "https://api.currentsapi.services/v1";
 
   if (!CURRENTS_API_KEY) {
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     const res = await fetch(url.toString(), {
       method: 'GET',
       headers: {
-        'Authorization': CURRENTS_API_KEY,
+        'Authorization': `Bearer ${CURRENTS_API_KEY}`,
         'Accept': 'application/json'
       },
       // Cache for 10 minutes to respect rate limits
@@ -64,7 +64,6 @@ export async function GET(req: NextRequest) {
 
     // Transform Currents API format to internal Varban NewsItem format
     // This maintains backward compatibility with existing UI components
-    // Mapping: id -> uuid, published -> published_at, author -> publisher
     const mappedData = data.news.map((item: any) => ({
       uuid: item.id,
       title: item.title,
