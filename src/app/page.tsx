@@ -24,6 +24,14 @@ export default function HomePage() {
     { symbol: "NAS100", name: "Nasdaq 100", price: "15,434.20", change: "+1.42%", isUp: true }
   ];
 
+  const trustedCompanies = [
+    { name: "Twelve Data", url: "https://cdn.simpleicons.org/databricks/E44126" },
+    { name: "Binance", url: "https://cdn.simpleicons.org/binance/F0B90B" },
+    { name: "Coinbase", url: "https://cdn.simpleicons.org/coinbase/0052FF" },
+    { name: "TradingView", url: "https://cdn.simpleicons.org/tradingview/131722" },
+    { name: "Cloudflare", url: "https://cdn.simpleicons.org/cloudflare/F38020" }
+  ];
+
   const certifications = [
     { name: "ISO/IEC 27001", subtitle: "Information Security", url: "https://cdn.simpleicons.org/standard-chartered/16835B" },
     { name: "PCI DSS v4.0", subtitle: "Payment Security", url: "https://cdn.simpleicons.org/visa/1A1F71" },
@@ -130,6 +138,30 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Industry Trusted Section */}
+      <section className="py-16 bg-white border-t border-[#E4E4E4]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center space-y-4 mb-12">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">Infrastructure Partners</span>
+            <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">
+              Trusted By
+            </h2>
+          </div>
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
+            {trustedCompanies.map((company) => (
+              <div key={company.name} className="group transition-all duration-300 hover:scale-105">
+                <img 
+                  src={company.url} 
+                  alt={company.name} 
+                  className="h-8 md:h-10 object-contain"
+                  title={company.name}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Certifications & Trust Section */}
       <section className="py-24 bg-[#F7F7F5] border-t border-b border-[#E4E4E4]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -230,7 +262,6 @@ export default function HomePage() {
         <div className="absolute top-0 right-0 w-1/2 h-full bg-[#0055FF]/10 skew-x-12 transform translate-x-20"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           <div className="max-w-2xl mx-auto space-y-8">
-            <h2 className="text-4xl font-bold uppercase tracking-tight leading-tight">Start Trading in Minutes.</h2>
             <h2 className="text-4xl font-bold uppercase tracking-tight leading-tight">Start Trading in Minutes.</h2>
             <p className="text-sm text-[#D1D5DB] leading-relaxed">
               Open your professional trading account today and get access to the world's most stable derivatives infrastructure.
