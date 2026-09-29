@@ -39,7 +39,7 @@ import {
   Maximize2
 } from "lucide-react";
 import { TradingViewChart, ChartMode } from "@/components/terminal/TradingViewChart";
-import { useUser, useFirestore, useCollection, useDoc } from "@/firebase";
+import { useUser, useDoc, useFirestore, useCollection, useAuth } from "@/firebase";
 import { collection, addDoc, serverTimestamp, query, where, orderBy, doc, updateDoc, increment } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
@@ -528,7 +528,7 @@ export default function TerminalWorkspace() {
           <button
             id="tour-mode"
             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-            className="flex items-center space-x-1.5 border px-1.5 md:px-3 py-0.5 md:py-1 transition-colors shadow-sm select-none bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
+            className="hidden md:flex items-center space-x-1.5 border px-1.5 md:px-3 py-0.5 md:py-1 transition-colors shadow-sm select-none bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
           >
             <div className="text-right">
               <span className="text-[6px] md:text-[8px] text-[#6B7280] uppercase tracking-widest font-bold block">

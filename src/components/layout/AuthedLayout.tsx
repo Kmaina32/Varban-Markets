@@ -1,3 +1,4 @@
+
 'use client';
 
 /**
@@ -190,7 +191,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
         <div className="flex items-center space-x-2 md:space-x-6">
           <button 
             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-            className="flex items-center space-x-2 border border-[#E4E4E4] px-2 md:px-3 py-1 bg-white hover:bg-[#F7F7F5] transition-colors shadow-sm select-none"
+            className="hidden md:flex items-center space-x-2 border border-[#E4E4E4] px-2 md:px-3 py-1 bg-white hover:bg-[#F7F7F5] transition-colors shadow-sm select-none"
           >
             <div className="text-right">
               <span className="text-[7px] md:text-[8px] text-[#6B7280] uppercase tracking-widest font-bold block">
