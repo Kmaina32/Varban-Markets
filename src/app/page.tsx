@@ -26,11 +26,11 @@ export default function HomePage() {
   ];
 
   const trustedLogos = [
-    { name: "Twelve Data", url: "https://cdn.simpleicons.org/databricks/6B7280" }, // Using databricks as a placeholder for Twelve Data
-    { name: "Binance", url: "https://cdn.simpleicons.org/binance/6B7280" },
-    { name: "Coinbase", url: "https://cdn.simpleicons.org/coinbase/6B7280" },
-    { name: "TradingView", url: "https://cdn.simpleicons.org/tradingview/6B7280" },
-    { name: "Cloudflare", url: "https://cdn.simpleicons.org/cloudflare/6B7280" }
+    { name: "Twelve Data", url: "https://cdn.simpleicons.org/databricks/FF3621" }, // Using Databricks Red for Twelve Data placeholder
+    { name: "Binance", url: "https://cdn.simpleicons.org/binance/F3BA2F" },
+    { name: "Coinbase", url: "https://cdn.simpleicons.org/coinbase/0052FF" },
+    { name: "TradingView", url: "https://cdn.simpleicons.org/tradingview/131722" },
+    { name: "Cloudflare", url: "https://cdn.simpleicons.org/cloudflare/F38020" }
   ];
 
   useEffect(() => {
@@ -144,16 +144,16 @@ export default function HomePage() {
               We prioritize the safety of your funds and data above all else. Our platform is engineered with the same standards used by major global financial institutions.
             </p>
             
-            {/* Logo Cloud */}
-            <div className="pt-10 flex flex-wrap items-center justify-center gap-8 md:gap-16 opacity-60">
+            {/* Colored Logo Cloud */}
+            <div className="pt-10 flex flex-wrap items-center justify-center gap-8 md:gap-16">
               {trustedLogos.map((logo) => (
-                <div key={logo.name} className="flex items-center grayscale hover:grayscale-0 transition-all duration-300">
+                <div key={logo.name} className="flex items-center transition-all duration-300 hover:scale-105">
                   <img 
                     src={logo.url} 
                     alt={logo.name} 
                     className="h-6 md:h-8 w-auto object-contain"
                   />
-                  <span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-[#6B7280] hidden md:inline">
+                  <span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] hidden md:inline">
                     {logo.name}
                   </span>
                 </div>
