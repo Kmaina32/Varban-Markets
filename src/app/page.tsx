@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { TrendingUp, TrendingDown, CheckCircle2, ArrowRight, Newspaper, Clock, FileText, AlertTriangle, ShieldCheck, Lock, Shield, ShieldAlert, Award } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowRight, Newspaper, Clock, FileText, Globe } from "lucide-react";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { MarketIcon } from "@/components/MarketIcon";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
@@ -167,25 +167,22 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
-            <div className="bg-white border border-[#E4E4E4] p-8 shadow-sm space-y-4">
-              <ShieldCheck className="w-10 h-10 text-[#0055FF]" />
-              <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Capital Protection</h3>
-              <p className="text-xs text-[#6B7280] leading-relaxed">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mt-20 pt-16 border-t border-[#E4E4E4]">
+            <div className="space-y-3">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A] border-l-2 border-[#0055FF] pl-4">Capital Protection</h3>
+              <p className="text-xs text-[#6B7280] leading-relaxed pl-4">
                 Client funds are held in segregated Tier-1 banking accounts, strictly separated from our company operational assets.
               </p>
             </div>
-            <div className="bg-white border border-[#E4E4E4] p-8 shadow-sm space-y-4">
-              <CheckCircle2 className="w-10 h-10 text-[#16835B]" />
-              <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Deterministic Execution</h3>
-              <p className="text-xs text-[#6B7280] leading-relaxed">
+            <div className="space-y-3">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A] border-l-2 border-[#16835B] pl-4">Deterministic Execution</h3>
+              <p className="text-xs text-[#6B7280] leading-relaxed pl-4">
                 Our engine ensures 100% accurate trade settlement at the millisecond of expiration, with zero price manipulation.
               </p>
             </div>
-            <div className="bg-white border border-[#E4E4E4] p-8 shadow-sm space-y-4">
-              <AlertTriangle className="w-10 h-10 text-[#C9A227]" />
-              <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Regulatory Compliance</h3>
-              <p className="text-xs text-[#6B7280] leading-relaxed">
+            <div className="space-y-3">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A] border-l-2 border-[#C9A227] pl-4">Regulatory Compliance</h3>
+              <p className="text-xs text-[#6B7280] leading-relaxed pl-4">
                 Operating under the laws of Saint Lucia, we maintain strict KYC/AML protocols to ensure a clean and secure ecosystem.
               </p>
             </div>
