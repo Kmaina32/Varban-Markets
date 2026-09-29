@@ -19,18 +19,28 @@ import {
   Globe,
   Filter
 } from "lucide-react";
-import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 import PageTutorial, { TutorialStep } from "@/components/shared/PageTutorial";
+
+interface NewsItem {
+  uuid: string;
+  title: string;
+  published_at: string;
+  publisher: string;
+  description?: string;
+  url?: string;
+  image?: string;
+  category?: string[];
+}
 
 const CATEGORIES = [
   { id: 'all', label: 'Global Feed' },
   { id: 'forex', label: 'Forex' },
   { id: 'crypto', label: 'Digital Assets' },
+  { id: 'stocks', label: 'Equities' },
   { id: 'business', label: 'Business' },
-  { id: 'technology', label: 'Technology' },
-  { id: 'geopolitics', label: 'Geopolitics' },
+  { id: 'politics', label: 'Geopolitics' },
   { id: 'commodity', label: 'Commodities' }
 ];
 
@@ -49,18 +59,27 @@ export default function NewsHubPage() {
     setError(null);
     
     try {
-      // Logic for fetching with query and category handled by the proxy
-      const endpoint = `/api/news?${query ? `query=${encodeURIComponent(query)}&` : ''}${category ? `category=${category}` : ''}`;
+      const queryStr = query ? `query=${encodeURIComponent(query)}` : '';
+      const catStr = category && category !== 'all' ? `category=${category}` : '';
+      const params = [queryStr, catStr].filter(Boolean).join('&');
+      
+      const endpoint = `/api/news${params ? `?${params}` : ''}`;
       const res = await fetch(endpoint);
       const json = await res.json();
       
       if (!res.ok) {
-        setError({ code: json.status || res.status.toString(), message: json.msg || "Unable to synchronize news feed." });
+        setError({ 
+          code: json.status || res.status.toString(), 
+          message: json.msg || "Unable to synchronize news feed." 
+        });
       } else {
         setNews(json.data || []);
       }
     } catch (err) {
-      setError({ code: "500", message: "Unexpected synchronization failure." });
+      setError({ 
+        code: "500", 
+        message: "Network handshake interrupted. Check your connectivity." 
+      });
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -68,8 +87,8 @@ export default function NewsHubPage() {
   }, []);
 
   useEffect(() => {
-    loadNews(searchQuery || undefined, activeCategory);
-  }, [activeCategory]);
+    loadNews(undefined, activeCategory);
+  }, [activeCategory, loadNews]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
