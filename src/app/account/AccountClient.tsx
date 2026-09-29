@@ -292,10 +292,17 @@ export default function AccountClient() {
       const uploadResp = await fetch(uploadUrl, {
         method: 'PUT',
         body: file,
-        headers: { 'Content-Type': file.type }
+        headers: { 
+          'Content-Type': file.type 
+        }
       });
 
-      if (!uploadResp.ok) throw new Error("R2 Handshake Failure");
+      if (!uploadResp.ok) {
+        if (uploadResp.status === 403 || uploadResp.status === 0) {
+          throw new Error("CORS Security Restriction: Please ensure R2 Bucket CORS policy allows PUT methods.");
+        }
+        throw new Error("Handshake Failure: Cloudflare R2 rejected the transmission.");
+      }
 
       // 3. Register transmission in Firestore Ledger
       const subId = activeUploadType === 'ID' ? 'GOVERNMENT_ID' : 'PROOF_OF_ADDRESS';
@@ -321,9 +328,9 @@ export default function AccountClient() {
         timestamp: serverTimestamp()
       });
 
-    } catch (err) {
+    } catch (err: any) {
       console.error("KYC Transmission Error:", err);
-      alert("Transmission Failure: Could not establish secure link to storage node.");
+      alert(`Transmission Failure: ${err.message || "Could not establish secure link to storage node."}`);
     } finally {
       setUploadingDoc(null);
       setActiveUploadType(null);
