@@ -38,6 +38,18 @@
       },
       "required": ["balance", "verificationStatus", "currency"]
     },
+    "KycSubmission": {
+      "title": "KYC Document Submission",
+      "description": "Record of identity documents provided for verification.",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["ID", "ADDRESS", "RULES"] },
+        "fileName": { "type": "string" },
+        "fileSize": { "type": "number" },
+        "status": { "type": "string", "enum": ["Pending", "Accepted", "Rejected"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
     "NewsCache": {
       "title": "Intelligence Cache",
       "description": "Synchronized market headlines for internal analysis.",
@@ -168,6 +180,10 @@
     "/users/{userId}/passkeys/{credId}": {
       "schema": "UserPasskey",
       "description": "Registered biometric credentials"
+    },
+    "/users/{userId}/kyc_submissions/{docId}": {
+      "schema": "KycSubmission",
+      "description": "KYC document audit trail"
     },
     "/users/{userId}/crypto_wallets/{walletId}": {
       "schema": "UserCryptoWallet",

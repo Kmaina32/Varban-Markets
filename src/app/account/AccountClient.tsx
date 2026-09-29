@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
@@ -20,10 +20,13 @@ import {
   Clock,
   MapPin,
   Wifi,
-  ShieldAlert
+  ShieldAlert,
+  FileText,
+  Upload,
+  ShieldQuestion
 } from "lucide-react";
 import { useUser, useDoc, useFirestore, useCollection, useAuth } from "@/firebase";
-import { doc, updateDoc, collection, query, orderBy, limit, serverTimestamp, addDoc } from "firebase/firestore";
+import { doc, updateDoc, collection, query, orderBy, limit, serverTimestamp, addDoc, setDoc } from "firebase/firestore";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { startRegistration } from "@simplewebauthn/browser";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -59,6 +62,9 @@ export default function AccountClient() {
   const [activeTab, setActiveTab] = useState<AccountTab>('profile');
   const [geoData, setGeoData] = useState<GeolocationData | null>(null);
   const [geoLoading, setGeoLoading] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeUploadType, setActiveUploadType] = useState<string | null>(null);
 
   // Sync state with URL
   useEffect(() => {
@@ -226,25 +232,79 @@ export default function AccountClient() {
   // --- SUB-MODULE: KYC ---
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
   
-  const handleDocUpload = (label: string) => {
-    setUploadingDoc(label);
+  const initiateUpload = (id: string) => {
+    if (id === 'RULES') {
+      handleFinalKycSubmission('AGREEMENT');
+      return;
+    }
+    setActiveUploadType(id);
+    fileInputRef.current?.click();
+  };
+
+  const onFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !activeUploadType) return;
+    
+    setUploadingDoc(activeUploadType);
+    
+    // Simulate multi-stage upload handshake
     setTimeout(async () => {
       if (user && db) {
+        // 1. Log the submission in kyc_submissions sub-collection
+        const subId = activeUploadType === 'ID' ? 'GOVERNMENT_ID' : 'PROOF_OF_ADDRESS';
+        await setDoc(doc(db, `users/${user.uid}/kyc_submissions`, subId), {
+          type: activeUploadType,
+          fileName: file.name,
+          fileSize: file.size,
+          status: "Pending",
+          timestamp: serverTimestamp()
+        });
+
+        // 2. Update user general verification status
         await updateDoc(doc(db, "users", user.uid), { 
           verificationStatus: "Pending",
           kycSubmittedAt: serverTimestamp() 
         });
         
+        // 3. Notify User
         await addDoc(collection(db, `users/${user.uid}/notifications`), {
           title: "Documents Received",
-          body: `Your ${label} has been received. Our team will review your account status shortly.`,
+          body: `Your ${activeUploadType === 'ID' ? 'Government ID' : 'Proof of Address'} has been received and queued for audit.`,
           type: "Security",
           isUnread: true,
           timestamp: serverTimestamp()
         });
       }
       setUploadingDoc(null);
+      setActiveUploadType(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }, 2500);
+  };
+
+  const handleFinalKycSubmission = async (label: string) => {
+    setUploadingDoc('RULES');
+    setTimeout(async () => {
+      if (user && db) {
+        await setDoc(doc(db, `users/${user.uid}/kyc_submissions`, "RULES_AGREEMENT"), {
+          type: "RULES",
+          status: "Accepted",
+          timestamp: serverTimestamp()
+        });
+
+        await updateDoc(doc(db, "users", user.uid), { 
+          verificationStatus: "Pending"
+        });
+        
+        await addDoc(collection(db, `users/${user.uid}/notifications`), {
+          title: "Agreement Validated",
+          body: `The Platform Rules Agreement has been cryptographically signed and stored in your account ledger.`,
+          type: "Security",
+          isUnread: true,
+          timestamp: serverTimestamp()
+        });
+      }
+      setUploadingDoc(null);
+    }, 1500);
   };
 
   const getStatusInfo = (status: string) => {
@@ -279,6 +339,15 @@ export default function AccountClient() {
       subtitle="Manage your identity and workspace settings"
     >
       <PageTutorial steps={tutorialSteps} storageKey="varban_account_hub_tutorial" />
+
+      {/* Hidden File Input for KYC */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={onFileSelected} 
+        className="hidden" 
+        accept="image/*,.pdf" 
+      />
 
       <div className="max-w-6xl mx-auto space-y-6">
         
@@ -384,25 +453,29 @@ export default function AccountClient() {
                   { id: 'ID', label: 'Government ID', desc: 'A clear photo of your Passport or National ID card.' },
                   { id: 'ADDRESS', label: 'Proof of Address', desc: 'A utility bill or bank statement from the last 3 months.' },
                   { id: 'RULES', label: 'Agreement', desc: 'Confirm you have read and accept the platform rules.' }
-                ].map((doc) => {
+                ].map((docItem) => {
                   const isLocked = profile?.verificationStatus === 'Verified' || profile?.verificationStatus === 'Pending';
+                  const isUploading = uploadingDoc === docItem.id;
                   
                   return (
-                    <Card key={doc.id} className="p-6 bg-white border-[#E4E4E4] hover:border-[#0055FF] transition-all group shadow-sm flex flex-col justify-between">
+                    <Card key={docItem.id} className={cn(
+                      "p-6 bg-white border-[#E4E4E4] transition-all group shadow-sm flex flex-col justify-between",
+                      !isLocked && "hover:border-[#0055FF]"
+                    )}>
                       <div className="space-y-3 mb-6">
                         <div className="flex justify-between items-start">
-                          <span className="text-[9px] font-bold uppercase text-[#0055FF] tracking-[0.2em]">{doc.id}</span>
+                          <span className="text-[9px] font-bold uppercase text-[#0055FF] tracking-[0.2em]">{docItem.id}</span>
                           {profile?.verificationStatus === 'Verified' && <span className="text-[8px] font-bold uppercase text-[#16835B]">Accepted</span>}
                         </div>
                         <div>
-                          <h4 className="text-11px font-bold uppercase tracking-wider text-[#0A0A0A]">{doc.label}</h4>
-                          <p className="text-[10px] text-[#6B7280] mt-1 leading-relaxed">{doc.desc}</p>
+                          <h4 className="text-11px font-bold uppercase tracking-wider text-[#0A0A0A]">{docItem.label}</h4>
+                          <p className="text-[10px] text-[#6B7280] mt-1 leading-relaxed">{docItem.desc}</p>
                         </div>
                       </div>
                       
                       <button 
-                        onClick={() => handleDocUpload(doc.label)}
-                        disabled={uploadingDoc !== null || isLocked}
+                        onClick={() => initiateUpload(docItem.id)}
+                        disabled={isUploading || isLocked}
                         className={cn(
                           "w-full py-2.5 text-[9px] font-bold uppercase tracking-widest border transition-all flex items-center justify-center space-x-2 shadow-sm",
                           isLocked
@@ -410,7 +483,7 @@ export default function AccountClient() {
                             : "bg-white text-[#0A0A0A] border-[#0A0A0A] hover:bg-[#0055FF] hover:text-white hover:border-[#0055FF]"
                         )}
                       >
-                        {uploadingDoc === doc.label ? (
+                        {isUploading ? (
                           <>
                             <Loader2 className="w-3 h-3 animate-spin" />
                             <span>Processing...</span>
@@ -420,7 +493,10 @@ export default function AccountClient() {
                         ) : profile?.verificationStatus === 'Pending' ? (
                           <span>Locked for Review</span>
                         ) : (
-                          <span>Upload File</span>
+                          <>
+                            {docItem.id === 'RULES' ? <Check className="w-3 h-3" /> : <Upload className="w-3 h-3" />}
+                            <span>{docItem.id === 'RULES' ? "Accept Terms" : "Upload File"}</span>
+                          </>
                         )}
                       </button>
                     </Card>
@@ -429,6 +505,7 @@ export default function AccountClient() {
 
                 <div className="p-6 bg-[#0055FF]/5 border border-dashed border-[#0055FF]/30 flex flex-col justify-center space-y-4">
                   <div className="flex items-center space-x-2 text-[#0055FF]">
+                    <ShieldAlert className="w-3.5 h-3.5" />
                     <span className="text-[10px] font-bold uppercase tracking-widest">Privacy & Security</span>
                   </div>
                   <p className="text-[10px] text-[#6B7280] leading-relaxed">
