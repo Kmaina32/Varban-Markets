@@ -1,13 +1,15 @@
 
-import { auth0 } from "./lib/auth0";
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 /**
- * @fileOverview Auth0 Proxy Middleware.
- * Automatically mounts authentication routes at /auth/*.
+ * @fileOverview Application Middleware.
+ * Auth0 middleware has been decommissioned.
  */
 
-export async function middleware(request: Request) {
-  return await auth0.middleware(request);
+export async function middleware(request: NextRequest) {
+  // Pass through all requests as Auth0 has been disabled
+  return NextResponse.next();
 }
 
 export const config = {
