@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -30,14 +29,6 @@ export default function HomePage() {
     { name: "PCI DSS v4.0", subtitle: "Payment Security", url: "https://cdn.simpleicons.org/visa/1A1F71" },
     { name: "SOC2 Type II", subtitle: "System & Controls", url: "https://cdn.simpleicons.org/securityscorecard/0055FF" },
     { name: "GDPR Compliant", subtitle: "Data Privacy", url: "https://cdn.simpleicons.org/ethereum/3C3C3D" }
-  ];
-
-  const partners = [
-    { name: "Twelve Data", icon: "https://cdn.simpleicons.org/databricks/6B7280" },
-    { name: "Binance", icon: "https://cdn.simpleicons.org/binance/6B7280" },
-    { name: "Coinbase", icon: "https://cdn.simpleicons.org/coinbase/6B7280" },
-    { name: "TradingView", icon: "https://cdn.simpleicons.org/tradingview/6B7280" },
-    { name: "Cloudflare", icon: "https://cdn.simpleicons.org/cloudflare/6B7280" }
   ];
 
   useEffect(() => {
@@ -139,37 +130,33 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Industry Trusted & Certifications Section */}
+      {/* Certifications & Trust Section */}
       <section className="py-24 bg-[#F7F7F5] border-t border-b border-[#E4E4E4]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">Industry Trusted</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">Compliance & Verification</span>
             <h2 className="text-4xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">
-              Infrastructure & Security
+              Certifications & Recognition
             </h2>
             <p className="text-sm text-[#6B7280] leading-relaxed">
-              We operate according to the highest global standards for financial security and data privacy. Our platform is powered by world-class liquidity and infrastructure providers.
+              Varban Markets is certified by global authorities for information security and financial integrity. We maintain rigorous standards to ensure total capital protection.
             </p>
             
-            {/* Logos Grid - Restored and Monochrome */}
-            <div className="pt-12 space-y-10">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 items-center justify-center grayscale opacity-60">
-                {partners.slice(0, 4).map((partner) => (
-                  <div key={partner.name} className="flex flex-col items-center space-y-2 group transition-all duration-300 hover:opacity-100 hover:grayscale-0">
-                    <img src={partner.icon} alt={partner.name} className="h-8 md:h-10 object-contain" />
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A]">{partner.name}</span>
+            {/* Certifications Row */}
+            <div className="pt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
+              {certifications.map((cert) => (
+                <div key={cert.name} className="bg-white border border-[#E4E4E4] p-4 flex flex-col items-center justify-center space-y-3 shadow-sm hover:border-[#0055FF] transition-colors group">
+                  <img src={cert.url} alt={cert.name} className="h-8 md:h-10 object-contain" />
+                  <div className="text-center">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A] block">{cert.name}</span>
+                    <span className="text-[8px] text-[#6B7280] uppercase block">{cert.subtitle}</span>
                   </div>
-                ))}
-              </div>
-              <div className="flex justify-center grayscale opacity-60">
-                <div className="flex flex-col items-center space-y-2 group transition-all duration-300 hover:opacity-100 hover:grayscale-0">
-                  <img src={partners[4].icon} alt={partners[4].name} className="h-8 md:h-10 object-contain" />
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A]">{partners[4].name}</span>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
 
+          {/* Minimalist Trust Pillars */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mt-20 pt-16 border-t border-[#E4E4E4]">
             <div className="space-y-3">
               <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A] border-l-2 border-[#0055FF] pl-4">Capital Protection</h3>
@@ -243,6 +230,7 @@ export default function HomePage() {
         <div className="absolute top-0 right-0 w-1/2 h-full bg-[#0055FF]/10 skew-x-12 transform translate-x-20"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           <div className="max-w-2xl mx-auto space-y-8">
+            <h2 className="text-4xl font-bold uppercase tracking-tight leading-tight">Start Trading in Minutes.</h2>
             <h2 className="text-4xl font-bold uppercase tracking-tight leading-tight">Start Trading in Minutes.</h2>
             <p className="text-sm text-[#D1D5DB] leading-relaxed">
               Open your professional trading account today and get access to the world's most stable derivatives infrastructure.
