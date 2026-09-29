@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
@@ -59,6 +60,13 @@ export default function AccountClient() {
   
   const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   
+  // Granular KYC submissions tracking
+  const kycSubQuery = useMemo(() => {
+    if (!db || !user) return null;
+    return collection(db, `users/${user.uid}/kyc_submissions`);
+  }, [db, user]);
+  const { data: submissions, loading: subLoading } = useCollection<any>(kycSubQuery);
+
   const [activeTab, setActiveTab] = useState<AccountTab>('profile');
   const [geoData, setGeoData] = useState<GeolocationData | null>(null);
   const [geoLoading, setGeoLoading] = useState(false);
@@ -260,7 +268,7 @@ export default function AccountClient() {
           timestamp: serverTimestamp()
         });
 
-        // 2. Update user general verification status
+        // 2. Update user general verification status to Pending
         await updateDoc(doc(db, "users", user.uid), { 
           verificationStatus: "Pending",
           kycSubmittedAt: serverTimestamp() 
@@ -450,13 +458,18 @@ export default function AccountClient() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                  { id: 'ID', label: 'Government ID', desc: 'A clear photo of your Passport or National ID card.' },
-                  { id: 'ADDRESS', label: 'Proof of Address', desc: 'A utility bill or bank statement from the last 3 months.' },
-                  { id: 'RULES', label: 'Agreement', desc: 'Confirm you have read and accept the platform rules.' }
+                  { id: 'ID', subId: 'GOVERNMENT_ID', label: 'Government ID', desc: 'A clear photo of your Passport or National ID card.' },
+                  { id: 'ADDRESS', subId: 'PROOF_OF_ADDRESS', label: 'Proof of Address', desc: 'A utility bill or bank statement from the last 3 months.' },
+                  { id: 'RULES', subId: 'RULES_AGREEMENT', label: 'Agreement', desc: 'Confirm you have read and accept the platform rules.' }
                 ].map((docItem) => {
-                  const isLocked = profile?.verificationStatus === 'Verified' || profile?.verificationStatus === 'Pending';
+                  const submission = submissions?.find(s => s.id === docItem.subId);
+                  const isVerified = profile?.verificationStatus === 'Verified';
+                  const isSubmitted = submission?.status === 'Pending' || submission?.status === 'Accepted';
                   const isUploading = uploadingDoc === docItem.id;
                   
+                  // Locked only if verified OR if this specific doc is pending while global status is Pending
+                  const isLocked = isVerified || (isSubmitted && profile?.verificationStatus === 'Pending');
+
                   return (
                     <Card key={docItem.id} className={cn(
                       "p-6 bg-white border-[#E4E4E4] transition-all group shadow-sm flex flex-col justify-between",
@@ -465,7 +478,11 @@ export default function AccountClient() {
                       <div className="space-y-3 mb-6">
                         <div className="flex justify-between items-start">
                           <span className="text-[9px] font-bold uppercase text-[#0055FF] tracking-[0.2em]">{docItem.id}</span>
-                          {profile?.verificationStatus === 'Verified' && <span className="text-[8px] font-bold uppercase text-[#16835B]">Accepted</span>}
+                          {isVerified || submission?.status === 'Accepted' ? (
+                            <span className="text-[8px] font-bold uppercase text-[#16835B]">Accepted</span>
+                          ) : isSubmitted ? (
+                            <span className="text-[8px] font-bold uppercase text-[#C9A227]">Auditing</span>
+                          ) : null}
                         </div>
                         <div>
                           <h4 className="text-11px font-bold uppercase tracking-wider text-[#0A0A0A]">{docItem.label}</h4>
@@ -488,9 +505,9 @@ export default function AccountClient() {
                             <Loader2 className="w-3 h-3 animate-spin" />
                             <span>Processing...</span>
                           </>
-                        ) : profile?.verificationStatus === 'Verified' ? (
+                        ) : isVerified ? (
                           <span>Verified</span>
-                        ) : profile?.verificationStatus === 'Pending' ? (
+                        ) : isSubmitted && profile?.verificationStatus === 'Pending' ? (
                           <span>Locked for Review</span>
                         ) : (
                           <>
