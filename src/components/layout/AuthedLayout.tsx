@@ -1,9 +1,5 @@
-'use client';
 
-/**
- * @fileOverview Master Authenticated Layout.
- * Verified and hardened with Zero-AI architecture and Super Admin authority logic.
- */
+'use client';
 
 import AuthedSidebar from "./AuthedSidebar";
 import AdminSidebar from "./AdminSidebar";
@@ -18,7 +14,6 @@ import { useTranslation } from "@/app/lib/i18n-context";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import { cn } from "@/app/lib/utils";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 const STRICT_PATHS = [
   '/terminal', '/dashboard', '/portfolio', '/positions', 
@@ -28,7 +23,6 @@ const STRICT_PATHS = [
   '/referral', '/admin', '/markets', '/news'
 ];
 
-// Defined Super Admin Accounts with Root Authority
 const SUPER_ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
 
 interface AuthedLayoutProps {
@@ -59,38 +53,15 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
     if (savedDemo) setDemoBalance(parseFloat(savedDemo));
   }, []);
 
-  useEffect(() => {
-    const handleGlobalChange = () => {
-      const mode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
-      if (mode) setAccountMode(mode);
-      const savedDemo = localStorage.getItem('varban_demo_balance');
-      if (savedDemo) setDemoBalance(parseFloat(savedDemo));
-    };
-    window.addEventListener('varban_account_mode_changed', handleGlobalChange);
-    return () => window.removeEventListener('varban_account_mode_changed', handleGlobalChange);
-  }, []);
-
-  const selectAccountMode = (mode: 'REAL' | 'DEMO') => {
-    setAccountMode(mode);
-    localStorage.setItem('varban_account_mode', mode);
-    window.dispatchEvent(new Event('varban_account_mode_changed'));
-  };
-
   const isStrict = STRICT_PATHS.some(path => pathname === path || pathname?.startsWith(path + '/'));
   const isAdminPath = pathname?.startsWith('/admin');
   
-  // Authority Verification: Super Admin (Hardcoded) OR Admin Role (Firestore)
   const isAdmin = useMemo(() => {
     if (!user?.email) return false;
     const isSuper = SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase());
-    const hasAdminRole = profile?.role === 'Admin';
+    const hasAdminRole = profile?.status?.role === 'Admin';
     return isSuper || hasAdminRole;
   }, [user, profile]);
-
-  const isProfileComplete = useMemo(() => {
-    if (!profile) return false;
-    return !!(profile.firstName && profile.lastName && profile.phone && profile.country);
-  }, [profile]);
 
   useEffect(() => {
     if (!loading && !profileLoading) {
@@ -104,63 +75,9 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
     }
   }, [user, loading, profileLoading, isStrict, isAdminPath, isAdmin, router]);
 
-  useEffect(() => {
-    if (user && profile && !isProfileComplete && db) {
-      const triggerNotification = async () => {
-        if (sessionStorage.getItem('varban_profile_alert_sent')) return;
-        try {
-          await addDoc(collection(db, `users/${user.uid}/notifications`), {
-            title: "Profile Completion Required",
-            body: "Your identity profile is currently incomplete. Please update your phone number and country in Account Settings to ensure uninterrupted service.",
-            type: "Security",
-            isUnread: true,
-            timestamp: serverTimestamp()
-          });
-          sessionStorage.setItem('varban_profile_alert_sent', 'true');
-        } catch (e) {}
-      };
-      triggerNotification();
-    }
-  }, [user, profile, isProfileComplete, db]);
-
   if (isTerminal || !isStrict) return <>{children}</>;
-
-  if (loading || profileLoading) {
-    return <LoadingOverlay message="Synchronizing Workspace" />;
-  }
-
+  if (loading || profileLoading) return <LoadingOverlay />;
   if (!user) return null;
-
-  if (isAdminPath) {
-    return (
-      <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
-        <AdminHeader title={title} subtitle={subtitle} />
-        <div className="flex flex-grow overflow-hidden relative">
-          <AdminSidebar className="hidden lg:flex" />
-          {isMobileMenuOpen && (
-            <div className="fixed inset-0 z-[250] lg:hidden">
-              <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
-              <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white animate-in slide-in-from-left duration-300 shadow-2xl">
-                <AdminSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
-              </div>
-            </div>
-          )}
-          <main className="flex-grow overflow-y-auto bg-[#F7F7F5] p-4 md:p-8 no-scrollbar lg:ml-16">
-            <div className="max-w-7xl mx-auto">
-              <button 
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="lg:hidden mb-4 px-3 py-1.5 border border-[#E4E4E4] bg-white text-[10px] font-bold uppercase tracking-wider flex items-center space-x-1.5"
-              >
-                <Menu className="w-3.5 h-3.5 text-[#0055FF]" />
-                <span>Control Menu</span>
-              </button>
-              {children}
-            </div>
-          </main>
-        </div>
-      </div>
-    );
-  }
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
@@ -168,91 +85,29 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
     <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
       <header className="relative h-16 border-b border-[#E4E4E4] bg-white flex items-center justify-between px-3 md:px-6 shrink-0 z-[150] shadow-sm">
         <div className="flex items-center space-x-2 md:space-x-4">
-          <button 
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
-            className="p-1.5 lg:hidden hover:bg-[#F7F7F5] transition-colors"
-          >
-            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-          <Link href="/dashboard" className="flex items-center">
-            <Image 
-              src="/assets/logo2.png" 
-              alt="Varban Workspace" 
-              width={95} 
-              height={22} 
-              style={{ height: 'auto' }}
-              className="w-auto object-contain" 
-              priority 
-            />
-          </Link>
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-1.5 lg:hidden"><Menu className="w-5 h-5" /></button>
+          <Link href="/dashboard" className="flex items-center"><Image src="/assets/logo2.png" alt="Varban" width={95} height={22} className="w-auto object-contain" priority /></Link>
           <div className="h-6 w-px bg-[#E4E4E4] hidden lg:block"></div>
           <div className="hidden lg:block">
-            <h1 className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#0A0A0A]">{title}</h1>
+            <h1 className="text-[10px] font-bold uppercase tracking-[0.1em]">{title}</h1>
             {subtitle && <p className="text-[9px] text-[#6B7280] uppercase tracking-wider mt-0.5">{subtitle}</p>}
           </div>
         </div>
-
         <div className="flex items-center space-x-2 md:space-x-6">
-          <button 
-            onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-            className="hidden md:flex items-center space-x-2 border border-[#E4E4E4] px-2 md:px-3 py-1 bg-white hover:bg-[#F7F7F5] transition-colors shadow-sm select-none"
-          >
+          <div className="hidden md:flex items-center space-x-2 border border-[#E4E4E4] px-3 py-1 bg-white">
             <div className="text-right">
-              <span className="text-[7px] md:text-[8px] text-[#6B7280] uppercase tracking-widest font-bold block">
-                {accountMode === 'REAL' ? 'Real' : 'Demo'}
-              </span>
-              <span className={cn("text-[9px] md:text-[10px] font-mono font-bold block", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>
-                ${formatNumber(activeBalance, { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-            <ChevronDown className="w-3 h-3 text-[#6B7280]" />
-          </button>
-
-          <div className="flex items-center space-x-1 md:space-x-3">
-            <Link href="/notifications" className="relative p-1.5 md:p-2 hover:bg-[#F7F7F5] transition-colors">
-              <Bell className="w-4 h-4 text-[#6B7280]" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-[#0055FF] rounded-full border border-white"></span>
-            </Link>
-            <div className="relative">
-              <button 
-                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)} 
-                className="flex items-center space-x-2 group focus:outline-none"
-              >
-                <div className={cn(
-                  "w-7 h-7 md:w-8 md:h-8 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs transition-colors shadow-sm",
-                  isProfileDropdownOpen ? "ring-2 ring-[#0055FF]" : "group-hover:ring-2 group-hover:ring-[#0055FF]"
-                )}>
-                  {user?.email ? user.email.substring(0, 2).toUpperCase() : 'VM'}
-                </div>
-              </button>
-              <ProfileDropdown 
-                user={user}
-                profile={profile}
-                accountMode={accountMode}
-                demoBalance={demoBalance}
-                isOpen={isProfileDropdownOpen}
-                onClose={() => setIsProfileDropdownOpen(false)}
-                onSelectMode={selectAccountMode}
-              />
+              <span className="text-[7px] text-[#6B7280] uppercase font-bold block">{accountMode}</span>
+              <span className={cn("text-[9px] font-mono font-bold block", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>${formatNumber(activeBalance, { minimumFractionDigits: 2 })}</span>
             </div>
           </div>
+          <button onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)} className="w-8 h-8 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs">{user?.email?.substring(0, 2).toUpperCase()}</button>
+          <ProfileDropdown user={user} profile={profile} accountMode={accountMode} demoBalance={demoBalance} isOpen={isProfileDropdownOpen} onClose={() => setIsProfileDropdownOpen(false)} onSelectMode={(m) => { setAccountMode(m); localStorage.setItem('varban_account_mode', m); window.dispatchEvent(new Event('varban_account_mode_changed')); }} />
         </div>
       </header>
-      
       <div className="flex flex-grow overflow-hidden relative">
-        <AuthedSidebar className="hidden lg:flex" />
-        {isMobileMenuOpen && (
-          <div className="fixed inset-0 z-[250] lg:hidden">
-            <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
-            <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white animate-in slide-in-from-left duration-300 shadow-2xl">
-              <AuthedSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
-            </div>
-          </div>
-        )}
-        <main className="flex-grow overflow-y-auto bg-[#F7F7F5] p-3 md:p-8 no-scrollbar lg:ml-16">
-          <div className="max-w-7xl mx-auto">
-            {children}
-          </div>
+        {isAdminPath ? <AdminSidebar className="hidden lg:flex" /> : <AuthedSidebar className="hidden lg:flex" />}
+        <main className="flex-grow overflow-y-auto bg-[#F7F7F5] p-4 md:p-8 lg:ml-16 no-scrollbar">
+          <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>
     </div>

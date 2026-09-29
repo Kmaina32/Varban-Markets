@@ -3,185 +3,70 @@
   "entities": {
     "UserProfile": {
       "title": "User Profile",
-      "description": "Core account data for the trader.",
+      "description": "Core account document for the trader.",
       "type": "object",
       "properties": {
-        "balance": { "type": "number", "description": "Current account balance in base currency." },
-        "equity": { "type": "number", "description": "Total account equity including open positions." },
-        "currency": { 
-          "type": "string", 
-          "description": "Base account currency supported by Paystack.",
-          "enum": ["USD", "NGN", "GHS", "ZAR", "KES"]
-        },
-        "language": { "type": "string", "enum": ["ENGLISH", "FRENCH", "SPANISH", "PORTUGUESE"] },
-        "timezone": { "type": "string", "description": "Preferred timezone for market clocks." },
-        "verificationStatus": { "type": "string", "enum": ["Not Verified", "Pending", "Verified", "Rejected"] },
-        "fullName": { "type": "string" },
-        "email": { "type": "string" },
-        "phone": { "type": "string" },
-        "country": { "type": "string" },
-        "role": { "type": "string", "enum": ["Trader", "Admin"] },
-        "referralCode": { "type": "string" },
-        "referredBy": { "type": "string" },
-        "openRisk": { "type": "number" },
-        "dailyPL": { "type": "number" },
-        "cookieConsent": { "type": "string", "enum": ["Accepted", "Declined"] },
-        "cookieConsentAt": { "type": "string", "format": "date-time" },
-        "alerts": {
+        "balance": { "type": "number", "description": "Current account balance." },
+        "equity": { "type": "number", "description": "Total equity including open risk." },
+        "currency": { "type": "string", "enum": ["USD", "NGN", "GHS", "ZAR", "KES"] },
+        "profile": {
           "type": "object",
           "properties": {
-            "newTrades": { "type": "boolean" },
-            "withdrawSuccess": { "type": "boolean" },
-            "securityAlerts": { "type": "boolean" },
-            "systemStatus": { "type": "boolean" }
+            "firstName": { "type": "string" },
+            "middleName": { "type": "string" },
+            "lastName": { "type": "string" },
+            "fullName": { "type": "string" },
+            "email": { "type": "string" },
+            "phone": { "type": "string" },
+            "country": { "type": "string" }
+          }
+        },
+        "status": {
+          "type": "object",
+          "properties": {
+            "verificationStatus": { "type": "string", "enum": ["Not Verified", "Pending", "Verified", "Rejected"] },
+            "role": { "type": "string", "enum": ["Trader", "Admin"] },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "lastLogin": { "type": "string", "format": "date-time" }
+          }
+        },
+        "referral": {
+          "type": "object",
+          "properties": {
+            "code": { "type": "string" },
+            "referredBy": { "type": "string" }
+          }
+        },
+        "preferences": {
+          "type": "object",
+          "properties": {
+            "language": { "type": "string", "enum": ["ENGLISH", "FRENCH", "SPANISH", "PORTUGUESE"] },
+            "timezone": { "type": "string" },
+            "uiDensity": { "type": "string", "enum": ["standard", "compact"] },
+            "alerts": {
+              "type": "object",
+              "properties": {
+                "newTrades": { "type": "boolean" },
+                "withdrawSuccess": { "type": "boolean" },
+                "securityAlerts": { "type": "boolean" },
+                "systemStatus": { "type": "boolean" }
+              }
+            }
           }
         }
       },
-      "required": ["balance", "verificationStatus", "currency"]
-    },
-    "UserSession": {
-      "title": "Active Device Session",
-      "description": "Record of a registered device with active access tokens.",
-      "type": "object",
-      "properties": {
-        "deviceName": { "type": "string" },
-        "ip": { "type": "string" },
-        "browser": { "type": "string" },
-        "os": { "type": "string" },
-        "lastActive": { "type": "string", "format": "date-time" },
-        "isCurrent": { "type": "boolean" }
-      }
-    },
-    "KycSubmission": {
-      "title": "KYC Document Submission",
-      "description": "Record of identity documents provided for verification.",
-      "type": "object",
-      "properties": {
-        "type": { "type": "string", "enum": ["ID", "ADDRESS", "SELFIE", "RULES"] },
-        "fileName": { "type": "string" },
-        "fileSize": { "type": "number" },
-        "fileType": { "type": "string" },
-        "status": { "type": "string", "enum": ["Pending", "Accepted", "Rejected"] },
-        "timestamp": { "type": "string", "format": "date-time" },
-        "storageKey": { "type": "string" }
-      }
-    },
-    "NewsCache": {
-      "title": "Intelligence Cache",
-      "description": "Synchronized market headlines for internal analysis.",
-      "type": "object",
-      "properties": {
-        "uuid": { "type": "string" },
-        "title": { "type": "string" },
-        "description": { "type": "string" },
-        "publisher": { "type": "string" },
-        "image": { "type": "string" },
-        "url": { "type": "string" },
-        "category": { "type": "array", "items": { "type": "string" } },
-        "published_at": { "type": "string", "format": "date-time" },
-        "syncedAt": { "type": "string", "format": "date-time" }
-      }
-    },
-    "Article": {
-      "title": "Intelligence Article",
-      "description": "Internal market insight or strategy briefing published by admins.",
-      "type": "object",
-      "properties": {
-        "title": { "type": "string" },
-        "body": { "type": "string" },
-        "category": { "type": "string", "enum": ["Insight", "Strategy", "Market Update"] },
-        "assetTag": { "type": "string" },
-        "author": { "type": "string" },
-        "status": { "type": "string", "enum": ["Draft", "Published"] },
-        "timestamp": { "type": "string", "format": "date-time" },
-        "updatedAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["title", "body", "category", "status"]
-    },
-    "UserPasskey": {
-      "title": "User Passkey",
-      "description": "WebAuthn credential for biometric login.",
-      "type": "object",
-      "properties": {
-        "credentialID": { "type": "string" },
-        "publicKey": { "type": "string" },
-        "counter": { "type": "number" },
-        "transports": { "type": "array", "items": { "type": "string" } },
-        "createdAt": { "type": "string", "format": "date-time" },
-        "deviceName": { "type": "string" }
-      }
-    },
-    "UserCryptoWallet": {
-      "title": "User Crypto Wallet",
-      "description": "Assigned blockchain deposit addresses for a user.",
-      "type": "object",
-      "properties": {
-        "asset": { "type": "string" },
-        "network": { "type": "string" },
-        "address": { "type": "string" },
-        "assignedAt": { "type": "string", "format": "date-time" }
-      }
-    },
-    "Position": {
-      "title": "Trade Position",
-      "description": "Active or closed market exposure record.",
-      "type": "object",
-      "properties": {
-        "instrument": { "type": "string" },
-        "vector": { "type": "string", "enum": ["CALL", "PUT"] },
-        "entryPrice": { "type": "number" },
-        "currentPrice": { "type": "number" },
-        "stake": { "type": "number" },
-        "duration": { "type": "string" },
-        "status": { "type": "string", "enum": ["Open", "Closed"] },
-        "profit": { "type": "number" },
-        "timestamp": { "type": "string", "format": "date-time" },
-        "settledAt": { "type": "string", "format": "date-time" }
-      }
+      "required": ["balance", "currency", "profile", "status"]
     },
     "Transaction": {
       "title": "Transaction Record",
-      "description": "Ledger entry for funds or settlements.",
       "type": "object",
       "properties": {
         "type": { "type": "string" },
-        "asset": { "type": "string" },
-        "network": { "type": "string" },
         "amount": { "type": "number" },
-        "status": { "type": "string", "enum": ["Pending", "Review", "Approved", "Confirmed", "Rejected"] },
+        "asset": { "type": "string" },
+        "status": { "type": "string" },
         "timestamp": { "type": "string", "format": "date-time" },
-        "ref": { "type": "string" },
-        "txHash": { "type": "string" },
-        "destinationAddress": { "type": "string" },
-        "currency": { "type": "string" },
-        "fee": { "type": "number" },
-        "netAmount": { "type": "number" }
-      }
-    },
-    "Notification": {
-      "title": "Notification",
-      "description": "System or trade alert.",
-      "type": "object",
-      "properties": {
-        "title": { "type": "string" },
-        "body": { "type": "string" },
-        "type": { "type": "string" },
-        "isUnread": { "type": "boolean" },
-        "timestamp": { "type": "string", "format": "date-time" }
-      }
-    },
-    "ContactMessage": {
-      "title": "Contact Message",
-      "description": "User inquiry or support request.",
-      "type": "object",
-      "properties": {
-        "fullName": { "type": "string" },
-        "email": { "type": "string" },
-        "topic": { "type": "string" },
-        "message": { "type": "string" },
-        "status": { "type": "string", "enum": ["New", "Read", "Replied"] },
-        "timestamp": { "type": "string", "format": "date-time" },
-        "userId": { "type": "string" }
+        "ref": { "type": "string" }
       }
     }
   },
@@ -191,51 +76,23 @@
   "firestore": {
     "/users/{userId}": {
       "schema": "UserProfile",
-      "description": "Primary user profile and balance data"
-    },
-    "/users/{userId}/sessions/{sessId}": {
-      "schema": "UserSession",
-      "description": "Registered active sign-in sessions"
-    },
-    "/users/{userId}/passkeys/{credId}": {
-      "schema": "UserPasskey",
-      "description": "Registered biometric credentials"
-    },
-    "/users/{userId}/kyc_submissions/{docId}": {
-      "schema": "KycSubmission",
-      "description": "KYC document audit trail"
-    },
-    "/users/{userId}/crypto_wallets/{walletId}": {
-      "schema": "UserCryptoWallet",
-      "description": "Assigned user deposit addresses"
-    },
-    "/users/{userId}/positions/{posId}": {
-      "schema": "Position",
-      "description": "User trade history and open positions"
+      "description": "Primary user profile node"
     },
     "/users/{userId}/transactions/{txId}": {
       "schema": "Transaction",
-      "description": "Funding and settlement logs"
+      "description": "Financial ledger sub-collection"
     },
-    "/users/{userId}/notifications/{noteId}": {
-      "schema": "Notification",
-      "description": "User activity alerts"
+    "/users/{userId}/positions/{posId}": {
+      "schema": "object",
+      "description": "Trade exposure sub-collection"
     },
     "/users/{userId}/watchlist/{symbol}": {
-      "schema": { "type": "object", "properties": { "symbol": { "type": "string" } } },
-      "description": "User favorite instruments"
+      "schema": "object",
+      "description": "User market favorites"
     },
-    "/contact_messages/{msgId}": {
-      "schema": "ContactMessage",
-      "description": "Global inbox for platform inquiries"
-    },
-    "/articles/{articleId}": {
-      "schema": "Article",
-      "description": "Platform intelligence reports and briefings"
-    },
-    "/news_cache/{cacheId}": {
-      "schema": "NewsCache",
-      "description": "Global intelligence feed for internal analysis"
+    "/users/{userId}/notifications/{noteId}": {
+      "schema": "object",
+      "description": "Security and trade alerts"
     }
   }
 }
