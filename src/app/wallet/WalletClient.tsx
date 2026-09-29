@@ -1,3 +1,4 @@
+
 "use client";
 
 /**
@@ -25,7 +26,7 @@ import {
   Shield
 } from "lucide-react";
 import { useUser, useDoc, useFirestore, useCollection } from "@/firebase";
-import { collection, query, orderBy, limit, where, doc, updateDoc, increment, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, orderBy, limit, where, doc, updateDoc, increment, addDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 import PageTutorial, { TutorialStep } from "@/components/shared/PageTutorial";
@@ -138,7 +139,12 @@ export default function WalletClient() {
     setIsProcessing(true);
     const refKey = `WTH-${Math.random().toString(36).substring(7).toUpperCase()}`;
     try {
-      await updateDoc(doc(db, "users", user.uid), { balance: increment(-amountNum), equity: increment(-amountNum) });
+      // Use setDoc merge with increment to prevent "No document to update" error
+      await setDoc(doc(db, "users", user.uid), { 
+        balance: increment(-amountNum), 
+        equity: increment(-amountNum) 
+      }, { merge: true });
+      
       await addDoc(collection(db, `users/${user.uid}/transactions`), {
         type: "Withdrawal", asset: selectedCurrency, amount: amountNum, status: "Pending Verification",
         timestamp: serverTimestamp(), ref: refKey, currency: selectedCurrency, bankDetails: { bankName, accountNumber }

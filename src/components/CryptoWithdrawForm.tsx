@@ -1,3 +1,4 @@
+
 'use client';
 
 /**
@@ -17,7 +18,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { useUser, useFirestore, useDoc } from "@/firebase";
-import { collection, addDoc, serverTimestamp, doc, updateDoc, increment } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, updateDoc, increment, setDoc } from "firebase/firestore";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -133,11 +134,11 @@ export default function CryptoWithdrawForm() {
     setIsProcessing(true);
     const refKey = `CRYPTO-WTH-${Math.random().toString(36).substring(7).toUpperCase()}`;
 
-    // 1. Deduct Real Account Balance
-    updateDoc(doc(db, "users", user.uid), {
+    // 1. Deduct Real Account Balance using setDoc merge for safety
+    setDoc(doc(db, "users", user.uid), {
       balance: increment(-numAmount),
       equity: increment(-numAmount)
-    }).catch(async () => {
+    }, { merge: true }).catch(async () => {
       const permissionError = new FirestorePermissionError({
         path: `users/${user.uid}`,
         operation: 'update',
@@ -297,7 +298,7 @@ export default function CryptoWithdrawForm() {
               <Lock className="w-3.5 h-3.5 text-[#0055FF]" /> Account Security PIN / 2FA Code (Optional)
             </label>
             <input 
-              type="password"
+              type="password" 
               placeholder="Enter 6-digit security PIN"
               value={pinCode}
               onChange={(e) => setPinCode(e.target.value)}

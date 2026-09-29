@@ -106,13 +106,18 @@ export default function AccountClient() {
     try {
       const fullName = `${profileForm.firstName} ${profileForm.lastName}`.trim();
       const cleanPhone = `${profileForm.dialCode} ${profileForm.phone}`.trim();
-      await updateDoc(doc(db, "users", user.uid), {
-        "profile.firstName": profileForm.firstName.trim(),
-        "profile.lastName": profileForm.lastName.trim(),
-        "profile.fullName": fullName,
-        "profile.phone": cleanPhone,
-        "profile.country": profileForm.country,
-      });
+      
+      // Use setDoc with merge to prevent "No document to update" error
+      await setDoc(doc(db, "users", user.uid), {
+        profile: {
+          firstName: profileForm.firstName.trim(),
+          lastName: profileForm.lastName.trim(),
+          fullName: fullName,
+          phone: cleanPhone,
+          country: profileForm.country,
+        }
+      }, { merge: true });
+      
       setProfileFeedback("Profile updated successfully.");
       setTimeout(() => setProfileFeedback(null), 4000);
     } catch (err) { alert("Failed to save changes."); }
@@ -158,11 +163,13 @@ export default function AccountClient() {
 
       if (!uploadResp.ok) throw new Error("Transmission failed");
 
-      // 3. Update Firestore
+      // 3. Update Firestore using setDoc merge
       const finalUrl = `${R2_PUBLIC_URL}/${key}`;
-      await updateDoc(doc(db, "users", user.uid), {
-        "profile.photoUrl": finalUrl
-      });
+      await setDoc(doc(db, "users", user.uid), {
+        profile: {
+          photoUrl: finalUrl
+        }
+      }, { merge: true });
 
       setProfileFeedback("Identity photo updated.");
       setTimeout(() => setProfileFeedback(null), 3000);
@@ -177,7 +184,10 @@ export default function AccountClient() {
   const updatePreference = async (key: string, value: any) => {
     if (!user || !db) return;
     try {
-      await updateDoc(doc(db, "users", user.uid), { [`preferences.${key}`]: value });
+      // Use setDoc merge for safe preference updates
+      await setDoc(doc(db, "users", user.uid), { 
+        preferences: { [key]: value } 
+      }, { merge: true });
     } catch (e) {}
   };
 

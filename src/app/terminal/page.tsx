@@ -1,3 +1,4 @@
+
 'use client';
 
 /**
@@ -40,7 +41,7 @@ import {
 } from "lucide-react";
 import { TradingViewChart, ChartMode } from "@/components/terminal/TradingViewChart";
 import { useUser, useDoc, useFirestore, useCollection, useAuth } from "@/firebase";
-import { collection, addDoc, serverTimestamp, query, where, orderBy, doc, updateDoc, increment } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, query, where, orderBy, doc, updateDoc, increment, setDoc } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 import AuthedSidebar from "@/components/layout/AuthedSidebar";
@@ -120,10 +121,11 @@ export default function TerminalWorkspace() {
       }).catch(() => {});
 
       if (accountMode === 'REAL') {
-        updateDoc(doc(db, "users", user.uid), {
+        // Use setDoc merge with increment to prevent "No document to update" error
+        setDoc(doc(db, "users", user.uid), {
           balance: increment(netProfit),
           equity: increment(netProfit)
-        }).catch(() => {});
+        }, { merge: true }).catch(() => {});
 
         addDoc(collection(db, `users/${user.uid}/transactions`), {
           type: "Trade Settlement",
@@ -298,12 +300,12 @@ export default function TerminalWorkspace() {
       console.error("Failed to update position doc:", err);
     });
 
-    // c. Call updateDoc on users/{uid} to add cashout amount back to balance (use increment)
+    // c. Call setDoc merge on users/{uid} to add cashout amount back to balance safely
     if (accountMode === 'REAL') {
-      updateDoc(doc(db, "users", user.uid), {
+      setDoc(doc(db, "users", user.uid), {
         balance: increment(cashoutAmount),
         equity: increment(cashoutAmount)
-      }).catch((err) => {
+      }, { merge: true }).catch((err) => {
         console.error("Failed to update balance:", err);
       });
 

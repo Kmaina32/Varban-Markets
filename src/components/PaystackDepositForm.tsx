@@ -1,3 +1,4 @@
+
 'use client';
 
 /**
@@ -9,7 +10,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { ShieldCheck, Check, CreditCard, Bell } from "lucide-react";
 import { useUser, useFirestore, useDoc } from "@/firebase";
-import { collection, addDoc, serverTimestamp, doc, updateDoc, increment } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, updateDoc, increment, setDoc } from "firebase/firestore";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { usePaystackPayment } from 'react-paystack';
@@ -66,11 +67,11 @@ export default function PaystackDepositForm() {
       errorEmitter.emit('permission-error', permissionError);
     });
 
-    // 2. Atomically Adjust Balance
-    updateDoc(doc(db, "users", user.uid), {
+    // 2. Atomically Adjust Balance using setDoc merge to ensure doc existence
+    setDoc(doc(db, "users", user.uid), {
       balance: increment(amountNum),
       equity: increment(amountNum)
-    }).catch(async () => {
+    }, { merge: true }).catch(async () => {
       const permissionError = new FirestorePermissionError({
         path: `users/${user.uid}`,
         operation: 'update',
