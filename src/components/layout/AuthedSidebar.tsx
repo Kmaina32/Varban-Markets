@@ -1,5 +1,4 @@
-
-'use client';
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -74,7 +73,8 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
   const adminSection = {
     title: "ADMINISTRATION",
     items: [
-      { label: "Administration", href: "/admin", icon: ShieldAlert },
+      { label: "Oversight Node", href: "/admin", icon: ShieldAlert },
+      { label: "User Directory", href: "/admin/users", icon: ShieldAlert },
     ]
   };
 

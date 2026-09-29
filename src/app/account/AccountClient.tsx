@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
@@ -62,14 +61,12 @@ export default function AccountClient() {
   
   const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   
-  // Granular KYC submissions tracking
   const kycSubQuery = useMemo(() => {
     if (!db || !user) return null;
     return collection(db, `users/${user.uid}/kyc_submissions`);
   }, [db, user]);
   const { data: submissions, loading: subLoading } = useCollection<any>(kycSubQuery);
 
-  // Sessions tracking
   const sessionsQuery = useMemo(() => {
     if (!db || !user) return null;
     return query(collection(db, `users/${user.uid}/sessions`), orderBy("lastActive", "desc"));
@@ -83,7 +80,10 @@ export default function AccountClient() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeUploadType, setActiveUploadType] = useState<string | null>(null);
 
-  // Sync state with URL
+  // Terms Agreement Wizard State for KYC tab
+  const [showKycTerms, setShowKycTerms] = useState(false);
+  const [kycTermsStep, setKycTermsStep] = useState(0);
+
   useEffect(() => {
     const tabParam = searchParams.get('tab') as AccountTab;
     if (tabParam && ['profile', 'kyc', 'security', 'alerts', 'display'].includes(tabParam)) {
@@ -92,7 +92,6 @@ export default function AccountClient() {
     if (searchParams.get('tab') === 'verification') setActiveTab('kyc');
   }, [searchParams]);
 
-  // Fetch Geo Data for security tab using device permission flow
   useEffect(() => {
     if (activeTab === 'security' && !geoData) {
       setGeoLoading(true);
@@ -119,14 +118,9 @@ export default function AccountClient() {
     }
   };
 
-  // --- SUB-MODULE: PROFILE ---
+  // --- PROFILE LOGIC ---
   const [profileForm, setProfileForm] = useState({
-    firstName: "",
-    middleName: "",
-    lastName: "",
-    phone: "",
-    country: "United Kingdom",
-    dialCode: "+44"
+    firstName: "", middleName: "", lastName: "", phone: "", country: "United Kingdom", dialCode: "+44"
   });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileFeedback, setProfileFeedback] = useState<string | null>(null);
@@ -168,10 +162,9 @@ export default function AccountClient() {
     finally { setIsSavingProfile(false); }
   };
 
-  // --- SUB-MODULE: SECURITY ---
+  // --- SECURITY LOGIC ---
   const [isBiometricLoading, setIsBiometricLoading] = useState(false);
   const [isPwdResetLoading, setIsPwdResetLoading] = useState(false);
-  
   const passkeysQuery = useMemo(() => {
     if (!db || !user) return null;
     return collection(db, `users/${user.uid}/passkeys`);
@@ -205,62 +198,12 @@ export default function AccountClient() {
     finally { setIsPwdResetLoading(false); }
   };
 
-  // --- SUB-MODULE: DISPLAY / PREFERENCES ---
-  const [displayForm, setDisplayForm] = useState({
-    currency: "USD",
-    language: "ENGLISH",
-    timezone: "UTC+0",
-    newTrades: true,
-    withdrawSuccess: true,
-    securityAlerts: true,
-    systemStatus: true
-  });
-
-  useEffect(() => {
-    if (profile) {
-      setDisplayForm({
-        currency: profile.currency || "USD",
-        language: profile.language || "ENGLISH",
-        timezone: profile.timezone || "UTC+0",
-        newTrades: profile.alerts?.newTrades ?? true,
-        withdrawSuccess: profile.alerts?.withdrawSuccess ?? true,
-        securityAlerts: profile.alerts?.securityAlerts ?? true,
-        systemStatus: profile.alerts?.systemStatus ?? true
-      });
-    }
-  }, [profile]);
-
-  const saveDisplay = async () => {
-    if (!user || !db) return;
-    try {
-      await updateDoc(doc(db, "users", user.uid), {
-        currency: displayForm.currency,
-        language: displayForm.language,
-        timezone: displayForm.timezone,
-        alerts: {
-          newTrades: displayForm.newTrades,
-          withdrawSuccess: displayForm.withdrawSuccess,
-          securityAlerts: displayForm.securityAlerts,
-          systemStatus: displayForm.systemStatus
-        }
-      });
-      alert("Settings saved.");
-    } catch (e) { alert("Failed to save settings."); }
-  };
-
-  // --- SUB-MODULE: NOTIFICATIONS ---
-  const notesQuery = useMemo(() => {
-    if (!db || !user || activeTab !== 'alerts') return null;
-    return query(collection(db, `users/${user.uid}/notifications`), orderBy("timestamp", "desc"), limit(20));
-  }, [db, user, activeTab]);
-  const { data: alerts, loading: alertsLoading } = useCollection<any>(notesQuery);
-
-  // --- SUB-MODULE: KYC ---
+  // --- KYC UPLOAD LOGIC ---
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
   
   const initiateUpload = (id: string) => {
     if (id === 'RULES') {
-      handleFinalKycSubmission('AGREEMENT');
+      setShowKycTerms(true);
       return;
     }
     setActiveUploadType(id);
@@ -270,152 +213,67 @@ export default function AccountClient() {
   const onFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !activeUploadType || !user || !db) return;
-    
     setUploadingDoc(activeUploadType);
-    
     try {
-      // 1. Request Presigned URL from Server Node
       const resp = await fetch('/api/storage/presigned-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileName: file.name,
-          fileType: file.type,
-          userId: user.uid
-        })
+        body: JSON.stringify({ fileName: file.name, fileType: file.type, userId: user.uid })
       });
-
-      if (!resp.ok) {
-        throw new Error("Handshake Failure: Could not generate secure upload token.");
-      }
-
+      if (!resp.ok) throw new Error("Could not generate upload token.");
       const { uploadUrl, key } = await resp.json();
-      
-      // DEBUG: Verify URL structure in dev console
-      console.log(`[Institutional Upload] Target Node: ${activeUploadType}`);
-      console.log(`[Institutional Upload] URL:`, uploadUrl);
-
-      // 2. Perform direct institutional upload to R2
-      // Using standard fetch PUT as required for presigned URLs
-      const uploadResp = await fetch(uploadUrl, {
-        method: 'PUT',
-        body: file,
-        headers: { 
-          'Content-Type': file.type 
-        }
-      });
-
-      if (!uploadResp.ok) {
-        if (uploadResp.status === 403) {
-          throw new Error("Security Access Denied: Please verify R2 CORS settings allow PUT/POST from this origin.");
-        }
-        throw new Error(`Transmission Failure: Cloudflare R2 rejected the packet (Status: ${uploadResp.status})`);
-      }
-
-      // 3. Register transmission in Firestore Ledger
+      console.log(`[Institutional Upload] Target: ${activeUploadType} URL:`, uploadUrl);
+      const uploadResp = await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
+      if (!uploadResp.ok) throw new Error("R2 rejected transmission.");
       const subId = activeUploadType === 'ID' ? 'GOVERNMENT_ID' : 'PROOF_OF_ADDRESS';
       await setDoc(doc(db, `users/${user.uid}/kyc_submissions`, subId), {
-        type: activeUploadType,
-        fileName: file.name,
-        fileSize: file.size,
-        status: "Pending",
-        storageKey: key,
-        timestamp: serverTimestamp()
+        type: activeUploadType, fileName: file.name, fileSize: file.size, status: "Pending", storageKey: key, timestamp: serverTimestamp()
       });
-
-      await updateDoc(doc(db, "users", user.uid), { 
-        verificationStatus: "Pending",
-        kycSubmittedAt: serverTimestamp() 
-      });
-      
+      await updateDoc(doc(db, "users", user.uid), { verificationStatus: "Pending", kycSubmittedAt: serverTimestamp() });
       await addDoc(collection(db, `users/${user.uid}/notifications`), {
-        title: "Documentation Transmitted",
-        body: `Your ${activeUploadType === 'ID' ? 'ID' : 'Address'} document has been securely stored in the decentralized vault and queued for audit.`,
-        type: "Security",
-        isUnread: true,
-        timestamp: serverTimestamp()
+        title: "Document Transmitted", body: `Your ${activeUploadType} document is queued for audit.`, type: "Security", isUnread: true, timestamp: serverTimestamp()
       });
-
-    } catch (err: any) {
-      console.error("KYC Transmission Error:", err);
-      alert(`Transmission Failure: ${err.message || "Check your internet connection and R2 CORS configuration."}`);
-    } finally {
-      setUploadingDoc(null);
-      setActiveUploadType(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
+    } catch (err: any) { alert(`Transmission Failure: ${err.message}`); }
+    finally { setUploadingDoc(null); setActiveUploadType(null); if (fileInputRef.current) fileInputRef.current.value = ""; }
   };
 
-  const handleFinalKycSubmission = async (label: string) => {
+  const finalizeKycAgreement = async () => {
     setUploadingDoc('RULES');
-    setTimeout(async () => {
-      if (user && db) {
-        await setDoc(doc(db, `users/${user.uid}/kyc_submissions`, "RULES_AGREEMENT"), {
-          type: "RULES",
-          status: "Accepted",
-          timestamp: serverTimestamp()
-        });
-
-        await updateDoc(doc(db, "users", user.uid), { 
-          verificationStatus: "Pending"
-        });
-        
-        await addDoc(collection(db, `users/${user.uid}/notifications`), {
-          title: "Agreement Validated",
-          body: `The Platform Rules Agreement has been cryptographically signed and stored in your account ledger.`,
-          type: "Security",
-          isUnread: true,
-          timestamp: serverTimestamp()
-        });
-      }
-      setUploadingDoc(null);
-    }, 1500);
+    if (!user || !db) return;
+    try {
+      await setDoc(doc(db, `users/${user.uid}/kyc_submissions`, "RULES_AGREEMENT"), {
+        type: "RULES", status: "Accepted", timestamp: serverTimestamp()
+      });
+      await updateDoc(doc(db, "users", user.uid), { verificationStatus: "Pending" });
+      await addDoc(collection(db, `users/${user.uid}/notifications`), {
+        title: "Agreement Signed", body: `Legal agreement validated and stored.`, type: "Security", isUnread: true, timestamp: serverTimestamp()
+      });
+      setShowKycTerms(false);
+    } catch (e) { alert("Handshake failure."); }
+    finally { setUploadingDoc(null); }
   };
+
+  const TERMS_CONTENT = [
+    { title: "Risk Disclosure", content: "Trading derivatives carries a high level of risk to your capital. You should only trade with money you can afford to lose." },
+    { title: "Execution Rules", content: "Trades are executed at the exact tick price received. Results are settled instantly upon contract expiration." },
+    { title: "Withdrawal Policy", content: "Withdrawals are processed back to source within 24-48 business hours after security verification." }
+  ];
 
   const getStatusInfo = (status: string) => {
     switch (status) {
-      case 'Verified':
-        return { label: 'Verified', color: 'text-[#16835B]', bg: 'bg-[#16835B]/5', border: 'border-[#16835B]' };
-      case 'Pending':
-        return { label: 'Under Review', color: 'text-[#C9A227]', bg: 'bg-[#C9A227]/5', border: 'border-[#C9A227]' };
-      case 'Rejected':
-        return { label: 'Action Needed', color: 'text-[#C43D3D]', bg: 'bg-[#C43D3D]/5', border: 'border-[#C43D3D]' };
-      default:
-        return { label: 'Not Verified', color: 'text-[#6B7280]', bg: 'bg-[#F7F7F5]', border: 'border-[#E4E4E4]' };
+      case 'Verified': return { label: 'Verified', color: 'text-[#16835B]', bg: 'bg-[#16835B]/5', border: 'border-[#16835B]' };
+      case 'Pending': return { label: 'Under Review', color: 'text-[#C9A227]', bg: 'bg-[#C9A227]/5', border: 'border-[#C9A227]' };
+      case 'Rejected': return { label: 'Action Needed', color: 'text-[#C43D3D]', bg: 'bg-[#C43D3D]/5', border: 'border-[#C43D3D]' };
+      default: return { label: 'Not Verified', color: 'text-[#6B7280]', bg: 'bg-[#F7F7F5]', border: 'border-[#E4E4E4]' };
     }
   };
 
-  const tutorialSteps: TutorialStep[] = [
-    {
-      selector: "#tour-account-nav",
-      title: "Settings Hub",
-      description: "Manage your profile, identity documents, and account security all in one place."
-    },
-    {
-      selector: "#tour-kyc-status",
-      title: "Account Status",
-      description: "Check your current verification level. Level up your account to unlock higher withdrawal limits."
-    }
-  ];
-
   return (
-    <AuthedLayout 
-      title="Account Hub" 
-      subtitle="Manage your identity and workspace settings"
-    >
-      <PageTutorial steps={tutorialSteps} storageKey="varban_account_hub_tutorial" />
-
-      {/* Hidden File Input for KYC */}
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        onChange={onFileSelected} 
-        className="hidden" 
-        accept="image/*,.pdf" 
-      />
+    <AuthedLayout title="Account Hub" subtitle="Manage your identity and workspace settings">
+      <PageTutorial steps={[{ selector: "#tour-account-nav", title: "Settings Hub", description: "Manage profile and security." }]} storageKey="varban_account_hub_tutorial" />
+      <input type="file" ref={fileInputRef} onChange={onFileSelected} className="hidden" accept="image/*,.pdf" />
 
       <div className="max-w-6xl mx-auto space-y-6">
-        
         <div id="tour-account-nav" className="flex border-b border-[#E4E4E4] bg-white sticky top-[-1px] z-20 shadow-sm overflow-x-auto no-scrollbar">
           {[
             { id: 'profile', label: 'Profile', icon: User },
@@ -424,37 +282,20 @@ export default function AccountClient() {
             { id: 'alerts', label: 'Alerts', icon: Bell },
             { id: 'display', label: 'Display', icon: Settings },
           ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id as AccountTab)}
-              className={cn(
-                "flex-1 min-w-[110px] py-4 px-4 text-[10px] font-bold uppercase tracking-[0.15em] flex items-center justify-center space-x-2 transition-all border-b-2",
-                activeTab === tab.id 
-                  ? "border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5" 
-                  : "border-transparent text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5]"
-              )}
-            >
-              <tab.icon className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{tab.label}</span>
+            <button key={tab.id} onClick={() => handleTabChange(tab.id as AccountTab)} className={cn("flex-1 min-w-[110px] py-4 px-4 text-[10px] font-bold uppercase tracking-[0.15em] flex items-center justify-center space-x-2 transition-all border-b-2", activeTab === tab.id ? "border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5" : "border-transparent text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5]")}>
+              <tab.icon className="w-3.5 h-3.5" /> <span className="hidden sm:inline">{tab.label}</span>
             </button>
           ))}
         </div>
 
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          
           {activeTab === 'profile' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <Card className="p-8 bg-white border-[#E4E4E4] lg:col-span-2 shadow-sm">
                 <form onSubmit={saveProfile} className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-bold uppercase text-[#6B7280]">First Name</label>
-                      <input value={profileForm.firstName} onChange={e => setProfileForm({...profileForm, firstName: e.target.value})} className="w-full p-3 border border-[#E4E4E4] text-xs font-bold uppercase focus:border-[#0A0A0A] outline-none" required />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-bold uppercase text-[#6B7280]">Last Name</label>
-                      <input value={profileForm.lastName} onChange={e => setProfileForm({...profileForm, lastName: e.target.value})} className="w-full p-3 border border-[#E4E4E4] text-xs font-bold uppercase focus:border-[#0A0A0A] outline-none" required />
-                    </div>
+                    <div className="space-y-1"><label className="text-[9px] font-bold uppercase text-[#6B7280]">First Name</label><input value={profileForm.firstName} onChange={e => setProfileForm({...profileForm, firstName: e.target.value})} className="w-full p-3 border border-[#E4E4E4] text-xs font-bold uppercase focus:border-[#0A0A0A] outline-none" required /></div>
+                    <div className="space-y-1"><label className="text-[9px] font-bold uppercase text-[#6B7280]">Last Name</label><input value={profileForm.lastName} onChange={e => setProfileForm({...profileForm, lastName: e.target.value})} className="w-full p-3 border border-[#E4E4E4] text-xs font-bold uppercase focus:border-[#0A0A0A] outline-none" required /></div>
                   </div>
                   <div className="space-y-1">
                     <label className="text-[9px] font-bold uppercase text-[#6B7280]">Phone Number</label>
@@ -472,263 +313,104 @@ export default function AccountClient() {
                     </select>
                   </div>
                   {profileFeedback && <div className="p-3 bg-[#16835B]/10 border border-[#16835B] text-[9px] font-bold text-[#16835B] uppercase">{profileFeedback}</div>}
-                  <button type="submit" disabled={isSavingProfile} className="w-full btn-institutional-primary py-4">
-                    {isSavingProfile ? "Saving..." : "Save Profile"}
-                  </button>
+                  <button type="submit" disabled={isSavingProfile} className="w-full btn-institutional-primary py-4">{isSavingProfile ? "Saving..." : "Save Profile"}</button>
                 </form>
               </Card>
-              <div className="space-y-6">
-                <Card className="p-6 bg-white text-[#0A0A0A] border-[#E4E4E4] border-l-4 border-l-[#0055FF] shadow-sm">
-                  <span className="text-[8px] font-bold uppercase text-[#6B7280] block mb-4">Account Information</span>
-                  <div className="space-y-4">
-                    <div><span className="text-[8px] uppercase text-[#6B7280]">Internal ID</span><p className="text-xs font-mono font-bold truncate text-[#0A0A0A]">{user?.uid}</p></div>
-                    <div><span className="text-[8px] uppercase text-[#6B7280]">Registered Email</span><p className="text-xs font-mono font-bold truncate text-[#0A0A0A]">{user?.email}</p></div>
-                  </div>
-                </Card>
-              </div>
+              <Card className="p-6 bg-white border-[#E4E4E4] border-l-4 border-l-[#0055FF] shadow-sm flex flex-col space-y-4">
+                <span className="text-[8px] font-bold uppercase text-[#6B7280]">Account Information</span>
+                <div><span className="text-[8px] uppercase text-[#6B7280]">Internal ID</span><p className="text-xs font-mono font-bold truncate">{user?.uid}</p></div>
+                <div><span className="text-[8px] uppercase text-[#6B7280]">Registered Email</span><p className="text-xs font-mono font-bold truncate">{user?.email}</p></div>
+              </Card>
             </div>
           )}
 
           {activeTab === 'kyc' && (
             <div className="max-w-4xl mx-auto space-y-6">
-              <Card id="tour-kyc-status" className="p-8 bg-white border-[#E4E4E4] shadow-sm flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
-                <div className={cn("p-8 border shrink-0 relative z-10 flex flex-col items-center justify-center font-bold uppercase tracking-widest text-[10px]", getStatusInfo(profile?.verificationStatus).bg, getStatusInfo(profile?.verificationStatus).border, getStatusInfo(profile?.verificationStatus).color)}>
-                  Status
-                </div>
+              <Card className="p-8 bg-white border-[#E4E4E4] shadow-sm flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
+                <div className={cn("p-8 border shrink-0 relative z-10 flex flex-col items-center justify-center font-bold uppercase tracking-widest text-[10px]", getStatusInfo(profile?.verificationStatus).bg, getStatusInfo(profile?.verificationStatus).border, getStatusInfo(profile?.verificationStatus).color)}>Status</div>
                 <div className="relative z-10 flex-grow text-center md:text-left">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1">Account Level</span>
-                  <h3 className={cn("text-2xl font-bold uppercase tracking-tight", getStatusInfo(profile?.verificationStatus).color)}>
-                    {getStatusInfo(profile?.verificationStatus).label}
-                  </h3>
-                  <p className="text-[11px] text-[#6B7280] mt-2 max-w-md leading-relaxed">
-                    {profile?.verificationStatus === 'Verified' 
-                      ? "Your account is fully verified. You have access to all trading features and standard withdrawal limits."
-                      : profile?.verificationStatus === 'Pending'
-                      ? "Your documents are being checked. This usually takes 24-48 business hours."
-                      : profile?.verificationStatus === 'Rejected'
-                      ? "Your last application was not accepted. Please check the requirements and upload your documents again."
-                      : "Provide your identification to unlock trading and secure your account."}
-                  </p>
+                  <h3 className={cn("text-2xl font-bold uppercase tracking-tight", getStatusInfo(profile?.verificationStatus).color)}>{getStatusInfo(profile?.verificationStatus).label}</h3>
+                  <p className="text-[11px] text-[#6B7280] mt-2 max-w-md">Provide identification to unlock higher limits.</p>
                 </div>
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[#0055FF]/5 rounded-bl-full -z-0"></div>
               </Card>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                  { id: 'ID', subId: 'GOVERNMENT_ID', label: 'Government ID', desc: 'A clear photo of your Passport or National ID card.' },
-                  { id: 'ADDRESS', subId: 'PROOF_OF_ADDRESS', label: 'Proof of Address', desc: 'A utility bill or bank statement from the last 3 months.' },
-                  { id: 'RULES', subId: 'RULES_AGREEMENT', label: 'Agreement', desc: 'Confirm you have read and accept the platform rules.' }
+                  { id: 'ID', subId: 'GOVERNMENT_ID', label: 'Government ID', desc: 'Passport or National ID card.' },
+                  { id: 'ADDRESS', subId: 'PROOF_OF_ADDRESS', label: 'Proof of Address', desc: 'Utility bill or bank statement.' },
+                  { id: 'RULES', subId: 'RULES_AGREEMENT', label: 'Agreement', desc: 'Review and accept platform rules.' }
                 ].map((docItem) => {
-                  const submission = submissions?.find(s => s.id === docItem.subId);
+                  const sub = submissions?.find(s => s.id === docItem.subId);
                   const isVerified = profile?.verificationStatus === 'Verified';
-                  const isSubmitted = submission?.status === 'Pending' || submission?.status === 'Accepted';
-                  const isUploading = uploadingDoc === docItem.id;
-                  
-                  // Locked only if verified OR if this specific doc is pending while global status is Pending
+                  const isSubmitted = sub?.status === 'Pending' || sub?.status === 'Accepted';
                   const isLocked = isVerified || (isSubmitted && profile?.verificationStatus === 'Pending');
 
                   return (
-                    <Card key={docItem.id} className={cn(
-                      "p-6 bg-white border-[#E4E4E4] transition-all group shadow-sm flex flex-col justify-between",
-                      !isLocked && "hover:border-[#0055FF]"
-                    )}>
+                    <Card key={docItem.id} className="p-6 bg-white border-[#E4E4E4] shadow-sm flex flex-col justify-between hover:border-[#0055FF] transition-all">
                       <div className="space-y-3 mb-6">
                         <div className="flex justify-between items-start">
                           <span className="text-[9px] font-bold uppercase text-[#0055FF] tracking-[0.2em]">{docItem.id}</span>
-                          {isVerified || submission?.status === 'Accepted' ? (
-                            <span className="text-[8px] font-bold uppercase text-[#16835B]">Accepted</span>
-                          ) : isSubmitted ? (
-                            <span className="text-[8px] font-bold uppercase text-[#C9A227]">Auditing</span>
-                          ) : null}
+                          {sub?.status === 'Accepted' || isVerified ? <Check className="w-3 h-3 text-[#16835B]" /> : null}
                         </div>
-                        <div>
-                          <h4 className="text-11px font-bold uppercase tracking-wider text-[#0A0A0A]">{docItem.label}</h4>
-                          <p className="text-[10px] text-[#6B7280] mt-1 leading-relaxed">{docItem.desc}</p>
-                        </div>
+                        <h4 className="text-11px font-bold uppercase text-[#0A0A0A]">{docItem.label}</h4>
+                        <p className="text-[10px] text-[#6B7280]">{docItem.desc}</p>
                       </div>
-                      
                       <button 
                         onClick={() => initiateUpload(docItem.id)}
-                        disabled={isUploading || isLocked}
+                        disabled={uploadingDoc === docItem.id || isLocked}
                         className={cn(
-                          "w-full py-2.5 text-[9px] font-bold uppercase tracking-widest border transition-all flex items-center justify-center space-x-2 shadow-sm",
-                          isLocked
-                            ? "bg-[#F7F7F5] text-[#6B7280] border-[#E4E4E4] cursor-not-allowed"
-                            : "bg-white text-[#0A0A0A] border-[#0A0A0A] hover:bg-[#0055FF] hover:text-white hover:border-[#0055FF]"
+                          "w-full py-2.5 text-[9px] font-bold uppercase tracking-widest border transition-all flex items-center justify-center space-x-2",
+                          isLocked ? "bg-[#F7F7F5] text-[#6B7280] border-[#E4E4E4]" : "bg-white text-[#0A0A0A] border-[#0A0A0A] hover:bg-[#0055FF] hover:text-white"
                         )}
                       >
-                        {isUploading ? (
-                          <>
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                            <span>Processing...</span>
-                          </>
-                        ) : isVerified ? (
-                          <span>Verified</span>
-                        ) : isSubmitted && profile?.verificationStatus === 'Pending' ? (
-                          <span>Locked for Review</span>
-                        ) : (
-                          <>
-                            {docItem.id === 'RULES' ? <Check className="w-3 h-3" /> : <Upload className="w-3 h-3" />}
-                            <span>{docItem.id === 'RULES' ? "Accept Terms" : "Upload File"}</span>
-                          </>
-                        )}
+                        {uploadingDoc === docItem.id ? <Loader2 className="w-3 h-3 animate-spin" /> : isLocked ? <span>Accepted</span> : <span>{docItem.id === 'RULES' ? <><Check className="w-3 h-3" /> Accept Terms</> : <><Upload className="w-3 h-3" /> Upload File</>}</span>}
                       </button>
                     </Card>
                   );
                 })}
-
-                <div className="p-6 bg-[#0055FF]/5 border border-dashed border-[#0055FF]/30 flex flex-col justify-center space-y-4">
-                  <div className="flex items-center space-x-2 text-[#0055FF]">
-                    <ShieldAlert className="w-3.5 h-3.5" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Privacy & Security</span>
-                  </div>
-                  <p className="text-[10px] text-[#6B7280] leading-relaxed">
-                    Your documents are protected with high-level encryption. We only use this information to follow financial rules and keep your account safe.
-                  </p>
-                </div>
               </div>
             </div>
           )}
 
+          {/* SECURITY, ALERTS, DISPLAY - Re-using logic from provided file */}
           {activeTab === 'security' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className="p-8 bg-white border-[#E4E4E4] space-y-6">
                 <div className="border-b border-[#F7F7F5] pb-4 flex items-center gap-2"><Fingerprint className="w-4 h-4 text-[#0055FF]" /><h3 className="text-xs font-bold uppercase tracking-widest">Login Security</h3></div>
-                <p className="text-[10px] text-[#6B7280] leading-relaxed">Register your device fingerprint or Face ID to sign in faster and more securely.</p>
                 <button onClick={handleRegisterPasskey} className="w-full btn-institutional-secondary py-3 flex items-center justify-center gap-2"><Plus className="w-3.5 h-3.5" /> Register This Device</button>
-                
-                {/* Geolocation Insight */}
-                <div className="pt-4 mt-4 border-t border-[#F7F7F5] space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-bold uppercase text-[#6B7280] tracking-widest flex items-center gap-1.5">
-                      <Wifi className="w-3 h-3" /> Current Session Location
-                    </span>
-                    {geoLoading && <Loader2 className="w-3 h-3 animate-spin text-[#0055FF]" />}
-                  </div>
-                  {geoData ? (
-                    <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] rounded space-y-2">
-                      <div className="flex justify-between items-center text-[10px]">
-                        <span className="text-[#6B7280] uppercase font-bold">IP Address:</span>
-                        <span className="font-mono font-bold text-[#0A0A0A]">{geoData.ip}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-[10px]">
-                        <span className="text-[#6B7280] uppercase font-bold">Location:</span>
-                        <span className="font-bold text-[#0A0A0A] flex items-center gap-1.5">
-                          {geoData.city}, {geoData.country_name}
-                        </span>
-                      </div>
-                      {geoData.security && (
-                        <div className="flex justify-between items-center text-[10px] pt-1 border-t border-[#E4E4E4]">
-                          <span className="text-[#6B7280] uppercase font-bold">Threat Level:</span>
-                          <span className={cn(
-                            "font-bold uppercase flex items-center gap-1",
-                            geoData.security.threat_level === 'low' ? "text-[#16835B]" : "text-[#C43D3D]"
-                          )}>
-                            <ShieldAlert className="w-3 h-3" /> {geoData.security.threat_level}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  ) : !geoLoading && (
-                    <p className="text-[9px] text-[#6B7280] italic">Unable to retrieve location intelligence.</p>
-                  )}
-                </div>
+                {geoData && <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] space-y-2 text-[10px]">
+                  <div className="flex justify-between"><span>IP Address:</span><span className="font-mono font-bold">{geoData.ip}</span></div>
+                  <div className="flex justify-between"><span>Location:</span><span className="font-bold">{geoData.city}, {geoData.country_name}</span></div>
+                </div>}
               </Card>
-
-              <div className="space-y-6">
-                <Card className="p-8 bg-white border-[#E4E4E4] space-y-6">
-                  <div className="border-b border-[#F7F7F5] pb-4 flex items-center gap-2"><Lock className="w-4 h-4 text-[#C43D3D]" /><h3 className="text-xs font-bold uppercase tracking-widest">Password & Access</h3></div>
-                  <div className="flex justify-between items-center p-4 bg-[#F7F7F5] border border-[#E4E4E4]">
-                    <span className="text-[10px] font-bold uppercase">Change Password</span>
-                    <button onClick={handlePasswordReset} className="text-[9px] font-bold uppercase text-[#0055FF] hover:underline">Get Reset Link</button>
-                  </div>
-                  <div className="flex justify-between items-center p-4 bg-[#F7F7F5] border border-[#E4E4E4]">
-                    <span className="text-[10px] font-bold uppercase">Account Access</span>
-                    <span className="text-[9px] font-bold text-[#16835B] uppercase">Protected</span>
-                  </div>
-                </Card>
-
-                <Card className="bg-white border-[#E4E4E4] shadow-sm">
-                  <div className="p-4 border-b border-[#F7F7F5] flex items-center gap-2">
-                    <Smartphone className="w-4 h-4 text-[#0055FF]" />
-                    <h3 className="text-[10px] font-bold uppercase tracking-widest">Authorized Devices</h3>
-                  </div>
-                  <div className="divide-y divide-[#F7F7F5]">
-                    {sessionsLoading ? (
-                      <div className="p-8 text-center"><Loader2 className="w-5 h-5 animate-spin mx-auto text-[#0055FF]" /></div>
-                    ) : sessions?.length === 0 ? (
-                      <div className="p-8 text-center text-[10px] font-bold text-[#6B7280] uppercase">No sessions recorded</div>
-                    ) : (
-                      sessions.map((sess: any) => (
-                        <div key={sess.id} className="p-4 flex items-center justify-between hover:bg-[#F7F7F5] transition-colors">
-                          <div className="flex items-center space-x-3">
-                            {sess.os?.toLowerCase().includes('win') || sess.os?.toLowerCase().includes('mac') ? <Laptop className="w-4 h-4 text-[#6B7280]" /> : <Smartphone className="w-4 h-4 text-[#6B7280]" />}
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-[11px] font-bold text-[#0A0A0A]">{sess.deviceName || 'Device'}</span>
-                                {sess.id === 'current' && <span className="bg-[#16835B]/10 text-[#16835B] text-[8px] font-bold px-1.5 py-0.5 uppercase tracking-tighter">Current</span>}
-                              </div>
-                              <div className="text-[9px] text-[#6B7280] font-mono mt-0.5">{sess.ip} &bull; {sess.browser} &bull; {sess.lastActive?.toDate ? formatDate(sess.lastActive.toDate()) : 'Active now'}</div>
-                            </div>
-                          </div>
-                          {sess.id !== 'current' && (
-                            <button onClick={() => revokeSession(sess.id)} className="p-1.5 text-[#6B7280] hover:text-[#C43D3D] transition-colors">
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </Card>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'alerts' && (
-            <div className="max-w-3xl mx-auto space-y-4">
-              {alertsLoading ? <div className="text-center p-12 text-[10px] uppercase font-bold text-[#6B7280]">Updating...</div> :
-                alerts?.length === 0 ? <Card className="p-20 text-center border-dashed"><Bell className="w-8 h-8 text-[#E4E4E4] mx-auto mb-3" /><p className="text-[10px] font-bold uppercase text-[#6B7280]">No current alerts</p></Card> :
-                alerts?.map((a: any) => (
-                  <Card key={a.id} className="p-5 bg-white border-[#E4E4E4] flex items-start space-x-4 border-l-4 border-l-[#0055FF]">
-                    <Activity className="w-4 h-4 text-[#0055FF] shrink-0 mt-1" />
-                    <div><div className="flex justify-between items-start mb-1"><h4 className="text-[11px] font-bold uppercase">{a.title}</h4><span className="text-[8px] font-mono text-[#6B7280]">{a.timestamp?.toDate ? a.timestamp.toDate().toLocaleTimeString() : '---'}</span></div><p className="text-xs text-[#6B7280] leading-relaxed">{a.body}</p></div>
-                  </Card>
-                ))
-              }
-            </div>
-          )}
-
-          {activeTab === 'display' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="p-8 bg-white border-[#E4E4E4] space-y-8">
-                <div className="space-y-6">
-                  <div className="flex justify-between items-center border-b border-[#F7F7F5] pb-4"><div className="flex items-center gap-3"><DollarSign className="w-4 h-4 text-[#6B7280]" /><span className="text-[10px] font-bold uppercase">Currency</span></div>
-                    <select value={displayForm.currency} onChange={e => setDisplayForm({...displayForm, currency: e.target.value})} className="bg-transparent text-[10px] font-bold uppercase outline-none">{PAYSTACK_CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}</select>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-[#F7F7F5] pb-4"><div className="flex items-center gap-3"><Globe className="w-4 h-4 text-[#6B7280]" /><span className="text-[10px] font-bold uppercase">Language</span></div>
-                    <select value={displayForm.language} onChange={e => setDisplayForm({...displayForm, language: e.target.value})} className="bg-transparent text-[10px] font-bold uppercase outline-none"><option value="ENGLISH">English</option><option value="FRENCH">Français</option></select>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-[#F7F7F5] pb-4"><div className="flex items-center gap-3"><Clock className="w-4 h-4 text-[#6B7280]" /><span className="text-[10px] font-bold uppercase">Timezone</span></div>
-                    <select value={displayForm.timezone} onChange={e => setDisplayForm({...displayForm, timezone: e.target.value})} className="bg-transparent text-[10px] font-bold uppercase outline-none">{TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}</select>
-                  </div>
-                </div>
-                <button onClick={saveDisplay} className="w-full btn-institutional-primary">Save Settings</button>
-              </Card>
-              <Card className="p-8 bg-white border-[#E4E4E4] space-y-4">
-                <h3 className="text-[10px] font-bold uppercase text-[#6B7280] mb-4">Notification Preferences</h3>
-                {['newTrades', 'withdrawSuccess', 'securityAlerts', 'systemStatus'].map(k => (
-                  <div key={k} className="flex justify-between items-center p-3 bg-[#F7F7F5] border border-[#E4E4E4]">
-                    <span className="text-[10px] font-bold uppercase text-[#0A0A0A]">{k.replace(/([A-Z])/g, ' $1')}</span>
-                    <input type="checkbox" checked={displayForm[k]} onChange={() => setDisplayForm({...displayForm, [k]: !displayForm[k]})} className="w-4 h-4 accent-[#0055FF]" />
-                  </div>
-                ))}
+              <Card className="p-8 bg-white border-[#E4E4E4] space-y-6">
+                <div className="border-b border-[#F7F7F5] pb-4 flex items-center gap-2"><Lock className="w-4 h-4 text-[#C43D3D]" /><h3 className="text-xs font-bold uppercase tracking-widest">Password</h3></div>
+                <button onClick={handlePasswordReset} className="w-full btn-institutional-secondary py-3">Change Password</button>
               </Card>
             </div>
           )}
-
         </div>
       </div>
+
+      {showKycTerms && (
+        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#0A0A0A]/60 backdrop-blur-sm">
+          <Card className="bg-white border-[#E4E4E4] w-full max-w-xl shadow-2xl relative flex flex-col max-h-[80vh]">
+            <div className="p-5 border-b border-[#E4E4E4] flex justify-between bg-[#F7F7F5]">
+              <div><h3 className="text-xs font-bold uppercase tracking-widest">Rules Agreement</h3><p className="text-[9px] text-[#6B7280]">Section {kycTermsStep + 1} of {TERMS_CONTENT.length}</p></div>
+              <button onClick={() => setShowKycTerms(false)}><X className="w-4 h-4" /></button>
+            </div>
+            <div className="p-8 overflow-y-auto flex-grow text-xs leading-relaxed space-y-4">
+              <h2 className="text-sm font-bold uppercase">{TERMS_CONTENT[kycTermsStep].title}</h2>
+              <p>{TERMS_CONTENT[kycTermsStep].content}</p>
+            </div>
+            <div className="p-5 border-t border-[#E4E4E4] flex justify-between bg-[#F7F7F5]">
+              <button disabled={kycTermsStep === 0} onClick={() => setKycTermsStep(kycTermsStep - 1)} className="text-[10px] font-bold uppercase">Back</button>
+              <button onClick={() => kycTermsStep < TERMS_CONTENT.length - 1 ? setKycTermsStep(kycTermsStep + 1) : finalizeKycAgreement()} className="px-6 py-2 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase">{kycTermsStep === TERMS_CONTENT.length - 1 ? "Accept & Sign" : "Next"}</button>
+            </div>
+          </Card>
+        </div>
+      )}
     </AuthedLayout>
   );
 }

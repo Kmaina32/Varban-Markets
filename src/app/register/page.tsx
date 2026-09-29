@@ -44,7 +44,6 @@ export default function UnifiedSignupPage() {
     assent: false
   });
 
-  // Auto-detect location on mount with browser permission
   useEffect(() => {
     const performGeoLookup = async () => {
       const geo = await detectLocation();
