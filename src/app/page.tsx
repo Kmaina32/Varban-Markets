@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -174,14 +175,14 @@ export default function HomePage() {
               We follow the highest security standards to keep your money and data safe. Our certifications prove our commitment to a fair and reliable trading environment.
             </p>
             
-            {/* Certifications Row */}
-            <div className="pt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Certifications Row - Containers Removed, Icons Increased */}
+            <div className="pt-16 grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
               {certifications.map((cert) => (
-                <div key={cert.name} className="bg-white border border-[#E4E4E4] p-4 flex flex-col items-center justify-center space-y-3 shadow-sm hover:border-[#0055FF] transition-colors group">
-                  <img src={cert.url} alt={cert.name} className="h-8 md:h-10 object-contain" />
+                <div key={cert.name} className="flex flex-col items-center justify-center space-y-4 group">
+                  <img src={cert.url} alt={cert.name} className="h-12 md:h-16 object-contain transition-transform duration-300 group-hover:scale-110" />
                   <div className="text-center">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A] block">{cert.name}</span>
-                    <span className="text-[8px] text-[#6B7280] uppercase block">{cert.subtitle}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] block">{cert.name}</span>
+                    <span className="text-[8px] text-[#6B7280] uppercase block mt-1">{cert.subtitle}</span>
                   </div>
                 </div>
               ))}
