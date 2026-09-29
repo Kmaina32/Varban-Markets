@@ -27,15 +27,10 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
-    // Platform Intelligence Articles & Market News Cache
+    // Platform Intelligence Articles
     match /articles/{articleId} {
       allow read: if true;
       allow write: if isAdmin();
-    }
-
-    match /news_cache/{articleId} {
-      allow read: if true;
-      allow write: if true; // Internal API sync bypass
     }
 
     // Platform Configuration Authority

@@ -144,7 +144,7 @@ export default function HomePage() {
               ))
             ) : trendingNews.length === 0 ? (
               <div className="col-span-full py-12 text-center text-[#6B7280]">
-                <Newspaper className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                < Newspaper className="w-12 h-12 mx-auto mb-4 opacity-20" />
                 <p className="text-xs uppercase font-bold tracking-widest">No active headlines detected</p>
               </div>
             ) : (
@@ -165,10 +165,15 @@ export default function HomePage() {
                     </h3>
                   </div>
                   <div className="pt-6 mt-6 border-t border-[#F7F7F5]">
-                    <Link href={`/news/${item.uuid}`} className="flex items-center justify-between w-full text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A] hover:text-[#0055FF] transition-colors">
-                      <span className="flex items-center gap-1.5"><FileText className="w-3 h-3" /> Analyze Report</span>
+                    <a 
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between w-full text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A] hover:text-[#0055FF] transition-colors"
+                    >
+                      <span className="flex items-center gap-1.5"><ExternalLink className="w-3 h-3" /> Analyze Report</span>
                       <ArrowRight className="w-3 h-3" />
-                    </Link>
+                    </a>
                   </div>
                 </div>
               ))

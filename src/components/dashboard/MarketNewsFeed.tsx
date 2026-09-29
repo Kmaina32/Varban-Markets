@@ -3,6 +3,7 @@
 /**
  * @fileOverview Institutional Market News Feed Component.
  * Displays raw financial news headlines without AI processing.
+ * Refactored to link directly to external authoritative sources.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -51,7 +52,13 @@ export default function MarketNewsFeed() {
         ) : (
           <div className="divide-y divide-[#E4E4E4]">
             {news.map((item) => (
-              <div key={item.uuid} className="p-5 hover:bg-[#F7F7F5] transition-colors group">
+              <a 
+                key={item.uuid} 
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-5 block hover:bg-[#F7F7F5] transition-colors group"
+              >
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-[9px] text-[#6B7280] font-mono uppercase tracking-tighter font-bold">
                     {item.publisher}
@@ -67,20 +74,23 @@ export default function MarketNewsFeed() {
                 </h4>
                 
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#F7F7F5]">
-                   <span className="text-[8px] font-mono text-[#E4E4E4] uppercase">{item.uuid.substring(0,8)}</span>
-                   <BarChart2 className="w-3.5 h-3.5 text-[#E4E4E4] group-hover:text-[#0055FF] transition-colors" />
+                   <span className="text-[8px] font-mono text-[#E4E4E4] uppercase">{item.uuid.substring(0,8).toUpperCase()}</span>
+                   <ExternalLink className="w-3.5 h-3.5 text-[#E4E4E4] group-hover:text-[#0055FF] transition-colors" />
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         )}
       </div>
 
       <div className="p-3 border-t border-[#E4E4E4] bg-[#F7F7F5] text-center">
-        <button className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] hover:text-[#0A0A0A] transition-colors flex items-center justify-center gap-1.5 mx-auto">
+        <a 
+          href="/news"
+          className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] hover:text-[#0A0A0A] transition-colors flex items-center justify-center gap-1.5 mx-auto"
+        >
           <span>View Full News Hub</span>
           <ExternalLink className="w-3 h-3" />
-        </button>
+        </a>
       </div>
     </Card>
   );

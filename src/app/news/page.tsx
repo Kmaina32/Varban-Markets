@@ -7,7 +7,6 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { 
@@ -15,8 +14,7 @@ import {
   Search, 
   Loader2, 
   RefreshCw,
-  FileText,
-  ArrowRight
+  ExternalLink
 } from "lucide-react";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -167,13 +165,15 @@ export default function NewsHubPage() {
 
                       <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#F7F7F5]">
                         <span className="text-[8px] font-mono text-[#E4E4E4] uppercase">Token: {item.uuid.substring(0,8).toUpperCase()}</span>
-                        <Link 
-                          href={`/news/${item.uuid}`}
+                        <a 
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="text-[10px] font-bold uppercase tracking-widest text-[#0055FF] hover:underline flex items-center gap-1.5"
                         >
-                          <FileText className="w-3.5 h-3.5" />
+                          <ExternalLink className="w-3.5 h-3.5" />
                           <span>Analyze Full Report</span>
-                        </Link>
+                        </a>
                       </div>
                     </div>
                   </div>

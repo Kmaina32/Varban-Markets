@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { initializeFirebase } from '@/firebase';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 /**
  * @fileOverview Institutional News Proxy (Currents API Integration).
- * Enhanced with mandatory Firestore persistence for the Analyze Full Report workspace.
+ * Optimized for high-speed delivery without intermediary persistence.
  */
 
 export async function GET(req: NextRequest) {
@@ -33,7 +31,7 @@ export async function GET(req: NextRequest) {
     const res = await fetch(url.toString(), {
       method: 'GET',
       headers: {
-        'Authorization': `${CURRENTS_API_KEY}`, // currents API standard
+        'Authorization': `${CURRENTS_API_KEY}`,
         'Accept': 'application/json'
       },
       next: { revalidate: 600 }
@@ -58,21 +56,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ data: [] });
     }
 
-    const { db } = initializeFirebase();
     const mappedData = mapNews(data.news);
-
-    // CRITICAL: Await persistence in serverless route to ensure data availability for /news/[id]
-    await Promise.all(mappedData.map(async (article: any) => {
-      try {
-        await setDoc(doc(db, "news_cache", article.uuid), {
-          ...article,
-          syncedAt: new Date().toISOString()
-        }, { merge: true });
-      } catch (e) {
-        // Log locally but don't halt the primary feed response
-        console.warn("Failed to persist article to cache ledger:", article.uuid);
-      }
-    }));
 
     return NextResponse.json({ data: mappedData });
   } catch (error) {
