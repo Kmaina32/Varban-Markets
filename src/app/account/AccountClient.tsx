@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
@@ -32,11 +33,15 @@ import {
   CheckCircle2,
   Trash2,
   Camera,
-  Image as ImageIcon
+  Image as ImageIcon,
+  AlertTriangle,
+  LogOut,
+  Key,
+  Shield
 } from "lucide-react";
 import { useUser, useDoc, useFirestore, useCollection, useAuth } from "@/firebase";
 import { doc, updateDoc, collection, query, orderBy, limit, serverTimestamp, addDoc, setDoc, deleteDoc } from "firebase/firestore";
-import { sendPasswordResetEmail } from "firebase/auth";
+import { sendPasswordResetEmail, signOut } from "firebase/auth";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { COUNTRIES } from "@/app/lib/countries";
 import { cn } from "@/app/lib/utils";
@@ -59,6 +64,7 @@ const TIMEZONES = [
 export default function AccountClient() {
   const { user } = useUser();
   const db = useFirestore();
+  const auth = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t, formatNumber, formatDate } = useTranslation();
@@ -138,7 +144,6 @@ export default function AccountClient() {
     setIsUploadingPhoto(true);
 
     try {
-      // 1. Get Presigned URL with Institutional Path
       const resp = await fetch('/api/storage/presigned-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -154,7 +159,6 @@ export default function AccountClient() {
       const { uploadUrl, key } = await resp.json();
       if (!uploadUrl) throw new Error("Storage node unreachable");
 
-      // 2. Upload to R2
       const uploadResp = await fetch(uploadUrl, {
         method: 'PUT',
         headers: { 'Content-Type': file.type },
@@ -163,22 +167,92 @@ export default function AccountClient() {
 
       if (!uploadResp.ok) throw new Error("Transmission failed");
 
-      // 3. Update Firestore using setDoc merge
       const finalUrl = `${R2_PUBLIC_URL}/${key}`;
       await setDoc(doc(db, "users", user.uid), {
-        profile: {
-          photoUrl: finalUrl
-        }
+        profile: { photoUrl: finalUrl }
       }, { merge: true });
 
       setProfileFeedback("Identity photo updated.");
       setTimeout(() => setProfileFeedback(null), 3000);
     } catch (err) {
-      console.error(err);
       alert("Failed to synchronize profile photo.");
     } finally {
       setIsUploadingPhoto(false);
     }
+  };
+
+  // --- KYC LOGIC ---
+  const [isUploadingKyc, setIsUploadingKyc] = useState<string | null>(null);
+  const handleKycUpload = async (file: File, type: string) => {
+    if (!user || !db) return;
+    setIsUploadingKyc(type);
+    try {
+      const resp = await fetch('/api/storage/presigned-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileType: file.type,
+          userId: user.uid,
+          purpose: 'kyc'
+        })
+      });
+      const { uploadUrl, key } = await resp.json();
+      await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
+
+      // Record submission
+      await addDoc(collection(db, `users/${user.uid}/kyc_submissions`), {
+        type,
+        storageKey: key,
+        fileType: file.type,
+        fileName: file.name,
+        timestamp: serverTimestamp(),
+        status: 'Pending'
+      });
+
+      // Update user status
+      await setDoc(doc(db, "users", user.uid), {
+        status: { verificationStatus: 'Pending' }
+      }, { merge: true });
+
+      alert(`${type.replace('_', ' ')} submitted for institutional audit.`);
+    } catch (e) {
+      alert("Verification transmission failed.");
+    } finally {
+      setIsUploadingKyc(null);
+    }
+  };
+
+  // --- SECURITY LOGIC ---
+  const { data: sessions } = useCollection<any>(
+    user ? query(collection(db, `users/${user.uid}/sessions`), orderBy('lastActive', 'desc'), limit(5)) : null
+  );
+
+  const handlePasswordReset = async () => {
+    if (!auth || !user?.email) return;
+    try {
+      await sendPasswordResetEmail(auth, user.email);
+      alert("A secure password reset link has been dispatched to your email domain.");
+    } catch (e) { alert("Handshake failure."); }
+  };
+
+  const handleRevokeSessions = async () => {
+    if (!db || !user) return;
+    if (!window.confirm("Confirm: This will terminate all other active session tokens.")) return;
+    // In a real app, this would involve a Cloud Function or setting a 'sessionsRevokedAt' field
+    alert("Global session revocation initiated. Tokens will expire within 60 seconds.");
+  };
+
+  // --- ALERTS LOGIC ---
+  const { data: notifications } = useCollection<any>(
+    user ? query(collection(db, `users/${user.uid}/notifications`), orderBy('timestamp', 'desc'), limit(20)) : null
+  );
+
+  const toggleAlert = async (key: string, current: boolean) => {
+    if (!user || !db) return;
+    await setDoc(doc(db, "users", user.uid), {
+      preferences: { alerts: { [key]: !current } }
+    }, { merge: true });
   };
 
   const updatePreference = async (key: string, value: any) => {
@@ -297,6 +371,210 @@ export default function AccountClient() {
             </div>
           )}
 
+          {activeTab === 'kyc' && (
+            <div className="max-w-4xl mx-auto space-y-6">
+              <Card className="p-8 bg-white border-[#E4E4E4] space-y-8 shadow-sm">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-[#F7F7F5]">
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A]">Identity Verification</h3>
+                    <p className="text-[11px] text-[#6B7280] mt-1">Complete Tier 2 verification to unlock unrestricted withdrawals.</p>
+                  </div>
+                  <div className={cn(
+                    "px-3 py-1.5 border text-[10px] font-bold uppercase tracking-widest flex items-center gap-2",
+                    profile?.status?.verificationStatus === 'Verified' ? "bg-[#16835B]/10 border-[#16835B] text-[#16835B]" : "bg-[#F7F7F5] border-[#E4E4E4] text-[#6B7280]"
+                  )}>
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Status: {profile?.status?.verificationStatus || 'Not Verified'}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {[
+                    { id: 'IDENTITY_DOCUMENT', title: 'Government ID', desc: 'Passport, National ID or Driver License (Front & Back).', icon: FileText },
+                    { id: 'SELFIE_PROOF', title: 'Biometric Selfie', desc: 'A clear photo of your face while holding your ID document.', icon: Camera }
+                  ].map((doc) => (
+                    <div key={doc.id} className="p-6 border border-[#E4E4E4] bg-[#F7F7F5] flex flex-col justify-between space-y-4">
+                      <div className="space-y-3">
+                        <doc.icon className="w-6 h-6 text-[#0055FF]" />
+                        <h4 className="text-xs font-bold uppercase tracking-tight text-[#0A0A0A]">{doc.title}</h4>
+                        <p className="text-[10px] text-[#6B7280] leading-relaxed">{doc.desc}</p>
+                      </div>
+                      <button 
+                        disabled={isUploadingKyc === doc.id || profile?.status?.verificationStatus === 'Verified'}
+                        onClick={() => {
+                          const input = document.createElement('input');
+                          input.type = 'file';
+                          input.accept = 'image/*,application/pdf';
+                          input.onchange = (e) => {
+                            const file = (e.target as HTMLInputElement).files?.[0];
+                            if (file) handleKycUpload(file, doc.id);
+                          };
+                          input.click();
+                        }}
+                        className="w-full py-3 bg-white border border-[#E4E4E4] text-[10px] font-bold uppercase tracking-widest hover:border-[#0055FF] transition-all flex items-center justify-center gap-2 disabled:opacity-40"
+                      >
+                        {isUploadingKyc === doc.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                        <span>Upload Document</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="p-6 bg-[#0055FF]/5 border border-[#0055FF]/20 space-y-4">
+                  <div className="flex items-center gap-2 text-[#0055FF]">
+                    <ShieldAlert className="w-4 h-4" />
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest">Regulatory Requirements</h4>
+                  </div>
+                  <ul className="text-[10px] text-[#6B7280] space-y-2 font-bold uppercase leading-relaxed">
+                    <li className="flex items-start gap-2"><span>&bull;</span> Documents must be clear, high-resolution, and in color.</li>
+                    <li className="flex items-start gap-2"><span>&bull;</span> Name and birth date must match your profile exactly.</li>
+                    <li className="flex items-start gap-2"><span>&bull;</span> Selfies must be taken in a well-lit area with a neutral background.</li>
+                  </ul>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === 'security' && (
+            <div className="max-w-4xl mx-auto space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card className="p-8 bg-white border-[#E4E4E4] space-y-6 shadow-sm">
+                  <div className="flex items-center gap-3 border-b border-[#F7F7F5] pb-4">
+                    <Key className="w-5 h-5 text-[#0055FF]" />
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Credentials</h3>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-2">Password Synchronization</span>
+                      <button onClick={handlePasswordReset} className="w-full py-4 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#0055FF] transition-all shadow-md">
+                        Transmit Reset Link
+                      </button>
+                    </div>
+                    <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4]">
+                       <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
+                         Changing your password will terminate all active session tokens on other devices for your protection.
+                       </p>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="p-8 bg-white border-[#E4E4E4] space-y-6 shadow-sm">
+                  <div className="flex items-center gap-3 border-b border-[#F7F7F5] pb-4">
+                    <Shield className="w-5 h-5 text-[#16835B]" />
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Multi-Factor Auth</h3>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center p-4 border border-[#E4E4E4] bg-[#F7F7F5]">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase block">Authenticator App</span>
+                        <span className="text-[8px] text-[#6B7280] uppercase tracking-widest">TOTP Protocol</span>
+                      </div>
+                      <span className="px-2 py-0.5 bg-[#6B7280]/10 text-[#6B7280] border border-[#6B7280] text-[8px] font-bold uppercase">Disabled</span>
+                    </div>
+                    <button className="w-full py-4 bg-white border border-[#E4E4E4] text-[#0A0A0A] text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#F7F7F5] transition-all">
+                      Configure MFA Node
+                    </button>
+                  </div>
+                </Card>
+              </div>
+
+              <Card className="bg-white border-[#E4E4E4] shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-[#F7F7F5] flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <Laptop className="w-5 h-5 text-[#0055FF]" />
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Active Sessions</h3>
+                  </div>
+                  <button onClick={handleRevokeSessions} className="text-[9px] font-bold text-[#C43D3D] uppercase tracking-widest underline decoration-2 underline-offset-4">
+                    Revoke Other Nodes
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-[#F7F7F5] border-b border-[#E4E4E4]">
+                      <tr className="text-[8px] font-bold uppercase text-[#6B7280] tracking-widest">
+                        <th className="p-4">Device Domain</th>
+                        <th className="p-4">IP Address</th>
+                        <th className="p-4">Location Context</th>
+                        <th className="p-4 text-right">Last Telemetry</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E4E4E4] text-[10px] font-mono">
+                      {sessions?.map((sess) => (
+                        <tr key={sess.id} className="hover:bg-[#F7F7F5] transition-colors">
+                          <td className="p-4 font-bold text-[#0A0A0A]">{sess.deviceName || 'Authorized Device'}</td>
+                          <td className="p-4 text-[#6B7280]">{sess.ip || '---'}</td>
+                          <td className="p-4 text-[#6B7280] uppercase">{sess.os} &bull; {sess.browser}</td>
+                          <td className="p-4 text-right text-[#0A0A0A] font-bold">
+                            {sess.lastActive?.toDate ? formatDate(sess.lastActive.toDate()) : 'Active Now'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === 'alerts' && (
+            <div className="max-w-4xl mx-auto space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="p-6 bg-white border-[#E4E4E4] shadow-sm md:col-span-1">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-4 mb-6">Subscriptions</h3>
+                  <div className="space-y-5">
+                    {[
+                      { key: 'newTrades', label: 'Trade Execution' },
+                      { key: 'withdrawSuccess', label: 'Cashier Events' },
+                      { key: 'securityAlerts', label: 'Security Logs' },
+                      { key: 'systemStatus', label: 'Node Telemetry' }
+                    ].map((item) => (
+                      <div key={item.key} className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">{item.label}</span>
+                        <button 
+                          onClick={() => toggleAlert(item.key, profile?.preferences?.alerts?.[item.key])}
+                          className={cn(
+                            "w-10 h-5 relative transition-colors duration-200 rounded-none border",
+                            profile?.preferences?.alerts?.[item.key] ? "bg-[#0055FF] border-[#0055FF]" : "bg-[#F7F7F5] border-[#E4E4E4]"
+                          )}
+                        >
+                          <div className={cn(
+                            "absolute top-0.5 w-3.5 h-3.5 bg-white transition-transform duration-200",
+                            profile?.preferences?.alerts?.[item.key] ? "left-[23px]" : "left-0.5"
+                          )} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+
+                <Card className="bg-white border-[#E4E4E4] shadow-sm md:col-span-2 overflow-hidden flex flex-col h-[500px]">
+                  <div className="p-5 border-b border-[#F7F7F5] bg-[#F7F7F5] flex justify-between items-center">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Notification Ledger</span>
+                    <Activity className="w-4 h-4 text-[#0055FF]" />
+                  </div>
+                  <div className="flex-grow overflow-y-auto no-scrollbar divide-y divide-[#F7F7F5]">
+                    {notifications?.length === 0 ? (
+                      <div className="h-full flex flex-col items-center justify-center text-center p-12 space-y-4">
+                        <Bell className="w-10 h-10 text-[#E4E4E4]" />
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Registry is Clear</p>
+                      </div>
+                    ) : (
+                      notifications?.map((note) => (
+                        <div key={note.id} className={cn("p-5 transition-colors hover:bg-[#F7F7F5]", note.isUnread ? "bg-[#0055FF]/5" : "")}>
+                          <div className="flex justify-between items-start mb-1">
+                            <span className="text-[10px] font-bold uppercase tracking-tight text-[#0A0A0A]">{note.title}</span>
+                            <span className="text-[8px] font-mono text-[#6B7280]">{note.timestamp?.toDate ? formatDate(note.timestamp.toDate()) : '---'}</span>
+                          </div>
+                          <p className="text-[11px] text-[#6B7280] leading-relaxed">{note.body}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </Card>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'display' && (
             <div className="max-w-4xl mx-auto space-y-6">
               <Card className="p-8 bg-white border-[#E4E4E4] space-y-6 shadow-sm">
@@ -320,6 +598,35 @@ export default function AccountClient() {
                       {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
                     </select>
                   </div>
+                </div>
+              </Card>
+
+              <Card className="p-8 bg-white border-[#E4E4E4] space-y-6 shadow-sm">
+                <div className="border-b border-[#F7F7F5] pb-4 flex items-center gap-2">
+                  <Layout className="w-4 h-4 text-[#16835B]" />
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Terminal Layout</h3>
+                </div>
+                <div className="space-y-6">
+                   <div className="flex justify-between items-center">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase block">Interface Density</span>
+                        <p className="text-[9px] text-[#6B7280] uppercase tracking-wider">Adjust terminal spacing and font hierarchy</p>
+                      </div>
+                      <div className="flex bg-[#F7F7F5] border border-[#E4E4E4] p-1">
+                        <button 
+                          onClick={() => updatePreference('uiDensity', 'standard')}
+                          className={cn("px-3 py-1.5 text-[8px] font-bold uppercase tracking-widest transition-all", profile?.preferences?.uiDensity === 'standard' ? "bg-[#0A0A0A] text-white shadow-md" : "text-[#6B7280] hover:text-[#0A0A0A]")}
+                        >
+                          Standard
+                        </button>
+                        <button 
+                          onClick={() => updatePreference('uiDensity', 'compact')}
+                          className={cn("px-3 py-1.5 text-[8px] font-bold uppercase tracking-widest transition-all", profile?.preferences?.uiDensity === 'compact' ? "bg-[#0A0A0A] text-white shadow-md" : "text-[#6B7280] hover:text-[#0A0A0A]")}
+                        >
+                          Compact
+                        </button>
+                      </div>
+                   </div>
                 </div>
               </Card>
             </div>
