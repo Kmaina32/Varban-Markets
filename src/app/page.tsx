@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -33,10 +34,10 @@ export default function HomePage() {
   ];
 
   const certifications = [
-    { name: "ISO/IEC 27001", subtitle: "Information Security", url: "https://cdn.simpleicons.org/standard-chartered/16835B" },
+    { name: "ISO/IEC 27001", subtitle: "Information Security", url: "https://cdn.simpleicons.org/iaea/0055FF" },
     { name: "PCI DSS v4.0", subtitle: "Payment Security", url: "https://cdn.simpleicons.org/visa/1A1F71" },
     { name: "SOC2 Type II", subtitle: "System & Controls", url: "https://cdn.simpleicons.org/securityscorecard/0055FF" },
-    { name: "GDPR Compliant", subtitle: "Data Privacy", url: "https://cdn.simpleicons.org/ethereum/3C3C3D" }
+    { name: "GDPR Compliant", subtitle: "Data Privacy", url: "https://cdn.simpleicons.org/europeanunion/003399" }
   ];
 
   useEffect(() => {
@@ -144,7 +145,7 @@ export default function HomePage() {
           <div className="text-center space-y-4 mb-12">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">Infrastructure Partners</span>
             <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">
-              Trusted By
+              Industry Trusted
             </h2>
           </div>
           <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
