@@ -153,7 +153,7 @@ export default function HomePage() {
                 <img 
                   src={company.url} 
                   alt={company.name} 
-                  className="h-8 md:h-10 object-contain"
+                  className="h-10 md:h-14 object-contain"
                   title={company.name}
                 />
               </div>
