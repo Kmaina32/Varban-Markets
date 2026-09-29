@@ -15,7 +15,7 @@ import {
   RefreshCw,
   ExternalLink,
   AlertTriangle,
-  Lock
+  Globe
 } from "lucide-react";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -94,8 +94,8 @@ export default function NewsHubPage() {
                 </span>
               )}
             </div>
-            <h1 className="text-2xl font-bold uppercase tracking-tight">Financial News Feed</h1>
-            <p className="text-[10px] uppercase font-bold text-white/70 mt-1">Direct relay from tier-1 financial nodes</p>
+            <h1 className="text-2xl font-bold uppercase tracking-tight">Global Trading Feed</h1>
+            <p className="text-[10px] uppercase font-bold text-white/70 mt-1">Cross-timeline coverage: Asian, US, & EMEA</p>
           </div>
           <button 
             onClick={() => loadNews(activeAsset)}
@@ -113,7 +113,7 @@ export default function NewsHubPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]" />
               <input 
                 type="text" 
-                placeholder="Search asset intelligence (e.g. BTC, Gold, EUR)..."
+                placeholder="Search asset intelligence (e.g. BTC, Trump, Dangote, US Markets)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 bg-[#F7F7F5] border border-[#E4E4E4] text-xs focus:outline-none focus:border-[#0055FF]"
@@ -148,7 +148,7 @@ export default function NewsHubPage() {
         ) : isLoading ? (
           <div className="py-24 flex flex-col items-center justify-center space-y-4">
             <Loader2 className="w-8 h-8 text-[#0055FF] animate-spin" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Accessing External Intelligence Nodes...</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Accessing Global Intelligence Nodes...</span>
           </div>
         ) : news.length === 0 ? (
           <Card className="p-20 text-center border-dashed border-2 bg-white">
@@ -168,19 +168,29 @@ export default function NewsHubPage() {
                         <span className="text-[#0A0A0A] font-bold truncate max-w-[90px]">{item.publisher}</span>
                       </div>
                       <div className="flex items-center justify-between text-[9px] font-bold uppercase text-[#6B7280] tracking-wider">
-                        <span>Time</span>
+                        <span>Timeline</span>
                         <span className="text-[#0A0A0A]">{new Date(item.published_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                      <div className="flex items-center gap-1 pt-2">
+                         <Globe className="w-2.5 h-2.5 text-[#0055FF]" />
+                         <span className="text-[8px] font-bold uppercase text-[#0055FF]">Global Relay</span>
                       </div>
                     </div>
                   </div>
                   <div className="flex-grow space-y-3">
-                    <h2 className="text-lg font-bold text-[#0A0A0A] leading-tight group-hover:text-[#0055FF] transition-colors">{item.title}</h2>
+                    <h2 className="text-lg font-bold text-[#0A0A0A] leading-tight group-hover:text-[#0055FF] transition-colors line-clamp-2">{item.title}</h2>
                     <p className="text-[11px] text-[#6B7280] line-clamp-2 leading-relaxed">{item.description}</p>
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#F7F7F5]">
-                      <span className="text-[8px] font-mono text-[#E4E4E4] uppercase">Token: {item.uuid.substring(0,8).toUpperCase()}</span>
+                      <div className="flex gap-1.5">
+                        {(item.category || ['Market Update']).slice(0, 2).map((cat) => (
+                          <span key={cat} className="px-1.5 py-0.5 bg-[#F7F7F5] border border-[#E4E4E4] text-[8px] font-bold uppercase text-[#6B7280]">
+                            {cat.replace('_', ' ')}
+                          </span>
+                        ))}
+                      </div>
                       <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold uppercase tracking-widest text-[#0055FF] hover:underline flex items-center gap-1.5">
                         <ExternalLink className="w-3.5 h-3.5" />
-                        <span>Read Full Report</span>
+                        <span>Analyze Report</span>
                       </a>
                     </div>
                   </div>

@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * @fileOverview Institutional News Proxy with Multi-Node Redundancy.
- * Keys are strictly consumed via environment variables to ensure repository security.
+ * Refined for high-impact trading headlines (Forex, Crypto, Geopolitics, Commodities).
  */
 
 const CURRENTS_API_KEY = process.env.CURRENTS_NEWS_API_KEY;
 const FREE_NEWS_API_KEY = process.env.FREE_NEWS_API_KEY;
 
-const DEFAULT_MARKET_QUERY = "(forex OR crypto OR stocks OR markets OR commodities OR indices OR inflation OR central bank)";
+// High-precision trading intelligence query covering global timelines and specific movers
+const DEFAULT_MARKET_QUERY = "(forex OR crypto OR 'stock forex trading' OR 'Donald Trump' OR 'Dangote Oil' OR 'US markets' OR 'Asian markets' OR 'European markets' OR commodities OR indices OR inflation)";
 
 async function fetchWithRetry(url: string, options: RequestInit, retries = 2, backoff = 500): Promise<Response> {
   try {
@@ -30,6 +31,8 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 2, ba
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const query = searchParams.get('query');
+  
+  // Use professional pre-search query if no specific asset is requested
   const activeQuery = (query && query.trim().length > 1) ? query.trim() : DEFAULT_MARKET_QUERY;
 
   if (!CURRENTS_API_KEY) {
@@ -40,7 +43,7 @@ export async function GET(req: NextRequest) {
     }, { status: 500 });
   }
 
-  // 1. Try Primary Node: Currents API
+  // 1. Try Primary Node: Currents API (Institutional v1 Search)
   try {
     const currentsUrl = new URL("https://api.currentsapi.services/v1/search");
     currentsUrl.searchParams.set('language', 'en');
@@ -49,7 +52,7 @@ export async function GET(req: NextRequest) {
     const res = await fetchWithRetry(currentsUrl.toString(), {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${CURRENTS_API_KEY}`, 'Accept': 'application/json' },
-      next: { revalidate: 600 }
+      next: { revalidate: 600 } // 10 minute institutional cache
     });
 
     if (res.ok) {
@@ -73,12 +76,14 @@ export async function GET(req: NextRequest) {
     console.warn("Primary News Node (Currents) Failed, falling back to secondary...");
   }
 
-  // 2. Try Secondary Node: Free News API (Tier-2)
+  // 2. Try Secondary Node: Free News API (Tier-2 Fallback)
   if (FREE_NEWS_API_KEY) {
     try {
       const freeNewsUrl = new URL("https://api.freenewsapi.io/v1/news");
       freeNewsUrl.searchParams.set('language', 'en');
-      freeNewsUrl.searchParams.set('in_title', activeQuery.replace(/[()]/g, '').split(' OR ')[0]);
+      // Simple keyword extractor for secondary node title-only search
+      const simpleKeyword = activeQuery.includes('OR') ? 'forex trading' : activeQuery;
+      freeNewsUrl.searchParams.set('in_title', simpleKeyword);
 
       const res = await fetch(freeNewsUrl.toString(), {
         headers: { 'x-api-key': FREE_NEWS_API_KEY }
