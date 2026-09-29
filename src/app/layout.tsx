@@ -1,4 +1,3 @@
-
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
@@ -8,8 +7,8 @@ import { I18nProvider } from "@/app/lib/i18n-context";
 import CookieConsent from "@/components/layout/CookieConsent";
 
 export const metadata: Metadata = {
-  title: "Varban Markets | Institutional Electronic Trading Protocol",
-  description: "Institutional electronic trading protocol for advanced derivatives and synthetic markets built on deterministic software infrastructure.",
+  title: "Varban Markets | Easy & Secure Global Trading for Everyone",
+  description: "Start your trading journey with Varban Markets. Trade Forex, Stocks, and Crypto on a simple, fast, and safe platform. Perfect for beginners and professional traders alike.",
 };
 
 export default function RootLayout({

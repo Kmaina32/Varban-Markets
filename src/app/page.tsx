@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -34,7 +33,7 @@ export default function HomePage() {
   ];
 
   const certifications = [
-    { name: "ISO/IEC 27001", subtitle: "Information Security", url: "https://cdn.simpleicons.org/iaea/0055FF" },
+    { name: "ISO/IEC 27001", subtitle: "Information Security", url: "/assets/iso.png" },
     { name: "PCI DSS v4.0", subtitle: "Payment Security", url: "https://cdn.simpleicons.org/visa/1A1F71" },
     { name: "SOC2 Type II", subtitle: "System & Controls", url: "https://cdn.simpleicons.org/securityscorecard/0055FF" },
     { name: "GDPR Compliant", subtitle: "Data Privacy", url: "https://cdn.simpleicons.org/europeanunion/003399" }
@@ -78,17 +77,17 @@ export default function HomePage() {
               Varban Markets
             </span>
             <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-white uppercase mb-6 leading-[1.1] font-display">
-              Professional Trading for Global Markets.
+              The Easiest Way to Trade Global Markets.
             </h1>
             <p className="text-sm sm:text-base text-[#D1D5DB] mb-8 leading-relaxed max-w-2xl">
-              Trade global markets using a professional system. Get clear results, reliable prices, and manage your money with ease using our high-performance trading tools.
+              Start trading with a system you can trust. Simple to use, fast execution, and expert support whenever you need it. Perfect for both beginners and experienced traders.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link href="/register" className="btn-institutional-primary bg-[#0055FF] text-white border-[#0055FF] hover:bg-white hover:text-[#0055FF] px-8">
-                Open Account
+                Start Trading
               </Link>
               <Link href="/markets" className="btn-institutional-secondary bg-transparent text-white border-white/20 hover:bg-white/5 px-8">
-                View Markets
+                View All Markets
               </Link>
             </div>
           </div>
@@ -105,10 +104,10 @@ export default function HomePage() {
                 Global Market Access
               </h2>
               <p className="text-sm text-[#6B7280] leading-relaxed">
-                Access 25+ global markets including Forex, Stocks, Indices, Commodities and Digital Currencies. Trade with real-time data and low execution time-frames across the world's leading financial markets.
+                Trade over 25 global markets including Forex, Stocks, Gold, and Crypto. We offer real-time data and a beginner-friendly interface so you can start trading in minutes.
               </p>
               <Link href="/markets" className="btn-institutional-primary bg-[#0055FF] border-[#0055FF] hover:bg-[#0A0A0A] hover:border-[#0A0A0A] inline-flex items-center gap-2 group">
-                <span>View Markets</span>
+                <span>Browse Market List</span>
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
@@ -172,7 +171,7 @@ export default function HomePage() {
               Certifications & Recognition
             </h2>
             <p className="text-sm text-[#6B7280] leading-relaxed">
-              Varban Markets is certified by global authorities for information security and financial integrity. We maintain rigorous standards to ensure total capital protection.
+              We follow the highest security standards to keep your money and data safe. Our certifications prove our commitment to a fair and reliable trading environment.
             </p>
             
             {/* Certifications Row */}
@@ -192,21 +191,21 @@ export default function HomePage() {
           {/* Minimalist Trust Pillars */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mt-20 pt-16 border-t border-[#E4E4E4]">
             <div className="space-y-3">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A] border-l-2 border-[#0055FF] pl-4">Capital Protection</h3>
+              <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A] border-l-2 border-[#0055FF] pl-4">Safe Money Management</h3>
               <p className="text-xs text-[#6B7280] leading-relaxed pl-4">
-                Client funds are held in segregated Tier-1 banking accounts, strictly separated from our company operational assets.
+                Your funds are held in separate bank accounts from our company money, ensuring they are always available to you.
               </p>
             </div>
             <div className="space-y-3">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A] border-l-2 border-[#16835B] pl-4">Deterministic Execution</h3>
+              <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A] border-l-2 border-[#16835B] pl-4">Fair Trade Execution</h3>
               <p className="text-xs text-[#6B7280] leading-relaxed pl-4">
-                Our engine ensures 100% accurate trade settlement at the millisecond of expiration, with zero price manipulation.
+                Our system uses accurate, real-time prices so you always get the best entry point without any hidden delays.
               </p>
             </div>
             <div className="space-y-3">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A] border-l-2 border-[#C9A227] pl-4">Regulatory Compliance</h3>
+              <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A] border-l-2 border-[#C9A227] pl-4">Verified & Legal</h3>
               <p className="text-xs text-[#6B7280] leading-relaxed pl-4">
-                Operating under the laws of Saint Lucia, we maintain strict KYC/AML protocols to ensure a clean and secure ecosystem.
+                We operate legally under the laws of Saint Lucia, following strict rules to keep the trading community clean and secure.
               </p>
             </div>
           </div>
@@ -218,11 +217,11 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF] block mb-4">Real-time Intelligence</span>
-              <h2 className="text-4xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Market Updates</h2>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF] block mb-4">Latest Market News</span>
+              <h2 className="text-4xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Stay Informed</h2>
             </div>
             <Link href="/news" className="text-[11px] font-bold uppercase tracking-widest text-[#0055FF] flex items-center gap-1 hover:underline">
-              View News Hub <ArrowRight className="w-4 h-4" />
+              Go to News Hub <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
@@ -233,11 +232,11 @@ export default function HomePage() {
               ))
             ) : newsError ? (
               <div className="col-span-full py-12 text-center border border-dashed border-[#E4E4E4]">
-                <p className="text-[10px] uppercase font-bold text-[#6B7280]">Intelligence feed temporarily unavailable</p>
+                <p className="text-[10px] uppercase font-bold text-[#6B7280]">News feed temporarily offline</p>
               </div>
             ) : trendingNews.length === 0 ? (
               <div className="col-span-full py-12 text-center border border-dashed border-[#E4E4E4]">
-                <p className="text-[10px] uppercase font-bold text-[#6B7280]">No active news detected in this region</p>
+                <p className="text-[10px] uppercase font-bold text-[#6B7280]">No active news reports right now</p>
               </div>
             ) : trendingNews.map((item) => (
               <Link href={`/news/${item.uuid}`} key={item.uuid} className="bg-white border border-[#E4E4E4] p-6 hover:border-[#0055FF] transition-all group flex flex-col justify-between h-full shadow-sm">
@@ -265,14 +264,14 @@ export default function HomePage() {
           <div className="max-w-2xl mx-auto space-y-8">
             <h2 className="text-4xl font-bold uppercase tracking-tight leading-tight">Start Trading in Minutes.</h2>
             <p className="text-sm text-[#D1D5DB] leading-relaxed">
-              Open your professional trading account today and get access to the world's most stable derivatives infrastructure.
+              Open your free account today and join the world's most stable trading platform. It's easy, fast, and secure.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/register" className="w-full sm:w-auto btn-institutional-primary bg-[#0055FF] border-[#0055FF] hover:bg-white hover:text-[#0055FF] text-white">
-                Create Live Account
+                Create Free Account
               </Link>
               <Link href="/login" className="w-full sm:w-auto btn-institutional-secondary bg-transparent text-white border-white/20 hover:bg-white/5">
-                Back to Terminal
+                Log In to Terminal
               </Link>
             </div>
           </div>
