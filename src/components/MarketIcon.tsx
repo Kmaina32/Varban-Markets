@@ -4,7 +4,7 @@
 /**
  * @fileOverview Institutional Market Icon Resolver.
  * Dynamically renders Forex flags, Crypto logos, and Stock brand icons.
- * Priority: Commodities > Indices > Crypto > Stocks > Forex Flags.
+ * Priority: Nasdaq > Commodities > Indices > Crypto > Stocks > Forex Flags.
  */
 
 import React from 'react';
@@ -30,7 +30,21 @@ export const MarketIcon: React.FC<MarketIconProps> = ({ symbol, className, size 
     lg: 'w-12 h-12'
   };
 
-  // 1. Commodities & Indices Priority (Prevents fallback to broken flags)
+  // 1. Nasdaq Specific Override
+  const nasdaqSymbols = ['NAS100', 'NAS', 'QQQ'];
+  if (nasdaqSymbols.includes(cleanSymbol)) {
+    return (
+      <div className={cn(dimensions[size], "rounded-full border border-[#E4E4E4] bg-white p-1 shadow-sm overflow-hidden flex items-center justify-center", className)}>
+        <img 
+          src="/assets/nasdaq-com-logo.png"
+          alt="Nasdaq"
+          className="w-full h-full object-contain"
+        />
+      </div>
+    );
+  }
+
+  // 2. Commodities & Indices Priority
   if (cleanSymbol === 'XAU' || cleanSymbol === 'GOLD') {
     return (
       <div className={cn(dimensions[size], "rounded-full bg-gradient-to-br from-[#C9A227] to-[#E5C158] flex items-center justify-center text-white text-[9px] font-bold border-2 border-white shadow-sm", className)}>
@@ -47,7 +61,7 @@ export const MarketIcon: React.FC<MarketIconProps> = ({ symbol, className, size 
     );
   }
 
-  const indexSymbols = ['US30', 'DJI', 'NAS100', 'NAS', 'SPY', 'QQQ', 'US500', 'SPX'];
+  const indexSymbols = ['US30', 'DJI', 'SPY', 'US500', 'SPX'];
   if (indexSymbols.includes(cleanSymbol)) {
     return (
       <div className={cn(dimensions[size], "rounded-full border-2 border-[#E4E4E4] bg-white flex items-center justify-center font-bold text-[8px] text-[#0A0A0A] shadow-sm uppercase", className)}>
@@ -56,7 +70,7 @@ export const MarketIcon: React.FC<MarketIconProps> = ({ symbol, className, size 
     );
   }
 
-  // 2. Crypto Logic
+  // 3. Crypto Logic
   const cryptoSymbols = ['BTC', 'ETH', 'SOL', 'XRP', 'LTC', 'BNB', 'ADA', 'USDT', 'USDC'];
   if (cryptoSymbols.includes(cleanSymbol)) {
     return (
@@ -70,7 +84,7 @@ export const MarketIcon: React.FC<MarketIconProps> = ({ symbol, className, size 
     );
   }
 
-  // 3. Stock Brands
+  // 4. Stock Brands
   const stockMap: Record<string, string> = {
     'AAPL': 'apple',
     'TSLA': 'tesla',
@@ -95,7 +109,7 @@ export const MarketIcon: React.FC<MarketIconProps> = ({ symbol, className, size 
     );
   }
 
-  // 4. Forex Flag-Pairing
+  // 5. Forex Flag-Pairing
   const getFlagCode = (curr: string) => {
     const map: Record<string, string> = {
       'USD': 'us',
