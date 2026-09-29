@@ -1,8 +1,9 @@
+
 'use client';
 
 /**
  * @fileOverview Institutional KYC Verification Tab.
- * Consistently supports 3 critical slots: Identity, Residence, and live Biometric Selfie.
+ * Consistently supports 4 critical slots: ID Front, ID Back, Residence, and live Biometric Selfie.
  */
 
 import React, { useState } from 'react';
@@ -23,9 +24,16 @@ interface KycSlot {
 
 const KYC_SLOTS: KycSlot[] = [
   { 
-    id: 'IDENTITY_DOC', 
-    title: 'Identity Document', 
-    desc: 'Valid Passport, National ID, or Driver License (High-res scan or PDF).', 
+    id: 'ID_FRONT', 
+    title: 'ID Document (Front)', 
+    desc: 'The front side of your Government ID, License or Passport biographical page.', 
+    icon: FileText, 
+    acceptsPdf: true 
+  },
+  { 
+    id: 'ID_BACK', 
+    title: 'ID Document (Back)', 
+    desc: 'The reverse side of your ID card or License. (Not required for Passports).', 
     icon: FileText, 
     acceptsPdf: true 
   },
@@ -122,11 +130,11 @@ export default function KycTab() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {KYC_SLOTS.map((slot) => (
-            <div key={slot.id} className="p-6 border border-[#E4E4E4] bg-[#F7F7F5] flex flex-col justify-between space-y-4 group hover:border-[#0055FF] transition-all">
+            <div key={slot.id} className="p-4 border border-[#E4E4E4] bg-[#F7F7F5] flex flex-col justify-between space-y-4 group hover:border-[#0055FF] transition-all">
               <div className="space-y-3">
-                <slot.icon className="w-6 h-6 text-[#0055FF]" />
+                <slot.icon className="w-5 h-5 text-[#0055FF]" />
                 <h4 className="text-[10px] font-bold uppercase tracking-tight text-[#0A0A0A]">{slot.title}</h4>
                 <p className="text-[9px] text-[#6B7280] leading-relaxed uppercase font-bold opacity-80">{slot.desc}</p>
               </div>
@@ -147,10 +155,10 @@ export default function KycTab() {
                   };
                   input.click();
                 }}
-                className="w-full py-3 bg-white border border-[#E4E4E4] text-[9px] font-bold uppercase tracking-[0.15em] hover:border-[#0055FF] hover:text-[#0055FF] transition-all flex items-center justify-center gap-2 disabled:opacity-40"
+                className="w-full py-2.5 bg-white border border-[#E4E4E4] text-[9px] font-bold uppercase tracking-widest hover:border-[#0055FF] hover:text-[#0055FF] transition-all flex items-center justify-center gap-2 disabled:opacity-40 shadow-sm"
               >
-                {isUploading === slot.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                <span>{slot.id === 'SELFIE_VERIFICATION' ? 'Open Camera' : 'Select File'}</span>
+                {isUploading === slot.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+                <span>{slot.id === 'SELFIE_VERIFICATION' ? 'Open Camera' : 'Upload'}</span>
               </button>
             </div>
           ))}
@@ -171,3 +179,4 @@ export default function KycTab() {
     </div>
   );
 }
+
