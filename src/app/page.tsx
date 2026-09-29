@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { TrendingUp, TrendingDown, CheckCircle2, ArrowRight, Newspaper, Clock, FileText, AlertTriangle, ShieldCheck } from "lucide-react";
+import { TrendingUp, TrendingDown, CheckCircle2, ArrowRight, Newspaper, Clock, FileText, AlertTriangle, ShieldCheck, Lock, Shield, ShieldAlert, Award } from "lucide-react";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { MarketIcon } from "@/components/MarketIcon";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
@@ -25,12 +25,11 @@ export default function HomePage() {
     { symbol: "NAS100", name: "Nasdaq 100", price: "15,434.20", change: "+1.42%", isUp: true }
   ];
 
-  const trustedLogos = [
-    { name: "Twelve Data", url: "https://cdn.simpleicons.org/databricks/FF3621" }, // Using Databricks Red for Twelve Data placeholder
-    { name: "Binance", url: "https://cdn.simpleicons.org/binance/F3BA2F" },
-    { name: "Coinbase", url: "https://cdn.simpleicons.org/coinbase/0052FF" },
-    { name: "TradingView", url: "https://cdn.simpleicons.org/tradingview/131722" },
-    { name: "Cloudflare", url: "https://cdn.simpleicons.org/cloudflare/F38020" }
+  const certifications = [
+    { name: "ISO/IEC 27001", subtitle: "Information Security", url: "https://cdn.simpleicons.org/standard-chartered/16835B" },
+    { name: "PCI DSS v4.0", subtitle: "Payment Security", url: "https://cdn.simpleicons.org/visa/1A1F71" },
+    { name: "SOC2 Type II", subtitle: "System & Controls", url: "https://cdn.simpleicons.org/securityscorecard/0055FF" },
+    { name: "GDPR Compliant", subtitle: "Data Privacy", url: "https://cdn.simpleicons.org/ethereum/3C3C3D" }
   ];
 
   useEffect(() => {
@@ -138,24 +137,31 @@ export default function HomePage() {
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">Industry Trusted</span>
             <h2 className="text-4xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">
-              Built for Safety & Reliability
+              Certifications & Recognition
             </h2>
             <p className="text-sm text-[#6B7280] leading-relaxed">
-              We prioritize the safety of your funds and data above all else. Our platform is engineered with the same standards used by major global financial institutions.
+              We operate according to the highest global standards for financial security and data privacy. Our platform is independently audited to ensure total institutional integrity.
             </p>
             
-            {/* Colored Logo Cloud */}
-            <div className="pt-10 flex flex-wrap items-center justify-center gap-8 md:gap-16">
-              {trustedLogos.map((logo) => (
-                <div key={logo.name} className="flex items-center transition-all duration-300 hover:scale-105">
-                  <img 
-                    src={logo.url} 
-                    alt={logo.name} 
-                    className="h-6 md:h-8 w-auto object-contain"
-                  />
-                  <span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] hidden md:inline">
-                    {logo.name}
-                  </span>
+            {/* Certifications Row */}
+            <div className="pt-10 flex flex-wrap items-center justify-center gap-6 md:gap-12">
+              {certifications.map((cert) => (
+                <div key={cert.name} className="flex items-center gap-3 bg-white border border-[#E4E4E4] p-3 md:p-4 shadow-sm transition-all duration-300 hover:border-[#0055FF] hover:translate-y-[-2px]">
+                  <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center shrink-0">
+                    <img 
+                      src={cert.url} 
+                      alt={cert.name} 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="text-left">
+                    <span className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-[#0A0A0A] block leading-none">
+                      {cert.name}
+                    </span>
+                    <span className="text-[8px] md:text-[9px] font-bold text-[#6B7280] uppercase tracking-tighter mt-1 block">
+                      {cert.subtitle}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
