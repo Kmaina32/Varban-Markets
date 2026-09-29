@@ -1,8 +1,9 @@
+
 'use client';
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShieldAlert, Users, FileSpreadsheet, Database, ArrowLeftRight, Settings, Inbox, ArrowDownCircle, ArrowUpCircle, ShieldCheck, Newspaper, Shield } from "lucide-react";
+import { ShieldAlert, Users, FileSpreadsheet, Database, ArrowLeftRight, Settings, Inbox, ArrowDownCircle, ArrowUpCircle, ShieldCheck, Newspaper, Shield, Server } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 
 interface AdminSidebarProps {
@@ -21,6 +22,7 @@ export default function AdminSidebar({ onLinkClick, className, isMobile = false 
     { label: "Intelligence Desk", href: "/admin/articles", icon: Newspaper },
     { label: "Deposit Queue", href: "/admin/deposits", icon: ArrowDownCircle },
     { label: "Withdrawal Queue", href: "/admin/withdrawals", icon: ArrowUpCircle },
+    { label: "Storage Node", href: "/admin/storage", icon: Server },
     { label: "Audit Logs", href: "/admin/audit-logs", icon: Shield },
     { label: "Support Inbox", href: "/admin/inbox", icon: Inbox },
     { label: "Platform Ledger", href: "/admin/transactions", icon: FileSpreadsheet },
