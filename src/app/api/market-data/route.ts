@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 /**
  * @fileOverview Secure Market Data Proxy with Expanded Multi-Provider Failover.
  * All keys are strictly consumed via environment variables.
+ * Includes fallback to fawazahmed0 Currency API for high-speed redundancy.
  */
 
 const TWELVE_DATA_KEY = process.env.TWELVE_DATA_API_KEY;
@@ -77,7 +78,17 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // 6. Final Fail-Safe: Finnhub
+  // 6. Try Currency API (Free, Fast Fallback for Quotes)
+  if (type === 'quote') {
+    const currencyResult = await fetchCurrencyApiData(symbol);
+    if (currencyResult) {
+      const formatted = { data: currencyResult };
+      cache.set(cacheKey, { data: formatted, timestamp: Date.now() });
+      return NextResponse.json(formatted);
+    }
+  }
+
+  // 7. Final Fail-Safe: Finnhub
   if (FINNHUB_KEY) {
     const fhResult = await fetchFinnhubData(symbol, type, interval);
     if (fhResult && !fhResult.error) {
@@ -90,6 +101,50 @@ export async function GET(req: NextRequest) {
     error: 'Market data providers unavailable', 
     status: 503 
   }, { status: 503 });
+}
+
+async function fetchCurrencyApiData(symbol: string) {
+  try {
+    // Parse base/target from e.g. "EUR/USD" or "EURUSD"
+    const parts = symbol.includes('/') ? symbol.split('/') : [symbol.substring(0, 3), symbol.substring(3)];
+    const base = parts[0].toLowerCase();
+    const target = parts[1]?.toLowerCase() || 'usd';
+
+    // Node Fallback Strategy: JSDelivr -> Cloudflare Pages
+    const urls = [
+      `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${base}.json`,
+      `https://latest.currency-api.pages.dev/v1/currencies/${base}.json`
+    ];
+
+    let data: any = null;
+    for (const url of urls) {
+      try {
+        const res = await fetch(url, { next: { revalidate: 3600 } });
+        if (res.ok) {
+          data = await res.json();
+          break;
+        }
+      } catch (e) {
+        continue; // Failover to next node
+      }
+    }
+
+    if (!data || !data[base] || data[base][target] === undefined) return null;
+
+    return {
+      price: data[base][target],
+      change: 0,
+      changePercent: 0,
+      open: data[base][target],
+      high: data[base][target],
+      low: data[base][target],
+      volume: 0,
+      status: 'Open',
+      timestamp: Date.now()
+    };
+  } catch (e) {
+    return null;
+  }
 }
 
 async function fetchPolygonData(symbol: string, type: string) {
