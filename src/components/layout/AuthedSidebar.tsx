@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -6,7 +7,7 @@ import {
   LayoutDashboard, Monitor, Globe, Briefcase, Target, 
   FileText, Clock, Star, Wallet, Activity, User, ShieldCheck, Lock, 
   Bell, Settings, HelpCircle, Mail, ShieldAlert,
-  Share2, Newspaper
+  Share2, Newspaper, ArrowDownCircle, ArrowUpCircle, Inbox, FileSpreadsheet, Database, Shield
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -19,7 +20,7 @@ interface AuthedSidebarProps {
   isMobile?: boolean;
 }
 
-// Defined Super Admin Accounts
+// Defined Super Admin Accounts with Root Authority
 const SUPER_ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
 
 export default function AuthedSidebar({ onLinkClick, className, isMobile = false }: AuthedSidebarProps) {
@@ -29,7 +30,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
   const db = useFirestore();
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
 
-  // Authority Verification
+  // Authority Verification: Super Admin (Hardcoded) OR Admin Role (Firestore)
   const isAdmin = useMemo(() => {
     if (!user?.email) return false;
     return SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase()) || profile?.role === 'Admin';
@@ -58,7 +59,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     {
       title: "MONEY",
       items: [
-        { label: "Wallet", href: "/wallet", icon: Wallet },
+        { label: "Wallet Hub", href: "/wallet", icon: Wallet },
       ]
     },
     {
@@ -74,7 +75,16 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     title: "ADMINISTRATION",
     items: [
       { label: "Oversight Node", href: "/admin", icon: ShieldAlert },
-      { label: "User Directory", href: "/admin/users", icon: ShieldAlert },
+      { label: "User Directory", href: "/admin/users", icon: User },
+      { label: "KYC Approvals", href: "/admin/kyc-approvals", icon: ShieldCheck },
+      { label: "Intelligence Desk", href: "/admin/articles", icon: Newspaper },
+      { label: "Deposit Queue", href: "/admin/deposits", icon: ArrowDownCircle },
+      { label: "Withdrawal Queue", href: "/admin/withdrawals", icon: ArrowUpCircle },
+      { label: "Audit Logs", href: "/admin/audit-logs", icon: Shield },
+      { label: "Support Inbox", href: "/admin/inbox", icon: Inbox },
+      { label: "Platform Ledger", href: "/admin/transactions", icon: FileSpreadsheet },
+      { label: "Market Switches", href: "/admin/markets", icon: Database },
+      { label: "Platform Settings", href: "/admin/settings", icon: Settings },
     ]
   };
 
@@ -94,7 +104,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
   if (isMobile) {
     return (
       <div className={cn("flex flex-col h-full bg-white", className)}>
-        <nav className="flex-grow space-y-6 px-6 py-8 overflow-y-auto no-scrollbar">
+        <nav className="flex-grow space-y-6 px-6 py-8 overflow-y-auto no-scrollbar pb-20">
           {finalSections.map((section) => (
             <div key={section.title} className="space-y-2">
               <h3 className="text-[10px] font-bold text-[#6B7280] uppercase tracking-[0.2em] px-2">
@@ -103,7 +113,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
               <div className="space-y-1">
                 {section.items.map((item) => {
                   const isActive = pathname === item.href || 
-                    (item.href === '/admin' && pathname?.startsWith('/admin')) || 
+                    (item.href === '/admin' && pathname === '/admin') ||
                     (item.href === '/wallet' && pathname?.startsWith('/wallet')) ||
                     (item.href === '/account' && pathname?.startsWith('/account'));
                   return (
@@ -143,7 +153,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
             <div className="space-y-0.5">
               {section.items.map((item) => {
                 const isActive = pathname === item.href || 
-                  (item.href === '/admin' && pathname?.startsWith('/admin')) || 
+                  (item.href === '/admin' && pathname === '/admin') ||
                   (item.href === '/wallet' && pathname?.startsWith('/wallet')) ||
                   (item.href === '/account' && pathname?.startsWith('/account'));
                 return (
