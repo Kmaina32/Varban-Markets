@@ -1,23 +1,14 @@
+
 'use client';
 
 /**
- * @fileOverview High-precision TradingView Chart component for the Varban Terminal.
- * Refined to consume normalized market and technical indicator data from the Twelve Data Proxy.
+ * @fileOverview Institutional TradingView Advanced Charting Library Integration.
+ * Implements the full Advanced Charts widget with custom Datafeed for Varban Markets.
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { 
-  createChart, 
-  ColorType, 
-  IChartApi, 
-  ISeriesApi, 
-  SeriesType,
-  CandlestickData,
-  LineData,
-  CrosshairMode
-} from 'lightweight-charts';
-import { fetchHistoricalData, fetchTechnicalIndicator } from '@/app/lib/market-service';
-import { useTranslation } from '@/app/lib/i18n-context';
+import Script from 'next/script';
+import { fetchHistoricalData } from '@/app/lib/market-service';
 
 export type ChartMode = 'Candlestick' | 'Line' | 'Area';
 
@@ -30,181 +21,144 @@ interface TradingViewChartProps {
   timeframe?: string;
 }
 
+declare global {
+  interface Window {
+    TradingView: any;
+  }
+}
+
 export const TradingViewChart: React.FC<TradingViewChartProps> = ({ 
   symbol, 
   chartMode = 'Candlestick',
-  showSMA = false,
-  showEMA = false,
   isDarkTheme = false,
-  timeframe = '5m'
+  timeframe = '5'
 }) => {
-  const chartContainerRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<IChartApi | null>(null);
-  const mainSeriesRef = useRef<ISeriesApi<SeriesType> | null>(null);
-  const smaSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
-  const emaSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { t } = useTranslation();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tvWidgetRef = useRef<any>(null);
+  const [isLibraryReady, setIsLibraryReady] = useState(false);
 
   useEffect(() => {
-    if (!chartContainerRef.current) return;
+    if (!isLibraryReady || !containerRef.current || !window.TradingView) return;
 
-    const themeColors = {
-      background: '#FFFFFF',
-      text: '#6B7280',
-      grid: '#F7F7F5',
+    const configurationData = {
+      supported_resolutions: ['1', '5', '15', '30', '60', '1D', '1W'],
+      exchanges: [{ value: 'Varban', name: 'Varban Markets', desc: 'Institutional Liquidity' }],
+      symbols_types: [{ name: 'All types', value: '' }]
     };
 
-    const chart = createChart(chartContainerRef.current, {
-      layout: {
-        background: { type: ColorType.Solid, color: themeColors.background },
-        textColor: themeColors.text,
-        fontFamily: 'Inter',
+    const datafeed = {
+      onReady: (callback: any) => {
+        setTimeout(() => callback(configurationData), 0);
       },
-      grid: {
-        vertLines: { color: themeColors.grid },
-        horzLines: { color: themeColors.grid },
+      searchSymbols: (userInput: string, exchange: string, symbolType: string, onResultReadyCallback: any) => {
+        onResultReadyCallback([]);
       },
-      crosshair: {
-        mode: CrosshairMode.Normal,
-        vertLine: { labelBackgroundColor: '#0A0A0A' },
-        horzLine: { labelBackgroundColor: '#0A0A0A' },
+      resolveSymbol: (symbolName: string, onSymbolResolvedCallback: any, onResolveErrorCallback: any) => {
+        const symbolInfo = {
+          name: symbolName,
+          description: symbolName,
+          type: 'crypto',
+          session: '24x7',
+          timezone: 'Etc/UTC',
+          exchange: 'Varban',
+          minmov: 1,
+          pricescale: 100,
+          has_intraday: true,
+          supported_resolutions: configurationData.supported_resolutions,
+          volume_precision: 8,
+          data_status: 'streaming',
+        };
+        setTimeout(() => onSymbolResolvedCallback(symbolInfo), 0);
       },
-      timeScale: {
-        borderVisible: false,
-        timeVisible: true,
-        secondsVisible: false,
-      },
-      rightPriceScale: {
-        borderVisible: false,
-        autoScale: true,
-      },
-      handleScroll: true,
-      handleScale: true,
-    });
-
-    chartRef.current = chart;
-
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        const priceData = await fetchHistoricalData(symbol, timeframe);
-        
-        if (!priceData || priceData.length === 0) {
-          setLoading(false);
-          return;
-        }
-
-        // Add main series based on mode
-        if (chartMode === 'Candlestick') {
-          const s = chart.addCandlestickSeries({
-            upColor: '#16835B',
-            downColor: '#0055FF',
-            borderVisible: false,
-            wickUpColor: '#16835B',
-            wickDownColor: '#0055FF',
-          });
-          s.setData(priceData as CandlestickData[]);
-          mainSeriesRef.current = s;
-        } else if (chartMode === 'Line') {
-          const s = chart.addLineSeries({ color: '#0055FF', lineWidth: 2 });
-          s.setData(priceData.map(d => ({ time: d.time, value: d.close })) as LineData[]);
-          mainSeriesRef.current = s;
-        } else {
-          const s = chart.addAreaSeries({
-            lineColor: '#0055FF',
-            topColor: 'rgba(0, 85, 255, 0.2)',
-            bottomColor: 'rgba(0, 85, 255, 0.0)',
-            lineWidth: 2,
-          });
-          s.setData(priceData.map(d => ({ time: d.time, value: d.close })) as LineData[]);
-          mainSeriesRef.current = s;
-        }
-
-        // Add indicators if toggled
-        if (showSMA) {
-          const smaData = await fetchTechnicalIndicator('SMA', symbol, timeframe, 20);
-          if (smaData.length > 0) {
-            const s = chart.addLineSeries({ 
-              color: '#F59E0B', 
-              lineWidth: 1, 
-              title: 'SMA 20',
-              priceLineVisible: false,
-              lastValueVisible: false
-            });
-            s.setData(smaData as LineData[]);
-            smaSeriesRef.current = s;
+      getBars: async (symbolInfo: any, resolution: string, periodParams: any, onHistoryCallback: any, onErrorCallback: any) => {
+        try {
+          const intervalMap: Record<string, string> = {
+            '1': '1min', '5': '5min', '15': '15min', '30': '30min', '60': '1h', '1D': '1day', '1W': '1week'
+          };
+          const interval = intervalMap[resolution] || '5min';
+          const bars = await fetchHistoricalData(symbolInfo.name, interval);
+          
+          if (bars.length === 0) {
+            onHistoryCallback([], { noData: true });
+          } else {
+            // Filter bars based on from/to if necessary
+            onHistoryCallback(bars.map(b => ({
+              time: b.time * 1000,
+              low: b.low,
+              high: b.high,
+              open: b.open,
+              close: b.close,
+              volume: b.volume
+            })), { noData: false });
           }
+        } catch (error) {
+          onErrorCallback(error);
         }
+      },
+      subscribeBars: (symbolInfo: any, resolution: string, onRealtimeCallback: any, subscribeUID: string, onResetCacheNeededCallback: any) => {
+        // Real-time updates handled by terminal polling in parent component for now
+      },
+      unsubscribeBars: (subscriberUID: string) => {}
+    };
 
-        if (showEMA) {
-          const emaData = await fetchTechnicalIndicator('EMA', symbol, timeframe, 50);
-          if (emaData.length > 0) {
-            const s = chart.addLineSeries({ 
-              color: '#8B5CF6', 
-              lineWidth: 1, 
-              title: 'EMA 50',
-              priceLineVisible: false,
-              lastValueVisible: false
-            });
-            s.setData(emaData as LineData[]);
-            emaSeriesRef.current = s;
-          }
-        }
-
-        chart.timeScale().fitContent();
-      } catch (e) {
-        console.warn("Terminal chart sync failure:", e);
-      } finally {
-        setLoading(false);
+    const widgetOptions = {
+      symbol: symbol,
+      datafeed: datafeed,
+      interval: timeframe as any,
+      container: containerRef.current,
+      library_path: '/charting_library/',
+      locale: 'en',
+      disabled_features: ['use_localstorage_for_settings_save', 'header_symbol_search'],
+      enabled_features: ['study_templates'],
+      charts_storage_url: 'https://saveload.tradingview.com',
+      charts_storage_api_version: '1.1',
+      client_id: 'varbanmarkets.com',
+      user_id: 'public_user',
+      fullscreen: false,
+      autosize: true,
+      theme: isDarkTheme ? 'Dark' : 'Light',
+      overrides: {
+        "paneProperties.background": "#FFFFFF",
+        "paneProperties.vertGridProperties.color": "#F7F7F5",
+        "paneProperties.horzGridProperties.color": "#F7F7F5",
+        "mainSeriesProperties.candleStyle.upColor": "#16835B",
+        "mainSeriesProperties.candleStyle.downColor": "#0055FF",
+        "mainSeriesProperties.candleStyle.borderUpColor": "#16835B",
+        "mainSeriesProperties.candleStyle.borderDownColor": "#0055FF",
+        "mainSeriesProperties.candleStyle.wickUpColor": "#16835B",
+        "mainSeriesProperties.candleStyle.wickDownColor": "#0055FF",
       }
     };
 
-    loadData();
-
-    const resizeObserver = new ResizeObserver(entries => {
-      if (entries.length === 0 || !chartRef.current || !chartContainerRef.current) return;
-      const { width, height } = entries[0].contentRect;
-      chartRef.current.applyOptions({ width, height });
-    });
-
-    resizeObserver.observe(chartContainerRef.current);
+    const tvWidget = new window.TradingView.widget(widgetOptions);
+    tvWidgetRef.current = tvWidget;
 
     return () => {
-      resizeObserver.disconnect();
-      if (chartRef.current) {
-        chartRef.current.remove();
-        chartRef.current = null;
-        mainSeriesRef.current = null;
-        smaSeriesRef.current = null;
-        emaSeriesRef.current = null;
+      if (tvWidgetRef.current) {
+        tvWidgetRef.current.remove();
+        tvWidgetRef.current = null;
       }
     };
-  }, [symbol, chartMode, showSMA, showEMA, timeframe]);
+  }, [symbol, isLibraryReady, isDarkTheme, timeframe]);
 
   return (
-    <div className="w-full h-full relative flex flex-col bg-transparent">
-      <div className="absolute top-3 left-3 z-20 pointer-events-none select-none">
-        <div className="flex items-center space-x-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#0A0A0A]">
-            {symbol}
-          </span>
-          <span className="text-[9px] font-mono text-[#6B7280]">
-            {chartMode} &bull; {timeframe}
-          </span>
-        </div>
-      </div>
-
-      <div ref={chartContainerRef} className="flex-grow w-full h-full z-10" />
-      
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/40 backdrop-blur-[1px]">
-          <div className="flex flex-col items-center space-y-2">
-            <div className="w-5 h-5 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div>
-            <div className="text-[8px] font-bold uppercase tracking-widest text-[#0055FF]">Synchronizing Signal</div>
+    <>
+      <Script 
+        src="/charting_library/charting_library.js" 
+        onLoad={() => setIsLibraryReady(true)}
+      />
+      <div className="w-full h-full relative flex flex-col bg-white">
+        <div ref={containerRef} className="flex-grow w-full h-full" />
+        
+        {!isLibraryReady && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white z-20">
+            <div className="flex flex-col items-center space-y-3">
+              <div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Initializing Advanced Engine</span>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 };
