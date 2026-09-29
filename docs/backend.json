@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -37,6 +38,19 @@
         }
       },
       "required": ["balance", "verificationStatus", "currency"]
+    },
+    "UserSession": {
+      "title": "Active Device Session",
+      "description": "Record of a registered device with active access tokens.",
+      "type": "object",
+      "properties": {
+        "deviceName": { "type": "string" },
+        "ip": { "type": "string" },
+        "browser": { "type": "string" },
+        "os": { "type": "string" },
+        "lastActive": { "type": "string", "format": "date-time" },
+        "isCurrent": { "type": "boolean" }
+      }
     },
     "KycSubmission": {
       "title": "KYC Document Submission",
@@ -176,6 +190,10 @@
     "/users/{userId}": {
       "schema": "UserProfile",
       "description": "Primary user profile and balance data"
+    },
+    "/users/{userId}/sessions/{sessId}": {
+      "schema": "UserSession",
+      "description": "Registered active sign-in sessions"
     },
     "/users/{userId}/passkeys/{credId}": {
       "schema": "UserPasskey",

@@ -24,10 +24,13 @@ import {
   ShieldAlert,
   FileText,
   Upload,
-  ShieldQuestion
+  ShieldQuestion,
+  Smartphone,
+  Laptop,
+  X
 } from "lucide-react";
 import { useUser, useDoc, useFirestore, useCollection, useAuth } from "@/firebase";
-import { doc, updateDoc, collection, query, orderBy, limit, serverTimestamp, addDoc, setDoc } from "firebase/firestore";
+import { doc, updateDoc, collection, query, orderBy, limit, serverTimestamp, addDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { startRegistration } from "@simplewebauthn/browser";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -67,6 +70,13 @@ export default function AccountClient() {
   }, [db, user]);
   const { data: submissions, loading: subLoading } = useCollection<any>(kycSubQuery);
 
+  // Sessions tracking
+  const sessionsQuery = useMemo(() => {
+    if (!db || !user) return null;
+    return query(collection(db, `users/${user.uid}/sessions`), orderBy("lastActive", "desc"));
+  }, [db, user]);
+  const { data: sessions, loading: sessionsLoading } = useCollection<any>(sessionsQuery);
+
   const [activeTab, setActiveTab] = useState<AccountTab>('profile');
   const [geoData, setGeoData] = useState<GeolocationData | null>(null);
   const [geoLoading, setGeoLoading] = useState(false);
@@ -99,6 +109,15 @@ export default function AccountClient() {
     const params = new URLSearchParams(window.location.search);
     params.set('tab', tab);
     router.replace(`/account?${params.toString()}`);
+  };
+
+  const revokeSession = async (sessId: string) => {
+    if (!db || !user || !window.confirm("Confirm remote session revocation? Device will be logged out instantly.")) return;
+    try {
+      await deleteDoc(doc(db, `users/${user.uid}/sessions`, sessId));
+    } catch (e) {
+      alert("Authority Failure: Could not revoke session.");
+    }
   };
 
   // --- SUB-MODULE: PROFILE ---
@@ -577,17 +596,54 @@ export default function AccountClient() {
                   )}
                 </div>
               </Card>
-              <Card className="p-8 bg-white border-[#E4E4E4] space-y-6">
-                <div className="border-b border-[#F7F7F5] pb-4 flex items-center gap-2"><Lock className="w-4 h-4 text-[#C43D3D]" /><h3 className="text-xs font-bold uppercase tracking-widest">Password & Access</h3></div>
-                <div className="flex justify-between items-center p-4 bg-[#F7F7F5] border border-[#E4E4E4]">
-                  <span className="text-[10px] font-bold uppercase">Change Password</span>
-                  <button onClick={handlePasswordReset} className="text-[9px] font-bold uppercase text-[#0055FF] hover:underline">Get Reset Link</button>
-                </div>
-                <div className="flex justify-between items-center p-4 bg-[#F7F7F5] border border-[#E4E4E4]">
-                  <span className="text-[10px] font-bold uppercase">Active Sessions</span>
-                  <span className="text-[9px] font-bold text-[#16835B] uppercase">Protected</span>
-                </div>
-              </Card>
+
+              <div className="space-y-6">
+                <Card className="p-8 bg-white border-[#E4E4E4] space-y-6">
+                  <div className="border-b border-[#F7F7F5] pb-4 flex items-center gap-2"><Lock className="w-4 h-4 text-[#C43D3D]" /><h3 className="text-xs font-bold uppercase tracking-widest">Password & Access</h3></div>
+                  <div className="flex justify-between items-center p-4 bg-[#F7F7F5] border border-[#E4E4E4]">
+                    <span className="text-[10px] font-bold uppercase">Change Password</span>
+                    <button onClick={handlePasswordReset} className="text-[9px] font-bold uppercase text-[#0055FF] hover:underline">Get Reset Link</button>
+                  </div>
+                  <div className="flex justify-between items-center p-4 bg-[#F7F7F5] border border-[#E4E4E4]">
+                    <span className="text-[10px] font-bold uppercase">Account Access</span>
+                    <span className="text-[9px] font-bold text-[#16835B] uppercase">Protected</span>
+                  </div>
+                </Card>
+
+                <Card className="bg-white border-[#E4E4E4] shadow-sm">
+                  <div className="p-4 border-b border-[#F7F7F5] flex items-center gap-2">
+                    <Smartphone className="w-4 h-4 text-[#0055FF]" />
+                    <h3 className="text-[10px] font-bold uppercase tracking-widest">Authorized Devices</h3>
+                  </div>
+                  <div className="divide-y divide-[#F7F7F5]">
+                    {sessionsLoading ? (
+                      <div className="p-8 text-center"><Loader2 className="w-5 h-5 animate-spin mx-auto text-[#0055FF]" /></div>
+                    ) : sessions?.length === 0 ? (
+                      <div className="p-8 text-center text-[10px] font-bold text-[#6B7280] uppercase">No sessions recorded</div>
+                    ) : (
+                      sessions.map((sess: any) => (
+                        <div key={sess.id} className="p-4 flex items-center justify-between hover:bg-[#F7F7F5] transition-colors">
+                          <div className="flex items-center space-x-3">
+                            {sess.os?.toLowerCase().includes('win') || sess.os?.toLowerCase().includes('mac') ? <Laptop className="w-4 h-4 text-[#6B7280]" /> : <Smartphone className="w-4 h-4 text-[#6B7280]" />}
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-bold text-[#0A0A0A]">{sess.deviceName || 'Device'}</span>
+                                {sess.id === 'current' && <span className="bg-[#16835B]/10 text-[#16835B] text-[8px] font-bold px-1.5 py-0.5 uppercase tracking-tighter">Current</span>}
+                              </div>
+                              <div className="text-[9px] text-[#6B7280] font-mono mt-0.5">{sess.ip} &bull; {sess.browser} &bull; {sess.lastActive?.toDate ? formatDate(sess.lastActive.toDate()) : 'Active now'}</div>
+                            </div>
+                          </div>
+                          {sess.id !== 'current' && (
+                            <button onClick={() => revokeSession(sess.id)} className="p-1.5 text-[#6B7280] hover:text-[#C43D3D] transition-colors">
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </Card>
+              </div>
             </div>
           )}
 

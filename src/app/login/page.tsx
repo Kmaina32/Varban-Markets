@@ -1,17 +1,19 @@
+
 "use client";
 
 /**
  * @fileOverview Login Workspace.
  * Integrated with Passkey/WebAuthn and Google Authentication.
+ * Records active device sessions upon successful sign-in.
  */
 
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, User } from "firebase/auth";
 import { useAuth, useFirestore } from "@/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp, collection, addDoc } from "firebase/firestore";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { Eye, EyeOff, Fingerprint, Loader2, ArrowLeft } from "lucide-react";
 import { startAuthentication } from "@simplewebauthn/browser";
@@ -29,6 +31,47 @@ export default function LoginPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const getDeviceInfo = () => {
+    const ua = navigator.userAgent;
+    let browser = "Other";
+    let os = "Other";
+
+    if (ua.indexOf("Firefox") > -1) browser = "Firefox";
+    else if (ua.indexOf("Chrome") > -1) browser = "Chrome";
+    else if (ua.indexOf("Safari") > -1) browser = "Safari";
+    else if (ua.indexOf("Edge") > -1) browser = "Edge";
+    
+    if (ua.indexOf("Win") > -1) os = "Windows";
+    else if (ua.indexOf("Mac") > -1) os = "macOS";
+    else if (ua.indexOf("Linux") > -1) os = "Linux";
+    else if (ua.indexOf("Android") > -1) os = "Android";
+    else if (ua.indexOf("iPhone") > -1) os = "iOS";
+
+    return { browser, os, deviceName: `${browser} on ${os}` };
+  };
+
+  const recordSession = async (user: User) => {
+    if (!db) return;
+    const { browser, os, deviceName } = getDeviceInfo();
+    
+    // Attempt to get IP
+    let ip = "0.0.0.0";
+    try {
+      const res = await fetch('https://api.ipify.org?format=json');
+      const data = await res.json();
+      ip = data.ip;
+    } catch (e) {}
+
+    await addDoc(collection(db, `users/${user.uid}/sessions`), {
+      deviceName,
+      browser,
+      os,
+      ip,
+      lastActive: serverTimestamp(),
+      userAgent: navigator.userAgent
+    });
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth) return;
@@ -37,7 +80,8 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      await recordSession(cred.user);
       router.push("/dashboard");
     } catch (err: any) {
       setError("The email or password you entered is incorrect.");
@@ -81,6 +125,7 @@ export default function LoginPage() {
         });
       }
       
+      await recordSession(user);
       router.push("/dashboard");
     } catch (err: any) {
       setError("Google authentication failed. Please try again.");
@@ -119,6 +164,8 @@ export default function LoginPage() {
       const verificationJSON = await verifyResp.json();
 
       if (verificationJSON && verificationJSON.verified) {
+        // Find user by email manually as Passkey doesn't use standard Firebase Auth creds yet in this mock
+        // Note: Real implementation would use custom token or similar
         router.push("/dashboard");
       } else {
         throw new Error('Verification failed.');
