@@ -1,3 +1,4 @@
+
 {
   "name": "varban-markets",
   "version": "0.1.0",
@@ -25,7 +26,9 @@
     "@simplewebauthn/browser": "^13.1.1",
     "@simplewebauthn/server": "^13.1.1",
     "jspdf": "^2.5.1",
-    "html2canvas": "^1.4.1"
+    "html2canvas": "^1.4.1",
+    "@aws-sdk/client-s3": "^3.712.0",
+    "@aws-sdk/s3-request-presigner": "^3.712.0"
   },
   "overrides": {
     "react-paystack": {

@@ -270,42 +270,65 @@ export default function AccountClient() {
 
   const onFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !activeUploadType) return;
+    if (!file || !activeUploadType || !user || !db) return;
     
     setUploadingDoc(activeUploadType);
     
-    // Simulate multi-stage upload handshake
-    setTimeout(async () => {
-      if (user && db) {
-        // 1. Log the submission in kyc_submissions sub-collection
-        const subId = activeUploadType === 'ID' ? 'GOVERNMENT_ID' : 'PROOF_OF_ADDRESS';
-        await setDoc(doc(db, `users/${user.uid}/kyc_submissions`, subId), {
-          type: activeUploadType,
+    try {
+      // 1. Request Presigned URL from Server Node
+      const resp = await fetch('/api/storage/presigned-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           fileName: file.name,
-          fileSize: file.size,
-          status: "Pending",
-          timestamp: serverTimestamp()
-        });
+          fileType: file.type,
+          userId: user.uid
+        })
+      });
 
-        // 2. Update user general verification status to Pending
-        await updateDoc(doc(db, "users", user.uid), { 
-          verificationStatus: "Pending",
-          kycSubmittedAt: serverTimestamp() 
-        });
-        
-        // 3. Notify User
-        await addDoc(collection(db, `users/${user.uid}/notifications`), {
-          title: "Documents Received",
-          body: `Your ${activeUploadType === 'ID' ? 'Government ID' : 'Proof of Address'} has been received and queued for audit.`,
-          type: "Security",
-          isUnread: true,
-          timestamp: serverTimestamp()
-        });
-      }
+      const { uploadUrl, key } = await resp.json();
+
+      // 2. Perform direct institutional upload to R2
+      const uploadResp = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': file.type }
+      });
+
+      if (!uploadResp.ok) throw new Error("R2 Handshake Failure");
+
+      // 3. Register transmission in Firestore Ledger
+      const subId = activeUploadType === 'ID' ? 'GOVERNMENT_ID' : 'PROOF_OF_ADDRESS';
+      await setDoc(doc(db, `users/${user.uid}/kyc_submissions`, subId), {
+        type: activeUploadType,
+        fileName: file.name,
+        fileSize: file.size,
+        status: "Pending",
+        storageKey: key,
+        timestamp: serverTimestamp()
+      });
+
+      await updateDoc(doc(db, "users", user.uid), { 
+        verificationStatus: "Pending",
+        kycSubmittedAt: serverTimestamp() 
+      });
+      
+      await addDoc(collection(db, `users/${user.uid}/notifications`), {
+        title: "Documentation Transmitted",
+        body: `Your ${activeUploadType === 'ID' ? 'ID' : 'Address'} document has been securely stored in the decentralized vault and queued for audit.`,
+        type: "Security",
+        isUnread: true,
+        timestamp: serverTimestamp()
+      });
+
+    } catch (err) {
+      console.error("KYC Transmission Error:", err);
+      alert("Transmission Failure: Could not establish secure link to storage node.");
+    } finally {
       setUploadingDoc(null);
       setActiveUploadType(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
-    }, 2500);
+    }
   };
 
   const handleFinalKycSubmission = async (label: string) => {
