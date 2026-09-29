@@ -72,19 +72,19 @@
     scrollbar-width: none;
   }
 
-  @keyframes deterministicReveal {
+  @keyframes institutionalZoom {
     0% {
       opacity: 0;
-      transform: translateY(10px);
+      transform: scale(0.94);
     }
     100% {
       opacity: 1;
-      transform: translateY(0);
+      transform: scale(1);
     }
   }
 
-  .animate-deterministic-reveal {
-    animation: deterministicReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  .animate-institutional-zoom {
+    animation: institutionalZoom 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 }
 
