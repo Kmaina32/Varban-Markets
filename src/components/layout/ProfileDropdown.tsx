@@ -3,10 +3,10 @@
 
 /**
  * @fileOverview Universal Profile Dropdown Component with Account Balances & Demo Switcher.
- * Enhanced for high-precision institutional aesthetic.
+ * Enhanced for high-precision institutional aesthetic and Super Admin authority logic.
  */
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { 
@@ -34,7 +34,8 @@ interface ProfileDropdownProps {
   onSelectMode: (mode: 'REAL' | 'DEMO') => void;
 }
 
-const ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
+// Defined Super Admin Accounts
+const SUPER_ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
 
 export default function ProfileDropdown({
   user,
@@ -50,7 +51,12 @@ export default function ProfileDropdown({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const realBalance = profile?.balance || 0;
-  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
+
+  // Authority Verification
+  const isAdmin = useMemo(() => {
+    if (!user?.email) return false;
+    return SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase()) || profile?.role === 'Admin';
+  }, [user, profile]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

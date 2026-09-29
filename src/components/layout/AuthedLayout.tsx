@@ -3,7 +3,7 @@
 
 /**
  * @fileOverview Master Authenticated Layout.
- * Verified and hardened with Zero-AI architecture.
+ * Verified and hardened with Zero-AI architecture and Super Admin authority logic.
  */
 
 import AuthedSidebar from "./AuthedSidebar";
@@ -28,7 +28,8 @@ const STRICT_PATHS = [
   '/referral', '/admin', '/markets', '/news'
 ];
 
-const ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
+// Defined Super Admin Accounts with Root Authority
+const SUPER_ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
 
 interface AuthedLayoutProps {
   children: React.ReactNode;
@@ -77,7 +78,14 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
 
   const isStrict = STRICT_PATHS.some(path => pathname === path || pathname?.startsWith(path + '/'));
   const isAdminPath = pathname?.startsWith('/admin');
-  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
+  
+  // Authority Verification: Super Admin (Hardcoded) OR Admin Role (Firestore)
+  const isAdmin = useMemo(() => {
+    if (!user?.email) return false;
+    const isSuper = SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase());
+    const hasAdminRole = profile?.role === 'Admin';
+    return isSuper || hasAdminRole;
+  }, [user, profile]);
 
   const isProfileComplete = useMemo(() => {
     if (!profile) return false;

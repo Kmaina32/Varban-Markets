@@ -12,6 +12,7 @@ import {
 import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { useUser, useDoc, useFirestore } from "@/firebase";
+import { useMemo } from "react";
 
 interface AuthedSidebarProps {
   onLinkClick?: () => void;
@@ -19,15 +20,21 @@ interface AuthedSidebarProps {
   isMobile?: boolean;
 }
 
-const ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
+// Defined Super Admin Accounts
+const SUPER_ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
 
 export default function AuthedSidebar({ onLinkClick, className, isMobile = false }: AuthedSidebarProps) {
   const pathname = usePathname();
   const { t } = useTranslation();
   const { user } = useUser();
   const db = useFirestore();
+  const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
 
-  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
+  // Authority Verification
+  const isAdmin = useMemo(() => {
+    if (!user?.email) return false;
+    return SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase()) || profile?.role === 'Admin';
+  }, [user, profile]);
 
   const sections = [
     {

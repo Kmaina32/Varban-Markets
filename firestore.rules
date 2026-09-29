@@ -58,5 +58,11 @@ service cloud.firestore {
     match /{path=**}/sessions/{sessId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+
+    // Admin Activity Logging
+    match /adminLogs/{logId} {
+      allow create: if isAdmin();
+      allow read: if isAdmin();
+    }
   }
 }
