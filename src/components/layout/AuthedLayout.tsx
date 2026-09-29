@@ -1,4 +1,3 @@
-
 'use client';
 
 import AuthedSidebar from "./AuthedSidebar";
@@ -102,7 +101,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
           </div>
           <button 
             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)} 
-            className="w-8 h-8 rounded-none border border-[#E4E4E4] overflow-hidden bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs shadow-sm hover:border-[#0055FF] transition-all"
+            className="w-8 h-8 rounded-full border border-[#E4E4E4] overflow-hidden bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs shadow-sm hover:border-[#0055FF] transition-all"
           >
             {profile?.profile?.photoUrl ? (
               <img src={profile.profile.photoUrl} alt="Avatar" className="w-full h-full object-cover" />

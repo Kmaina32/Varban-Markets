@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
@@ -215,7 +214,7 @@ export default function AccountClient() {
                 <div className="flex flex-col md:flex-row items-start md:items-center gap-8 mb-10 border-b border-[#F7F7F5] pb-8">
                   <div className="relative group">
                     <div className={cn(
-                      "w-24 h-24 rounded-none border-2 border-[#E4E4E4] flex items-center justify-center bg-[#F7F7F5] overflow-hidden transition-all duration-300",
+                      "w-24 h-24 rounded-full border-2 border-[#E4E4E4] flex items-center justify-center bg-[#F7F7F5] overflow-hidden transition-all duration-300",
                       isUploadingPhoto ? "opacity-50" : "group-hover:border-[#0055FF]"
                     )}>
                       {profile?.profile?.photoUrl ? (
@@ -232,7 +231,7 @@ export default function AccountClient() {
                     <button 
                       onClick={handlePhotoClick}
                       disabled={isUploadingPhoto}
-                      className="absolute -bottom-2 -right-2 w-8 h-8 bg-[#0A0A0A] text-white flex items-center justify-center shadow-lg hover:bg-[#0055FF] transition-colors"
+                      className="absolute -bottom-2 -right-2 w-8 h-8 bg-[#0A0A0A] text-white flex items-center justify-center rounded-full shadow-lg hover:bg-[#0055FF] transition-colors"
                     >
                       <Camera className="w-4 h-4" />
                     </button>

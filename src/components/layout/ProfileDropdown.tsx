@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -80,7 +79,7 @@ export default function ProfileDropdown({
       {/* Profile Header Banner */}
       <div className="bg-[#F7F7F5] p-5 border-b border-[#E4E4E4] flex items-center justify-between">
         <div className="flex items-center space-x-4 overflow-hidden">
-          <div className="w-12 h-12 border-2 border-[#E4E4E4] bg-white flex items-center justify-center font-bold text-sm shadow-sm overflow-hidden shrink-0">
+          <div className="w-12 h-12 border-2 border-[#E4E4E4] rounded-full bg-white flex items-center justify-center font-bold text-sm shadow-sm overflow-hidden shrink-0">
             {profile?.profile?.photoUrl ? (
               <img src={profile.profile.photoUrl} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
@@ -192,7 +191,7 @@ export default function ProfileDropdown({
           <Link
             href="/withdraw"
             onClick={onClose}
-            className="py-3 px-3 bg-white border border-[#E4E4E4] text-[#0A0A0A] text-[9px] font-bold uppercase tracking-[0.2em] flex items-center justify-center space-x-2 hover:bg-[#F7F7F5] transition-all shadow-sm group"
+            className="py-3 px-3 bg-white border border-[#E4E4E4] text-[#0A0A0A] text-[9px] font-bold uppercase tracking-[0.2em] flex items-center justify-center space-x-2 hover:bg-[#F7F7F5] shadow-sm group"
           >
             <ArrowUpRight className="w-3.5 h-3.5 text-[#0055FF] transition-colors" />
             <span>Withdraw</span>
