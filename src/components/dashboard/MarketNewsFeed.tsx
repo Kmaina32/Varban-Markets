@@ -2,27 +2,31 @@
 
 /**
  * @fileOverview Institutional Market News Feed Component.
- * Displays raw financial news headlines without AI processing.
- * Refactored to link directly to external authoritative sources.
+ * Refactored with institutional error handling and specific market sector filtering.
  */
 
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { Newspaper, Clock, ExternalLink, Loader2, BarChart2 } from 'lucide-react';
+import { Newspaper, Clock, ExternalLink, Loader2, AlertTriangle } from 'lucide-react';
 import { fetchMarketNews, NewsItem } from '@/app/lib/news-service';
 import { cn } from '@/app/lib/utils';
 
 export default function MarketNewsFeed() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const loadNews = async () => {
       try {
-        const newsItems = await fetchMarketNews();
-        setNews(newsItems.slice(0, 5));
+        const response = await fetchMarketNews();
+        if (response.error) {
+          setError(true);
+        } else {
+          setNews(response.data?.slice(0, 5) || []);
+        }
       } catch (err) {
-        console.error("Dashboard news sync failure:", err);
+        setError(true);
       } finally {
         setIsLoading(false);
       }
@@ -35,7 +39,7 @@ export default function MarketNewsFeed() {
       <div className="p-4 border-b border-[#E4E4E4] bg-[#F7F7F5] flex justify-between items-center shrink-0">
         <div className="flex items-center space-x-2">
           <Newspaper className="w-4 h-4 text-[#0055FF]" />
-          <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Market News</h3>
+          <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Market Intelligence</h3>
         </div>
       </div>
 
@@ -43,11 +47,16 @@ export default function MarketNewsFeed() {
         {isLoading ? (
           <div className="p-12 flex flex-col items-center justify-center space-y-3">
             <Loader2 className="w-6 h-6 text-[#0055FF] animate-spin" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Loading Headlines...</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Synchronizing Feed...</span>
+          </div>
+        ) : error ? (
+          <div className="p-12 text-center text-[#6B7280] space-y-3">
+            <AlertTriangle className="w-8 h-8 text-[#C43D3D] mx-auto opacity-30" />
+            <p className="text-[10px] font-bold uppercase tracking-wider">Intelligence nodes unreachable</p>
           </div>
         ) : news.length === 0 ? (
           <div className="p-12 text-center text-[#6B7280]">
-            <p className="text-[10px] font-bold uppercase tracking-wider">No recent headlines found.</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider">No active market headlines</p>
           </div>
         ) : (
           <div className="divide-y divide-[#E4E4E4]">
@@ -74,7 +83,7 @@ export default function MarketNewsFeed() {
                 </h4>
                 
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#F7F7F5]">
-                   <span className="text-[8px] font-mono text-[#E4E4E4] uppercase">{item.uuid.substring(0,8).toUpperCase()}</span>
+                   <span className="text-[8px] font-mono text-[#E4E4E4] uppercase">ID: {item.uuid.substring(0,8).toUpperCase()}</span>
                    <ExternalLink className="w-3.5 h-3.5 text-[#E4E4E4] group-hover:text-[#0055FF] transition-colors" />
                 </div>
               </a>
@@ -88,7 +97,7 @@ export default function MarketNewsFeed() {
           href="/news"
           className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] hover:text-[#0A0A0A] transition-colors flex items-center justify-center gap-1.5 mx-auto"
         >
-          <span>View Full News Hub</span>
+          <span>Open News Hub</span>
           <ExternalLink className="w-3 h-3" />
         </a>
       </div>

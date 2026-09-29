@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { TrendingUp, TrendingDown, CheckCircle2, ArrowRight, Newspaper, Clock, ExternalLink, FileText } from "lucide-react";
+import { TrendingUp, TrendingDown, CheckCircle2, ArrowRight, Newspaper, Clock, ExternalLink, AlertTriangle } from "lucide-react";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { MarketIcon } from "@/components/MarketIcon";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
@@ -12,6 +12,7 @@ import { cn } from "@/app/lib/utils";
 export default function HomePage() {
   const [trendingNews, setTrendingNews] = useState<NewsItem[]>([]);
   const [newsLoading, setNewsLoading] = useState(true);
+  const [newsError, setNewsError] = useState(false);
 
   const marketTickers = [
     { symbol: "XAU/USD", name: "Gold Spot", price: "2,743.21", change: "+1.25%", isUp: true },
@@ -27,10 +28,14 @@ export default function HomePage() {
   useEffect(() => {
     async function loadNews() {
       try {
-        const news = await fetchMarketNews();
-        setTrendingNews(news.slice(0, 4));
+        const response = await fetchMarketNews();
+        if (response.error) {
+          setNewsError(true);
+        } else {
+          setTrendingNews(response.data?.slice(0, 4) || []);
+        }
       } catch (e) {
-        console.error("Failed to load trending news:", e);
+        setNewsError(true);
       } finally {
         setNewsLoading(false);
       }
@@ -142,9 +147,14 @@ export default function HomePage() {
                   <div className="h-20 bg-[#F7F7F5] w-full"></div>
                 </div>
               ))
+            ) : newsError ? (
+              <div className="col-span-full py-12 text-center text-[#6B7280]">
+                <AlertTriangle className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                <p className="text-xs uppercase font-bold tracking-widest">Unable to synchronize news feed</p>
+              </div>
             ) : trendingNews.length === 0 ? (
               <div className="col-span-full py-12 text-center text-[#6B7280]">
-                < Newspaper className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                <Newspaper className="w-12 h-12 mx-auto mb-4 opacity-20" />
                 <p className="text-xs uppercase font-bold tracking-widest">No active headlines detected</p>
               </div>
             ) : (
@@ -171,7 +181,7 @@ export default function HomePage() {
                       rel="noopener noreferrer"
                       className="flex items-center justify-between w-full text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A] hover:text-[#0055FF] transition-colors"
                     >
-                      <span className="flex items-center gap-1.5"><ExternalLink className="w-3 h-3" /> Analyze Report</span>
+                      <span className="flex items-center gap-1.5"><ExternalLink className="w-3 h-3" /> Read Report</span>
                       <ArrowRight className="w-3 h-3" />
                     </a>
                   </div>
