@@ -36,7 +36,7 @@ export default function HomePage() {
     { name: "ISO/IEC 27001", subtitle: "Information Security", url: "/assets/iso.png" },
     { name: "PCI DSS v4.0", subtitle: "Payment Security", url: "https://cdn.simpleicons.org/visa/1A1F71" },
     { name: "SOC2 Type II", subtitle: "System & Controls", url: "https://cdn.simpleicons.org/securityscorecard/0055FF" },
-    { name: "GDPR Compliant", subtitle: "Data Privacy", url: "https://cdn.simpleicons.org/europeanunion/003399" }
+    { name: "GDPR Compliant", subtitle: "Data Privacy", url: "https://cdn.simpleicons.org/ethereum/000000" }
   ];
 
   useEffect(() => {
