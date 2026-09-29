@@ -107,7 +107,6 @@ export default function AccountClient() {
       const fullName = `${profileForm.firstName} ${profileForm.lastName}`.trim();
       const cleanPhone = `${profileForm.dialCode} ${profileForm.phone}`.trim();
       
-      // Use setDoc with merge to prevent "No document to update" error
       await setDoc(doc(db, "users", user.uid), {
         profile: {
           firstName: profileForm.firstName.trim(),
@@ -140,14 +139,16 @@ export default function AccountClient() {
     setIsUploadingPhoto(true);
 
     try {
-      // 1. Get Presigned URL
+      // 1. Get Presigned URL with Institutional Path
       const resp = await fetch('/api/storage/presigned-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fileName: `profile_${user.uid}.${file.name.split('.').pop()}`,
+          fileName: file.name,
           fileType: file.type,
-          userId: user.uid
+          userId: user.uid,
+          userName: profile?.profile?.fullName || user.email?.split('@')[0],
+          purpose: 'profile'
         })
       });
 
@@ -184,7 +185,6 @@ export default function AccountClient() {
   const updatePreference = async (key: string, value: any) => {
     if (!user || !db) return;
     try {
-      // Use setDoc merge for safe preference updates
       await setDoc(doc(db, "users", user.uid), { 
         preferences: { [key]: value } 
       }, { merge: true });

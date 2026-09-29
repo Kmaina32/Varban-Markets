@@ -7,21 +7,31 @@ import { r2Client, R2_BUCKET_NAME } from "@/app/lib/r2-service";
 /**
  * @fileOverview Presigned URL Generator for R2 Storage.
  * Generates secure, time-limited authorized upload tokens.
- * Explicitly supports application/pdf for institutional KYC documents.
+ * Pathing refined to institutional standards: user/user_name/profile
  */
 
 export async function POST(req: NextRequest) {
   try {
-    const { fileName, fileType, userId } = await req.json();
+    const { fileName, fileType, userId, userName, purpose } = await req.json();
 
     if (!fileName || !fileType || !userId) {
       return NextResponse.json({ error: "Missing metadata (fileName, fileType, userId)" }, { status: 400 });
     }
 
     // SANITIZATION: Prevents signature issues with malformed filenames
-    const safeName = fileName.replace(/[^a-z0-9.]/gi, '_').toLowerCase();
+    const safeFileName = fileName.replace(/[^a-z0-9.]/gi, '_').toLowerCase();
     const timestamp = Date.now();
-    const key = `users/${userId}/kyc/${timestamp}_${safeName}`;
+    
+    let key: string;
+
+    // Institutional Path Logic: user/user_name/profile
+    if (purpose === 'profile') {
+      const sanitizedName = (userName || userId).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      key = `user/${sanitizedName}/profile/${safeFileName}`;
+    } else {
+      // Fallback for KYC and other documentation
+      key = `users/${userId}/kyc/${timestamp}_${safeFileName}`;
+    }
 
     const command = new PutObjectCommand({
       Bucket: R2_BUCKET_NAME,
