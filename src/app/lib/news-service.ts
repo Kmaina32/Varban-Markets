@@ -9,6 +9,10 @@ export interface NewsItem {
   title: string;
   published_at: string;
   publisher: string;
+  description?: string;
+  url?: string;
+  image?: string;
+  category?: string[];
 }
 
 /**

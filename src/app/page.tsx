@@ -1,11 +1,19 @@
 
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { TrendingUp, TrendingDown, CheckCircle2, ArrowRight } from "lucide-react";
+import { TrendingUp, TrendingDown, CheckCircle2, ArrowRight, Newspaper, Clock, ExternalLink } from "lucide-react";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { MarketIcon } from "@/components/MarketIcon";
+import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
+import { cn } from "@/app/lib/utils";
 
 export default function HomePage() {
+  const [trendingNews, setTrendingNews] = useState<NewsItem[]>([]);
+  const [newsLoading, setNewsLoading] = useState(true);
+
   const marketTickers = [
     { symbol: "XAU/USD", name: "Gold Spot", price: "2,743.21", change: "+1.25%", isUp: true },
     { symbol: "EUR/USD", name: "Euro / US Dollar", price: "1.0512", change: "+0.45%", isUp: true },
@@ -16,6 +24,20 @@ export default function HomePage() {
     { symbol: "US30", name: "Dow Jones 30", price: "38,742.63", change: "-0.25%", isUp: false },
     { symbol: "NAS100", name: "Nasdaq 100", price: "15,434.20", change: "+1.42%", isUp: true }
   ];
+
+  useEffect(() => {
+    async function loadNews() {
+      try {
+        const news = await fetchMarketNews();
+        setTrendingNews(news.slice(0, 4));
+      } catch (e) {
+        console.error("Failed to load trending news:", e);
+      } finally {
+        setNewsLoading(false);
+      }
+    }
+    loadNews();
+  }, []);
 
   return (
     <div className="flex flex-col bg-white">
@@ -94,6 +116,68 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trending News Section */}
+      <section className="py-24 bg-[#F7F7F5] border-t border-b border-[#E4E4E4]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
+            <div className="max-w-2xl">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF] block mb-2">Market Intelligence</span>
+              <h2 className="text-3xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Trending Insights</h2>
+              <p className="text-sm text-[#6B7280] mt-3">Stay ahead of the curve with real-time headlines from global financial nodes.</p>
+            </div>
+            <Link href="/news" className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#0055FF] hover:text-[#0A0A0A] transition-colors flex items-center gap-2 pb-1 border-b border-[#0055FF] hover:border-[#0A0A0A]">
+              View All Intelligence <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {newsLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-white border border-[#E4E4E4] p-6 h-64 animate-pulse">
+                  <div className="h-4 bg-[#F7F7F5] w-1/3 mb-4"></div>
+                  <div className="h-6 bg-[#F7F7F5] w-full mb-2"></div>
+                  <div className="h-6 bg-[#F7F7F5] w-2/3 mb-6"></div>
+                  <div className="h-20 bg-[#F7F7F5] w-full"></div>
+                </div>
+              ))
+            ) : trendingNews.length === 0 ? (
+              <div className="col-span-full py-12 text-center text-[#6B7280]">
+                <Newspaper className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                <p className="text-xs uppercase font-bold tracking-widest">No active headlines detected</p>
+              </div>
+            ) : (
+              trendingNews.map((item) => (
+                <div key={item.uuid} className="bg-white border border-[#E4E4E4] p-6 flex flex-col justify-between hover:border-[#0055FF] transition-all group shadow-sm">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-start">
+                      <span className="text-[9px] font-mono font-bold text-[#0055FF] uppercase tracking-tighter">
+                        {item.publisher}
+                      </span>
+                      <div className="flex items-center gap-1 text-[8px] font-bold text-[#6B7280] uppercase">
+                        <Clock className="w-2.5 h-2.5" />
+                        <span>{new Date(item.published_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <h3 className="text-sm font-bold text-[#0A0A0A] leading-tight group-hover:text-[#0055FF] transition-colors line-clamp-3">
+                      {item.title}
+                    </h3>
+                    <p className="text-[11px] text-[#6B7280] line-clamp-3 leading-relaxed">
+                      {item.description}
+                    </p>
+                  </div>
+                  <div className="pt-6 mt-6 border-t border-[#F7F7F5]">
+                    <Link href={item.url || "#"} target="_blank" className="flex items-center justify-between w-full text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A] hover:text-[#0055FF] transition-colors">
+                      <span>Source Analysis</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>
