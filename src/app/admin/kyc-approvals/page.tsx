@@ -3,9 +3,8 @@
 
 /**
  * @fileOverview Institutional KYC Document Verification Desk.
- * Monitors and audits unverified user entities, handling KYC approvals,
- * rejections, and direct document inspection via Cloudflare R2.
- * Hardened: Manual approval protocol only. Embedded in-house viewer.
+ * Monitors and audits user entities, handling KYC approvals, rejections, and direct document inspection.
+ * Support for PDF rendering and Fullscreen Expansion.
  */
 
 import { useState, useMemo, useEffect } from "react";
@@ -15,12 +14,13 @@ import {
   Search,
   X,
   Loader2,
-  ExternalLink,
   FileText,
   ShieldCheck,
   AlertTriangle,
   Eye,
-  Check
+  Check,
+  Maximize2,
+  ExternalLink
 } from "lucide-react";
 import { useCollection, useFirestore } from "@/firebase";
 import {
@@ -43,14 +43,7 @@ interface UserEntity {
   email?: string;
   country?: string;
   verificationStatus?: string;
-  accountId?: string;
-  role?: string;
-  balance?: number;
-  phone?: string;
-  createdAt?: any;
   kycSubmittedAt?: any;
-  kycReviewedAt?: any;
-  [key: string]: any;
 }
 
 interface KycDocument {
@@ -59,83 +52,41 @@ interface KycDocument {
   status: string;
   storageKey?: string;
   fileName?: string;
+  fileType?: string;
   timestamp?: any;
 }
 
-type FilterStatus = 'All' | 'Pending' | 'Not Verified' | 'Rejected';
+type FilterStatus = 'All' | 'Pending' | 'Verified' | 'Not Verified' | 'Rejected';
 
-const FILTER_OPTIONS: FilterStatus[] = ['All', 'Pending', 'Not Verified', 'Rejected'];
+const FILTER_OPTIONS: FilterStatus[] = ['All', 'Pending', 'Verified', 'Not Verified', 'Rejected'];
 
 export default function AdminKycApprovalsPage() {
   const db = useFirestore();
 
-  const [activeFilter, setActiveFilter] = useState<FilterStatus>('All');
+  const [activeFilter, setActiveFilter] = useState<FilterStatus>('Pending');
   const [searchQuery, setSearchQuery] = useState('');
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [inspectUser, setInspectUser] = useState<UserEntity | null>(null);
   const [inspectDocs, setInspectDocs] = useState<KycDocument[]>([]);
   const [docsLoading, setDocsLoading] = useState(false);
-  const [fallbackToAll, setFallbackToAll] = useState(false);
   
-  // Viewer States
   const [viewingDocUrl, setViewingDocUrl] = useState<string | null>(null);
-  const [viewingDocId, setViewingDocType] = useState<string | null>(null);
+  const [viewingDoc, setViewingDoc] = useState<KycDocument | null>(null);
   const [isViewerLoading, setIsViewerLoading] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  const [actionFeedback, setActionFeedback] = useState<{
-    type: 'success' | 'error';
-    text: string;
-  } | null>(null);
-
-  // Auto-dismiss feedback message
-  useEffect(() => {
-    if (actionFeedback) {
-      const timer = setTimeout(() => setActionFeedback(null), 6000);
-      return () => clearTimeout(timer);
-    }
-  }, [actionFeedback]);
-
-  // Main KYC Query
   const kycQuery = useMemo(() => {
     if (!db) return null;
-    if (fallbackToAll) {
-      return collection(db, "users");
-    }
-    return query(
-      collection(db, "users"),
-      where("verificationStatus", "!=", "Verified")
-    );
-  }, [db, fallbackToAll]);
+    return collection(db, "users");
+  }, [db]);
 
-  const { data: rawUsers, loading, error } = useCollection<UserEntity>(kycQuery);
-
-  useEffect(() => {
-    if (error && !fallbackToAll) {
-      setFallbackToAll(true);
-    }
-  }, [error, fallbackToAll]);
-
-  const nonVerifiedUsers = useMemo(() => {
-    if (!rawUsers) return [];
-    return rawUsers.filter((u) => u.verificationStatus !== "Verified");
-  }, [rawUsers]);
-
-  const counts = useMemo(() => {
-    return {
-      All: nonVerifiedUsers.length,
-      Pending: nonVerifiedUsers.filter((u) => u.verificationStatus === "Pending").length,
-      "Not Verified": nonVerifiedUsers.filter(
-        (u) => !u.verificationStatus || u.verificationStatus === "Not Verified"
-      ).length,
-      Rejected: nonVerifiedUsers.filter((u) => u.verificationStatus === "Rejected").length,
-    };
-  }, [nonVerifiedUsers]);
+  const { data: rawUsers, loading } = useCollection<UserEntity>(kycQuery);
 
   const filteredUsers = useMemo(() => {
-    return nonVerifiedUsers.filter((user) => {
-      if (activeFilter === "Pending" && user.verificationStatus !== "Pending") return false;
-      if (activeFilter === "Not Verified" && user.verificationStatus !== "Not Verified" && user.verificationStatus) return false;
-      if (activeFilter === "Rejected" && user.verificationStatus !== "Rejected") return false;
+    if (!rawUsers) return [];
+    return rawUsers.filter((user) => {
+      const status = user.verificationStatus || "Not Verified";
+      if (activeFilter !== "All" && activeFilter !== status) return false;
 
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
@@ -145,14 +96,13 @@ export default function AdminKycApprovalsPage() {
       }
       return true;
     });
-  }, [nonVerifiedUsers, activeFilter, searchQuery]);
+  }, [rawUsers, activeFilter, searchQuery]);
 
-  // Load documents for inspected user
   const handleInspectUser = async (userItem: UserEntity) => {
     setInspectUser(userItem);
     setInspectDocs([]);
     setViewingDocUrl(null);
-    setViewingDocType(null);
+    setViewingDoc(null);
     setDocsLoading(true);
     
     if (!db) return;
@@ -162,7 +112,6 @@ export default function AdminKycApprovalsPage() {
       const docsData = docsSnap.docs.map(d => ({ id: d.id, ...d.data() } as KycDocument));
       setInspectDocs(docsData);
     } catch (e) {
-      console.error("Failed to load user documentation", e);
     } finally {
       setDocsLoading(false);
     }
@@ -172,7 +121,7 @@ export default function AdminKycApprovalsPage() {
     if (!docItem.storageKey) return;
     
     setIsViewerLoading(true);
-    setViewingDocType(docItem.id);
+    setViewingDoc(docItem);
     
     try {
       const resp = await fetch('/api/storage/view-url', {
@@ -191,7 +140,7 @@ export default function AdminKycApprovalsPage() {
 
   const handleApprove = async (userItem: UserEntity) => {
     if (!db) return;
-    if (!window.confirm(`DETERMINISTIC ACTION: Manually approve KYC verification for ${userItem.email}? This action grants full platform authority.`)) return;
+    if (!window.confirm(`APPROVE KYC: Verify ${userItem.email}?`)) return;
 
     setProcessingId(userItem.id);
     try {
@@ -201,14 +150,13 @@ export default function AdminKycApprovalsPage() {
       }, { merge: true });
 
       await addDoc(collection(db, `users/${userItem.id}/notifications`), {
-        title: "KYC Verification Approved",
-        body: "Your identity has been manually verified by our compliance team. You now have full institutional platform access.",
+        title: "KYC Approved",
+        body: "Your identity has been verified. You now have full institutional platform access.",
         type: "Security",
         isUnread: true,
         timestamp: serverTimestamp(),
       });
 
-      setActionFeedback({ type: "success", text: `KYC Manually Approved for ${userItem.email}` });
       setInspectUser(null);
     } catch (err) {
       alert("Handshake Failure.");
@@ -219,7 +167,7 @@ export default function AdminKycApprovalsPage() {
 
   const handleReject = async (userItem: UserEntity) => {
     if (!db) return;
-    if (!window.confirm(`DETERMINISTIC ACTION: Reject KYC for ${userItem.email}?`)) return;
+    if (!window.confirm(`REJECT KYC: Deny ${userItem.email}?`)) return;
 
     setProcessingId(userItem.id);
     try {
@@ -229,14 +177,13 @@ export default function AdminKycApprovalsPage() {
       }, { merge: true });
 
       await addDoc(collection(db, `users/${userItem.id}/notifications`), {
-        title: "KYC Verification Rejected",
-        body: "Your identity documents were reviewed and not accepted. Please resubmit clear, high-resolution copies via the Account Hub.",
+        title: "KYC Rejected",
+        body: "Your identity documents were reviewed and not accepted. Please resubmit clear copies.",
         type: "Security",
         isUnread: true,
         timestamp: serverTimestamp(),
       });
 
-      setActionFeedback({ type: "error", text: `KYC Rejected for ${userItem.email}` });
       setInspectUser(null);
     } catch (err) {
       alert("Handshake Failure.");
@@ -258,28 +205,9 @@ export default function AdminKycApprovalsPage() {
   return (
     <AuthedLayout title="KYC Approvals" subtitle="Institutional Verification Desk">
       <div className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {FILTER_OPTIONS.map(opt => (
-            <Card key={opt} className="p-4 bg-white border-[#E4E4E4] shadow-sm flex flex-col justify-between min-h-[100px]">
-              <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-2">{opt}</span>
-              <div className="flex items-baseline space-x-2">
-                <span className="text-2xl font-mono font-bold text-[#0A0A0A]">{loading ? "..." : (counts as any)[opt]}</span>
-                <span className="text-[9px] text-[#6B7280] uppercase font-bold tracking-wider">Entities</span>
-              </div>
-            </Card>
-          ))}
-        </div>
-
-        {actionFeedback && (
-          <div className={cn("p-4 border flex items-center justify-between shadow-sm animate-in fade-in duration-200", actionFeedback.type === "success" ? "bg-[#16835B]/5 border-[#16835B]/30 text-[#16835B]" : "bg-[#C43D3D]/5 border-[#C43D3D]/30 text-[#C43D3D]")}>
-            <span className="text-xs font-bold uppercase tracking-wider">{actionFeedback.text}</span>
-            <button onClick={() => setActionFeedback(null)} className="p-1 hover:opacity-75 transition-opacity"><X className="w-3.5 h-3.5" /></button>
-          </div>
-        )}
-
         <Card className="p-4 bg-white border-[#E4E4E4] shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] mr-2">Scope:</span>
+            <span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] mr-2">Domain Filter:</span>
             {FILTER_OPTIONS.map((f) => (
               <button key={f} onClick={() => setActiveFilter(f)} className={cn("px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all", activeFilter === f ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white text-[#6B7280] border-[#E4E4E4] hover:border-[#0055FF]")}>
                 {f}
@@ -297,10 +225,10 @@ export default function AdminKycApprovalsPage() {
             <table className="w-full text-left border-collapse min-w-[920px]">
               <thead>
                 <tr className="bg-[#F7F7F5] border-b border-[#E4E4E4]">
-                  <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-wider">Entity Profile</th>
+                  <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-wider">Entity Domain</th>
                   <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-wider">Account ID</th>
                   <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-wider">Jurisdiction</th>
-                  <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-wider text-center">KYC Status</th>
+                  <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-wider text-center">Audit Status</th>
                   <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-wider text-center">Actions</th>
                 </tr>
               </thead>
@@ -337,7 +265,7 @@ export default function AdminKycApprovalsPage() {
 
       {inspectUser && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-[#0A0A0A]/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <Card className="w-full max-w-4xl bg-white border-[#E4E4E4] shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+          <Card className="w-full max-w-5xl bg-white border-[#E4E4E4] shadow-2xl relative overflow-hidden flex flex-col h-[90vh]">
             <div className="p-5 border-b border-[#E4E4E4] flex justify-between items-center bg-[#F7F7F5]">
               <div className="flex items-center space-x-2">
                 <ShieldCheck className="w-4 h-4 text-[#0055FF]" />
@@ -347,26 +275,21 @@ export default function AdminKycApprovalsPage() {
             </div>
 
             <div className="flex-grow overflow-hidden flex flex-col md:flex-row">
-              {/* Sidebar: Details & Document List */}
               <div className="w-full md:w-80 border-r border-[#E4E4E4] overflow-y-auto no-scrollbar bg-white shrink-0">
                 <div className="p-6 space-y-6">
                    <div>
-                      <span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Entity Name</span>
-                      <span className="text-sm font-bold text-[#0A0A0A]">{inspectUser.fullName || "Unnamed"}</span>
-                   </div>
-                   <div>
-                      <span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Email Domain</span>
-                      <span className="text-xs font-mono text-[#0A0A0A] break-all">{inspectUser.email}</span>
+                      <span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Entity Domain</span>
+                      <span className="text-sm font-bold text-[#0A0A0A] break-all">{inspectUser.email}</span>
                    </div>
                    <div className="pt-4 border-t border-[#F7F7F5] space-y-4">
                       <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] flex items-center gap-2">
-                        <FileText className="w-3.5 h-3.5 text-[#0055FF]" /> Documentation
+                        <FileText className="w-3.5 h-3.5 text-[#0055FF]" /> Submission Audit
                       </h4>
                       
                       {docsLoading ? (
                         <div className="p-8 text-center text-[#6B7280] animate-pulse uppercase text-[9px] font-bold">Synchronizing Evidence...</div>
                       ) : inspectDocs.length === 0 ? (
-                        <div className="p-8 border border-dashed border-[#E4E4E4] text-center text-[#6B7280] uppercase text-[9px] font-bold">No documents</div>
+                        <div className="p-8 border border-dashed border-[#E4E4E4] text-center text-[#6B7280] uppercase text-[9px] font-bold">No documents provided</div>
                       ) : (
                         <div className="space-y-2">
                           {inspectDocs.map((docItem) => (
@@ -375,14 +298,14 @@ export default function AdminKycApprovalsPage() {
                               onClick={() => openInHouseViewer(docItem)}
                               className={cn(
                                 "w-full p-3 text-left border transition-all flex items-center justify-between group",
-                                viewingDocId === docItem.id ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-[#F7F7F5] border-[#E4E4E4] hover:border-[#0055FF]"
+                                viewingDoc?.id === docItem.id ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-[#F7F7F5] border-[#E4E4E4] hover:border-[#0055FF]"
                               )}
                             >
                               <div className="flex items-center gap-2 overflow-hidden">
-                                <FileText className={cn("w-3.5 h-3.5 shrink-0", viewingDocId === docItem.id ? "text-white" : "text-[#6B7280]")} />
+                                <FileText className={cn("w-3.5 h-3.5 shrink-0", viewingDoc?.id === docItem.id ? "text-white" : "text-[#6B7280]")} />
                                 <span className="text-[9px] font-bold uppercase truncate">{docItem.type.replace('_', ' ')}</span>
                               </div>
-                              <Eye className={cn("w-3 h-3 shrink-0", viewingDocId === docItem.id ? "text-white" : "text-[#6B7280] opacity-0 group-hover:opacity-100")} />
+                              <Eye className={cn("w-3 h-3 shrink-0", viewingDoc?.id === docItem.id ? "text-white" : "text-[#6B7280] opacity-0 group-hover:opacity-100")} />
                             </button>
                           ))}
                         </div>
@@ -391,28 +314,46 @@ export default function AdminKycApprovalsPage() {
                 </div>
               </div>
 
-              {/* Main Content: Document Viewer */}
-              <div className="flex-grow bg-[#F7F7F5] overflow-hidden flex flex-col">
+              <div className="flex-grow bg-[#F7F7F5] overflow-hidden flex flex-col relative">
                 {isViewerLoading ? (
                   <div className="flex-grow flex flex-col items-center justify-center space-y-3">
                     <Loader2 className="w-8 h-8 text-[#0055FF] animate-spin" />
-                    <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#6B7280]">Generating Secure Token...</span>
+                    <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#6B7280]">Generating Secure Link...</span>
                   </div>
                 ) : viewingDocUrl ? (
-                  <div className="flex-grow p-4 md:p-8 overflow-hidden flex flex-col">
+                  <div className="flex-grow p-4 md:p-8 overflow-hidden flex flex-col h-full">
                     <div className="flex-grow bg-white border-2 border-[#0A0A0A] p-2 relative shadow-lg overflow-hidden flex items-center justify-center">
                        <div className="absolute top-2 left-4 px-2 py-0.5 bg-[#0A0A0A] text-white text-[8px] font-bold uppercase tracking-widest z-10 shadow">
-                          Institutional Audit Frame
+                          Institutional Audit Frame &bull; {viewingDoc?.fileType?.includes('pdf') ? 'PDF Document' : 'Raster Image'}
                        </div>
-                       <img 
-                        src={viewingDocUrl} 
-                        className="max-w-full max-h-full object-contain animate-in zoom-in-95 duration-300" 
-                        alt="KYC Source Proof" 
-                       />
-                    </div>
-                    <div className="mt-4 flex items-center justify-between text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">
-                       <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> Deterministic Review Protocol</span>
-                       <button onClick={() => setViewingDocUrl(null)} className="hover:text-[#0A0A0A] flex items-center gap-1">Clear Frame <X className="w-3.5 h-3.5" /></button>
+                       
+                       <div className="absolute top-2 right-4 flex gap-2 z-10">
+                          <button 
+                            onClick={() => setIsExpanded(true)}
+                            className="p-1 bg-white border border-[#E4E4E4] text-[#0A0A0A] hover:bg-[#F7F7F5] shadow-sm"
+                            title="Expand to Fullscreen"
+                          >
+                            <Maximize2 className="w-3.5 h-3.5" />
+                          </button>
+                          <a 
+                            href={viewingDocUrl} 
+                            target="_blank" 
+                            className="p-1 bg-white border border-[#E4E4E4] text-[#0055FF] hover:bg-[#F7F7F5] shadow-sm"
+                            title="Open Source"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                       </div>
+
+                       {viewingDoc?.fileType?.includes('pdf') ? (
+                         <iframe src={viewingDocUrl} className="w-full h-full border-none" />
+                       ) : (
+                         <img 
+                          src={viewingDocUrl} 
+                          className="max-w-full max-h-full object-contain animate-in zoom-in-95 duration-300" 
+                          alt="KYC Proof" 
+                         />
+                       )}
                     </div>
                   </div>
                 ) : (
@@ -422,7 +363,7 @@ export default function AdminKycApprovalsPage() {
                     </div>
                     <div>
                       <h4 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Source Review Active</h4>
-                      <p className="text-[10px] text-[#6B7280] uppercase mt-1">Select a document from the registry list to initiate inspection</p>
+                      <p className="text-[10px] text-[#6B7280] uppercase mt-1">Select an evidence token to initiate inspection</p>
                     </div>
                   </div>
                 )}
@@ -433,18 +374,49 @@ export default function AdminKycApprovalsPage() {
               <div className="flex items-start gap-3 max-w-md">
                  <AlertTriangle className="w-4 h-4 text-[#0055FF] shrink-0 mt-0.5" />
                  <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
-                    Audit Notice: This action requires manual verification. Auto-approval protocols are decommissioned to ensure total financial integrity.
+                    Compliance Notice: All actions are recorded in the immutable audit ledger. Automated approvals are disabled for this jurisdiction.
                  </p>
               </div>
               <div className="flex gap-3">
-                <button onClick={() => handleReject(inspectUser)} disabled={!!processingId} className="px-6 py-3 border border-[#C43D3D] text-[#C43D3D] text-[10px] font-bold uppercase tracking-widest hover:bg-[#C43D3D] hover:text-white transition-all shadow-sm">Reject Account</button>
+                <button onClick={() => handleReject(inspectUser)} disabled={!!processingId} className="px-6 py-3 border border-[#C43D3D] text-[#C43D3D] text-[10px] font-bold uppercase tracking-widest hover:bg-[#C43D3D] hover:text-white transition-all shadow-sm">Reject Entity</button>
                 <button onClick={() => handleApprove(inspectUser)} disabled={!!processingId} className="px-8 py-3 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0A0A0A] transition-all shadow-md flex items-center gap-2">
                   <Check className="w-3.5 h-3.5" />
-                  <span>Approve Entity</span>
+                  <span>Finalize Approval</span>
                 </button>
               </div>
             </div>
           </Card>
+        </div>
+      )}
+
+      {/* Expanded Fullscreen Viewer Overlay */}
+      {isExpanded && viewingDocUrl && (
+        <div className="fixed inset-0 z-[600] bg-[#0A0A0A] flex flex-col">
+          <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#0A0A0A]">
+            <div className="flex items-center space-x-3">
+              <FileText className="w-4 h-4 text-[#0055FF]" />
+              <span className="text-[10px] font-bold text-white uppercase tracking-widest">
+                Source Document Audit &mdash; {viewingDoc?.type}
+              </span>
+            </div>
+            <button 
+              onClick={() => setIsExpanded(false)}
+              className="p-2 text-white hover:text-[#0055FF] transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="flex-grow p-4 md:p-12 overflow-hidden flex items-center justify-center">
+            {viewingDoc?.fileType?.includes('pdf') ? (
+              <iframe src={viewingDocUrl} className="w-full h-full border-none bg-white" />
+            ) : (
+              <img 
+                src={viewingDocUrl} 
+                className="max-w-full max-h-full object-contain shadow-2xl" 
+                alt="Fullscreen KYC" 
+              />
+            )}
+          </div>
         </div>
       )}
     </AuthedLayout>

@@ -57,11 +57,13 @@
       "description": "Record of identity documents provided for verification.",
       "type": "object",
       "properties": {
-        "type": { "type": "string", "enum": ["ID", "ADDRESS", "RULES"] },
+        "type": { "type": "string", "enum": ["ID", "ADDRESS", "SELFIE", "RULES"] },
         "fileName": { "type": "string" },
         "fileSize": { "type": "number" },
+        "fileType": { "type": "string" },
         "status": { "type": "string", "enum": ["Pending", "Accepted", "Rejected"] },
-        "timestamp": { "type": "string", "format": "date-time" }
+        "timestamp": { "type": "string", "format": "date-time" },
+        "storageKey": { "type": "string" }
       }
     },
     "NewsCache": {

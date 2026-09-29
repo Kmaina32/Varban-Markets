@@ -6,8 +6,8 @@ import { r2Client, R2_BUCKET_NAME } from "@/app/lib/r2-service";
 
 /**
  * @fileOverview Presigned URL Generator for R2 Storage.
- * Generates secure, time-limited authorized upload tokens for direct client-to-R2 transmissions.
- * Hardened with explicit content-type signing to prevent preflight failures.
+ * Generates secure, time-limited authorized upload tokens.
+ * Explicitly supports application/pdf for institutional KYC documents.
  */
 
 export async function POST(req: NextRequest) {
@@ -15,10 +15,10 @@ export async function POST(req: NextRequest) {
     const { fileName, fileType, userId } = await req.json();
 
     if (!fileName || !fileType || !userId) {
-      return NextResponse.json({ error: "Missing required metadata (fileName, fileType, userId)" }, { status: 400 });
+      return NextResponse.json({ error: "Missing metadata (fileName, fileType, userId)" }, { status: 400 });
     }
 
-    // SANITIZATION: Ensure filename is URL-safe to prevent signature mismatches
+    // SANITIZATION: Prevents signature issues with malformed filenames
     const safeName = fileName.replace(/[^a-z0-9.]/gi, '_').toLowerCase();
     const timestamp = Date.now();
     const key = `users/${userId}/kyc/${timestamp}_${safeName}`;
@@ -26,11 +26,9 @@ export async function POST(req: NextRequest) {
     const command = new PutObjectCommand({
       Bucket: R2_BUCKET_NAME,
       Key: key,
-      ContentType: fileType, // MANDATORY: Must match the Content-Type header in the client fetch request
+      ContentType: fileType,
     });
 
-    // Generate URL valid for 3600 seconds (1 hour)
-    // We explicitly include 'content-type' in the signed headers to ensure integrity
     const uploadUrl = await getSignedUrl(r2Client, command, { 
       expiresIn: 3600,
       signableHeaders: new Set(['content-type']) 
@@ -43,7 +41,7 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error("[Storage Node Error] Presigned URL generation failed:", error);
+    console.error("[Storage API] URL Generation Failure:", error);
     return NextResponse.json({ 
       error: "Internal Storage Node Failure", 
       details: error.message 

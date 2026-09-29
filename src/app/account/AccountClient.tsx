@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
@@ -30,7 +31,8 @@ import {
   Zap,
   Layout,
   CheckCircle2,
-  Trash2
+  Trash2,
+  Camera
 } from "lucide-react";
 import { useUser, useDoc, useFirestore, useCollection, useAuth } from "@/firebase";
 import { doc, updateDoc, collection, query, orderBy, limit, serverTimestamp, addDoc, setDoc, deleteDoc } from "firebase/firestore";
@@ -44,7 +46,6 @@ import PageTutorial, { TutorialStep } from "@/components/shared/PageTutorial";
 
 type AccountTab = 'profile' | 'kyc' | 'security' | 'alerts' | 'display';
 
-const PAYSTACK_CURRENCIES = ["USD", "NGN", "GHS", "ZAR", "KES"];
 const TIMEZONES = [
   { label: "UTC -08:00 (PT)", value: "UTC-8" },
   { label: "UTC -05:00 (ET)", value: "UTC-5" },
@@ -78,20 +79,12 @@ export default function AccountClient() {
   }, [db, user]);
   const { data: notifications, loading: notificationsLoading } = useCollection<any>(alertsQuery);
 
-  const sessionsQuery = useMemo(() => {
-    if (!db || !user) return null;
-    return query(collection(db, `users/${user.uid}/sessions`), orderBy("lastActive", "desc"));
-  }, [db, user]);
-  const { data: sessions, loading: sessionsLoading } = useCollection<any>(sessionsQuery);
-
   const [activeTab, setActiveTab] = useState<AccountTab>('profile');
   const [geoData, setGeoData] = useState<GeolocationData | null>(null);
-  const [geoLoading, setGeoLoading] = useState(false);
-
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeUploadType, setActiveUploadType] = useState<string | null>(null);
 
-  // Terms Agreement Wizard State for KYC tab
   const [showKycTerms, setShowKycTerms] = useState(false);
   const [kycTermsStep, setKycTermsStep] = useState(0);
 
@@ -105,11 +98,7 @@ export default function AccountClient() {
 
   useEffect(() => {
     if (activeTab === 'security' && !geoData) {
-      setGeoLoading(true);
-      detectLocation().then(data => {
-        setGeoData(data);
-        setGeoLoading(false);
-      });
+      detectLocation().then(data => setGeoData(data));
     }
   }, [activeTab, geoData]);
 
@@ -118,15 +107,6 @@ export default function AccountClient() {
     const params = new URLSearchParams(window.location.search);
     params.set('tab', tab);
     router.replace(`/account?${params.toString()}`);
-  };
-
-  const revokeSession = async (sessId: string) => {
-    if (!db || !user || !window.confirm("Confirm remote session revocation? Device will be logged out instantly.")) return;
-    try {
-      await deleteDoc(doc(db, `users/${user.uid}/sessions`, sessId));
-    } catch (e) {
-      alert("Authority Failure: Could not revoke session.");
-    }
   };
 
   // --- PROFILE LOGIC ---
@@ -176,11 +156,6 @@ export default function AccountClient() {
   // --- SECURITY LOGIC ---
   const [isBiometricLoading, setIsBiometricLoading] = useState(false);
   const [isPwdResetLoading, setIsPwdResetLoading] = useState(false);
-  const passkeysQuery = useMemo(() => {
-    if (!db || !user) return null;
-    return collection(db, `users/${user.uid}/passkeys`);
-  }, [db, user]);
-  const { data: passkeys } = useCollection<any>(passkeysQuery);
 
   const handleRegisterPasskey = async () => {
     if (!user) return;
@@ -188,6 +163,7 @@ export default function AccountClient() {
     try {
       const resp = await fetch('/api/auth/passkey/register/generate-options', { method: 'POST' });
       const options = await resp.json();
+      const startRegistration = (await import('@simplewebauthn/browser')).startRegistration;
       const attResp = await startRegistration({ optionsJSON: options });
       await fetch('/api/auth/passkey/register/verify', {
         method: 'POST',
@@ -213,20 +189,14 @@ export default function AccountClient() {
   const toggleAlertSetting = async (key: string, value: boolean) => {
     if (!user || !db) return;
     try {
-      await updateDoc(doc(db, "users", user.uid), {
-        [`alerts.${key}`]: value
-      });
-    } catch (e) {
-      console.error("Failed to update alert settings");
-    }
+      await updateDoc(doc(db, "users", user.uid), { [`alerts.${key}`]: value });
+    } catch (e) {}
   };
 
   const markAlertAsRead = async (id: string) => {
     if (!user || !db) return;
     try {
-      await updateDoc(doc(db, `users/${user.uid}/notifications`, id), {
-        isUnread: false
-      });
+      await updateDoc(doc(db, `users/${user.uid}/notifications`, id), { isUnread: false });
     } catch (e) {}
   };
 
@@ -241,9 +211,7 @@ export default function AccountClient() {
   const updatePreference = async (key: string, value: any) => {
     if (!user || !db) return;
     try {
-      await updateDoc(doc(db, "users", user.uid), {
-        [key]: value
-      });
+      await updateDoc(doc(db, "users", user.uid), { [key]: value });
     } catch (e) {}
   };
 
@@ -271,16 +239,35 @@ export default function AccountClient() {
       });
       if (!resp.ok) throw new Error("Could not generate upload token.");
       const { uploadUrl, key } = await resp.json();
-      console.log(`[Institutional Upload] Target: ${activeUploadType} URL:`, uploadUrl);
+      
       const uploadResp = await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
       if (!uploadResp.ok) throw new Error("R2 rejected transmission.");
-      const subId = activeUploadType === 'ID' ? 'GOVERNMENT_ID' : 'PROOF_OF_ADDRESS';
+
+      const subIdMap: Record<string, string> = {
+        'ID': 'GOVERNMENT_ID',
+        'ADDRESS': 'PROOF_OF_ADDRESS',
+        'SELFIE': 'SELFIE_VERIFICATION'
+      };
+      
+      const subId = subIdMap[activeUploadType];
+
       await setDoc(doc(db, `users/${user.uid}/kyc_submissions`, subId), {
-        type: activeUploadType, fileName: file.name, fileSize: file.size, status: "Pending", storageKey: key, timestamp: serverTimestamp()
+        type: activeUploadType, 
+        fileName: file.name, 
+        fileSize: file.size, 
+        fileType: file.type,
+        status: "Pending", 
+        storageKey: key, 
+        timestamp: serverTimestamp()
       });
+      
       await updateDoc(doc(db, "users", user.uid), { verificationStatus: "Pending", kycSubmittedAt: serverTimestamp() });
       await addDoc(collection(db, `users/${user.uid}/notifications`), {
-        title: "Document Transmitted", body: `Your ${activeUploadType} document is queued for audit.`, type: "Security", isUnread: true, timestamp: serverTimestamp()
+        title: "Document Transmitted", 
+        body: `Your ${activeUploadType} document is queued for audit.`, 
+        type: "Security", 
+        isUnread: true, 
+        timestamp: serverTimestamp()
       });
     } catch (err: any) { alert(`Transmission Failure: ${err.message}`); }
     finally { setUploadingDoc(null); setActiveUploadType(null); if (fileInputRef.current) fileInputRef.current.value = ""; }
@@ -294,9 +281,6 @@ export default function AccountClient() {
         type: "RULES", status: "Accepted", timestamp: serverTimestamp()
       });
       await updateDoc(doc(db, "users", user.uid), { verificationStatus: "Pending" });
-      await addDoc(collection(db, `users/${user.uid}/notifications`), {
-        title: "Agreement Signed", body: `Legal agreement validated and stored.`, type: "Security", isUnread: true, timestamp: serverTimestamp()
-      });
       setShowKycTerms(false);
     } catch (e) { alert("Handshake failure."); }
     finally { setUploadingDoc(null); }
@@ -320,7 +304,7 @@ export default function AccountClient() {
   return (
     <AuthedLayout title="Account Hub" subtitle="Manage your identity and workspace settings">
       <PageTutorial steps={[{ selector: "#tour-account-nav", title: "Settings Hub", description: "Manage profile and security." }]} storageKey="varban_account_hub_tutorial" />
-      <input type="file" ref={fileInputRef} onChange={onFileSelected} className="hidden" accept="image/*,.pdf" />
+      <input type="file" ref={fileInputRef} onChange={onFileSelected} className="hidden" accept="image/*,application/pdf" />
 
       <div className="max-w-6xl mx-auto space-y-6">
         <div id="tour-account-nav" className="flex border-b border-[#E4E4E4] bg-white sticky top-[-1px] z-20 shadow-sm overflow-x-auto no-scrollbar">
@@ -380,15 +364,16 @@ export default function AccountClient() {
                 <div className="relative z-10 flex-grow text-center md:text-left">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1">Account Level</span>
                   <h3 className={cn("text-2xl font-bold uppercase tracking-tight", getStatusInfo(profile?.verificationStatus).color)}>{getStatusInfo(profile?.verificationStatus).label}</h3>
-                  <p className="text-[11px] text-[#6B7280] mt-2 max-w-md">Provide identification to unlock higher limits.</p>
+                  <p className="text-[11px] text-[#6B7280] mt-2 max-w-md">Provide identification and a selfie to unlock higher limits.</p>
                 </div>
               </Card>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                  { id: 'ID', subId: 'GOVERNMENT_ID', label: 'Government ID', desc: 'Passport or National ID card.' },
-                  { id: 'ADDRESS', subId: 'PROOF_OF_ADDRESS', label: 'Proof of Address', desc: 'Utility bill or bank statement.' },
-                  { id: 'RULES', subId: 'RULES_AGREEMENT', label: 'Agreement', desc: 'Review and accept platform rules.' }
+                  { id: 'ID', subId: 'GOVERNMENT_ID', label: 'Government ID', desc: 'Passport or National ID card. (PDF/JPG)', icon: FileText },
+                  { id: 'SELFIE', subId: 'SELFIE_VERIFICATION', label: 'Selfie Proof', desc: 'Clear portrait photo of your face.', icon: Camera },
+                  { id: 'ADDRESS', subId: 'PROOF_OF_ADDRESS', label: 'Proof of Address', desc: 'Utility bill or bank statement. (PDF/JPG)', icon: MapPin },
+                  { id: 'RULES', subId: 'RULES_AGREEMENT', label: 'Rules Agreement', desc: 'Review and accept platform rules.', icon: CheckCircle2 }
                 ].map((docItem) => {
                   const sub = submissions?.find(s => s.id === docItem.subId);
                   const isVerified = profile?.verificationStatus === 'Verified';
@@ -400,7 +385,7 @@ export default function AccountClient() {
                       <div className="space-y-3 mb-6">
                         <div className="flex justify-between items-start">
                           <span className="text-[9px] font-bold uppercase text-[#0055FF] tracking-[0.2em]">{docItem.id}</span>
-                          {sub?.status === 'Accepted' || isVerified ? <Check className="w-3 h-3 text-[#16835B]" /> : null}
+                          {sub?.status === 'Accepted' || isVerified ? <Check className="w-3 h-3 text-[#16835B]" /> : <docItem.icon className="w-3 h-3 text-[#E4E4E4]" />}
                         </div>
                         <h4 className="text-11px font-bold uppercase text-[#0A0A0A]">{docItem.label}</h4>
                         <p className="text-[10px] text-[#6B7280]">{docItem.desc}</p>
@@ -629,7 +614,7 @@ export default function AccountClient() {
               <p>{TERMS_CONTENT[kycTermsStep].content}</p>
             </div>
             <div className="p-5 border-t border-[#E4E4E4] flex justify-between bg-[#F7F7F5]">
-              <button disabled={kycTermsStep === 0} onClick={() => setTermsStep(kycTermsStep - 1)} className="text-[10px] font-bold uppercase">Back</button>
+              <button disabled={kycTermsStep === 0} onClick={() => setKycTermsStep(kycTermsStep - 1)} className="text-[10px] font-bold uppercase">Back</button>
               <button onClick={() => kycTermsStep < TERMS_CONTENT.length - 1 ? setKycTermsStep(kycTermsStep + 1) : finalizeKycAgreement()} className="px-6 py-2 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase">{kycTermsStep === TERMS_CONTENT.length - 1 ? "Accept & Sign" : "Next"}</button>
             </div>
           </Card>
