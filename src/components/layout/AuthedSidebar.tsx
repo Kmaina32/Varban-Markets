@@ -84,20 +84,11 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     }
   ];
 
+  // Consolidated Administration Node for standard trader view
   const adminSection = {
     title: "ADMINISTRATION",
     items: [
-      { label: "Oversight Node", href: "/admin", icon: ShieldAlert },
-      { label: "User Directory", href: "/admin/users", icon: User },
-      { label: "KYC Approvals", href: "/admin/kyc-approvals", icon: ShieldCheck },
-      { label: "Intelligence Desk", href: "/admin/articles", icon: Newspaper },
-      { label: "Deposit Queue", href: "/admin/deposits", icon: ArrowDownCircle },
-      { label: "Withdrawal Queue", href: "/admin/withdrawals", icon: ArrowUpCircle },
-      { label: "Audit Logs", href: "/admin/audit-logs", icon: Shield },
-      { label: "Support Inbox", href: "/admin/inbox", icon: Inbox },
-      { label: "Platform Ledger", href: "/admin/transactions", icon: FileSpreadsheet },
-      { label: "Market Switches", href: "/admin/markets", icon: Database },
-      { label: "Platform Settings", href: "/admin/settings", icon: Settings },
+      { label: "Admin Oversight", href: "/admin", icon: ShieldAlert },
     ]
   };
 
@@ -116,7 +107,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
 
   const renderItems = (items: any[]) => items.map((item) => {
     const isActive = pathname === item.href || 
-      (item.href === '/admin' && pathname === '/admin') ||
+      (item.href === '/admin' && pathname?.startsWith('/admin')) ||
       (item.href === '/wallet' && pathname?.startsWith('/wallet')) ||
       (item.href === '/account' && pathname?.startsWith('/account'));
     
