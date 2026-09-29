@@ -3,17 +3,18 @@
 
 /**
  * @fileOverview Institutional 3-Slot KYC Verification Pipeline.
- * 1. Identity Document (Passport/ID - allows 2 files for Front/Back).
+ * 1. Identity Document (Supports multi-file selection for Front/Back).
  * 2. Proof of Residence (PDF/Image).
- * 3. Biometric Selfie (Triggers native hardware camera).
+ * 3. Biometric Selfie (Launches custom hardware camera interface).
  */
 
-import React, { useState, useRef } from 'react';
-import { ShieldCheck, FileText, Camera, Upload, Loader2, ShieldAlert, Check, Plus, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { ShieldCheck, FileText, Camera, Plus, Loader2, ShieldAlert, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { useUser, useDoc, useFirestore } from '@/firebase';
 import { doc, setDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { cn } from '@/app/lib/utils';
+import CameraCaptureModal from './CameraCaptureModal';
 
 interface KycSlot {
   id: string;
@@ -29,7 +30,7 @@ const KYC_SLOTS: KycSlot[] = [
   { 
     id: 'IDENTITY_DOCUMENT', 
     title: 'Identity Document', 
-    desc: 'Passport or ID. Select 2 images for Front and Back if using National ID.', 
+    desc: 'Passport or ID. Select both Front and Back images if applicable.', 
     icon: FileText, 
     multiple: true,
     acceptsPdf: true 
@@ -59,14 +60,14 @@ export default function KycTab() {
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   
   const [isUploading, setIsUploading] = useState<string | null>(null);
-  const selfieInputRef = useRef<HTMLInputElement>(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   const handleUpload = async (files: FileList | File[], type: string) => {
     if (!user || !db) return;
     setIsUploading(type);
     
     try {
-      const fileArray = Array.from(files);
+      const fileArray = Array.isArray(files) ? files : Array.from(files);
       
       for (const file of fileArray) {
         // 1. Generate secure R2 transmission token
@@ -121,6 +122,12 @@ export default function KycTab() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
+      <CameraCaptureModal 
+        isOpen={isCameraOpen} 
+        onClose={() => setIsCameraOpen(false)} 
+        onCapture={(file) => handleUpload([file], 'BIOMETRIC_SELFIE')} 
+      />
+
       <Card className="p-8 bg-white border-[#E4E4E4] space-y-8 shadow-sm">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-[#F7F7F5]">
           <div>
@@ -152,38 +159,23 @@ export default function KycTab() {
               </div>
               
               <div className="relative">
-                {/* Hidden Inputs */}
-                {slot.isCamera ? (
-                  <input
-                    type="file"
-                    ref={selfieInputRef}
-                    className="hidden"
-                    accept="image/*"
-                    capture="user"
-                    onChange={(e) => {
-                      const files = e.target.files;
-                      if (files && files.length > 0) handleUpload(files, slot.id);
-                    }}
-                  />
-                ) : (
-                  <input
-                    id={`file-input-${slot.id}`}
-                    type="file"
-                    className="hidden"
-                    multiple={slot.multiple}
-                    accept={slot.acceptsPdf ? 'image/*,application/pdf' : 'image/*'}
-                    onChange={(e) => {
-                      const files = e.target.files;
-                      if (files && files.length > 0) handleUpload(files, slot.id);
-                    }}
-                  />
-                )}
+                <input
+                  id={`file-input-${slot.id}`}
+                  type="file"
+                  className="hidden"
+                  multiple={slot.multiple}
+                  accept={slot.acceptsPdf ? 'image/*,application/pdf' : 'image/*'}
+                  onChange={(e) => {
+                    const files = e.target.files;
+                    if (files && files.length > 0) handleUpload(files, slot.id);
+                  }}
+                />
 
                 <button 
                   disabled={isUploading === slot.id || status === 'Verified'}
                   onClick={() => {
                     if (slot.isCamera) {
-                      selfieInputRef.current?.click();
+                      setIsCameraOpen(true);
                     } else {
                       document.getElementById(`file-input-${slot.id}`)?.click();
                     }

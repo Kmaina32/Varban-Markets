@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { TrendingUp, TrendingDown, ArrowRight, Newspaper, Clock, FileText, Globe } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowRight, Newspaper, Clock, FileText, Globe, ShieldCheck } from "lucide-react";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { MarketIcon } from "@/components/MarketIcon";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
@@ -30,6 +30,14 @@ export default function HomePage() {
     { name: "PCI DSS v4.0", subtitle: "Payment Security", url: "https://cdn.simpleicons.org/visa/1A1F71" },
     { name: "SOC2 Type II", subtitle: "System & Controls", url: "https://cdn.simpleicons.org/securityscorecard/0055FF" },
     { name: "GDPR Compliant", subtitle: "Data Privacy", url: "https://cdn.simpleicons.org/ethereum/3C3C3D" }
+  ];
+
+  const partners = [
+    { name: "Twelve Data", icon: "https://cdn.simpleicons.org/databricks/6B7280" },
+    { name: "Binance", icon: "https://cdn.simpleicons.org/binance/6B7280" },
+    { name: "Coinbase", icon: "https://cdn.simpleicons.org/coinbase/6B7280" },
+    { name: "TradingView", icon: "https://cdn.simpleicons.org/tradingview/6B7280" },
+    { name: "Cloudflare", icon: "https://cdn.simpleicons.org/cloudflare/6B7280" }
   ];
 
   useEffect(() => {
@@ -131,39 +139,34 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Security & Trust Section */}
+      {/* Industry Trusted & Certifications Section */}
       <section className="py-24 bg-[#F7F7F5] border-t border-b border-[#E4E4E4]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">Industry Trusted</span>
             <h2 className="text-4xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">
-              Certifications & Recognition
+              Infrastructure & Security
             </h2>
             <p className="text-sm text-[#6B7280] leading-relaxed">
-              We operate according to the highest global standards for financial security and data privacy. Our platform is independently audited to ensure total institutional integrity.
+              We operate according to the highest global standards for financial security and data privacy. Our platform is powered by world-class liquidity and infrastructure providers.
             </p>
             
-            {/* Certifications Row */}
-            <div className="pt-10 flex flex-wrap items-center justify-center gap-6 md:gap-12">
-              {certifications.map((cert) => (
-                <div key={cert.name} className="flex items-center gap-3 bg-white border border-[#E4E4E4] p-3 md:p-4 shadow-sm transition-all duration-300 hover:border-[#0055FF] hover:translate-y-[-2px]">
-                  <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center shrink-0">
-                    <img 
-                      src={cert.url} 
-                      alt={cert.name} 
-                      className="w-full h-full object-contain"
-                    />
+            {/* Logos Grid - Restored and Monochrome */}
+            <div className="pt-12 space-y-10">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 items-center justify-center grayscale opacity-60">
+                {partners.slice(0, 4).map((partner) => (
+                  <div key={partner.name} className="flex flex-col items-center space-y-2 group transition-all duration-300 hover:opacity-100 hover:grayscale-0">
+                    <img src={partner.icon} alt={partner.name} className="h-8 md:h-10 object-contain" />
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A]">{partner.name}</span>
                   </div>
-                  <div className="text-left">
-                    <span className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-[#0A0A0A] block leading-none">
-                      {cert.name}
-                    </span>
-                    <span className="text-[8px] md:text-[9px] font-bold text-[#6B7280] uppercase tracking-tighter mt-1 block">
-                      {cert.subtitle}
-                    </span>
-                  </div>
+                ))}
+              </div>
+              <div className="flex justify-center grayscale opacity-60">
+                <div className="flex flex-col items-center space-y-2 group transition-all duration-300 hover:opacity-100 hover:grayscale-0">
+                  <img src={partners[4].icon} alt={partners[4].name} className="h-8 md:h-10 object-contain" />
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A]">{partners[4].name}</span>
                 </div>
-              ))}
+              </div>
             </div>
           </div>
 
