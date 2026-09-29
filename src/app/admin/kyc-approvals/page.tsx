@@ -4,8 +4,7 @@
 /**
  * @fileOverview Institutional KYC Document Verification Desk.
  * Monitors and audits unverified user entities, handling KYC approvals,
- * rejections, automated security notifications, and compliance reviews.
- * Icons removed from queue and inspector for a minimalist, text-first layout.
+ * rejections, and direct document inspection via Cloudflare R2.
  */
 
 import { useState, useMemo, useEffect } from "react";
@@ -15,7 +14,10 @@ import {
   Search,
   X,
   Loader2,
-  Mail
+  ExternalLink,
+  FileText,
+  ShieldCheck,
+  AlertTriangle
 } from "lucide-react";
 import { useCollection, useFirestore } from "@/firebase";
 import {
@@ -25,6 +27,7 @@ import {
   setDoc,
   addDoc,
   doc,
+  getDocs,
   serverTimestamp
 } from "firebase/firestore";
 import { cn } from "@/app/lib/utils";
@@ -47,6 +50,15 @@ interface UserEntity {
   [key: string]: any;
 }
 
+interface KycDocument {
+  id: string;
+  type: string;
+  status: string;
+  storageKey?: string;
+  fileName?: string;
+  timestamp?: any;
+}
+
 type FilterStatus = 'All' | 'Pending' | 'Not Verified' | 'Rejected';
 
 const FILTER_OPTIONS: FilterStatus[] = ['All', 'Pending', 'Not Verified', 'Rejected'];
@@ -58,13 +70,15 @@ export default function AdminKycApprovalsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [inspectUser, setInspectUser] = useState<UserEntity | null>(null);
+  const [inspectDocs, setInspectDocs] = useState<KycDocument[]>([]);
+  const [docsLoading, setDocsLoading] = useState(false);
   const [fallbackToAll, setFallbackToAll] = useState(false);
   const [actionFeedback, setActionFeedback] = useState<{
     type: 'success' | 'error';
     text: string;
   } | null>(null);
 
-  // Auto-dismiss feedback message after 6 seconds
+  // Auto-dismiss feedback message
   useEffect(() => {
     if (actionFeedback) {
       const timer = setTimeout(() => setActionFeedback(null), 6000);
@@ -72,7 +86,7 @@ export default function AdminKycApprovalsPage() {
     }
   }, [actionFeedback]);
 
-  // Query Firestore collection 'users' where verificationStatus is NOT 'Verified'
+  // Main KYC Query
   const kycQuery = useMemo(() => {
     if (!db) return null;
     if (fallbackToAll) {
@@ -86,21 +100,17 @@ export default function AdminKycApprovalsPage() {
 
   const { data: rawUsers, loading, error } = useCollection<UserEntity>(kycQuery);
 
-  // Gracefully fallback to client-side filter if single-field inequality index isn't available
   useEffect(() => {
     if (error && !fallbackToAll) {
-      console.warn("Primary KYC query returned error, falling back to full collection scan:", error);
       setFallbackToAll(true);
     }
   }, [error, fallbackToAll]);
 
-  // Ensure only users where verificationStatus is NOT 'Verified' are displayed
   const nonVerifiedUsers = useMemo(() => {
     if (!rawUsers) return [];
     return rawUsers.filter((u) => u.verificationStatus !== "Verified");
   }, [rawUsers]);
 
-  // Counts for each filter category
   const counts = useMemo(() => {
     return {
       All: nonVerifiedUsers.length,
@@ -112,127 +122,107 @@ export default function AdminKycApprovalsPage() {
     };
   }, [nonVerifiedUsers]);
 
-  // Filter and search computation
   const filteredUsers = useMemo(() => {
     return nonVerifiedUsers.filter((user) => {
-      // 1. Status Filter
       if (activeFilter === "Pending" && user.verificationStatus !== "Pending") return false;
-      if (
-        activeFilter === "Not Verified" &&
-        user.verificationStatus !== "Not Verified" &&
-        user.verificationStatus
-      ) {
-        return false;
-      }
+      if (activeFilter === "Not Verified" && user.verificationStatus !== "Not Verified" && user.verificationStatus) return false;
       if (activeFilter === "Rejected" && user.verificationStatus !== "Rejected") return false;
 
-      // 2. Search Query Filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const displayName = (user.fullName || `${user.firstName || ""} ${user.lastName || ""}`).toLowerCase();
         const email = (user.email || "").toLowerCase();
-        const id = (user.id || "").toLowerCase();
-        const accountId = (user.accountId || "").toLowerCase();
-        const country = (user.country || "").toLowerCase();
-
-        if (
-          !displayName.includes(q) &&
-          !email.includes(q) &&
-          !id.includes(q) &&
-          !accountId.includes(q) &&
-          !country.includes(q)
-        ) {
-          return false;
-        }
+        return displayName.includes(q) || email.includes(q) || user.id.includes(q);
       }
-
       return true;
     });
   }, [nonVerifiedUsers, activeFilter, searchQuery]);
 
-  // Handle KYC Approval
+  // Load documents for inspected user
+  const handleInspectUser = async (userItem: UserEntity) => {
+    setInspectUser(userItem);
+    setInspectDocs([]);
+    setDocsLoading(true);
+    
+    if (!db) return;
+    
+    try {
+      const docsSnap = await getDocs(collection(db, `users/${userItem.id}/kyc_submissions`));
+      const docsData = docsSnap.docs.map(d => ({ id: d.id, ...d.data() } as KycDocument));
+      setInspectDocs(docsData);
+    } catch (e) {
+      console.error("Failed to load user documentation", e);
+    } finally {
+      setDocsLoading(false);
+    }
+  };
+
+  const openDocument = async (storageKey?: string) => {
+    if (!storageKey) return;
+    try {
+      const resp = await fetch('/api/storage/view-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storageKey })
+      });
+      const { viewUrl } = await resp.json();
+      window.open(viewUrl, '_blank');
+    } catch (e) {
+      alert("Handshake Failure: Could not generate secure viewing token.");
+    }
+  };
+
   const handleApprove = async (userItem: UserEntity) => {
     if (!db) return;
-    const identifier = userItem.fullName || userItem.email || userItem.id;
-    if (!window.confirm(`Approve KYC verification for ${identifier}? This grants full institutional platform access.`)) {
-      return;
-    }
+    if (!window.confirm(`Approve KYC verification for ${userItem.email}?`)) return;
 
     setProcessingId(userItem.id);
     try {
-      const userRef = doc(db, "users", userItem.id);
-      await setDoc(
-        userRef,
-        {
-          verificationStatus: "Verified",
-          kycReviewedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
+      await setDoc(doc(db, "users", userItem.id), {
+        verificationStatus: "Verified",
+        kycReviewedAt: serverTimestamp(),
+      }, { merge: true });
 
       await addDoc(collection(db, `users/${userItem.id}/notifications`), {
         title: "KYC Verification Approved",
-        message: "Your KYC verification has been approved. You now have full platform access.",
-        body: "Your KYC verification has been approved. You now have full platform access.",
+        body: "Your identity has been verified. You now have full institutional platform access.",
         type: "Security",
         isUnread: true,
         timestamp: serverTimestamp(),
       });
 
-      setActionFeedback({
-        type: "success",
-        text: `KYC Approved: ${identifier} is now Verified.`,
-      });
-
-      if (inspectUser?.id === userItem.id) {
-        setInspectUser(null);
-      }
-    } catch (err: any) {
-      alert("Handshake Failure: Could not approve KYC verification.");
+      setActionFeedback({ type: "success", text: `KYC Approved for ${userItem.email}` });
+      setInspectUser(null);
+    } catch (err) {
+      alert("Handshake Failure.");
     } finally {
       setProcessingId(null);
     }
   };
 
-  // Handle KYC Rejection
   const handleReject = async (userItem: UserEntity) => {
     if (!db) return;
-    const identifier = userItem.fullName || userItem.email || userItem.id;
-    if (!window.confirm(`Reject KYC verification for ${identifier}? User will be prompted to resubmit.`)) {
-      return;
-    }
+    if (!window.confirm(`Reject KYC for ${userItem.email}?`)) return;
 
     setProcessingId(userItem.id);
     try {
-      const userRef = doc(db, "users", userItem.id);
-      await setDoc(
-        userRef,
-        {
-          verificationStatus: "Rejected",
-          kycReviewedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
+      await setDoc(doc(db, "users", userItem.id), {
+        verificationStatus: "Rejected",
+        kycReviewedAt: serverTimestamp(),
+      }, { merge: true });
 
       await addDoc(collection(db, `users/${userItem.id}/notifications`), {
         title: "KYC Verification Rejected",
-        message: "Your KYC verification has been rejected. Please resubmit with clearer documents.",
-        body: "Your KYC verification has been rejected. Please resubmit with clearer documents.",
+        body: "Your identity documents were not accepted. Please resubmit clear copies via the Account Hub.",
         type: "Security",
         isUnread: true,
         timestamp: serverTimestamp(),
       });
 
-      setActionFeedback({
-        type: "error",
-        text: `KYC Rejected: ${identifier} status set to Rejected.`,
-      });
-
-      if (inspectUser?.id === userItem.id) {
-        setInspectUser(null);
-      }
-    } catch (err: any) {
-      alert("Handshake Failure: Could not reject KYC verification.");
+      setActionFeedback({ type: "error", text: `KYC Rejected for ${userItem.email}` });
+      setInspectUser(null);
+    } catch (err) {
+      alert("Handshake Failure.");
     } finally {
       setProcessingId(null);
     }
@@ -241,113 +231,50 @@ export default function AdminKycApprovalsPage() {
   const getStatusBadge = (status?: string) => {
     const s = status || "Not Verified";
     switch (s) {
-      case "Pending":
-        return { label: "Pending Audit", className: "border-[#C9A227] text-[#C9A227] bg-[#C9A227]/5" };
-      case "Not Verified":
-        return { label: "Not Verified", className: "border-[#6B7280] text-[#6B7280] bg-[#6B7280]/5" };
-      case "Rejected":
-        return { label: "Rejected", className: "border-[#C43D3D] text-[#C43D3D] bg-[#C43D3D]/5" };
-      case "Verified":
-        return { label: "Verified", className: "border-[#16835B] text-[#16835B] bg-[#16835B]/5" };
-      default:
-        return { label: s, className: "border-[#6B7280] text-[#6B7280] bg-[#F7F7F5]" };
+      case "Pending": return "border-[#C9A227] text-[#C9A227] bg-[#C9A227]/5";
+      case "Rejected": return "border-[#C43D3D] text-[#C43D3D] bg-[#C43D3D]/5";
+      case "Verified": return "border-[#16835B] text-[#16835B] bg-[#16835B]/5";
+      default: return "border-[#6B7280] text-[#6B7280] bg-[#6B7280]/5";
     }
   };
 
-  const getEntityDisplayName = (u: UserEntity) => {
-    if (u.fullName?.trim()) return u.fullName;
-    if (u.firstName || u.lastName) return `${u.firstName || ""} ${u.lastName || ""}`.trim();
-    if (u.email) return u.email.split("@")[0];
-    return "Unnamed Entity";
-  };
-
   return (
-    <AuthedLayout title="KYC Approvals" subtitle="Identity Verification Desk">
+    <AuthedLayout title="KYC Approvals" subtitle="Institutional Verification Desk">
       <div className="space-y-6">
-        {/* Compliance Desk Summary Cards (Icon-Free) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="p-4 bg-white border-[#E4E4E4] shadow-sm flex flex-col justify-between min-h-[100px]">
-            <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-2">Total In Queue</span>
-            <div className="flex items-baseline space-x-2">
-              <span className="text-2xl font-mono font-bold text-[#0A0A0A]">{loading ? "..." : counts.All}</span>
-              <span className="text-[9px] text-[#6B7280] uppercase font-bold tracking-wider">Unverified</span>
-            </div>
-          </Card>
-
-          <Card className="p-4 bg-white border-[#E4E4E4] shadow-sm flex flex-col justify-between min-h-[100px]">
-            <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-2">Pending Review</span>
-            <div className="flex items-baseline space-x-2">
-              <span className="text-2xl font-mono font-bold text-[#C9A227]">{loading ? "..." : counts.Pending}</span>
-              <span className="text-[9px] text-[#6B7280] uppercase font-bold tracking-wider">Requires Audit</span>
-            </div>
-          </Card>
-
-          <Card className="p-4 bg-white border-[#E4E4E4] shadow-sm flex flex-col justify-between min-h-[100px]">
-            <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-2">Not Verified</span>
-            <div className="flex items-baseline space-x-2">
-              <span className="text-2xl font-mono font-bold text-[#6B7280]">{loading ? "..." : counts["Not Verified"]}</span>
-              <span className="text-[9px] text-[#6B7280] uppercase font-bold tracking-wider">Incomplete</span>
-            </div>
-          </Card>
-
-          <Card className="p-4 bg-white border-[#E4E4E4] shadow-sm flex flex-col justify-between min-h-[100px]">
-            <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-2">Rejected</span>
-            <div className="flex items-baseline space-x-2">
-              <span className="text-2xl font-mono font-bold text-[#C43D3D]">{loading ? "..." : counts.Rejected}</span>
-              <span className="text-[9px] text-[#6B7280] uppercase font-bold tracking-wider">Resubmission Due</span>
-            </div>
-          </Card>
+          {FILTER_OPTIONS.map(opt => (
+            <Card key={opt} className="p-4 bg-white border-[#E4E4E4] shadow-sm flex flex-col justify-between min-h-[100px]">
+              <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-2">{opt}</span>
+              <div className="flex items-baseline space-x-2">
+                <span className="text-2xl font-mono font-bold text-[#0A0A0A]">{loading ? "..." : (counts as any)[opt]}</span>
+                <span className="text-[9px] text-[#6B7280] uppercase font-bold tracking-wider">Entities</span>
+              </div>
+            </Card>
+          ))}
         </div>
 
-        {/* Action Feedback Banner */}
         {actionFeedback && (
           <div className={cn("p-4 border flex items-center justify-between shadow-sm animate-in fade-in duration-200", actionFeedback.type === "success" ? "bg-[#16835B]/5 border-[#16835B]/30 text-[#16835B]" : "bg-[#C43D3D]/5 border-[#C43D3D]/30 text-[#C43D3D]")}>
             <span className="text-xs font-bold uppercase tracking-wider">{actionFeedback.text}</span>
-            <button onClick={() => setActionFeedback(null)} className="p-1 hover:opacity-75 transition-opacity">
-              <X className="w-3.5 h-3.5" />
-            </button>
+            <button onClick={() => setActionFeedback(null)} className="p-1 hover:opacity-75 transition-opacity"><X className="w-3.5 h-3.5" /></button>
           </div>
         )}
 
-        {/* Control Toolbar */}
-        <Card className="p-4 bg-white border-[#E4E4E4] shadow-sm space-y-4">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] mr-2">Filter Scope:</span>
-              {FILTER_OPTIONS.map((filterOpt) => {
-                const isActive = activeFilter === filterOpt;
-                return (
-                  <button
-                    key={filterOpt}
-                    onClick={() => setActiveFilter(filterOpt)}
-                    className={cn(
-                      "px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all border flex items-center space-x-2",
-                      isActive ? "bg-[#0A0A0A] text-white border-[#0A0A0A] shadow-sm" : "bg-white text-[#6B7280] border-[#E4E4E4] hover:border-[#0055FF] hover:text-[#0055FF]"
-                    )}
-                  >
-                    <span>{filterOpt}</span>
-                    <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-mono", isActive ? "bg-white/20 text-white" : "bg-[#F7F7F5] text-[#6B7280]")}>
-                      {counts[filterOpt]}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="relative max-w-sm w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6B7280]" />
-              <input
-                type="text"
-                placeholder="Search entities..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-8 py-2 bg-[#F7F7F5] border border-[#E4E4E4] text-xs text-[#0A0A0A] placeholder-[#6B7280] focus:outline-none focus:border-[#0055FF]"
-              />
-            </div>
+        <Card className="p-4 bg-white border-[#E4E4E4] shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] mr-2">Scope:</span>
+            {FILTER_OPTIONS.map((f) => (
+              <button key={f} onClick={() => setActiveFilter(f)} className={cn("px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all", activeFilter === f ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white text-[#6B7280] border-[#E4E4E4] hover:border-[#0055FF]")}>
+                {f}
+              </button>
+            ))}
+          </div>
+          <div className="relative max-w-sm w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6B7280]" />
+            <input type="text" placeholder="Search entities..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-4 py-2 bg-[#F7F7F5] border border-[#E4E4E4] text-xs focus:outline-none focus:border-[#0055FF]" />
           </div>
         </Card>
 
-        {/* KYC Verification Queue Table */}
         <Card className="bg-white border-[#E4E4E4] overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[920px]">
@@ -357,90 +284,111 @@ export default function AdminKycApprovalsPage() {
                   <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-wider">Account ID</th>
                   <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-wider">Jurisdiction</th>
                   <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-wider text-center">KYC Status</th>
-                  <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-wider text-center">Review Actions</th>
+                  <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-wider text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E4E4E4] text-xs">
                 {loading ? (
-                  <tr><td colSpan={5} className="p-16 text-center text-[#6B7280] font-mono"><div className="flex flex-col items-center justify-center space-y-3"><div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div><span className="text-[10px] uppercase tracking-widest font-bold">Synchronizing KYC Queue...</span></div></td></tr>
+                  <tr><td colSpan={5} className="p-16 text-center text-[#6B7280] font-mono animate-pulse uppercase tracking-widest text-[10px]">Accessing Verification Registry...</td></tr>
                 ) : filteredUsers.length === 0 ? (
-                  <tr><td colSpan={5} className="p-16 text-center text-[#6B7280]"><div className="flex flex-col items-center justify-center space-y-2 font-bold uppercase tracking-widest text-[10px]">Queue Clear</div></td></tr>
-                ) : (
-                  filteredUsers.map((userItem) => {
-                    const isProcessing = processingId === userItem.id;
-                    const badge = getStatusBadge(userItem.verificationStatus);
-                    const displayName = getEntityDisplayName(userItem);
-                    const displayId = userItem.accountId || userItem.id;
-
-                    return (
-                      <tr key={userItem.id} className="hover:bg-[#F7F7F5] transition-colors">
-                        <td className="p-4">
-                          <div className="flex flex-col">
-                            <span className="font-bold text-[#0A0A0A]">{displayName}</span>
-                            <span className="text-[10px] text-[#6B7280] truncate max-w-[200px]">{userItem.email || "No Email"}</span>
-                          </div>
-                        </td>
-                        <td className="p-4 font-mono text-[10px]">
-                          <span className="text-[#0A0A0A] font-bold">{displayId}</span>
-                        </td>
-                        <td className="p-4 uppercase font-bold text-[#0A0A0A] tracking-wider text-[10px]">
-                          {userItem.country || "Global"}
-                        </td>
-                        <td className="p-4 text-center">
-                          <span className={cn("px-2.5 py-1 border text-[9px] font-bold uppercase tracking-wider", badge.className)}>
-                            {badge.label}
-                          </span>
-                        </td>
-                        <td className="p-4 text-center">
-                          <div className="flex items-center justify-center space-x-2">
-                            <button onClick={() => setInspectUser(userItem)} className="px-3 py-1.5 border border-[#E4E4E4] bg-white text-[#6B7280] text-[9px] font-bold uppercase tracking-widest hover:text-[#0055FF] hover:border-[#0055FF] transition-all">Review</button>
-                            <button onClick={() => handleApprove(userItem)} disabled={isProcessing} className="px-3 py-1.5 bg-[#16835B] text-white text-[9px] font-bold uppercase tracking-widest hover:bg-[#0A0A0A] transition-all">Approve</button>
-                            <button onClick={() => handleReject(userItem)} disabled={isProcessing} className="px-3 py-1.5 border border-[#C43D3D] text-[#C43D3D] text-[9px] font-bold uppercase tracking-widest hover:bg-[#C43D3D] hover:text-white transition-all">Reject</button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
+                  <tr><td colSpan={5} className="p-16 text-center text-[#6B7280] font-bold uppercase tracking-widest text-[10px]">Queue Clear</td></tr>
+                ) : filteredUsers.map((userItem) => (
+                  <tr key={userItem.id} className="hover:bg-[#F7F7F5] transition-colors">
+                    <td className="p-4">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-[#0A0A0A]">{userItem.fullName || userItem.email}</span>
+                        <span className="text-[10px] text-[#6B7280] font-mono">{userItem.email}</span>
+                      </div>
+                    </td>
+                    <td className="p-4 font-mono text-[10px]">{userItem.id.slice(0, 10).toUpperCase()}</td>
+                    <td className="p-4 uppercase font-bold text-[#0A0A0A] tracking-wider text-[10px]">{userItem.country || "Global"}</td>
+                    <td className="p-4 text-center">
+                      <span className={cn("px-2 py-0.5 border text-[9px] font-bold uppercase tracking-wider", getStatusBadge(userItem.verificationStatus))}>
+                        {userItem.verificationStatus || "Not Verified"}
+                      </span>
+                    </td>
+                    <td className="p-4 text-center">
+                      <button onClick={() => handleInspectUser(userItem)} className="px-4 py-1.5 bg-[#0055FF] text-white text-[9px] font-bold uppercase tracking-widest hover:bg-[#0A0A0A] transition-all shadow-sm">Review Documents</button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         </Card>
       </div>
 
-      {/* User KYC Detail Inspection Modal */}
       {inspectUser && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-[#0A0A0A]/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <Card className="w-full max-w-lg bg-white border-[#E4E4E4] shadow-2xl relative overflow-hidden">
+          <Card className="w-full max-w-xl bg-white border-[#E4E4E4] shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-5 border-b border-[#E4E4E4] flex justify-between items-center bg-[#F7F7F5]">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Entity Verification Payload</h3>
-              <button onClick={() => setInspectUser(null)} className="text-[#6B7280] hover:text-[#0A0A0A] transition-colors"><X className="w-4 h-4" /></button>
-            </div>
-
-            <div className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-              <div className="grid grid-cols-2 gap-4 pb-4 border-b border-[#E4E4E4]">
-                <div><span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Entity Name</span><span className="text-xs font-bold text-[#0A0A0A]">{getEntityDisplayName(inspectUser)}</span></div>
-                <div><span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">KYC Status</span><span className={cn("px-2 py-0.5 border text-[9px] font-bold uppercase tracking-wider", getStatusBadge(inspectUser.verificationStatus).className)}>{getStatusBadge(inspectUser.verificationStatus).label}</span></div>
-                <div className="col-span-2"><span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Registered Email</span><span className="text-xs font-mono text-[#0A0A0A]">{inspectUser.email || "--"}</span></div>
-                <div><span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Jurisdiction</span><span className="text-xs font-bold text-[#0A0A0A] uppercase">{inspectUser.country || "Unspecified"}</span></div>
-                <div><span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Account Ref</span><span className="text-xs font-mono font-bold text-[#0055FF]">{inspectUser.accountId || inspectUser.id}</span></div>
-              </div>
-
-              <div>
-                <span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-2">System Document Records</span>
-                <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] space-y-3 text-[10px]">
-                  <div className="flex justify-between items-center"><span className="text-[#6B7280] uppercase font-bold">Government ID / Passport:</span><span className="font-mono text-[#0A0A0A]">Submitted (Encrypted)</span></div>
-                  <div className="flex justify-between items-center"><span className="text-[#6B7280] uppercase font-bold">Proof of Address:</span><span className="font-mono text-[#0A0A0A]">Submitted (Encrypted)</span></div>
-                  <div className="flex justify-between items-center"><span className="text-[#6B7280] uppercase font-bold">Risk Consent Protocol:</span><span className="font-mono text-[#16835B]">Validated</span></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 bg-[#F7F7F5] border-t border-[#E4E4E4] flex items-center justify-between">
-              <button onClick={() => setInspectUser(null)} className="px-4 py-2 border border-[#E4E4E4] bg-white text-[#6B7280] text-[10px] font-bold uppercase tracking-widest hover:text-[#0A0A0A]">Close</button>
               <div className="flex items-center space-x-2">
-                <button onClick={() => handleReject(inspectUser)} disabled={processingId === inspectUser.id} className="px-4 py-2 border border-[#C43D3D] text-[#C43D3D] text-[10px] font-bold uppercase tracking-widest hover:bg-[#C43D3D] hover:text-white transition-colors">Reject KYC</button>
-                <button onClick={() => handleApprove(inspectUser)} disabled={processingId === inspectUser.id} className="px-4 py-2 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0A0A0A] transition-colors">Approve KYC</button>
+                <ShieldCheck className="w-4 h-4 text-[#0055FF]" />
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Verification Inspector</h3>
+              </div>
+              <button onClick={() => setInspectUser(null)} className="text-[#6B7280] hover:text-[#0A0A0A]"><X className="w-4 h-4" /></button>
+            </div>
+
+            <div className="p-8 space-y-8 overflow-y-auto no-scrollbar">
+              <div className="grid grid-cols-2 gap-6 pb-6 border-b border-[#E4E4E4]">
+                <div><span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Entity Name</span><span className="text-sm font-bold text-[#0A0A0A]">{inspectUser.fullName || "Unnamed"}</span></div>
+                <div><span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Email Domain</span><span className="text-xs font-mono text-[#0A0A0A]">{inspectUser.email}</span></div>
+                <div><span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Jurisdiction</span><span className="text-xs font-bold text-[#0A0A0A] uppercase">{inspectUser.country || "Global"}</span></div>
+                <div><span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Status</span><span className={cn("px-2 py-0.5 border text-[9px] font-bold uppercase", getStatusBadge(inspectUser.verificationStatus))}>{inspectUser.verificationStatus || "Not Verified"}</span></div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] flex items-center gap-2">
+                  <FileText className="w-3.5 h-3.5 text-[#0055FF]" /> Transmitted Documentation
+                </h4>
+                
+                {docsLoading ? (
+                  <div className="p-12 text-center text-[#6B7280] animate-pulse uppercase text-[9px] font-bold">Synchronizing Evidence...</div>
+                ) : inspectDocs.length === 0 ? (
+                  <div className="p-12 border border-dashed border-[#E4E4E4] text-center text-[#6B7280] uppercase text-[9px] font-bold">No documents submitted</div>
+                ) : (
+                  <div className="space-y-3">
+                    {inspectDocs.map((docItem) => (
+                      <div key={docItem.id} className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-between group">
+                        <div className="flex items-center gap-3">
+                           <div className="w-8 h-8 bg-white border border-[#E4E4E4] flex items-center justify-center">
+                              <FileText className="w-4 h-4 text-[#6B7280]" />
+                           </div>
+                           <div>
+                              <span className="text-[10px] font-bold uppercase text-[#0A0A0A] block">{docItem.type.replace('_', ' ')}</span>
+                              <span className="text-[9px] text-[#6B7280] font-mono">{docItem.fileName || 'document_scan.jpg'}</span>
+                           </div>
+                        </div>
+                        {docItem.storageKey ? (
+                          <button 
+                            onClick={() => openDocument(docItem.storageKey)}
+                            className="px-3 py-1.5 bg-white border border-[#E4E4E4] text-[9px] font-bold uppercase tracking-widest hover:bg-[#0055FF] hover:text-white transition-all flex items-center gap-2 shadow-sm"
+                          >
+                            <span>View Source</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </button>
+                        ) : (
+                          <span className="text-[8px] font-bold text-[#16835B] uppercase px-2 py-1 bg-[#16835B]/10 border border-[#16835B]">Validated</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="p-4 bg-[#0055FF]/5 border border-[#0055FF]/20 flex items-start gap-3">
+                <AlertTriangle className="w-4 h-4 text-[#0055FF] shrink-0 mt-0.5" />
+                <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
+                  Audit Protocol: Ensure all IDs match the profile name and are within validity dates. Approve only clear, high-resolution transmissions.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-[#E4E4E4] bg-[#F7F7F5] flex justify-between gap-4">
+              <button onClick={() => setInspectUser(null)} className="px-6 py-3 border border-[#E4E4E4] bg-white text-[10px] font-bold uppercase tracking-widest hover:text-[#0A0A0A]">Close</button>
+              <div className="flex gap-3">
+                <button onClick={() => handleReject(inspectUser)} disabled={!!processingId} className="px-6 py-3 border border-[#C43D3D] text-[#C43D3D] text-[10px] font-bold uppercase tracking-widest hover:bg-[#C43D3D] hover:text-white transition-all shadow-sm">Reject KYC</button>
+                <button onClick={() => handleApprove(inspectUser)} disabled={!!processingId} className="px-8 py-3 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0A0A0A] transition-all shadow-md">Approve Identity</button>
               </div>
             </div>
           </Card>
