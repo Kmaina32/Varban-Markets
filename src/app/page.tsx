@@ -25,6 +25,14 @@ export default function HomePage() {
     { symbol: "NAS100", name: "Nasdaq 100", price: "15,434.20", change: "+1.42%", isUp: true }
   ];
 
+  const trustedLogos = [
+    { name: "Twelve Data", url: "https://cdn.simpleicons.org/databricks/6B7280" }, // Using databricks as a placeholder for Twelve Data
+    { name: "Binance", url: "https://cdn.simpleicons.org/binance/6B7280" },
+    { name: "Coinbase", url: "https://cdn.simpleicons.org/coinbase/6B7280" },
+    { name: "TradingView", url: "https://cdn.simpleicons.org/tradingview/6B7280" },
+    { name: "Cloudflare", url: "https://cdn.simpleicons.org/cloudflare/6B7280" }
+  ];
+
   useEffect(() => {
     async function loadNews() {
       try {
@@ -124,20 +132,36 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Security Section */}
+      {/* Security & Trust Section */}
       <section className="py-24 bg-[#F7F7F5] border-t border-b border-[#E4E4E4]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">Trusted Security</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">Industry Trusted</span>
             <h2 className="text-4xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">
               Built for Safety & Reliability
             </h2>
             <p className="text-sm text-[#6B7280] leading-relaxed">
               We prioritize the safety of your funds and data above all else. Our platform is engineered with the same standards used by major global financial institutions.
             </p>
+            
+            {/* Logo Cloud */}
+            <div className="pt-10 flex flex-wrap items-center justify-center gap-8 md:gap-16 opacity-60">
+              {trustedLogos.map((logo) => (
+                <div key={logo.name} className="flex items-center grayscale hover:grayscale-0 transition-all duration-300">
+                  <img 
+                    src={logo.url} 
+                    alt={logo.name} 
+                    className="h-6 md:h-8 w-auto object-contain"
+                  />
+                  <span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-[#6B7280] hidden md:inline">
+                    {logo.name}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
             <div className="bg-white border border-[#E4E4E4] p-8 shadow-sm space-y-4">
               <ShieldCheck className="w-10 h-10 text-[#0055FF]" />
               <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Capital Protection</h3>
