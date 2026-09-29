@@ -1,13 +1,13 @@
-
 'use client';
 
 /**
  * @fileOverview Institutional KYC Verification Tab.
  * Implements 4 specific document slots for identity and residency proof.
+ * Updated: Biometric Selfie now triggers the front camera directly.
  */
 
 import React, { useState } from 'react';
-import { ShieldCheck, FileText, Camera, Upload, Loader2, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, FileText, Camera, Upload, Loader2, ShieldAlert } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { useUser, useDoc, useFirestore } from '@/firebase';
 import { doc, setDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -64,10 +64,12 @@ export default function KycTab() {
         status: 'Pending'
       });
 
-      // Update primary user status
-      await setDoc(doc(db, "users", user.uid), {
-        status: { verificationStatus: 'Pending' }
-      }, { merge: true });
+      // Update primary user status to Pending if it's not already Verified
+      if (profile?.status?.verificationStatus !== 'Verified') {
+        await setDoc(doc(db, "users", user.uid), {
+          status: { verificationStatus: 'Pending' }
+        }, { merge: true });
+      }
 
       alert(`${type.replace('_', ' ')} transmitted for audit.`);
     } catch (e) {
@@ -110,6 +112,12 @@ export default function KycTab() {
                   const input = document.createElement('input');
                   input.type = 'file';
                   input.accept = slot.acceptsPdf ? 'image/*,application/pdf' : 'image/*';
+                  
+                  // Trigger front camera for selfie verification
+                  if (slot.id === 'SELFIE_VERIFICATION') {
+                    input.setAttribute('capture', 'user');
+                  }
+                  
                   input.onchange = (e) => {
                     const file = (e.target as HTMLInputElement).files?.[0];
                     if (file) handleUpload(file, slot.id);
@@ -119,7 +127,7 @@ export default function KycTab() {
                 className="w-full py-3 bg-white border border-[#E4E4E4] text-[10px] font-bold uppercase tracking-widest hover:border-[#0055FF] transition-all flex items-center justify-center gap-2 disabled:opacity-40"
               >
                 {isUploading === slot.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                <span>Upload Document</span>
+                <span>{slot.id === 'SELFIE_VERIFICATION' ? 'Open Camera' : 'Upload Document'}</span>
               </button>
             </div>
           ))}
