@@ -1,86 +1,104 @@
 /**
  * @fileOverview Institutional Geolocation Service.
- * Interfaces with the internal geolocation proxy to provide location intelligence.
- * Strictly adheres to the IPstack detailed schema for Location and Language metadata.
+ * Uses browser-based geolocation (requiring permission) for coordinates,
+ * and high-speed free endpoints for IP and Country resolution.
  */
-
-export interface Language {
-  code: string;
-  name: string;
-  native: string;
-}
-
-export interface LocationData {
-  geoname_id: number;
-  capital: string;
-  languages: Language[];
-  country_flag: string;
-  country_flag_emoji: string;
-  country_flag_emoji_unicode: string;
-  calling_code: string;
-  is_eu: boolean;
-}
 
 export interface GeolocationData {
   ip: string;
-  hostname?: string;
-  type: string;
-  continent_code: string;
-  continent_name: string;
-  country_code: string;
   country_name: string;
-  region_code: string;
-  region_name: string;
+  country_code: string;
   city: string;
-  zip: string;
   latitude: number;
   longitude: number;
-  location: LocationData;
-  time_zone?: {
-    id: string;
-    current_time: string;
-    gmt_offset: number;
-    code: string;
-    is_daylight_saving: boolean;
-  };
-  currency?: {
-    code: string;
-    name: string;
-    plural: string;
-    symbol: string;
-    symbol_native: string;
+  location?: {
+    country_flag_emoji?: string;
+    calling_code?: string;
   };
   security?: {
-    is_proxy: boolean;
-    proxy_type: string | null;
-    is_crawler: boolean;
-    crawler_name: string | null;
-    crawler_type: string | null;
-    is_tor: boolean;
     threat_level: string;
-    threat_types: string[] | null;
   };
 }
 
 /**
- * Detects the current session's geographical location using IP intelligence.
- * Returns null if the service is unavailable or the request fails.
+ * Requests device permission and detects location using coordinates and IP.
+ * Fallback to IP-only lookup if browser geolocation is denied.
  */
 export async function detectLocation(): Promise<GeolocationData | null> {
-  try {
-    const res = await fetch('/api/geolocation');
-    if (!res.ok) return null;
-    
-    const data = await res.json();
-    
-    // Validate required fields based on IPstack success response
-    if (data.ip && data.location) {
-      return data as GeolocationData;
+  return new Promise(async (resolve) => {
+    // 1. Concurrent fetch for IP (Always needed)
+    let publicIp = "---";
+    try {
+      const ipRes = await fetch('https://api.ipify.org?format=json');
+      const ipData = await ipRes.json();
+      publicIp = ipData.ip;
+    } catch (e) {
+      console.warn("IP lookup failed");
     }
-    
-    return null;
-  } catch (error) {
-    console.warn("Geolocation handshake failed:", error);
+
+    // 2. Check for Geolocation API support
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      return resolve(await fallbackIpLookup(publicIp));
+    }
+
+    // 3. Request Browser/Device Permission
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          // Reverse geocode to get country
+          const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+          const geoData = await geoRes.json();
+
+          resolve({
+            ip: publicIp,
+            country_name: geoData.countryName,
+            country_code: geoData.countryCode,
+            city: geoData.city || geoData.locality,
+            latitude,
+            longitude,
+            location: {
+              country_flag_emoji: "", // Flag mapping happens UI side or via secondary lookup
+              calling_code: ""
+            },
+            security: { threat_level: "low" }
+          });
+        } catch (err) {
+          resolve(await fallbackIpLookup(publicIp));
+        }
+      },
+      async () => {
+        // Permission denied or error - fallback to network IP geolocation
+        resolve(await fallbackIpLookup(publicIp));
+      },
+      { timeout: 5000 }
+    );
+  });
+}
+
+/**
+ * Fallback service using IP-based geolocation (no permission needed)
+ */
+async function fallbackIpLookup(ip: string): Promise<GeolocationData | null> {
+  try {
+    const res = await fetch(`https://ipapi.co/${ip}/json/`);
+    const data = await res.json();
+    if (data.error) return null;
+
+    return {
+      ip: data.ip,
+      country_name: data.country_name,
+      country_code: data.country_code,
+      city: data.city,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      location: {
+        country_flag_emoji: "",
+        calling_code: data.country_calling_code?.replace('+', '')
+      },
+      security: { threat_level: "low" }
+    };
+  } catch (e) {
     return null;
   }
 }

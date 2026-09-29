@@ -69,7 +69,7 @@ export default function AccountClient() {
     if (searchParams.get('tab') === 'verification') setActiveTab('kyc');
   }, [searchParams]);
 
-  // Fetch Geo Data for security tab
+  // Fetch Geo Data for security tab using device permission flow
   useEffect(() => {
     if (activeTab === 'security' && !geoData) {
       setGeoLoading(true);
@@ -463,7 +463,6 @@ export default function AccountClient() {
                       <div className="flex justify-between items-center text-[10px]">
                         <span className="text-[#6B7280] uppercase font-bold">Location:</span>
                         <span className="font-bold text-[#0A0A0A] flex items-center gap-1.5">
-                          <span className="text-base leading-none">{geoData.location?.country_flag_emoji}</span>
                           {geoData.city}, {geoData.country_name}
                         </span>
                       </div>
