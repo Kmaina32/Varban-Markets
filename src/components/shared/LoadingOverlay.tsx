@@ -14,17 +14,12 @@ export default function LoadingOverlay({ message, fullScreen = true }: LoadingOv
         <Image
           src="/assets/logo2.png"
           alt="Varban Markets"
-          width={140}
-          height={32}
-          className="w-auto h-7 md:h-8 object-contain"
+          width={240}
+          height={52}
+          className="w-auto h-10 md:h-12 object-contain"
           priority
         />
       </div>
-      {message && (
-        <p className="mt-8 text-[10px] font-bold uppercase tracking-[0.25em] text-[#6B7280] animate-pulse">
-          {message}
-        </p>
-      )}
     </div>
   );
 }
