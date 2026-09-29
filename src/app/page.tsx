@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { TrendingUp, TrendingDown, CheckCircle2, ArrowRight, Newspaper, Clock, ExternalLink, AlertTriangle } from "lucide-react";
+import { TrendingUp, TrendingDown, CheckCircle2, ArrowRight, Newspaper, Clock, FileText, AlertTriangle } from "lucide-react";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { MarketIcon } from "@/components/MarketIcon";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
@@ -175,15 +175,13 @@ export default function HomePage() {
                     </h3>
                   </div>
                   <div className="pt-6 mt-6 border-t border-[#F7F7F5]">
-                    <a 
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <Link 
+                      href={`/news/${item.uuid}`}
                       className="flex items-center justify-between w-full text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A] hover:text-[#0055FF] transition-colors"
                     >
-                      <span className="flex items-center gap-1.5"><ExternalLink className="w-3 h-3" /> Read Report</span>
+                      <span className="flex items-center gap-1.5"><FileText className="w-3 h-3" /> Analyze Report</span>
                       <ArrowRight className="w-3 h-3" />
-                    </a>
+                    </Link>
                   </div>
                 </div>
               ))

@@ -33,6 +33,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Intelligence News Cache for In-App Reading
+    match /news_cache/{cacheId} {
+      allow read: if true;
+      allow write: if true; // Internal proxy handles write verification
+    }
+
     // Platform Configuration Authority
     match /settings/{settingId} {
       allow read: if request.auth != null;

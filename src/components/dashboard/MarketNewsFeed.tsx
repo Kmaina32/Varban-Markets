@@ -2,12 +2,13 @@
 
 /**
  * @fileOverview Institutional Market News Feed Component.
- * Refactored with institutional error handling and specific market sector filtering.
+ * Linked to the internal report reading workspace.
  */
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Card } from '@/components/ui/card';
-import { Newspaper, Clock, ExternalLink, Loader2, AlertTriangle } from 'lucide-react';
+import { Newspaper, Clock, ArrowRight, Loader2, AlertTriangle } from 'lucide-react';
 import { fetchMarketNews, NewsItem } from '@/app/lib/news-service';
 import { cn } from '@/app/lib/utils';
 
@@ -61,11 +62,9 @@ export default function MarketNewsFeed() {
         ) : (
           <div className="divide-y divide-[#E4E4E4]">
             {news.map((item) => (
-              <a 
+              <Link 
                 key={item.uuid} 
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={`/news/${item.uuid}`}
                 className="p-5 block hover:bg-[#F7F7F5] transition-colors group"
               >
                 <div className="flex justify-between items-start mb-2">
@@ -83,23 +82,25 @@ export default function MarketNewsFeed() {
                 </h4>
                 
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#F7F7F5]">
-                   <span className="text-[8px] font-mono text-[#E4E4E4] uppercase">ID: {item.uuid.substring(0,8).toUpperCase()}</span>
-                   <ExternalLink className="w-3.5 h-3.5 text-[#E4E4E4] group-hover:text-[#0055FF] transition-colors" />
+                   <span className="text-[8px] font-mono text-[#E4E4E4] uppercase">ID: {item.uuid.substring(0,6).toUpperCase()}</span>
+                   <span className="text-[9px] font-bold uppercase text-[#0055FF] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                      Analyze Report <ArrowRight className="w-3 h-3" />
+                   </span>
                 </div>
-              </a>
+              </Link>
             ))}
           </div>
         )}
       </div>
 
       <div className="p-3 border-t border-[#E4E4E4] bg-[#F7F7F5] text-center">
-        <a 
+        <Link 
           href="/news"
           className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] hover:text-[#0A0A0A] transition-colors flex items-center justify-center gap-1.5 mx-auto"
         >
           <span>Open News Hub</span>
-          <ExternalLink className="w-3 h-3" />
-        </a>
+          <ArrowRight className="w-3 h-3" />
+        </Link>
       </div>
     </Card>
   );

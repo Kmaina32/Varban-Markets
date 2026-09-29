@@ -19,7 +19,9 @@ import {
   Share2, 
   BarChart2,
   FileText,
-  Loader2
+  Loader2,
+  Calendar,
+  User
 } from "lucide-react";
 import { useFirestore, useDoc } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -102,30 +104,36 @@ export default function NewsReportPage({ params }: { params: Promise<{ id: strin
             ))}
           </div>
           
-          <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-tight text-[#0A0A0A] leading-tight font-display">
+          <h1 className="text-3xl md:text-5xl font-bold uppercase tracking-tight text-[#0A0A0A] leading-[1.1] font-display">
             {article.title}
           </h1>
 
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-b border-[#E4E4E4] pb-6">
-            <div className="flex items-center space-x-6">
-              <div className="space-y-1">
-                <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block">Publisher</span>
-                <span className="text-xs font-bold text-[#0A0A0A]">{article.publisher}</span>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-6 border-b border-[#E4E4E4] pb-8">
+            <div className="flex items-center space-x-8">
+              <div className="space-y-1.5">
+                <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-[0.15em] block">Institutional Source</span>
+                <div className="flex items-center gap-2">
+                   <div className="w-6 h-6 bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-[10px]">
+                      {article.publisher.charAt(0)}
+                   </div>
+                   <span className="text-xs font-bold text-[#0A0A0A]">{article.publisher}</span>
+                </div>
               </div>
-              <div className="space-y-1">
-                <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block">Published Date</span>
-                <span className="text-xs font-mono font-bold text-[#0A0A0A]">
-                  {new Date(article.published_at).toLocaleString()}
-                </span>
+              <div className="space-y-1.5">
+                <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-[0.15em] block">Date Published</span>
+                <div className="flex items-center gap-2 text-[#0A0A0A]">
+                  <Calendar className="w-3.5 h-3.5 text-[#6B7280]" />
+                  <span className="text-xs font-mono font-bold">
+                    {new Date(article.published_at).toLocaleDateString()}
+                  </span>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-               <div className="w-10 h-10 rounded-none bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-center">
-                  <Globe className="w-5 h-5 text-[#6B7280]" />
-               </div>
+            <div className="flex items-center gap-3 bg-[#F7F7F5] p-3 border border-[#E4E4E4]">
+               <Globe className="w-5 h-5 text-[#0055FF]" />
                <div className="text-right">
-                  <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block">Network Domain</span>
-                  <span className="text-[10px] font-mono font-bold text-[#0A0A0A]">GLOBAL FINANCIAL FEED</span>
+                  <span className="text-[8px] font-bold text-[#6B7280] uppercase tracking-widest block">Data Domain</span>
+                  <span className="text-[9px] font-mono font-bold text-[#0A0A0A]">SECURE GLOBAL RELAY</span>
                </div>
             </div>
           </div>
@@ -135,34 +143,37 @@ export default function NewsReportPage({ params }: { params: Promise<{ id: strin
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           <div className="lg:col-span-8 space-y-8">
             {article.image && article.image !== 'None' && (
-              <div className="relative aspect-video bg-[#F7F7F5] border border-[#E4E4E4] overflow-hidden shadow-sm">
+              <div className="relative aspect-video bg-[#F7F7F5] border border-[#E4E4E4] overflow-hidden shadow-sm group">
                 <img 
                   src={article.image} 
                   alt={article.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
               </div>
             )}
 
-            <div className="prose prose-sm max-w-none">
-              <p className="text-base text-[#333333] leading-relaxed font-medium">
+            <div className="space-y-6">
+              <p className="text-lg text-[#333333] leading-relaxed font-medium">
                 {article.description || "The requested summary for this market intelligence report is currently being synchronized. Access the full authoritative source below for immediate analysis."}
               </p>
               
-              <div className="mt-12 p-8 bg-[#F7F7F5] border border-[#E4E4E4] space-y-6">
-                <div className="flex items-center space-x-2 text-[#0055FF]">
-                  <ShieldCheck className="w-5 h-5" />
-                  <h3 className="text-xs font-bold uppercase tracking-widest">Institutional Audit Trace</h3>
+              <div className="mt-12 p-8 bg-white border-2 border-[#0A0A0A] space-y-6 relative">
+                <div className="absolute -top-3 left-6 px-3 bg-[#0A0A0A] text-white text-[9px] font-bold uppercase tracking-[0.2em]">
+                  Audit Trace
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-[10px] text-[#6B7280] font-mono">
-                  <div>
-                    <span className="block uppercase font-bold text-[#0A0A0A] mb-1">Article Token</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-[10px] text-[#6B7280] font-mono">
+                  <div className="space-y-1">
+                    <span className="block uppercase font-bold text-[#0A0A0A]">Intelligence Token</span>
                     <span className="break-all">{article.uuid}</span>
                   </div>
-                  <div>
-                    <span className="block uppercase font-bold text-[#0A0A0A] mb-1">Sync Timestamp</span>
-                    <span>{article.syncedAt || 'N/A'}</span>
+                  <div className="space-y-1">
+                    <span className="block uppercase font-bold text-[#0A0A0A]">Sync Timestamp</span>
+                    <span>{article.syncedAt || 'Real-time Synchronized'}</span>
                   </div>
+                </div>
+                <div className="pt-4 border-t border-[#E4E4E4] flex items-center gap-2">
+                   <ShieldCheck className="w-4 h-4 text-[#16835B]" />
+                   <span className="text-[9px] font-bold uppercase text-[#16835B]">Validated for high-precision trading</span>
                 </div>
               </div>
             </div>
@@ -176,35 +187,35 @@ export default function NewsReportPage({ params }: { params: Promise<{ id: strin
                 <h3 className="text-xs font-bold uppercase tracking-widest">Trade Context</h3>
               </div>
               <p className="text-[11px] text-[#6B7280] leading-relaxed">
-                Analyze this report against your active positions and watchlist. Significant headlines can trigger immediate volatility in synthetic and derivative sectors.
+                Significant headlines can trigger immediate volatility in synthetic and derivative sectors. Open the terminal to execute trades based on this report.
               </p>
               <div className="pt-4 border-t border-[#F7F7F5]">
-                <button 
-                  onClick={() => router.push('/terminal')}
-                  className="w-full py-3 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0055FF] transition-all flex items-center justify-center gap-2 shadow-md"
+                <Link 
+                  href="/terminal"
+                  className="w-full py-4 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0055FF] transition-all flex items-center justify-center gap-2 shadow-md"
                 >
                   <FileText className="w-3.5 h-3.5" />
                   <span>Execute Analysis</span>
-                </button>
+                </Link>
               </div>
             </Card>
 
             <Card className="bg-[#F7F7F5] border-[#E4E4E4] p-6 space-y-4 shadow-sm">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Authoritative Source</h3>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Authoritative Proof</h3>
               <p className="text-[10px] text-[#6B7280] leading-relaxed">
-                Review the complete documentation and evidence for this report at the official publisher domain.
+                Review the complete documentation and raw evidence at the official publisher domain.
               </p>
               <Link 
                 href={article.url || '#'} 
                 target="_blank"
-                className="inline-flex items-center space-x-2 text-[10px] font-bold text-[#0055FF] uppercase tracking-widest hover:underline"
+                className="w-full flex items-center justify-center gap-2 py-3 border border-[#E4E4E4] bg-white text-[9px] font-bold text-[#0A0A0A] uppercase tracking-widest hover:bg-[#F7F7F5] transition-all"
               >
-                <span>Access Full Report</span>
+                <span>External Source</span>
                 <ExternalLink className="w-3 h-3" />
               </Link>
             </Card>
 
-            <div className="p-4 bg-[#16835B]/5 border border-[#16835B]/20 flex items-start gap-3">
+            <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-start gap-3">
                <ShieldCheck className="w-4 h-4 text-[#16835B] shrink-0" />
                <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
                   Deterministic Data Node verified. Report origin strictly audited for financial market relevance.

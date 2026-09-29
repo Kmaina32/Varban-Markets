@@ -38,6 +38,22 @@
       },
       "required": ["balance", "verificationStatus", "currency"]
     },
+    "NewsCache": {
+      "title": "Intelligence Cache",
+      "description": "Synchronized market headlines for internal analysis.",
+      "type": "object",
+      "properties": {
+        "uuid": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "publisher": { "type": "string" },
+        "image": { "type": "string" },
+        "url": { "type": "string" },
+        "category": { "type": "array", "items": { "type": "string" } },
+        "published_at": { "type": "string", "format": "date-time" },
+        "syncedAt": { "type": "string", "format": "date-time" }
+      }
+    },
     "Article": {
       "title": "Intelligence Article",
       "description": "Internal market insight or strategy briefing published by admins.",
@@ -180,6 +196,10 @@
     "/articles/{articleId}": {
       "schema": "Article",
       "description": "Platform intelligence reports and briefings"
+    },
+    "/news_cache/{cacheId}": {
+      "schema": "NewsCache",
+      "description": "Global intelligence feed for internal analysis"
     }
   }
 }
