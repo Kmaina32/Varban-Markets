@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -10,6 +9,7 @@ import AuthedSidebar from "./AuthedSidebar";
 import AdminSidebar from "./AdminSidebar";
 import AdminHeader from "./AdminHeader";
 import ProfileDropdown from "./ProfileDropdown";
+import LoadingOverlay from "@/components/shared/LoadingOverlay";
 import { Bell, Menu, X, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -126,11 +126,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   if (isTerminal || !isStrict) return <>{children}</>;
 
   if (loading || profileLoading) {
-    return (
-      <div className="flex-grow flex items-center justify-center bg-[#F7F7F5] min-h-[400px]">
-        <div className="w-5 h-5 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+    return <LoadingOverlay message="Synchronizing Workspace" />;
   }
 
   if (!user) return null;

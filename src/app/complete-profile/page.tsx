@@ -2,12 +2,13 @@
 
 /**
  * @fileOverview Complete Profile Page.
- * Now acts as a gateway to Account Settings for detailed profile modification.
+ * Now acts as a gateway to Account Settings with institutional reveal.
  */
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/firebase";
+import LoadingOverlay from "@/components/shared/LoadingOverlay";
 
 export default function CompleteProfilePage() {
   const router = useRouter();
@@ -24,14 +25,5 @@ export default function CompleteProfilePage() {
     }
   }, [user, loading, router]);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F7F7F5]">
-      <div className="flex flex-col items-center space-y-4">
-        <div className="w-8 h-8 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">
-          Redirecting to Security Vault...
-        </p>
-      </div>
-    </div>
-  );
+  return <LoadingOverlay message="Establishing Secure Routing" />;
 }
