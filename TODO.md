@@ -1,3 +1,4 @@
+
 # Varban Markets — Development TODO & Missing Features Inventory
 
 > [!NOTE]
@@ -32,7 +33,7 @@
 ## 2. Unconnected & Missing Backend Features
 
 ### A. Real-Time Market Data Stream
-- [x] **Server-Side News Proxy**: Secure server route for Free News API to prevent CORS errors and protect keys.
+- [x] **Server-Side News Proxy**: Secure server route for Currents API to prevent CORS errors and protect keys.
 - [ ] **WebSocket Data Connection**: Price updates currently rely on polling every 3 seconds (`fetchLivePrice`). Need a live WebSocket connection (e.g. Binance / Polygon.io / Finnhub WS) for sub-second chart ticks.
 - [ ] **Real Order Execution Matcher**: Automated option contract settlement is simulated client-side via `setTimeout` after 18 seconds. Needs a server-side Cloud Function / backend cron worker for authoritative price verification and payout settlement.
 

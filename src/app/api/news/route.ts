@@ -2,53 +2,53 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * @fileOverview Institutional News Proxy (Hardened).
- * Adheres strictly to Free News API v1.0.0 documentation.
- * Fetches data from https://api.freenewsapi.io/v1/news
+ * @fileOverview Institutional News Proxy (Currents API Integration).
+ * Migrated from Free News API to Currents API v1.
+ * Adheres to documentation at https://api.currentsapi.services/v1
  */
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const query = searchParams.get('query');
   
-  // Use the specific key provided by the user
-  const NEWS_API_KEY = process.env.FREE_NEWS_API_KEY;
-  const BASE_URL = "https://api.freenewsapi.io/v1";
+  // Currents API requires a dedicated key. Fallback to old key name for migration safety.
+  const CURRENTS_API_KEY = process.env.CURRENTS_NEWS_API_KEY || process.env.FREE_NEWS_API_KEY;
+  const BASE_URL = "https://api.currentsapi.services/v1";
 
-  if (!NEWS_API_KEY) {
-    console.error("News Proxy Error: FREE_NEWS_API_KEY missing from .env");
+  if (!CURRENTS_API_KEY) {
+    console.error("News Proxy Error: CURRENTS_NEWS_API_KEY missing from .env");
     return NextResponse.json({ error: 'News feed configuration missing' }, { status: 500 });
   }
 
-  // Base parameters: language=en, country=US, order_by=recent
-  // Using URL object for clean construction
-  const url = new URL(`${BASE_URL}/news`);
-  url.searchParams.set('language', 'en');
-  url.searchParams.set('country', 'US');
-  url.searchParams.set('order_by', 'recent');
+  // Determine endpoint: use /search if query is provided, otherwise /latest-news
+  const isSearch = query && query.trim().length > 2;
+  const endpoint = isSearch ? `${BASE_URL}/search` : `${BASE_URL}/latest-news`;
   
-  if (query && query.trim().length > 2) {
-    // Search behavior for in_title: Up to 5 tokens
-    url.searchParams.set('in_title', query.trim());
+  const url = new URL(endpoint);
+  url.searchParams.set('language', 'en');
+  
+  // Currents API latest-news focuses on region/language. Search handles keywords.
+  if (isSearch) {
+    url.searchParams.set('keywords', query!.trim());
   } else {
-    // Default institutional context
-    url.searchParams.set('in_title', 'Market Stocks Crypto');
+    // Default institutional context for latest-news
+    url.searchParams.set('country', 'US');
   }
 
   try {
     const res = await fetch(url.toString(), {
       method: 'GET',
       headers: {
-        'x-api-key': NEWS_API_KEY,
+        'Authorization': CURRENTS_API_KEY,
         'Accept': 'application/json'
       },
-      // Cache for 5 minutes to respect rate limits
-      next: { revalidate: 300 }
+      // Cache for 10 minutes to respect rate limits
+      next: { revalidate: 600 }
     });
 
     if (!res.ok) {
       const errorText = await res.text();
-      console.warn(`Upstream News API Error (${res.status}):`, errorText);
+      console.warn(`Upstream Currents API Error (${res.status}):`, errorText);
       return NextResponse.json({ 
         error: 'Upstream news node reported an error',
         status: res.status 
@@ -57,12 +57,22 @@ export async function GET(req: NextRequest) {
 
     const data = await res.json();
     
-    // Validate response structure before passing to client
-    if (!data || !data.data) {
+    // Currents API returns status "ok" and an array in "news"
+    if (data.status !== "ok" || !data.news) {
       return NextResponse.json({ data: [] });
     }
 
-    return NextResponse.json(data);
+    // Transform Currents API format to internal Varban NewsItem format
+    // This maintains backward compatibility with existing UI components
+    // Mapping: id -> uuid, published -> published_at, author -> publisher
+    const mappedData = data.news.map((item: any) => ({
+      uuid: item.id,
+      title: item.title,
+      published_at: item.published,
+      publisher: item.author || 'Financial Press'
+    }));
+
+    return NextResponse.json({ data: mappedData });
   } catch (error) {
     console.error("News Proxy Handshake Failure:", error);
     return NextResponse.json({ error: 'Internal server handshake failure' }, { status: 500 });

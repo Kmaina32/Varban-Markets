@@ -1,3 +1,4 @@
+
 # VARBAN MARKETS — INSTITUTIONAL SYSTEM DOCUMENTATION
 
 ## PLATFORM OVERVIEW
@@ -25,7 +26,7 @@ Varban Markets is a professional electronic trading protocol engineered for adva
 *   **Biometric Vault:** WebAuthn/Passkey integration for passwordless, high-security authentication on supported devices.
 
 ### D. NEWS INTELLIGENCE HUB
-*   **Protocol:** Secure server-side proxy for Free News API v1.0.0.
+*   **Protocol:** Secure server-side proxy for Currents News API v1.0.0.
 *   **Auto-Sync:** 10-minute automated background refresh engine ensuring headline precision.
 *   **Asset Filtering:** Contextual search parameters optimized for market-moving asset classes.
 
