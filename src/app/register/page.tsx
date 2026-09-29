@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { doc, setDoc, collection, query, where, getDocs, limit, getDoc } from "firebase/firestore";
 import { useAuth, useFirestore } from "@/firebase";
-import { Check, User, Mail, Lock, ChevronDown, Eye, EyeOff, X, ArrowRight, ArrowLeft, FileText, Loader2 } from "lucide-react";
+import { Check, User, Mail, Lock, ChevronDown, Eye, EyeOff, X, ArrowRight, ArrowLeft, FileText, Loader2, Globe } from "lucide-react";
 import { COUNTRIES } from "@/app/lib/countries";
+import { detectLocation } from "@/app/lib/geolocation-service";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { cn } from "@/app/lib/utils";
 
@@ -43,6 +44,29 @@ export default function UnifiedSignupPage() {
     assent: false
   });
 
+  // Auto-detect location on mount
+  useEffect(() => {
+    const performGeoLookup = async () => {
+      const geo = await detectLocation();
+      if (geo && geo.country_name) {
+        // Find matching country in our registry
+        const matchedCountry = COUNTRIES.find(c => 
+          c.name.toLowerCase() === geo.country_name.toLowerCase() || 
+          c.code === geo.country_code
+        );
+
+        if (matchedCountry) {
+          setFormData(prev => ({
+            ...prev,
+            country: matchedCountry.name,
+            dialCode: matchedCountry.dial_code
+          }));
+        }
+      }
+    };
+    performGeoLookup();
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const target = e.target as HTMLInputElement;
     const { name, value, type, checked } = target;
@@ -66,7 +90,6 @@ export default function UnifiedSignupPage() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Check if profile exists
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
 
@@ -214,7 +237,6 @@ export default function UnifiedSignupPage() {
   return (
     <div className="bg-[#F7F7F5] min-h-[calc(100vh-64px)] flex items-center justify-center py-8 md:py-16 px-4">
       <div className="bg-white border border-[#E4E4E4] max-w-5xl w-full shadow-lg flex flex-col md:flex-row overflow-hidden min-h-[600px] relative">
-        {/* Back Button */}
         <Link 
           href="/" 
           className="absolute top-6 left-6 z-20 flex items-center space-x-2 text-[10px] font-bold uppercase tracking-widest text-[#6B7280] hover:text-[#0A0A0A] transition-colors lg:text-white lg:hover:text-[#0055FF]"

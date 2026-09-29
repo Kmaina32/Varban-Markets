@@ -1,10 +1,5 @@
 "use client";
 
-/**
- * @fileOverview Consolidated Account Hub Client Component.
- * Extracted to allow for Suspense wrapping in the route entry point.
- */
-
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import AuthedLayout from "@/components/layout/AuthedLayout";
@@ -22,7 +17,9 @@ import {
   Plus,
   Loader2,
   DollarSign,
-  Clock
+  Clock,
+  MapPin,
+  Wifi
 } from "lucide-react";
 import { useUser, useDoc, useFirestore, useCollection, useAuth } from "@/firebase";
 import { doc, updateDoc, collection, query, orderBy, limit, serverTimestamp, addDoc } from "firebase/firestore";
@@ -30,6 +27,7 @@ import { sendPasswordResetEmail } from "firebase/auth";
 import { startRegistration } from "@simplewebauthn/browser";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { COUNTRIES } from "@/app/lib/countries";
+import { detectLocation, GeolocationData } from "@/app/lib/geolocation-service";
 import { cn } from "@/app/lib/utils";
 import PageTutorial, { TutorialStep } from "@/components/shared/PageTutorial";
 
@@ -58,6 +56,8 @@ export default function AccountClient() {
   const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   
   const [activeTab, setActiveTab] = useState<AccountTab>('profile');
+  const [geoData, setGeoData] = useState<GeolocationData | null>(null);
+  const [geoLoading, setGeoLoading] = useState(false);
 
   // Sync state with URL
   useEffect(() => {
@@ -67,6 +67,17 @@ export default function AccountClient() {
     }
     if (searchParams.get('tab') === 'verification') setActiveTab('kyc');
   }, [searchParams]);
+
+  // Fetch Geo Data for security tab
+  useEffect(() => {
+    if (activeTab === 'security' && !geoData) {
+      setGeoLoading(true);
+      detectLocation().then(data => {
+        setGeoData(data);
+        setGeoLoading(false);
+      });
+    }
+  }, [activeTab, geoData]);
 
   const handleTabChange = (tab: AccountTab) => {
     setActiveTab(tab);
@@ -433,6 +444,33 @@ export default function AccountClient() {
                 <div className="border-b border-[#F7F7F5] pb-4 flex items-center gap-2"><Fingerprint className="w-4 h-4 text-[#0055FF]" /><h3 className="text-xs font-bold uppercase tracking-widest">Login Security</h3></div>
                 <p className="text-[10px] text-[#6B7280] leading-relaxed">Register your device fingerprint or Face ID to sign in faster and more securely.</p>
                 <button onClick={handleRegisterPasskey} className="w-full btn-institutional-secondary py-3 flex items-center justify-center gap-2"><Plus className="w-3.5 h-3.5" /> Register This Device</button>
+                
+                {/* Geolocation Insight */}
+                <div className="pt-4 mt-4 border-t border-[#F7F7F5] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-bold uppercase text-[#6B7280] tracking-widest flex items-center gap-1.5">
+                      <Wifi className="w-3 h-3" /> Current Session Location
+                    </span>
+                    {geoLoading && <Loader2 className="w-3 h-3 animate-spin text-[#0055FF]" />}
+                  </div>
+                  {geoData ? (
+                    <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] rounded space-y-2">
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="text-[#6B7280] uppercase font-bold">IP Address:</span>
+                        <span className="font-mono font-bold text-[#0A0A0A]">{geoData.ip}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="text-[#6B7280] uppercase font-bold">Location:</span>
+                        <span className="font-bold text-[#0A0A0A] flex items-center gap-1.5">
+                          <MapPin className="w-3 h-3 text-[#0055FF]" />
+                          {geoData.city}, {geoData.country_name}
+                        </span>
+                      </div>
+                    </div>
+                  ) : !geoLoading && (
+                    <p className="text-[9px] text-[#6B7280] italic">Unable to retrieve location intelligence.</p>
+                  )}
+                </div>
               </Card>
               <Card className="p-8 bg-white border-[#E4E4E4] space-y-6">
                 <div className="border-b border-[#F7F7F5] pb-4 flex items-center gap-2"><Lock className="w-4 h-4 text-[#C43D3D]" /><h3 className="text-xs font-bold uppercase tracking-widest">Password & Access</h3></div>
