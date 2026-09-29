@@ -44,7 +44,7 @@ export default function WatchlistPage() {
         await Promise.all(watchlist.map(async (item: any) => {
           try {
             const data = await fetchLivePrice(item.symbol);
-            newPrices[item.symbol] = data;
+            if (data) newPrices[item.symbol] = data;
           } catch (e) {}
         }));
         if (active) setPrices(newPrices);

@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview Institutional Market Data Abstraction Layer.
  * Unified interface for Multi-Provider Price Aggregation via secure proxy.
@@ -40,18 +39,18 @@ export const fetchLivePrice = async (symbol: string): Promise<PriceSnapshot> => 
   try {
     const res = await fetch(`${PROXY_URL}?type=quote&symbol=${symbol}`);
     const json = await res.json();
-    if (json.error) throw new Error(json.error);
+    if (json.error || !json.data) throw new Error(json.error || "Missing data payload");
     return json.data;
   } catch (error) {
-    console.warn("Real-time quote failed, falling back to history:", error);
+    // Silent fallback to historical estimation to maintain UI stability
     const history = await fetchHistoricalData(symbol);
-    if (history.length === 0) throw new Error("Market data unreachable");
+    if (!history || history.length === 0) throw new Error("Market data unreachable");
     const latest = history[history.length - 1];
     const prev = history[history.length - 2] || latest;
     return {
       price: latest.close,
       change: latest.close - prev.close,
-      changePercent: ((latest.close - prev.close) / prev.close) * 100,
+      changePercent: prev.close !== 0 ? ((latest.close - prev.close) / prev.close) * 100 : 0,
       open: latest.open,
       high: latest.high,
       low: latest.low,
@@ -64,13 +63,12 @@ export const fetchLivePrice = async (symbol: string): Promise<PriceSnapshot> => 
 
 export const fetchHistoricalData = async (symbol: string, interval: string = "1min"): Promise<HistoricalBar[]> => {
   try {
-    // Interval mapping for Twelve Data / Finnhub
     const mappedInterval = interval === '1D' ? '1day' : interval.replace('m', 'min');
     const res = await fetch(`${PROXY_URL}?type=time_series&symbol=${symbol}&interval=${mappedInterval}&outputsize=300`);
     const json = await res.json();
-    return json.data || [];
+    return (json && json.data) ? json.data : [];
   } catch (e) {
-    console.error("Historical data fetch failed:", e);
+    console.error("Historical data node failure:", e.message);
     return [];
   }
 };
@@ -80,9 +78,8 @@ export const fetchTechnicalIndicator = async (indicator: string, symbol: string,
     const mappedInterval = interval === '1D' ? '1day' : interval.replace('m', 'min');
     const res = await fetch(`${PROXY_URL}?type=indicator&indicator=${indicator.toLowerCase()}&symbol=${symbol}&interval=${mappedInterval}&time_period=${timePeriod}&outputsize=300`);
     const json = await res.json();
-    return json.data || [];
+    return (json && json.data) ? json.data : [];
   } catch (e) {
-    console.error(`Technical indicator ${indicator} fetch failed:`, e);
     return [];
   }
 };
