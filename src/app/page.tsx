@@ -1,10 +1,9 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { TrendingUp, TrendingDown, CheckCircle2, ArrowRight, Newspaper, Clock, ExternalLink } from "lucide-react";
+import { TrendingUp, TrendingDown, CheckCircle2, ArrowRight, Newspaper, Clock, ExternalLink, FileText } from "lucide-react";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { MarketIcon } from "@/components/MarketIcon";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
@@ -140,7 +139,6 @@ export default function HomePage() {
                 <div key={i} className="bg-white border border-[#E4E4E4] p-6 h-64 animate-pulse">
                   <div className="h-4 bg-[#F7F7F5] w-1/3 mb-4"></div>
                   <div className="h-6 bg-[#F7F7F5] w-full mb-2"></div>
-                  <div className="h-6 bg-[#F7F7F5] w-2/3 mb-6"></div>
                   <div className="h-20 bg-[#F7F7F5] w-full"></div>
                 </div>
               ))
@@ -154,7 +152,7 @@ export default function HomePage() {
                 <div key={item.uuid} className="bg-white border border-[#E4E4E4] p-6 flex flex-col justify-between hover:border-[#0055FF] transition-all group shadow-sm">
                   <div className="space-y-4">
                     <div className="flex justify-between items-start">
-                      <span className="text-[9px] font-mono font-bold text-[#0055FF] uppercase tracking-tighter">
+                      <span className="text-[9px] font-mono font-bold text-[#0055FF] uppercase tracking-tighter truncate max-w-[100px]">
                         {item.publisher}
                       </span>
                       <div className="flex items-center gap-1 text-[8px] font-bold text-[#6B7280] uppercase">
@@ -165,14 +163,11 @@ export default function HomePage() {
                     <h3 className="text-sm font-bold text-[#0A0A0A] leading-tight group-hover:text-[#0055FF] transition-colors line-clamp-3">
                       {item.title}
                     </h3>
-                    <p className="text-[11px] text-[#6B7280] line-clamp-3 leading-relaxed">
-                      {item.description}
-                    </p>
                   </div>
                   <div className="pt-6 mt-6 border-t border-[#F7F7F5]">
-                    <Link href={item.url || "#"} target="_blank" className="flex items-center justify-between w-full text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A] hover:text-[#0055FF] transition-colors">
-                      <span>Source Analysis</span>
-                      <ExternalLink className="w-3 h-3" />
+                    <Link href={`/news/${item.uuid}`} className="flex items-center justify-between w-full text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A] hover:text-[#0055FF] transition-colors">
+                      <span className="flex items-center gap-1.5"><FileText className="w-3 h-3" /> Analyze Report</span>
+                      <ArrowRight className="w-3 h-3" />
                     </Link>
                   </div>
                 </div>

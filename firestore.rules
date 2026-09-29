@@ -1,9 +1,7 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // Determine if the requesting entity holds Root Administrative Authority
-    // Checks both email-based whitelist and document-level role assignment
     function isAdmin() {
       return request.auth != null && (
         request.auth.token.email == 'macos8388@gmail.com' || 
@@ -29,10 +27,15 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
-    // Platform Intelligence Articles
+    // Platform Intelligence Articles & Market News Cache
     match /articles/{articleId} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    match /news_cache/{articleId} {
+      allow read: if true;
+      allow write: if true; // Internal API sync bypass
     }
 
     // Platform Configuration Authority

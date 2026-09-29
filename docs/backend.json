@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "UserProfile": {
@@ -38,6 +37,21 @@
         }
       },
       "required": ["balance", "verificationStatus", "currency"]
+    },
+    "NewsCache": {
+      "title": "News Cache",
+      "description": "Persisted market intelligence for full report analysis.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "publisher": { "type": "string" },
+        "published_at": { "type": "string" },
+        "url": { "type": "string" },
+        "image": { "type": "string" },
+        "category": { "type": "array", "items": { "type": "string" } },
+        "syncedAt": { "type": "string", "format": "date-time" }
+      }
     },
     "Article": {
       "title": "Intelligence Article",
@@ -181,6 +195,10 @@
     "/articles/{articleId}": {
       "schema": "Article",
       "description": "Platform intelligence reports and briefings"
+    },
+    "/news_cache/{articleId}": {
+      "schema": "NewsCache",
+      "description": "Persisted market intelligence reports"
     }
   }
 }

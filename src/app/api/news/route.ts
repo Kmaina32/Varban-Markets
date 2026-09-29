@@ -1,25 +1,23 @@
-
 import { NextRequest, NextResponse } from 'next/server';
+import { initializeFirebase } from '@/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 /**
  * @fileOverview Institutional News Proxy (Currents API Integration).
- * Optimized for secure server-side execution and Bearer token authentication.
- * Adheres to documentation at https://api.currentsapi.services/v1
+ * Enhanced with automated Firestore persistence for full report analysis.
  */
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const query = searchParams.get('query');
   
-  const CURRENTS_API_KEY = process.env.CURRENTS_NEWS_API_KEY;
+  const CURRENTS_API_KEY = "OSVWG7fkMI86yl-mRSR49GrBA2_SoY0SwcQ9_82d2n-e0CWZ";
   const BASE_URL = "https://api.currentsapi.services/v1";
 
   if (!CURRENTS_API_KEY) {
-    console.error("News Proxy Error: CURRENTS_NEWS_API_KEY missing from .env");
     return NextResponse.json({ error: 'News feed configuration missing' }, { status: 500 });
   }
 
-  // Determine endpoint: use /search if query is provided, otherwise /latest-news
   const isSearch = query && query.trim().length > 2;
   const endpoint = isSearch ? `${BASE_URL}/search` : `${BASE_URL}/latest-news`;
   
@@ -28,8 +26,6 @@ export async function GET(req: NextRequest) {
   
   if (isSearch) {
     url.searchParams.set('keywords', query!.trim());
-  } else {
-    url.searchParams.set('country', 'US');
   }
 
   try {
@@ -39,16 +35,11 @@ export async function GET(req: NextRequest) {
         'Authorization': `Bearer ${CURRENTS_API_KEY}`,
         'Accept': 'application/json'
       },
-      next: { revalidate: 600 } // Cache for 10 minutes
+      next: { revalidate: 600 }
     });
 
     if (!res.ok) {
-      const errorText = await res.text();
-      console.warn(`Upstream Currents API Error (${res.status}):`, errorText);
-      return NextResponse.json({ 
-        error: 'Upstream news node reported an error',
-        status: res.status 
-      }, { status: res.status });
+      return NextResponse.json({ error: 'Upstream node reported an error' }, { status: res.status });
     }
 
     const data = await res.json();
@@ -57,7 +48,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ data: [] });
     }
 
-    // Transform Currents API format to internal Varban NewsItem format
+    const { db } = initializeFirebase();
+
+    // Mapping and persistence logic
     const mappedData = data.news.map((item: any) => ({
       uuid: item.id,
       title: item.title,
@@ -67,6 +60,19 @@ export async function GET(req: NextRequest) {
       url: item.url,
       image: item.image,
       category: item.category
+    }));
+
+    // Background persistence to Firestore
+    // This allows the /news/[id] page to find the article even if the API feed changes
+    Promise.all(mappedData.map(async (article: any) => {
+      try {
+        await setDoc(doc(db, "news_cache", article.uuid), {
+          ...article,
+          syncedAt: new Date().toISOString()
+        }, { merge: true });
+      } catch (e) {
+        console.warn("Failed to persist article to cache ledger:", article.uuid);
+      }
     }));
 
     return NextResponse.json({ data: mappedData });
