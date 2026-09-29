@@ -1,9 +1,11 @@
+
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { FirebaseProvider } from "@/firebase";
 import { I18nProvider } from "@/app/lib/i18n-context";
+import { Auth0Provider } from "@auth0/nextjs-auth0/client";
 import CookieConsent from "@/components/layout/CookieConsent";
 
 export const metadata: Metadata = {
@@ -24,16 +26,18 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="min-h-screen flex flex-col bg-[#F7F7F5] overflow-x-hidden">
-        <FirebaseProvider>
-          <I18nProvider>
-            <Navbar />
-            <main className="flex-grow flex flex-col">
-              {children}
-            </main>
-            <Footer />
-            <CookieConsent />
-          </I18nProvider>
-        </FirebaseProvider>
+        <Auth0Provider>
+          <FirebaseProvider>
+            <I18nProvider>
+              <Navbar />
+              <main className="flex-grow flex flex-col">
+                {children}
+              </main>
+              <Footer />
+              <CookieConsent />
+            </I18nProvider>
+          </FirebaseProvider>
+        </Auth0Provider>
       </body>
     </html>
   );
