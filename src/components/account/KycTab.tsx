@@ -2,8 +2,7 @@
 
 /**
  * @fileOverview Institutional KYC Verification Tab.
- * Implements 4 specific document slots for identity and residency proof.
- * Updated: Biometric Selfie now triggers the front camera directly.
+ * Consistently supports 3 critical slots: Identity, Residence, and live Biometric Selfie.
  */
 
 import React, { useState } from 'react';
@@ -12,6 +11,7 @@ import { Card } from '@/components/ui/card';
 import { useUser, useDoc, useFirestore } from '@/firebase';
 import { doc, setDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { cn } from '@/app/lib/utils';
+import CameraCaptureModal from './CameraCaptureModal';
 
 interface KycSlot {
   id: string;
@@ -22,10 +22,27 @@ interface KycSlot {
 }
 
 const KYC_SLOTS: KycSlot[] = [
-  { id: 'PASSPORT', title: 'Passport Image', desc: 'Full bio-page scan showing name, photo and MRZ.', icon: FileText, acceptsPdf: true },
-  { id: 'NATIONAL_ID', title: 'Government ID', desc: 'National Identity Card or Driver License (Front & Back).', icon: FileText, acceptsPdf: true },
-  { id: 'RESIDENCE_PROOF', title: 'Proof of Residence', desc: 'Utility bill or bank statement from the last 3 months.', icon: FileText, acceptsPdf: true },
-  { id: 'SELFIE_VERIFICATION', title: 'Biometric Selfie', desc: 'A clear photo of your face while holding your ID document.', icon: Camera, acceptsPdf: false }
+  { 
+    id: 'IDENTITY_DOC', 
+    title: 'Identity Document', 
+    desc: 'Valid Passport, National ID, or Driver License (High-res scan or PDF).', 
+    icon: FileText, 
+    acceptsPdf: true 
+  },
+  { 
+    id: 'RESIDENCE_PROOF', 
+    title: 'Proof of Residence', 
+    desc: 'Utility bill, internet bill, or bank statement issued in the last 3 months.', 
+    icon: FileText, 
+    acceptsPdf: true 
+  },
+  { 
+    id: 'SELFIE_VERIFICATION', 
+    title: 'Biometric Selfie', 
+    desc: 'A live, front-facing photo captured directly through your device camera.', 
+    icon: Camera, 
+    acceptsPdf: false 
+  }
 ];
 
 export default function KycTab() {
@@ -34,6 +51,7 @@ export default function KycTab() {
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   
   const [isUploading, setIsUploading] = useState<string | null>(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   const handleUpload = async (file: File, type: string) => {
     if (!user || !db) return;
@@ -71,9 +89,9 @@ export default function KycTab() {
         }, { merge: true });
       }
 
-      alert(`${type.replace('_', ' ')} transmitted for audit.`);
+      alert(`${type.replace('_', ' ')} transmission registered in the compliance ledger.`);
     } catch (e) {
-      alert("Verification transmission failed.");
+      alert("Handshake Failure: Verification transmission failed.");
     } finally {
       setIsUploading(null);
     }
@@ -83,6 +101,12 @@ export default function KycTab() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      <CameraCaptureModal 
+        isOpen={isCameraOpen} 
+        onClose={() => setIsCameraOpen(false)} 
+        onCapture={(file) => handleUpload(file, 'SELFIE_VERIFICATION')} 
+      />
+
       <Card className="p-8 bg-white border-[#E4E4E4] space-y-8 shadow-sm">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-[#F7F7F5]">
           <div>
@@ -98,36 +122,35 @@ export default function KycTab() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {KYC_SLOTS.map((slot) => (
             <div key={slot.id} className="p-6 border border-[#E4E4E4] bg-[#F7F7F5] flex flex-col justify-between space-y-4 group hover:border-[#0055FF] transition-all">
               <div className="space-y-3">
                 <slot.icon className="w-6 h-6 text-[#0055FF]" />
-                <h4 className="text-xs font-bold uppercase tracking-tight text-[#0A0A0A]">{slot.title}</h4>
-                <p className="text-[10px] text-[#6B7280] leading-relaxed">{slot.desc}</p>
+                <h4 className="text-[10px] font-bold uppercase tracking-tight text-[#0A0A0A]">{slot.title}</h4>
+                <p className="text-[9px] text-[#6B7280] leading-relaxed uppercase font-bold opacity-80">{slot.desc}</p>
               </div>
               <button 
                 disabled={isUploading === slot.id || status === 'Verified'}
                 onClick={() => {
+                  if (slot.id === 'SELFIE_VERIFICATION') {
+                    setIsCameraOpen(true);
+                    return;
+                  }
+                  
                   const input = document.createElement('input');
                   input.type = 'file';
                   input.accept = slot.acceptsPdf ? 'image/*,application/pdf' : 'image/*';
-                  
-                  // Trigger front camera for selfie verification
-                  if (slot.id === 'SELFIE_VERIFICATION') {
-                    input.setAttribute('capture', 'user');
-                  }
-                  
                   input.onchange = (e) => {
                     const file = (e.target as HTMLInputElement).files?.[0];
                     if (file) handleUpload(file, slot.id);
                   };
                   input.click();
                 }}
-                className="w-full py-3 bg-white border border-[#E4E4E4] text-[10px] font-bold uppercase tracking-widest hover:border-[#0055FF] transition-all flex items-center justify-center gap-2 disabled:opacity-40"
+                className="w-full py-3 bg-white border border-[#E4E4E4] text-[9px] font-bold uppercase tracking-[0.15em] hover:border-[#0055FF] hover:text-[#0055FF] transition-all flex items-center justify-center gap-2 disabled:opacity-40"
               >
                 {isUploading === slot.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                <span>{slot.id === 'SELFIE_VERIFICATION' ? 'Open Camera' : 'Upload Document'}</span>
+                <span>{slot.id === 'SELFIE_VERIFICATION' ? 'Open Camera' : 'Select File'}</span>
               </button>
             </div>
           ))}
