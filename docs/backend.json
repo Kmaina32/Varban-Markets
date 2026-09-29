@@ -18,7 +18,8 @@
             "fullName": { "type": "string" },
             "email": { "type": "string" },
             "phone": { "type": "string" },
-            "country": { "type": "string" }
+            "country": { "type": "string" },
+            "photoUrl": { "type": "string", "description": "URL to the user's profile picture." }
           }
         },
         "status": {

@@ -3,7 +3,7 @@
 
 /**
  * @fileOverview Universal Profile Dropdown Component with Account Balances & Demo Switcher.
- * Enhanced for high-precision institutional aesthetic and Super Admin authority logic.
+ * Enhanced for high-precision institutional aesthetic and Profile Photo support.
  */
 
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -55,7 +55,7 @@ export default function ProfileDropdown({
   // Authority Verification
   const isAdmin = useMemo(() => {
     if (!user?.email) return false;
-    return SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase()) || profile?.role === 'Admin';
+    return SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase()) || profile?.status?.role === 'Admin';
   }, [user, profile]);
 
   useEffect(() => {
@@ -79,22 +79,26 @@ export default function ProfileDropdown({
     >
       {/* Profile Header Banner */}
       <div className="bg-[#F7F7F5] p-5 border-b border-[#E4E4E4] flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 border-2 border-[#E4E4E4] bg-white flex items-center justify-center font-bold text-sm shadow-sm group-hover:border-[#0055FF] transition-colors">
-            {user?.email ? user.email.substring(0, 2).toUpperCase() : 'VM'}
+        <div className="flex items-center space-x-4 overflow-hidden">
+          <div className="w-12 h-12 border-2 border-[#E4E4E4] bg-white flex items-center justify-center font-bold text-sm shadow-sm overflow-hidden shrink-0">
+            {profile?.profile?.photoUrl ? (
+              <img src={profile.profile.photoUrl} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              user?.email ? user.email.substring(0, 2).toUpperCase() : 'VM'
+            )}
           </div>
           <div className="overflow-hidden">
-            <span className="text-xs font-bold text-[#0A0A0A] block truncate max-w-[150px] uppercase tracking-tight">
-              {profile?.fullName || user?.email?.split('@')[0] || "Trader"}
+            <span className="text-xs font-bold text-[#0A0A0A] block truncate uppercase tracking-tight">
+              {profile?.profile?.fullName || user?.email?.split('@')[0] || "Trader"}
             </span>
-            <span className="text-[9px] text-[#6B7280] block truncate max-w-[150px] font-mono mt-0.5">
+            <span className="text-[9px] text-[#6B7280] block truncate font-mono mt-0.5">
               {user?.email || "trader@varbanmarkets.com"}
             </span>
           </div>
         </div>
 
         <div className={cn(
-          "px-2 py-1 text-[8px] font-bold uppercase tracking-widest border",
+          "px-2 py-1 text-[8px] font-bold uppercase tracking-widest border shrink-0 ml-2",
           accountMode === 'REAL' 
             ? "bg-[#16835B]/10 text-[#16835B] border-[#16835B]" 
             : "bg-[#0055FF]/10 text-[#0055FF] border-[#0055FF]"
@@ -212,7 +216,7 @@ export default function ProfileDropdown({
         )}
         
         <Link
-          href="/preferences"
+          href="/account"
           onClick={onClose}
           className="w-full px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] hover:bg-[#F7F7F5] transition-all flex items-center justify-between group"
         >

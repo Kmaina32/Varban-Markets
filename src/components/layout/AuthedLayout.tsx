@@ -6,7 +6,7 @@ import AdminSidebar from "./AdminSidebar";
 import AdminHeader from "./AdminHeader";
 import ProfileDropdown from "./ProfileDropdown";
 import LoadingOverlay from "@/components/shared/LoadingOverlay";
-import { Bell, Menu, X, ChevronDown } from "lucide-react";
+import { Bell, Menu, X, ChevronDown, User } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useUser, useDoc, useFirestore } from "@/firebase";
@@ -100,11 +100,40 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
               <span className={cn("text-[9px] font-mono font-bold block", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>${formatNumber(activeBalance, { minimumFractionDigits: 2 })}</span>
             </div>
           </div>
-          <button onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)} className="w-8 h-8 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs">{user?.email?.substring(0, 2).toUpperCase()}</button>
-          <ProfileDropdown user={user} profile={profile} accountMode={accountMode} demoBalance={demoBalance} isOpen={isProfileDropdownOpen} onClose={() => setIsProfileDropdownOpen(false)} onSelectMode={(m) => { setAccountMode(m); localStorage.setItem('varban_account_mode', m); window.dispatchEvent(new Event('varban_account_mode_changed')); }} />
+          <button 
+            onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)} 
+            className="w-8 h-8 rounded-none border border-[#E4E4E4] overflow-hidden bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs shadow-sm hover:border-[#0055FF] transition-all"
+          >
+            {profile?.profile?.photoUrl ? (
+              <img src={profile.profile.photoUrl} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              user?.email?.substring(0, 2).toUpperCase()
+            )}
+          </button>
+          <ProfileDropdown 
+            user={user} 
+            profile={profile} 
+            accountMode={accountMode} 
+            demoBalance={demoBalance} 
+            isOpen={isProfileDropdownOpen} 
+            onClose={() => setIsProfileDropdownOpen(false)} 
+            onSelectMode={(m) => { 
+              setAccountMode(m); 
+              localStorage.setItem('varban_account_mode', m); 
+              window.dispatchEvent(new Event('varban_account_mode_changed')); 
+            }} 
+          />
         </div>
       </header>
       <div className="flex flex-grow overflow-hidden relative">
+        {isMobileMenuOpen && (
+          <div className="fixed inset-0 z-[250] lg:hidden">
+            <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+            <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white text-[#0A0A0A] animate-in slide-in-from-left duration-300 shadow-2xl">
+               <AuthedSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
+            </div>
+          </div>
+        )}
         {isAdminPath ? <AdminSidebar className="hidden lg:flex" /> : <AuthedSidebar className="hidden lg:flex" />}
         <main className="flex-grow overflow-y-auto bg-[#F7F7F5] p-4 md:p-8 lg:ml-16 no-scrollbar">
           <div className="max-w-7xl mx-auto">{children}</div>
