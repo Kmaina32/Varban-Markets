@@ -49,7 +49,7 @@ export default function UnifiedSignupPage() {
     const performGeoLookup = async () => {
       const geo = await detectLocation();
       if (geo && geo.country_name) {
-        // Find matching country in our registry
+        // Find matching country in our registry by name or code
         const matchedCountry = COUNTRIES.find(c => 
           c.name.toLowerCase() === geo.country_name.toLowerCase() || 
           c.code === geo.country_code
@@ -59,7 +59,7 @@ export default function UnifiedSignupPage() {
           setFormData(prev => ({
             ...prev,
             country: matchedCountry.name,
-            dialCode: matchedCountry.dial_code
+            dialCode: geo.location?.calling_code ? `+${geo.location.calling_code}` : matchedCountry.dial_code
           }));
         }
       }

@@ -19,7 +19,8 @@ import {
   DollarSign,
   Clock,
   MapPin,
-  Wifi
+  Wifi,
+  ShieldAlert
 } from "lucide-react";
 import { useUser, useDoc, useFirestore, useCollection, useAuth } from "@/firebase";
 import { doc, updateDoc, collection, query, orderBy, limit, serverTimestamp, addDoc } from "firebase/firestore";
@@ -462,10 +463,21 @@ export default function AccountClient() {
                       <div className="flex justify-between items-center text-[10px]">
                         <span className="text-[#6B7280] uppercase font-bold">Location:</span>
                         <span className="font-bold text-[#0A0A0A] flex items-center gap-1.5">
-                          <MapPin className="w-3 h-3 text-[#0055FF]" />
+                          <span className="text-base leading-none">{geoData.location?.country_flag_emoji}</span>
                           {geoData.city}, {geoData.country_name}
                         </span>
                       </div>
+                      {geoData.security && (
+                        <div className="flex justify-between items-center text-[10px] pt-1 border-t border-[#E4E4E4]">
+                          <span className="text-[#6B7280] uppercase font-bold">Threat Level:</span>
+                          <span className={cn(
+                            "font-bold uppercase flex items-center gap-1",
+                            geoData.security.threat_level === 'low' ? "text-[#16835B]" : "text-[#C43D3D]"
+                          )}>
+                            <ShieldAlert className="w-3 h-3" /> {geoData.security.threat_level}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   ) : !geoLoading && (
                     <p className="text-[9px] text-[#6B7280] italic">Unable to retrieve location intelligence.</p>
