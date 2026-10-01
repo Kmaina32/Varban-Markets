@@ -1,3 +1,4 @@
+
 "use client";
 
 /**
@@ -105,7 +106,6 @@ export default function UnifiedSignupPage() {
 
         if (signUpError) throw signUpError;
 
-        // Display email verification prompt instead of redirecting
         setIsEmailSent(true);
       } catch (err: any) {
         setError(err.message || "Registration failed. Please try again.");
@@ -149,8 +149,6 @@ export default function UnifiedSignupPage() {
 
   return (
     <div className="bg-[#F7F7F5] min-h-[calc(100vh-64px)] flex items-center justify-center py-8 md:py-16 px-4 relative">
-      
-      {/* INSTITUTIONAL TERMS MODAL */}
       {showTermsModal && (
         <div className="fixed inset-0 z-[600] bg-[#0A0A0A]/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-white border border-[#E4E4E4] w-full max-w-2xl shadow-2xl relative flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">

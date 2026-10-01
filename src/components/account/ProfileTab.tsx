@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Camera, Loader2, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { User, Camera, Loader2, ShieldAlert, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { createClient } from '@/app/lib/supabase/client';
 import { COUNTRIES } from '@/app/lib/countries';
@@ -21,9 +21,7 @@ export default function ProfileTab() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
-  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     firstName: "", lastName: "", phone: "", country: "United Kingdom", dialCode: "+44"
@@ -32,25 +30,30 @@ export default function ProfileTab() {
   useEffect(() => {
     async function loadProfile() {
       if (!user?.uid) return;
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.uid)
-        .single();
-      
-      if (data) {
-        setProfile(data);
-        const rawPhone = data.phone || "";
-        const phoneParts = rawPhone.split(' ');
-        setForm({
-          firstName: data.first_name || "",
-          lastName: data.last_name || "",
-          phone: phoneParts.length > 1 ? phoneParts.slice(1).join(' ') : rawPhone,
-          country: data.country || "United Kingdom",
-          dialCode: phoneParts.length > 1 ? phoneParts[0] : "+44"
-        });
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.uid)
+          .single();
+        
+        if (data) {
+          setProfile(data);
+          const rawPhone = data.phone || "";
+          const phoneParts = rawPhone.split(' ');
+          setForm({
+            firstName: data.first_name || "",
+            lastName: data.last_name || "",
+            phone: phoneParts.length > 1 ? phoneParts.slice(1).join(' ') : rawPhone,
+            country: data.country || "United Kingdom",
+            dialCode: phoneParts.length > 1 ? phoneParts[0] : "+44"
+          });
+        }
+      } catch (err) {
+        console.error("Profile Fetch Error:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     loadProfile();
   }, [user?.uid, supabase]);
@@ -79,13 +82,18 @@ export default function ProfileTab() {
       setFeedback("Identity updated successfully.");
       setTimeout(() => setFeedback(null), 3000);
     } catch (err) {
-      alert("Failed to synchronize changes.");
+      alert("Failed to synchronize changes. Root authority handshake failed.");
     } finally {
       setIsSaving(false);
     }
   };
 
-  if (loading) return <div className="p-12 text-center text-[#6B7280] font-mono animate-pulse">Synchronizing Identity...</div>;
+  if (loading) return (
+    <div className="p-20 text-center flex flex-col items-center justify-center space-y-4">
+      <Loader2 className="w-8 h-8 text-[#0055FF] animate-spin" />
+      <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">Synchronizing Identity...</span>
+    </div>
+  );
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -93,8 +101,7 @@ export default function ProfileTab() {
         <div className="flex flex-col md:flex-row items-start md:items-center gap-8 mb-10 border-b border-[#F7F7F5] pb-8">
           <div className="relative group">
             <div className={cn(
-              "w-24 h-24 rounded-full border-2 border-[#E4E4E4] flex items-center justify-center bg-[#F7F7F5] overflow-hidden transition-all duration-300",
-              isUploadingPhoto ? "opacity-50" : "group-hover:border-[#0055FF]"
+              "w-24 h-24 rounded-full border-2 border-[#E4E4E4] flex items-center justify-center bg-[#F7F7F5] overflow-hidden transition-all duration-300 group-hover:border-[#0055FF]"
             )}>
               {profile?.photo_url ? (
                 <img src={profile.photo_url} alt="Avatar" className="w-full h-full object-cover" />
@@ -102,7 +109,7 @@ export default function ProfileTab() {
                 <User className="w-10 h-10 text-[#6B7280]" />
               )}
             </div>
-            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-[#0A0A0A] text-white flex items-center justify-center rounded-full shadow-lg">
+            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-[#0A0A0A] text-white flex items-center justify-center rounded-full shadow-lg cursor-pointer">
               <Camera className="w-4 h-4" />
             </div>
           </div>
@@ -112,10 +119,19 @@ export default function ProfileTab() {
               {profile?.full_name || "Account Profile"}
             </h3>
             <p className="text-[11px] text-[#6B7280] leading-relaxed mt-1 max-w-sm uppercase font-bold tracking-wider">
-              {profile?.verification_status} &mdash; Account ID: {profile?.id?.slice(0, 8).toUpperCase()}
+              {profile?.verification_status || 'Not Verified'} &mdash; ID: {user?.uid?.slice(0, 8).toUpperCase()}
             </p>
           </div>
         </div>
+
+        {!profile && (
+          <div className="mb-8 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 flex items-start gap-3">
+            <AlertCircle className="w-4 h-4 text-[#C43D3D] shrink-0 mt-0.5" />
+            <p className="text-[10px] text-[#C43D3D] uppercase font-bold leading-relaxed">
+              Profile Registry missing. Please update your details below to initialize your institutional record.
+            </p>
+          </div>
+        )}
 
         <form onSubmit={handleSave} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
@@ -155,7 +171,7 @@ export default function ProfileTab() {
           <span className="text-[8px] font-bold uppercase text-[#6B7280] tracking-widest">System Metadata</span>
           <div>
             <span className="text-[8px] uppercase text-[#6B7280] block mb-1">Entity Domain</span>
-            <p className="text-[10px] font-mono font-bold truncate text-[#0A0A0A] bg-[#F7F7F5] p-2 border border-[#E4E4E4]">{profile?.email}</p>
+            <p className="text-[10px] font-mono font-bold truncate text-[#0A0A0A] bg-[#F7F7F5] p-2 border border-[#E4E4E4]">{user?.email}</p>
           </div>
           <div>
             <span className="text-[8px] uppercase text-[#6B7280] block mb-1">Authority Level</span>
