@@ -4,6 +4,7 @@
 /**
  * @fileOverview Unified Signup Page.
  * Integrated with Supabase Auth, Terms Modal, and Security Rate Limiting.
+ * Updated to handle profile creation directly in Supabase.
  */
 
 import { useState, useEffect } from "react";
@@ -11,8 +12,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/client";
-import { doc, setDoc } from "firebase/firestore";
-import { useFirestore } from "@/firebase";
 import { Check, User, Mail, Lock, ArrowLeft, Loader2, X, FileText, ShieldAlert } from "lucide-react";
 import { COUNTRIES } from "@/app/lib/countries";
 import { detectLocation } from "@/app/lib/geolocation-service";
@@ -22,7 +21,6 @@ import { cn } from "@/app/lib/utils";
 export default function UnifiedSignupPage() {
   const router = useRouter();
   const supabase = createClient();
-  const db = useFirestore();
   
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -64,10 +62,11 @@ export default function UnifiedSignupPage() {
 
   // Cooldown timer logic
   useEffect(() => {
+    let timer: NodeJS.Timeout;
     if (cooldown > 0) {
-      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
-      return () => clearTimeout(timer);
+      timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
     }
+    return () => clearTimeout(timer);
   }, [cooldown]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -122,28 +121,7 @@ export default function UnifiedSignupPage() {
           throw signUpError;
         }
 
-        // Initialize Firestore profile
-        if (data.user && db) {
-          await setDoc(doc(db, "users", data.user.id), {
-            balance: 1000.00,
-            equity: 1000.00,
-            currency: "USD",
-            profile: {
-              firstName: formData.firstName,
-              lastName: formData.lastName,
-              fullName: fullName,
-              email: formData.email.toLowerCase(),
-              phone: `${formData.dialCode} ${formData.phone}`,
-              country: formData.country,
-            },
-            status: {
-              verificationStatus: "Not Verified",
-              role: "Trader",
-              createdAt: new Date().toISOString()
-            }
-          });
-        }
-
+        // Profile is automatically handled by the Supabase 'on_auth_user_created' trigger
         router.push("/dashboard");
       } catch (err: any) {
         setError(err.message || "Registration failed. Please try again.");
@@ -254,17 +232,21 @@ export default function UnifiedSignupPage() {
             
             {/* SECURITY COOLDOWN ALERT */}
             {cooldown > 0 && (
-              <div className="mb-6 p-6 bg-red-50 border border-red-200 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="mb-6 p-6 bg-[#C43D3D]/5 border border-[#C43D3D]/20 animate-in fade-in slide-in-from-top-2 duration-300">
                 <div className="flex items-start gap-3">
-                  <ShieldAlert className="w-5 h-5 text-red-600 shrink-0" />
-                  <p className="text-[11px] font-bold text-red-700 uppercase tracking-widest leading-relaxed">
+                  <ShieldAlert className="w-5 h-5 text-[#C43D3D] shrink-0" />
+                  <p className="text-[11px] font-bold text-[#C43D3D] uppercase tracking-widest leading-relaxed">
                     FOR SECURITY PURPOSES, YOU CAN ONLY REQUEST THIS AFTER {cooldown} SECONDS.
                   </p>
                 </div>
               </div>
             )}
 
-            {error && cooldown === 0 && <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide">{error}</div>}
+            {error && cooldown === 0 && (
+              <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide animate-shake">
+                {error}
+              </div>
+            )}
             
             <form onSubmit={handleNext} className="space-y-6">
               {step === 1 && (
@@ -310,7 +292,7 @@ export default function UnifiedSignupPage() {
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <div>
                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Create Password</label>
-                    <input required name="password" value={formData.password} onChange={handleChange} type="password" className="w-full text-xs p-3 border border-[#E4E4E4] outline-none focus:border-[#0055FF]" />
+                    <input required name="password" value={formData.password} onChange={handleChange} type="password" placeholder="At least 6 characters" className="w-full text-xs p-3 border border-[#E4E4E4] outline-none focus:border-[#0055FF]" />
                   </div>
                   <div>
                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Confirm Password</label>
@@ -330,17 +312,24 @@ export default function UnifiedSignupPage() {
               )}
 
               <div className="pt-6 flex justify-between gap-4">
-                {step > 1 && <button type="button" onClick={() => setStep(step - 1)} className="w-1/3 py-4 border border-[#E4E4E4] text-[10px] font-bold uppercase">Back</button>}
+                {step > 1 && <button type="button" onClick={() => setStep(step - 1)} className="w-1/3 py-4 border border-[#E4E4E4] text-[10px] font-bold uppercase tracking-widest">Back</button>}
                 <button 
                   type="submit" 
                   disabled={loading || cooldown > 0} 
                   className={cn(
-                    "btn-institutional-primary py-4", 
+                    "btn-institutional-primary py-4 transition-all duration-300", 
                     step > 1 ? 'w-2/3' : 'w-full',
-                    cooldown > 0 && "opacity-50 cursor-not-allowed bg-[#6B7280] border-[#6B7280]"
+                    cooldown > 0 && "opacity-50 cursor-not-allowed grayscale bg-[#6B7280] border-[#6B7280]"
                   )}
                 >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : (step === 3 ? (cooldown > 0 ? `RETRY IN ${cooldown}S` : "Complete Registration") : "Continue")}
+                  {loading ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Transmitting...</span>
+                    </div>
+                  ) : (
+                    step === 3 ? (cooldown > 0 ? `RETRY IN ${cooldown}S` : "Finalize Account") : "Continue"
+                  )}
                 </button>
               </div>
             </form>
