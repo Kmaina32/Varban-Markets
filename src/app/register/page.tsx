@@ -3,8 +3,7 @@
 
 /**
  * @fileOverview Unified Signup Page.
- * Integrated with Supabase Auth, Terms Modal, and Security Rate Limiting.
- * Updated to handle profile creation directly in Supabase.
+ * Integrated with Supabase Auth, Institutional Terms Modal, and Security Rate Limiting.
  */
 
 import { useState, useEffect } from "react";
@@ -90,7 +89,7 @@ export default function UnifiedSignupPage() {
         return;
       }
       if (!formData.assent) {
-        setError("Please accept the terms to continue.");
+        setError("Acceptance of Terms is mandatory for regulatory compliance.");
         return;
       }
       
@@ -99,7 +98,7 @@ export default function UnifiedSignupPage() {
       try {
         const fullName = `${formData.firstName} ${formData.lastName}`.trim();
         
-        const { data, error: signUpError } = await supabase.auth.signUp({
+        const { error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
@@ -117,11 +116,11 @@ export default function UnifiedSignupPage() {
           // Handle Rate Limiting (Error 429)
           if (signUpError.status === 429 || signUpError.message.toLowerCase().includes('rate limit')) {
             setCooldown(60);
+            return;
           }
           throw signUpError;
         }
 
-        // Profile is automatically handled by the Supabase 'on_auth_user_created' trigger
         router.push("/dashboard");
       } catch (err: any) {
         setError(err.message || "Registration failed. Please try again.");
@@ -140,42 +139,42 @@ export default function UnifiedSignupPage() {
   return (
     <div className="bg-[#F7F7F5] min-h-[calc(100vh-64px)] flex items-center justify-center py-8 md:py-16 px-4 relative">
       
-      {/* TERMS AND CONDITIONS MODAL */}
+      {/* INSTITUTIONAL TERMS MODAL */}
       {showTermsModal && (
-        <div className="fixed inset-0 z-[600] bg-[#0A0A0A]/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white border border-[#E4E4E4] w-full max-w-2xl shadow-2xl relative flex flex-col max-h-[85vh]">
+        <div className="fixed inset-0 z-[600] bg-[#0A0A0A]/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white border border-[#E4E4E4] w-full max-w-2xl shadow-2xl relative flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-[#E4E4E4] flex justify-between items-center bg-[#F7F7F5] shrink-0">
               <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-[#0055FF]" />
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Legal Suite & Compliance</h3>
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Master Client Agreement</h3>
               </div>
-              <button onClick={() => setShowTermsModal(false)} className="text-[#6B7280] hover:text-[#0A0A0A]">
+              <button onClick={() => setShowTermsModal(false)} className="text-[#6B7280] hover:text-[#0A0A0A] transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-8 overflow-y-auto no-scrollbar text-xs leading-relaxed text-[#6B7280] space-y-6">
               <div className="space-y-3">
-                <h4 className="font-bold text-[#0A0A0A] uppercase tracking-wider">1. Master Client Agreement</h4>
-                <p>By entering this platform, you agree to the deterministic execution logic of Varban Markets. All trades are settled internally using multi-source index aggregation.</p>
+                <h4 className="font-bold text-[#0A0A0A] uppercase tracking-wider">1. TRADING PROTOCOL</h4>
+                <p>Varban Markets provides high-speed execution for synthetic and derivative contracts. By proceeding, you acknowledge that all settlements are deterministic and based on multi-source index aggregation.</p>
               </div>
               <div className="space-y-3">
-                <h4 className="font-bold text-[#0A0A0A] uppercase tracking-wider">2. Risk Warning</h4>
-                <p>Derivative trading carries high risk. 84.12% of retail traders lose capital. Ensure you understand the maximum risk per contract (100% of committed stake).</p>
+                <h4 className="font-bold text-[#0A0A0A] uppercase tracking-wider text-[#C43D3D]">2. RISK DISCLOSURE</h4>
+                <p>Derivative trading involves significant risk of capital loss. 84.12% of retail traders lose capital. You accept that your committed stake is the maximum exposure per contract and that markets can be highly volatile.</p>
               </div>
               <div className="space-y-3">
-                <h4 className="font-bold text-[#0A0A0A] uppercase tracking-wider">3. AML & Identity</h4>
-                <p>We require full KYC for withdrawals. Third-party payments are strictly prohibited and will result in permanent account termination and asset forfeiture.</p>
+                <h4 className="font-bold text-[#0A0A0A] uppercase tracking-wider">3. AML & COMPLIANCE</h4>
+                <p>Identity verification (KYC) is required for all withdrawals. We strictly enforce a "No Third-Party Payment" policy. Funds must originate from accounts in your legal name.</p>
               </div>
-              <div className="p-4 bg-[#F7F7F5] border-l-4 border-[#0055FF] font-bold text-[#0A0A0A] uppercase">
-                "I HEREBY ACCEPT THE DETERMINISTIC NATURE OF VARBAN SETTLEMENTS AND ACKNOWLEDGE THE FULL RISK OF CAPITAL LOSS."
+              <div className="p-4 bg-[#F7F7F5] border-l-4 border-[#0055FF] font-bold text-[#0A0A0A] uppercase leading-relaxed">
+                "I HEREBY ACCEPT THE TERMS OF SERVICE AND ACKNOWLEDGE THE FULL RISK OF CAPITAL LOSS ASSOCIATED WITH DERIVATIVE TRADING."
               </div>
             </div>
-            <div className="p-4 border-t border-[#E4E4E4] bg-white text-right">
+            <div className="p-6 border-t border-[#E4E4E4] bg-white text-right shrink-0">
                <button 
                 onClick={() => { setShowTermsModal(false); setFormData({...formData, assent: true}); }}
-                className="btn-institutional-primary px-8"
+                className="btn-institutional-primary px-10"
                >
-                 I Accept & Close
+                 Accept & Continue
                </button>
             </div>
           </div>
@@ -193,7 +192,7 @@ export default function UnifiedSignupPage() {
           <div className="absolute inset-0 bg-black/30"></div>
           <div className="absolute bottom-12 left-12 right-12 z-10">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF] block mb-2">Create Account</span>
-            <h2 className="text-2xl font-bold uppercase text-white tracking-tight leading-tight">Join thousands of traders worldwide.</h2>
+            <h2 className="text-2xl font-bold uppercase text-white tracking-tight leading-tight">Join the world's most stable trading network.</h2>
             <div className="w-12 h-1 bg-[#0055FF] mt-4"></div>
           </div>
         </div>
@@ -201,7 +200,7 @@ export default function UnifiedSignupPage() {
         <div className="w-full lg:w-1/2 flex flex-col bg-white">
           <div className="bg-[#F7F7F5] border-b border-[#E4E4E4] p-6 md:p-8 text-[#0A0A0A] shrink-0">
             <div className="mt-6 lg:mt-0">
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF] block mb-2">Varban Markets</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF] block mb-2">Registration Workspace</span>
               <h1 className="text-xl md:text-2xl font-bold uppercase tracking-tight mb-6">Create Account</h1>
               
               <div className="flex justify-between items-center relative">
@@ -230,20 +229,25 @@ export default function UnifiedSignupPage() {
 
           <div className="p-6 md:p-12 flex-grow flex flex-col justify-center">
             
-            {/* SECURITY COOLDOWN ALERT */}
+            {/* INSTITUTIONAL SECURITY COOLDOWN */}
             {cooldown > 0 && (
               <div className="mb-6 p-6 bg-[#C43D3D]/5 border border-[#C43D3D]/20 animate-in fade-in slide-in-from-top-2 duration-300">
-                <div className="flex items-start gap-3">
-                  <ShieldAlert className="w-5 h-5 text-[#C43D3D] shrink-0" />
-                  <p className="text-[11px] font-bold text-[#C43D3D] uppercase tracking-widest leading-relaxed">
-                    FOR SECURITY PURPOSES, YOU CAN ONLY REQUEST THIS AFTER {cooldown} SECONDS.
-                  </p>
+                <div className="flex items-start gap-4">
+                  <ShieldAlert className="w-6 h-6 text-[#C43D3D] shrink-0" />
+                  <div>
+                    <p className="text-[11px] font-bold text-[#C43D3D] uppercase tracking-widest leading-relaxed">
+                      Security Protection Active
+                    </p>
+                    <p className="text-[10px] text-[#6B7280] uppercase mt-1">
+                      To prevent automated attacks, you can only request this after {cooldown} seconds.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
 
             {error && cooldown === 0 && (
-              <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide animate-shake">
+              <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide">
                 {error}
               </div>
             )}
@@ -262,7 +266,7 @@ export default function UnifiedSignupPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Country</label>
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Country of Residence</label>
                     <select name="country" value={formData.country} onChange={handleChange} className="w-full text-xs p-3 border border-[#E4E4E4] bg-white">
                       {COUNTRIES.map(c => <option key={c.code} value={c.name}>{c.flag} {c.name}</option>)}
                     </select>
@@ -273,7 +277,7 @@ export default function UnifiedSignupPage() {
               {step === 2 && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <div>
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Email Address</label>
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Primary Email</label>
                     <input required name="email" value={formData.email} onChange={handleChange} type="email" className="w-full text-xs p-3 border border-[#E4E4E4] focus:border-[#0A0A0A] outline-none" />
                   </div>
                   <div>
@@ -291,28 +295,32 @@ export default function UnifiedSignupPage() {
               {step === 3 && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <div>
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Create Password</label>
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Create Strong Password</label>
                     <input required name="password" value={formData.password} onChange={handleChange} type="password" placeholder="At least 6 characters" className="w-full text-xs p-3 border border-[#E4E4E4] outline-none focus:border-[#0055FF]" />
                   </div>
                   <div>
                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Confirm Password</label>
                     <input required name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} type="password" className="w-full text-xs p-3 border border-[#E4E4E4] outline-none focus:border-[#0055FF]" />
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 pt-2">
                     <input required type="checkbox" name="assent" checked={formData.assent} onChange={handleChange} className="mt-0.5 accent-[#0055FF] w-4 h-4" />
                     <button 
                       type="button"
                       onClick={() => setShowTermsModal(true)}
                       className="text-[9px] font-bold uppercase text-[#6B7280] hover:text-[#0055FF] transition-colors underline"
                     >
-                      I ACCEPT THE TERMS OF SERVICE AND RISK DISCLOSURE.
+                      I accept the terms of service and risk disclosure.
                     </button>
                   </div>
                 </div>
               )}
 
               <div className="pt-6 flex justify-between gap-4">
-                {step > 1 && <button type="button" onClick={() => setStep(step - 1)} className="w-1/3 py-4 border border-[#E4E4E4] text-[10px] font-bold uppercase tracking-widest">Back</button>}
+                {step > 1 && (
+                  <button type="button" onClick={() => setStep(step - 1)} className="w-1/3 py-4 border border-[#E4E4E4] text-[10px] font-bold uppercase tracking-widest hover:bg-[#F7F7F5] transition-colors">
+                    Back
+                  </button>
+                )}
                 <button 
                   type="submit" 
                   disabled={loading || cooldown > 0} 

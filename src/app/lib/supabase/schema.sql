@@ -1,78 +1,68 @@
 
--- VARBAN MARKETS — SUPABASE DATABASE SCHEMA & RLS PROTOCOLS
--- This SQL script defines the institutional data structures and security policies.
+-- VARBAN MARKETS: INSTITUTIONAL SUPABASE SCHEMA
+-- This script sets up the profiles table and RLS permissions.
 
--- 1. PROFILES TABLE (Linked to auth.users)
-CREATE TABLE public.profiles (
-  id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL PRIMARY KEY,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
-  full_name TEXT,
-  first_name TEXT,
-  last_name TEXT,
-  phone TEXT,
-  country TEXT,
-  role TEXT DEFAULT 'Trader' CHECK (role IN ('Trader', 'Admin')),
-  balance DECIMAL(12,2) DEFAULT 1000.00,
-  equity DECIMAL(12,2) DEFAULT 1000.00,
-  currency TEXT DEFAULT 'USD',
-  verification_status TEXT DEFAULT 'Not Verified' CHECK (verification_status IN ('Not Verified', 'Pending', 'Verified', 'Rejected')),
-  referral_code TEXT UNIQUE,
-  referred_by UUID REFERENCES auth.users(id)
+-- 1. Create Profiles Table
+create table public.profiles (
+  id uuid references auth.users on delete cascade not null primary key,
+  first_name text,
+  last_name text,
+  full_name text,
+  email text unique,
+  phone text,
+  country text,
+  balance decimal(18,2) default 0.00,
+  equity decimal(18,2) default 0.00,
+  verification_status text default 'Not Verified' check (verification_status in ('Not Verified', 'Pending', 'Verified', 'Rejected')),
+  role text default 'Trader' check (role in ('Trader', 'Admin')),
+  referral_code text unique,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 2. ENABLE ROW LEVEL SECURITY
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+-- 2. Enable Row Level Security
+alter table public.profiles enable row level security;
 
--- 3. RLS POLICIES FOR PROFILES
--- Users can view their own profile
-CREATE POLICY "Users can view own profile" ON public.profiles
-  FOR SELECT USING (auth.uid() = id);
+-- 3. RLS Policies
+-- Users can read their own profile
+create policy "Users can view own profile" 
+on public.profiles for select 
+using ( auth.uid() = id );
 
 -- Users can update their own metadata (not balance or role)
-CREATE POLICY "Users can update own metadata" ON public.profiles
-  FOR UPDATE USING (auth.uid() = id);
+create policy "Users can update own metadata" 
+on public.profiles for update 
+using ( auth.uid() = id )
+with check ( auth.uid() = id );
 
--- Admin Global Authority (Root Override)
-CREATE POLICY "Admin Global Authority" ON public.profiles
-  FOR ALL USING (
-    auth.jwt() ->> 'email' = 'macos8388@gmail.com' OR 
-    auth.jwt() ->> 'email' = 'gmaina4242@gmail.com' OR
-    (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'Admin'
+-- Admin Root Authority Override
+create policy "Admins have full access" 
+on public.profiles for all 
+using ( 
+  auth.jwt() ->> 'email' = 'macos8388@gmail.com' OR 
+  auth.jwt() ->> 'email' = 'gmaina4242@gmail.com' OR
+  (select role from public.profiles where id = auth.uid()) = 'Admin'
+);
+
+-- 4. Automatic Profile Creation Trigger
+-- This creates a profile row whenever a user signs up via Auth
+create or replace function public.handle_new_user() 
+returns trigger as $$
+begin
+  insert into public.profiles (id, first_name, last_name, full_name, email, country, phone, referral_code)
+  values (
+    new.id, 
+    new.raw_user_meta_data->>'first_name', 
+    new.raw_user_meta_data->>'last_name',
+    new.raw_user_meta_data->>'full_name',
+    new.email,
+    new.raw_user_meta_data->>'country',
+    new.raw_user_meta_data->>'phone',
+    'VRB-' || upper(substring(md5(random()::text) from 1 for 6))
   );
+  return new;
+end;
+$$ language plpgsql security definer;
 
--- 4. TRIGGER FOR UPDATED_AT
-CREATE OR REPLACE FUNCTION public.handle_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = now();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER on_profile_update
-  BEFORE UPDATE ON public.profiles
-  FOR EACH ROW
-  EXECUTE PROCEDURE public.handle_updated_at();
-
--- 5. FUNCTION TO HANDLE NEW USER REGISTRATION
--- Automatically creates a profile entry when a user signs up via Supabase Auth.
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.profiles (id, full_name, first_name, last_name, country, phone, referral_code)
-  VALUES (
-    NEW.id,
-    NEW.raw_user_meta_data ->> 'full_name',
-    NEW.raw_user_meta_data ->> 'first_name',
-    NEW.raw_user_meta_data ->> 'last_name',
-    NEW.raw_user_meta_data ->> 'country',
-    NEW.raw_user_meta_data ->> 'phone',
-    'VRB-' || upper(substring(replace(NEW.id::text, '-', ''), 1, 6))
-  );
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
