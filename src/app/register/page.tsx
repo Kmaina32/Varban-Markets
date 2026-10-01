@@ -1,9 +1,8 @@
-
 "use client";
 
 /**
  * @fileOverview Unified Signup Page.
- * Integrated with Supabase Auth, Institutional Terms Modal, and Security Rate Limiting.
+ * Integrated with Supabase Auth, Institutional Terms Modal, and Email Verification prompt.
  */
 
 import { useState, useEffect } from "react";
@@ -11,10 +10,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/client";
-import { Check, User, Mail, Lock, ArrowLeft, Loader2, X, FileText, ShieldAlert } from "lucide-react";
+import { Check, User, Mail, Lock, ArrowLeft, Loader2, X, FileText, ShieldCheck } from "lucide-react";
 import { COUNTRIES } from "@/app/lib/countries";
 import { detectLocation } from "@/app/lib/geolocation-service";
 import placeholderImages from "@/app/lib/placeholder-images.json";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/app/lib/utils";
 
 export default function UnifiedSignupPage() {
@@ -24,8 +24,8 @@ export default function UnifiedSignupPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cooldown, setCooldown] = useState(0);
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [isEmailSent, setIsEmailSent] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -58,15 +58,6 @@ export default function UnifiedSignupPage() {
     };
     performGeoLookup();
   }, []);
-
-  // Cooldown timer logic
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (cooldown > 0) {
-      timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
-    }
-    return () => clearTimeout(timer);
-  }, [cooldown]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const target = e.target as HTMLInputElement;
@@ -112,16 +103,10 @@ export default function UnifiedSignupPage() {
           }
         });
 
-        if (signUpError) {
-          // Handle Rate Limiting (Error 429)
-          if (signUpError.status === 429 || signUpError.message.toLowerCase().includes('rate limit')) {
-            setCooldown(60);
-            return;
-          }
-          throw signUpError;
-        }
+        if (signUpError) throw signUpError;
 
-        router.push("/dashboard");
+        // Display email verification prompt instead of redirecting
+        setIsEmailSent(true);
       } catch (err: any) {
         setError(err.message || "Registration failed. Please try again.");
       } finally {
@@ -129,6 +114,32 @@ export default function UnifiedSignupPage() {
       }
     }
   };
+
+  if (isEmailSent) {
+    return (
+      <div className="bg-[#F7F7F5] min-h-[calc(100vh-64px)] flex items-center justify-center py-8 md:py-16 px-4">
+        <Card className="bg-white border-[#E4E4E4] max-w-lg w-full p-12 text-center space-y-6 shadow-xl animate-in zoom-in-95 duration-300">
+          <div className="w-16 h-16 bg-[#0055FF]/10 border border-[#0055FF] rounded-full flex items-center justify-center mx-auto">
+            <Mail className="w-8 h-8 text-[#0055FF]" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold uppercase tracking-tight text-[#0A0A0A]">Verify Your Identity</h2>
+            <p className="text-[10px] text-[#6B7280] leading-relaxed uppercase font-bold tracking-widest">
+              A secure verification link has been dispatched to:
+            </p>
+            <p className="text-sm font-mono font-bold text-[#0055FF] truncate">{formData.email}</p>
+          </div>
+          <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] text-[10px] text-[#6B7280] leading-relaxed uppercase text-left font-bold tracking-wider">
+            Please check your inbox (including junk folders) to activate your account. You cannot access the terminal until your domain is verified.
+          </div>
+          <Link href="/login" className="w-full btn-institutional-primary flex items-center justify-center gap-2 py-4">
+            <ArrowLeft className="w-4 h-4" />
+            <span>Return to Sign In</span>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
 
   const steps = [
     { title: "Details", icon: User },
@@ -228,25 +239,7 @@ export default function UnifiedSignupPage() {
           </div>
 
           <div className="p-6 md:p-12 flex-grow flex flex-col justify-center">
-            
-            {/* INSTITUTIONAL SECURITY COOLDOWN */}
-            {cooldown > 0 && (
-              <div className="mb-6 p-6 bg-[#C43D3D]/5 border border-[#C43D3D]/20 animate-in fade-in slide-in-from-top-2 duration-300">
-                <div className="flex items-start gap-4">
-                  <ShieldAlert className="w-6 h-6 text-[#C43D3D] shrink-0" />
-                  <div>
-                    <p className="text-[11px] font-bold text-[#C43D3D] uppercase tracking-widest leading-relaxed">
-                      Security Protection Active
-                    </p>
-                    <p className="text-[10px] text-[#6B7280] uppercase mt-1">
-                      To prevent automated attacks, you can only request this after {cooldown} seconds.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {error && cooldown === 0 && (
+            {error && (
               <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide">
                 {error}
               </div>
@@ -303,11 +296,11 @@ export default function UnifiedSignupPage() {
                     <input required name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} type="password" className="w-full text-xs p-3 border border-[#E4E4E4] outline-none focus:border-[#0055FF]" />
                   </div>
                   <div className="flex items-center space-x-2 pt-2">
-                    <input required type="checkbox" name="assent" checked={formData.assent} onChange={handleChange} className="mt-0.5 accent-[#0055FF] w-4 h-4" />
+                    <input required type="checkbox" name="assent" id="assent" checked={formData.assent} onChange={handleChange} className="mt-0.5 accent-[#0055FF] w-4 h-4" />
                     <button 
                       type="button"
                       onClick={() => setShowTermsModal(true)}
-                      className="text-[9px] font-bold uppercase text-[#6B7280] hover:text-[#0055FF] transition-colors underline"
+                      className="text-[9px] font-bold uppercase text-[#6B7280] hover:text-[#0055FF] transition-colors underline text-left"
                     >
                       I accept the terms of service and risk disclosure.
                     </button>
@@ -323,11 +316,10 @@ export default function UnifiedSignupPage() {
                 )}
                 <button 
                   type="submit" 
-                  disabled={loading || cooldown > 0} 
+                  disabled={loading} 
                   className={cn(
                     "btn-institutional-primary py-4 transition-all duration-300", 
-                    step > 1 ? 'w-2/3' : 'w-full',
-                    cooldown > 0 && "opacity-50 cursor-not-allowed grayscale bg-[#6B7280] border-[#6B7280]"
+                    step > 1 ? 'w-2/3' : 'w-full'
                   )}
                 >
                   {loading ? (
@@ -336,7 +328,7 @@ export default function UnifiedSignupPage() {
                       <span>Transmitting...</span>
                     </div>
                   ) : (
-                    step === 3 ? (cooldown > 0 ? `RETRY IN ${cooldown}S` : "Finalize Account") : "Continue"
+                    step === 3 ? "Finalize Account" : "Continue"
                   )}
                 </button>
               </div>
