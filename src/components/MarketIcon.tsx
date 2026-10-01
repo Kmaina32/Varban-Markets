@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -17,6 +16,7 @@ interface MarketIconProps {
 }
 
 export const MarketIcon: React.FC<MarketIconProps> = ({ symbol, className, size = 'md' }) => {
+  // Normalize symbol
   const parts = symbol.includes('/') 
     ? symbol.split('/') 
     : (symbol.length === 6 ? [symbol.substring(0, 3), symbol.substring(3)] : [symbol, '']);
@@ -36,7 +36,7 @@ export const MarketIcon: React.FC<MarketIconProps> = ({ symbol, className, size 
     return (
       <div className={cn(dimensions[size], "rounded-full border border-[#E4E4E4] bg-white p-1 shadow-sm overflow-hidden flex items-center justify-center", className)}>
         <img 
-          src="/assets/nasdaq-com-logo.png"
+          src="https://www.nasdaq.com/favicon.ico"
           alt="Nasdaq"
           className="w-full h-full object-contain"
         />
@@ -78,6 +78,9 @@ export const MarketIcon: React.FC<MarketIconProps> = ({ symbol, className, size 
         <img 
           src={`https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/${cleanSymbol.toLowerCase()}.png`}
           alt={cleanSymbol}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = `https://cdn.simpleicons.org/${cleanSymbol.toLowerCase()}`;
+          }}
           className="w-full h-full object-cover"
         />
       </div>
@@ -130,7 +133,7 @@ export const MarketIcon: React.FC<MarketIconProps> = ({ symbol, className, size 
 
   if (quote && quote.length === 3) {
     return (
-      <div className={cn("flex items-center -space-x-3", className)}>
+      <div className={cn("flex items-center -space-x-2.5", className)}>
         <img 
           src={`https://flagcdn.io/w80/${getFlagCode(cleanSymbol)}.png`} 
           alt={cleanSymbol}
