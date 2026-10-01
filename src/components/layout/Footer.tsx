@@ -3,7 +3,7 @@
 
 /**
  * @fileOverview Institutional Regulatory Footer.
- * Redesigned to match high-precision brokerage standards (e.g. Exness).
+ * Redesigned to match high-precision brokerage standards (e.g. Exness / Deriv).
  */
 
 import Link from "next/link";

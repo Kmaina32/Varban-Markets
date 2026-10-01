@@ -26,11 +26,6 @@ export interface HistoricalBar {
   volume?: number;
 }
 
-export interface TechnicalIndicatorPoint {
-  time: number;
-  value: number;
-}
-
 const PROXY_URL = "/api/market-data";
 
 /**
@@ -104,19 +99,6 @@ export const fetchHistoricalData = async (symbol: string, interval: string = "1m
     return (json && json.data) ? json.data : [];
   } catch (e) {
     console.error("Historical data node failure:", e instanceof Error ? e.message : String(e));
-    return [];
-  }
-};
-
-/**
- * Fetches technical indicator data points.
- */
-export const fetchTechnicalIndicator = async (indicator: string, symbol: string, interval: string, timePeriod: number): Promise<TechnicalIndicatorPoint[]> => {
-  try {
-    const mappedInterval = interval === '1D' ? '1day' : interval.replace('m', 'min');
-    const json = await safeFetchJson(`${PROXY_URL}?type=indicator&indicator=${indicator.toLowerCase()}&symbol=${symbol}&interval=${mappedInterval}&time_period=${timePeriod}&outputsize=300`);
-    return (json && json.data) ? json.data : [];
-  } catch (e) {
     return [];
   }
 };
