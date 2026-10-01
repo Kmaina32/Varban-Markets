@@ -25,6 +25,7 @@ import { doc, setDoc, deleteDoc, collection } from "firebase/firestore";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { MarketIcon } from "@/components/MarketIcon";
+import { cn } from "@/app/lib/utils";
 
 export default function MarketsPage() {
   const { user } = useUser();
