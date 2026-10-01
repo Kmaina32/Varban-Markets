@@ -1,8 +1,9 @@
+
 "use client";
 
 /**
  * @fileOverview Unified Signup Page.
- * Integrated with Supabase Auth.
+ * Integrated with Supabase Auth, Terms Modal, and Security Rate Limiting.
  */
 
 import { useState, useEffect } from "react";
@@ -12,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/client";
 import { doc, setDoc } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
-import { Check, User, Mail, Lock, ArrowLeft, Loader2 } from "lucide-react";
+import { Check, User, Mail, Lock, ArrowLeft, Loader2, X, FileText, ShieldAlert } from "lucide-react";
 import { COUNTRIES } from "@/app/lib/countries";
 import { detectLocation } from "@/app/lib/geolocation-service";
 import placeholderImages from "@/app/lib/placeholder-images.json";
@@ -26,7 +27,8 @@ export default function UnifiedSignupPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -59,6 +61,14 @@ export default function UnifiedSignupPage() {
     };
     performGeoLookup();
   }, []);
+
+  // Cooldown timer logic
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldown]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const target = e.target as HTMLInputElement;
@@ -104,9 +114,15 @@ export default function UnifiedSignupPage() {
           }
         });
 
-        if (signUpError) throw signUpError;
+        if (signUpError) {
+          // Handle Rate Limiting (Error 429)
+          if (signUpError.status === 429 || signUpError.message.toLowerCase().includes('rate limit')) {
+            setCooldown(60);
+          }
+          throw signUpError;
+        }
 
-        // Initialize Firestore profile (Keep for existing logic compatibility)
+        // Initialize Firestore profile
         if (data.user && db) {
           await setDoc(doc(db, "users", data.user.id), {
             balance: 1000.00,
@@ -144,7 +160,50 @@ export default function UnifiedSignupPage() {
   ];
 
   return (
-    <div className="bg-[#F7F7F5] min-h-[calc(100vh-64px)] flex items-center justify-center py-8 md:py-16 px-4">
+    <div className="bg-[#F7F7F5] min-h-[calc(100vh-64px)] flex items-center justify-center py-8 md:py-16 px-4 relative">
+      
+      {/* TERMS AND CONDITIONS MODAL */}
+      {showTermsModal && (
+        <div className="fixed inset-0 z-[600] bg-[#0A0A0A]/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white border border-[#E4E4E4] w-full max-w-2xl shadow-2xl relative flex flex-col max-h-[85vh]">
+            <div className="p-5 border-b border-[#E4E4E4] flex justify-between items-center bg-[#F7F7F5] shrink-0">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-[#0055FF]" />
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Legal Suite & Compliance</h3>
+              </div>
+              <button onClick={() => setShowTermsModal(false)} className="text-[#6B7280] hover:text-[#0A0A0A]">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-8 overflow-y-auto no-scrollbar text-xs leading-relaxed text-[#6B7280] space-y-6">
+              <div className="space-y-3">
+                <h4 className="font-bold text-[#0A0A0A] uppercase tracking-wider">1. Master Client Agreement</h4>
+                <p>By entering this platform, you agree to the deterministic execution logic of Varban Markets. All trades are settled internally using multi-source index aggregation.</p>
+              </div>
+              <div className="space-y-3">
+                <h4 className="font-bold text-[#0A0A0A] uppercase tracking-wider">2. Risk Warning</h4>
+                <p>Derivative trading carries high risk. 84.12% of retail traders lose capital. Ensure you understand the maximum risk per contract (100% of committed stake).</p>
+              </div>
+              <div className="space-y-3">
+                <h4 className="font-bold text-[#0A0A0A] uppercase tracking-wider">3. AML & Identity</h4>
+                <p>We require full KYC for withdrawals. Third-party payments are strictly prohibited and will result in permanent account termination and asset forfeiture.</p>
+              </div>
+              <div className="p-4 bg-[#F7F7F5] border-l-4 border-[#0055FF] font-bold text-[#0A0A0A] uppercase">
+                "I HEREBY ACCEPT THE DETERMINISTIC NATURE OF VARBAN SETTLEMENTS AND ACKNOWLEDGE THE FULL RISK OF CAPITAL LOSS."
+              </div>
+            </div>
+            <div className="p-4 border-t border-[#E4E4E4] bg-white text-right">
+               <button 
+                onClick={() => { setShowTermsModal(false); setFormData({...formData, assent: true}); }}
+                className="btn-institutional-primary px-8"
+               >
+                 I Accept & Close
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white border border-[#E4E4E4] max-w-5xl w-full shadow-lg flex flex-col md:flex-row overflow-hidden min-h-[600px] relative">
         <Link href="/" className="absolute top-6 left-6 z-20 flex items-center space-x-2 text-[10px] font-bold uppercase tracking-widest text-[#6B7280] hover:text-[#0A0A0A] transition-colors lg:text-white lg:hover:text-[#0055FF]">
           <ArrowLeft className="w-3.5 h-3.5" />
@@ -192,7 +251,20 @@ export default function UnifiedSignupPage() {
           </div>
 
           <div className="p-6 md:p-12 flex-grow flex flex-col justify-center">
-            {error && <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide">{error}</div>}
+            
+            {/* SECURITY COOLDOWN ALERT */}
+            {cooldown > 0 && (
+              <div className="mb-6 p-6 bg-red-50 border border-red-200 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="flex items-start gap-3">
+                  <ShieldAlert className="w-5 h-5 text-red-600 shrink-0" />
+                  <p className="text-[11px] font-bold text-red-700 uppercase tracking-widest leading-relaxed">
+                    FOR SECURITY PURPOSES, YOU CAN ONLY REQUEST THIS AFTER {cooldown} SECONDS.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {error && cooldown === 0 && <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide">{error}</div>}
             
             <form onSubmit={handleNext} className="space-y-6">
               {step === 1 && (
@@ -238,23 +310,37 @@ export default function UnifiedSignupPage() {
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <div>
                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Create Password</label>
-                    <input required name="password" value={formData.password} onChange={handleChange} type="password" className="w-full text-xs p-3 border border-[#E4E4E4] outline-none" />
+                    <input required name="password" value={formData.password} onChange={handleChange} type="password" className="w-full text-xs p-3 border border-[#E4E4E4] outline-none focus:border-[#0055FF]" />
                   </div>
                   <div>
                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Confirm Password</label>
-                    <input required name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} type="password" className="w-full text-xs p-3 border border-[#E4E4E4] outline-none" />
+                    <input required name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} type="password" className="w-full text-xs p-3 border border-[#E4E4E4] outline-none focus:border-[#0055FF]" />
                   </div>
-                  <div className="flex items-start space-x-2">
-                    <input required type="checkbox" name="assent" checked={formData.assent} onChange={handleChange} className="mt-0.5" />
-                    <span className="text-[9px] font-bold uppercase text-[#6B7280]">I accept the terms of service and risk disclosure.</span>
+                  <div className="flex items-center space-x-2">
+                    <input required type="checkbox" name="assent" checked={formData.assent} onChange={handleChange} className="mt-0.5 accent-[#0055FF] w-4 h-4" />
+                    <button 
+                      type="button"
+                      onClick={() => setShowTermsModal(true)}
+                      className="text-[9px] font-bold uppercase text-[#6B7280] hover:text-[#0055FF] transition-colors underline"
+                    >
+                      I ACCEPT THE TERMS OF SERVICE AND RISK DISCLOSURE.
+                    </button>
                   </div>
                 </div>
               )}
 
               <div className="pt-6 flex justify-between gap-4">
                 {step > 1 && <button type="button" onClick={() => setStep(step - 1)} className="w-1/3 py-4 border border-[#E4E4E4] text-[10px] font-bold uppercase">Back</button>}
-                <button type="submit" disabled={loading} className={cn("btn-institutional-primary py-4", step > 1 ? 'w-2/3' : 'w-full')}>
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (step === 3 ? "Complete Registration" : "Continue")}
+                <button 
+                  type="submit" 
+                  disabled={loading || cooldown > 0} 
+                  className={cn(
+                    "btn-institutional-primary py-4", 
+                    step > 1 ? 'w-2/3' : 'w-full',
+                    cooldown > 0 && "opacity-50 cursor-not-allowed bg-[#6B7280] border-[#6B7280]"
+                  )}
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : (step === 3 ? (cooldown > 0 ? `RETRY IN ${cooldown}S` : "Complete Registration") : "Continue")}
                 </button>
               </div>
             </form>
