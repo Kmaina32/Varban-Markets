@@ -1,25 +1,14 @@
-
 'use client';
 
 /**
  * @fileOverview Institutional TradingView Advanced Charting Library Integration.
- * Implements the full Advanced Charts widget with custom Datafeed for Varban Markets.
+ * Optimized for performance by reusing the widget instance and using setSymbol for transitions.
  */
 
 import React, { useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
 import { fetchHistoricalData } from '@/app/lib/market-service';
-
-export type ChartMode = 'Candlestick' | 'Line' | 'Area';
-
-interface TradingViewChartProps {
-  symbol: string;
-  chartMode?: ChartMode;
-  showSMA?: boolean;
-  showEMA?: boolean;
-  isDarkTheme?: boolean;
-  timeframe?: string;
-}
+import { useUser } from '@/firebase';
 
 declare global {
   interface Window {
@@ -27,18 +16,44 @@ declare global {
   }
 }
 
+interface TradingViewChartProps {
+  symbol: string;
+  isDarkTheme?: boolean;
+}
+
 export const TradingViewChart: React.FC<TradingViewChartProps> = ({ 
   symbol, 
-  chartMode = 'Candlestick',
-  isDarkTheme = false,
-  timeframe = '5'
+  isDarkTheme = false
 }) => {
+  const { user } = useUser();
   const containerRef = useRef<HTMLDivElement>(null);
   const tvWidgetRef = useRef<any>(null);
   const [isLibraryReady, setIsLibraryReady] = useState(false);
 
+  // Check if library is already loaded on mount (handles navigation back/forth)
   useEffect(() => {
-    if (!isLibraryReady || !containerRef.current || !window.TradingView) return;
+    if (typeof window !== 'undefined' && window.TradingView) {
+      setIsLibraryReady(true);
+    }
+  }, []);
+
+  // Handle Symbol changes separately to avoid re-initializing the whole engine
+  useEffect(() => {
+    if (tvWidgetRef.current && isLibraryReady) {
+      try {
+        // Use the native setSymbol method for near-instant transitions
+        tvWidgetRef.current.setSymbol(symbol, '5', () => {
+          // Symbol change complete
+        });
+      } catch (e) {
+        console.warn("TradingView setSymbol failed, falling back to full init.");
+      }
+    }
+  }, [symbol, isLibraryReady]);
+
+  useEffect(() => {
+    // Only initialize the widget if it doesn't already exist
+    if (!isLibraryReady || !containerRef.current || !window.TradingView || tvWidgetRef.current) return;
 
     const configurationData = {
       supported_resolutions: ['1', '5', '15', '30', '60', '1D', '1W'],
@@ -81,7 +96,6 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
           if (bars.length === 0) {
             onHistoryCallback([], { noData: true });
           } else {
-            // Filter bars based on from/to if necessary
             onHistoryCallback(bars.map(b => ({
               time: b.time * 1000,
               low: b.low,
@@ -95,25 +109,37 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
           onErrorCallback(error);
         }
       },
-      subscribeBars: (symbolInfo: any, resolution: string, onRealtimeCallback: any, subscribeUID: string, onResetCacheNeededCallback: any) => {
-        // Real-time updates handled by terminal polling in parent component for now
-      },
+      subscribeBars: (symbolInfo: any, resolution: string, onRealtimeCallback: any, subscribeUID: string, onResetCacheNeededCallback: any) => {},
       unsubscribeBars: (subscriberUID: string) => {}
     };
 
     const widgetOptions = {
       symbol: symbol,
       datafeed: datafeed,
-      interval: timeframe as any,
+      interval: '5' as any,
       container: containerRef.current,
       library_path: '/charting_library/',
       locale: 'en',
-      disabled_features: ['use_localstorage_for_settings_save', 'header_symbol_search'],
-      enabled_features: ['study_templates'],
-      charts_storage_url: 'https://saveload.tradingview.com',
-      charts_storage_api_version: '1.1',
+      debug: false, // Performance: Disabled debug for production-like execution
+      disabled_features: [
+        'use_localstorage_for_settings_save',
+        'header_symbol_search',
+        'symbol_info',
+        'display_market_status'
+      ],
+      enabled_features: [
+        'study_templates', 
+        'snapshot_trading_drawings', 
+        'side_toolbar', 
+        'header_widget', 
+        'header_indicators', 
+        'header_chart_type', 
+        'header_resolutions',
+        'header_undo_redo',
+        'header_saveload'
+      ],
       client_id: 'varbanmarkets.com',
-      user_id: 'public_user',
+      user_id: user?.uid || 'public_user',
       fullscreen: false,
       autosize: true,
       theme: isDarkTheme ? 'Dark' : 'Light',
@@ -133,25 +159,48 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     const tvWidget = new window.TradingView.widget(widgetOptions);
     tvWidgetRef.current = tvWidget;
 
+    tvWidget.onChartReady(() => {
+      tvWidget.headerReady().then(() => {
+        // Add SMA Toggle Button to Header
+        const smaBtn = tvWidget.createButton();
+        smaBtn.setAttribute('title', 'Simple Moving Average');
+        smaBtn.textContent = 'SMA';
+        smaBtn.classList.add('apply-common-tooltip');
+        smaBtn.addEventListener('click', () => {
+          tvWidget.activeChart().createStudy('Moving Average', false, false, [9], { "Plot.color": "#0055FF" });
+        });
+
+        // Add EMA Toggle Button to Header
+        const emaBtn = tvWidget.createButton();
+        emaBtn.setAttribute('title', 'Exponential Moving Average');
+        emaBtn.textContent = 'EMA';
+        emaBtn.classList.add('apply-common-tooltip');
+        emaBtn.addEventListener('click', () => {
+          tvWidget.activeChart().createStudy('Moving Average Exponential', false, false, [9], { "Plot.color": "#16835B" });
+        });
+      });
+    });
+
     return () => {
       if (tvWidgetRef.current) {
         tvWidgetRef.current.remove();
         tvWidgetRef.current = null;
       }
     };
-  }, [symbol, isLibraryReady, isDarkTheme, timeframe]);
+  }, [isLibraryReady, isDarkTheme, user]); // Dependency array no longer triggers on symbol change
 
   return (
     <>
       <Script 
         src="/charting_library/charting_library.js" 
+        strategy="afterInteractive"
         onLoad={() => setIsLibraryReady(true)}
       />
       <div className="w-full h-full relative flex flex-col bg-white">
         <div ref={containerRef} className="flex-grow w-full h-full" />
         
         {!isLibraryReady && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white z-20">
+          <div className="absolute inset-0 flex items-center justify-center bg-white z-20 animate-in fade-in duration-500">
             <div className="flex flex-col items-center space-y-3">
               <div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div>
               <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Initializing Advanced Engine</span>

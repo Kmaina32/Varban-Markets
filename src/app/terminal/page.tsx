@@ -3,8 +3,7 @@
 
 /**
  * @fileOverview High-Performance Electronic Trading Terminal Workspace.
- * Simplified language for a better user experience.
- * Threshold increased to lg (1024px) for optimized tablet views.
+ * Integrated with native TradingView toolbars.
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
@@ -39,7 +38,7 @@ import {
   Activity,
   Maximize2
 } from "lucide-react";
-import { TradingViewChart, ChartMode } from "@/components/terminal/TradingViewChart";
+import { TradingViewChart } from "@/components/terminal/TradingViewChart";
 import { useUser, useDoc, useFirestore, useCollection, useAuth } from "@/firebase";
 import { collection, addDoc, serverTimestamp, query, where, orderBy, doc, updateDoc, increment, setDoc } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -65,11 +64,6 @@ export default function TerminalWorkspace() {
   
   const [oneClickEnabled, setOneClickEnabled] = useState<boolean>(false);
   const [leftTab, setLeftTab] = useState<'TICKET' | 'MARKETS'>('TICKET');
-
-  const [chartMode, setChartMode] = useState<ChartMode>('Candlestick');
-  const [showSMA, setShowSMA] = useState(false);
-  const [showEMA, setShowEMA] = useState(false);
-  const [timeframe, setTimeframe] = useState('5m');
 
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobileMarketMenuOpen, setIsMobileMarketMenuOpen] = useState(false);
@@ -784,54 +778,9 @@ export default function TerminalWorkspace() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between px-2 py-0 md:py-1 border-b shrink-0 z-30 transition-colors bg-[#F7F7F5] border-[#E4E4E4] overflow-x-auto no-scrollbar">
-              <div className="flex items-center space-x-1 md:space-x-1.5 shrink-0">
-                <div className="flex bg-white border border-[#E4E4E4] rounded overflow-hidden">
-                  {['1m', '5m', '15m', '1h', '1D'].map(tf => (
-                    <button 
-                      key={tf} 
-                      onClick={() => setTimeframe(tf)}
-                      className={cn("px-1 md:px-2 py-0.5 md:py-1 text-[7px] md:text-[9px] font-bold border-r last:border-r-0 transition-colors", timeframe === tf ? "bg-[#0055FF] text-white" : "text-[#6B7280] hover:text-[#0A0A0A]")}
-                    >
-                      {tf}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="w-px h-3 md:h-4 bg-[#E4E4E4] mx-0.5"></div>
-
-                <div className="flex bg-white border border-[#E4E4E4] rounded overflow-hidden">
-                  <button onClick={() => setChartMode('Candlestick')} className={cn("p-0.5 md:p-1.5 border-r transition-colors", chartMode === 'Candlestick' ? "bg-[#0055FF] text-white" : "text-[#6B7280]")}>
-                    <BarChart3 className="w-2 md:w-3 h-2 md:h-3" />
-                  </button>
-                  <button onClick={() => setChartMode('Line')} className={cn("p-0.5 md:p-1.5 border-r transition-colors", chartMode === 'Line' ? "bg-[#0055FF] text-white" : "text-[#6B7280]")}>
-                    <LineChart className="w-2 md:w-3 h-2 md:h-3" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-1 md:space-x-1.5 shrink-0 ml-1">
-                <button 
-                  onClick={() => setShowSMA(!showSMA)}
-                  className={cn("px-1 py-0.5 md:py-1 border text-[7px] md:text-[9px] font-bold uppercase rounded transition-all whitespace-nowrap", showSMA ? "bg-[#F59E0B] border-[#F59E0B] text-white" : "bg-white border-[#E4E4E4] text-[#6B7280]")}
-                >
-                  SMA
-                </button>
-                <button 
-                  onClick={() => setShowEMA(!showEMA)}
-                  className={cn("px-1 py-0.5 md:py-1 border text-[7px] md:text-[9px] font-bold uppercase rounded transition-all whitespace-nowrap", showEMA ? "bg-[#8B5CF6] border-[#8B5CF6] text-white" : "bg-white border-[#E4E4E4] text-[#6B7280]")}
-                >
-                  EMA
-                </button>
-              </div>
-            </div>
-
             <div id="tour-chart" className="flex-grow relative w-full min-h-0 bg-transparent overflow-hidden">
               <TradingViewChart 
                 symbol={activeInst.symbol} 
-                chartMode={chartMode}
-                showSMA={showSMA}
-                showEMA={showEMA}
                 isDarkTheme={false}
               />
             </div>
