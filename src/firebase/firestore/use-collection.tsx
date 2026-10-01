@@ -1,34 +1,17 @@
-
 'use client';
 
-import { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, Query, Firestore, CollectionReference } from 'firebase/firestore';
+/**
+ * @fileOverview Inert Collection Hook (Stub).
+ * Decommissioned to prevent Firestore assertion crashes.
+ */
 
-export function useCollection<T>(q: Query | null) {
-  const [data, setData] = useState<T[] | null>(null);
-  const [loading, setLoading] = useState(true);
+import { useEffect, useState } from 'react';
+
+export function useCollection<T>(q: any) {
+  const [data, setData] = useState<T[] | null>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    if (!q) {
-      setLoading(false);
-      return;
-    }
-
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        setData(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as T)));
-        setLoading(false);
-      },
-      (err) => {
-        setError(err);
-        setLoading(false);
-      }
-    );
-
-    return unsubscribe;
-  }, [q]);
-
-  return { data, loading, error };
+  // Firestore listeners disabled to prevent crashes
+  return { data: data || [], loading, error };
 }

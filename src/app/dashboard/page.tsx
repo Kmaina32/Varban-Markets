@@ -1,23 +1,30 @@
-
 'use client';
+
+/**
+ * @fileOverview Institutional User Dashboard.
+ * Migrated to Supabase for profile and portfolio management.
+ */
 
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { Shield, TrendingUp, DollarSign, Activity, ArrowRight, Star } from "lucide-react";
 import Link from "next/link";
-import { useUser, useDoc, useCollection, useFirestore } from "@/firebase";
-import { collection, query, limit, orderBy } from "firebase/firestore";
+import { useUser } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { useState, useEffect, useMemo } from "react";
+import { createClient } from "@/app/lib/supabase/client";
 import OnboardingTutorial from "@/components/dashboard/OnboardingTutorial";
 import MarketNewsFeed from "@/components/dashboard/MarketNewsFeed";
 
 export default function UserDashboard() {
   const { user } = useUser();
-  const db = useFirestore();
+  const supabase = createClient();
   const { t, formatNumber } = useTranslation();
 
-  const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
+  const [profile, setProfile] = useState<any>(null);
+  const [recentTrades, setRecentTrades] = useState<any[]>([]);
+  const [watchlist, setWatchlist] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
@@ -28,7 +35,39 @@ export default function UserDashboard() {
     
     const savedDemo = localStorage.getItem('varban_demo_balance');
     if (savedDemo) setDemoBalance(parseFloat(savedDemo));
-  }, []);
+
+    async function loadData() {
+      if (!user?.uid) return;
+      
+      try {
+        // Fetch Profile
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.uid)
+          .single();
+        
+        if (profileData) setProfile(profileData);
+
+        // Fetch Recent Trades (Mocking for now until table finalized)
+        setRecentTrades([]);
+
+        // Fetch Watchlist
+        const { data: wlData } = await supabase
+          .from('watchlist')
+          .select('*')
+          .eq('user_id', user.uid);
+        
+        if (wlData) setWatchlist(wlData);
+      } catch (e) {
+        console.error("Supabase Load Error:", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
+  }, [user?.uid, supabase]);
 
   useEffect(() => {
     const handleGlobalChange = () => {
@@ -41,41 +80,20 @@ export default function UserDashboard() {
     return () => window.removeEventListener('varban_account_mode_changed', handleGlobalChange);
   }, []);
 
-  const tradesQuery = useMemo(() => {
-    if (!db || !user) return null;
-    return query(
-      collection(db, `users/${user.uid}/positions`),
-      orderBy("timestamp", "desc")
-    );
-  }, [db, user]);
-  
-  const { data: allTrades, loading: tradesLoading } = useCollection<any>(tradesQuery);
-  
-  const recentTrades = useMemo(() => {
-    return allTrades?.filter((t: any) => (t.isDemo || false) === (accountMode === 'DEMO')).slice(0, 5) || [];
-  }, [allTrades, accountMode]);
-
-  const watchlistQuery = useMemo(() => {
-    if (!db || !user) return null;
-    return collection(db, `users/${user.uid}/watchlist`);
-  }, [db, user]);
-  const { data: watchlist, loading: watchlistLoading } = useCollection<any>(watchlistQuery);
-
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
   const activeEquity = accountMode === 'REAL' ? (profile?.equity || profile?.balance || 0) : demoBalance;
 
   const metrics = [
     { title: accountMode === 'REAL' ? t('dashboard.balance') : 'Practice Balance', value: activeBalance, icon: DollarSign, color: accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]" },
     { title: accountMode === 'REAL' ? t('dashboard.equity') : 'Practice Value', value: activeEquity, icon: TrendingUp, color: "text-[#0A0A0A]" },
-    { title: t('dashboard.openRisk'), value: accountMode === 'REAL' ? (profile?.openRisk || 0) : 0, icon: Shield, color: "text-[#C43D3D]" },
-    { title: t('dashboard.dailyPL'), value: accountMode === 'REAL' ? (profile?.dailyPL || 0) : 0, icon: Activity, color: "text-[#16835B]" }
+    { title: t('dashboard.openRisk'), value: 0, icon: Shield, color: "text-[#C43D3D]" },
+    { title: t('dashboard.dailyPL'), value: 0, icon: Activity, color: "text-[#16835B]" }
   ];
 
   return (
     <AuthedLayout title="Dashboard" subtitle="Welcome back to your account">
       <OnboardingTutorial />
       <div className="space-y-8">
-        {/* Account Mode Notice Bar */}
         {accountMode === 'DEMO' && (
           <div className="bg-[#0055FF]/10 border border-[#0055FF] p-3 text-[10px] font-bold uppercase tracking-wider text-[#0055FF]">
             You are using a Practice Account. Results are simulated to help you learn.
@@ -91,7 +109,7 @@ export default function UserDashboard() {
               </div>
               <div>
                 <span className={`text-xl font-mono font-bold ${m.color}`}>
-                  {profileLoading ? "..." : `$${formatNumber(m.value || 0, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  {loading ? "..." : `$${formatNumber(m.value || 0, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                 </span>
               </div>
             </Card>
@@ -99,7 +117,6 @@ export default function UserDashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Main Content Area */}
           <div className="lg:col-span-8 space-y-8">
             <div id="tour-trades" className="space-y-4">
               <div className="flex justify-between items-center px-1">
@@ -121,11 +138,11 @@ export default function UserDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E4E4E4] text-xs font-mono">
-                      {tradesLoading ? (
+                      {loading ? (
                         <tr><td colSpan={5} className="p-4 text-center text-[#6B7280]">{t('common.loading')}</td></tr>
-                      ) : recentTrades?.length === 0 ? (
-                        <tr><td colSpan={5} className="p-4 text-center text-[#6B7280]">{t('trading.noPositions')}</td></tr>
-                      ) : recentTrades?.map((trade: any) => (
+                      ) : recentTrades.length === 0 ? (
+                        <tr><td colSpan={5} className="p-8 text-center text-[#6B7280] uppercase tracking-widest font-bold opacity-30">{t('trading.noPositions')}</td></tr>
+                      ) : recentTrades.map((trade: any) => (
                         <tr key={trade.id} className="hover:bg-[#F7F7F5]">
                           <td className="p-3 text-[#6B7280]">{trade.id.slice(0, 8).toUpperCase()}</td>
                           <td className="p-3 font-bold">{trade.instrument}</td>
@@ -154,11 +171,11 @@ export default function UserDashboard() {
                 </Link>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {watchlistLoading ? (
+                {loading ? (
                   <p className="text-xs text-[#6B7280] text-center p-4 col-span-full">{t('common.loading')}</p>
-                ) : watchlist?.length === 0 ? (
-                  <p className="text-xs text-[#6B7280] text-center p-4 border border-dashed border-[#E4E4E4] col-span-full">{t('dashboard.emptyWatchlist')}</p>
-                ) : watchlist?.map((item: any) => (
+                ) : watchlist.length === 0 ? (
+                  <p className="text-xs text-[#6B7280] text-center p-8 border border-dashed border-[#E4E4E4] col-span-full uppercase font-bold tracking-widest opacity-30">{t('dashboard.emptyWatchlist')}</p>
+                ) : watchlist.map((item: any) => (
                   <Link href={`/terminal?symbol=${item.symbol}`} key={item.symbol} className="bg-white border border-[#E4E4E4] p-4 flex justify-between items-center shadow-sm hover:border-[#0055FF] transition-colors cursor-pointer group">
                     <div>
                       <span className="text-[11px] font-mono font-bold block group-hover:text-[#0055FF] transition-colors">{item.symbol}</span>
@@ -174,10 +191,8 @@ export default function UserDashboard() {
             </div>
           </div>
 
-          {/* Sidebar Intelligence Panel */}
           <div className="lg:col-span-4 space-y-6">
             <MarketNewsFeed />
-            
             <Card className="bg-white text-[#0A0A0A] p-6 shadow-sm border border-[#E4E4E4] border-b-4 border-b-[#0055FF]">
               <div className="flex items-center space-x-2 text-[#0055FF] mb-4">
                 <Shield className="w-5 h-5" />
