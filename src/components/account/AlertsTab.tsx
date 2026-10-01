@@ -2,14 +2,14 @@
 'use client';
 
 /**
- * @fileOverview Notification Preferences Workspace.
- * Restored to match the exact visual layout from the institutional reference.
+ * @fileOverview Notification Preferences Workspace (Supabase Version).
+ * Synchronizes alert flags with the Supabase profiles ledger.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { useUser, useDoc, useFirestore } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { createClient } from '@/app/lib/supabase/client';
+import { useUser } from '@/firebase';
 import { cn } from '@/app/lib/utils';
 
 interface AlertItem {
@@ -26,15 +26,40 @@ const ALERT_ITEMS: AlertItem[] = [
 
 export default function AlertsTab() {
   const { user } = useUser();
-  const db = useFirestore();
-  const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
+  const supabase = createClient();
+  
+  const [preferences, setPreferences] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadAlerts() {
+      if (!user?.uid) return;
+      const { data } = await supabase
+        .from('profiles')
+        .select('alert_preferences')
+        .eq('id', user.uid)
+        .single();
+      
+      if (data) setPreferences(data.alert_preferences);
+      setLoading(false);
+    }
+    loadAlerts();
+  }, [user?.uid, supabase]);
 
   const toggleAlert = async (key: string, current: boolean) => {
-    if (!user || !db) return;
-    await setDoc(doc(db, "users", user.uid), {
-      preferences: { alerts: { [key]: !current } }
-    }, { merge: true });
+    if (!user?.uid) return;
+    const newPrefs = { ...preferences, [key]: !current };
+    
+    // Optimistic update
+    setPreferences(newPrefs);
+    
+    await supabase
+      .from('profiles')
+      .update({ alert_preferences: newPrefs })
+      .eq('id', user.uid);
   };
+
+  if (loading) return <div className="p-12 text-center text-[#6B7280] font-mono animate-pulse">Syncing Alerts...</div>;
 
   return (
     <div className="max-w-2xl mx-auto py-4">
@@ -45,7 +70,7 @@ export default function AlertsTab() {
         
         <div className="space-y-4">
           {ALERT_ITEMS.map((item) => {
-            const isChecked = profile?.preferences?.alerts?.[item.key] ?? true;
+            const isChecked = preferences?.[item.key] ?? true;
             return (
               <div 
                 key={item.key} 

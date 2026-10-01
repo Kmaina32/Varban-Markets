@@ -2,15 +2,15 @@
 'use client';
 
 /**
- * @fileOverview Institutional Settings Workspace.
- * Restored to look exactly like the reference UI with Currency, Language, and Timezone.
+ * @fileOverview Institutional Settings Workspace (Supabase Version).
+ * Handles global preferences for Currency, Language, and Timezone.
  */
 
 import React, { useState, useEffect } from 'react';
-import { DollarSign, Globe, Clock, ChevronDown } from 'lucide-react';
+import { DollarSign, Globe, Clock, ChevronDown, CheckCircle2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { useUser, useDoc, useFirestore } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { createClient } from '@/app/lib/supabase/client';
+import { useUser } from '@/firebase';
 import { cn } from '@/app/lib/utils';
 
 const TIMEZONES = [
@@ -23,44 +23,64 @@ const TIMEZONES = [
 
 export default function DisplayTab() {
   const { user } = useUser();
-  const db = useFirestore();
-  const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
-
+  const supabase = createClient();
+  
   const [form, setForm] = useState({
     currency: 'USD',
     language: 'ENGLISH',
     timezone: 'UTC+0'
   });
+  const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    if (profile) {
-      setForm({
-        currency: profile.currency || 'USD',
-        language: profile.preferences?.language || 'ENGLISH',
-        timezone: profile.preferences?.timezone || 'UTC+0'
-      });
+    async function loadSettings() {
+      if (!user?.uid) return;
+      const { data } = await supabase
+        .from('profiles')
+        .select('currency, language, timezone')
+        .eq('id', user.uid)
+        .single();
+      
+      if (data) {
+        setForm({
+          currency: data.currency || 'USD',
+          language: data.language || 'ENGLISH',
+          timezone: data.timezone || 'UTC+0'
+        });
+      }
+      setLoading(false);
     }
-  }, [profile]);
+    loadSettings();
+  }, [user?.uid, supabase]);
 
   const handleSave = async () => {
-    if (!user || !db || isSaving) return;
+    if (!user?.uid || isSaving) return;
     setIsSaving(true);
+    setSuccess(false);
+    
     try {
-      await setDoc(doc(db, "users", user.uid), {
-        currency: form.currency,
-        preferences: {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          currency: form.currency,
           language: form.language,
           timezone: form.timezone
-        }
-      }, { merge: true });
-      alert("Settings synchronized.");
+        })
+        .eq('id', user.uid);
+      
+      if (error) throw error;
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
     } catch (e) {
       alert("Platform synchronization failure.");
     } finally {
       setIsSaving(false);
     }
   };
+
+  if (loading) return <div className="p-12 text-center text-[#6B7280] font-mono animate-pulse">Accessing Preferences...</div>;
 
   return (
     <div className="max-w-2xl mx-auto py-4">
@@ -129,13 +149,20 @@ export default function DisplayTab() {
           </div>
         </div>
 
-        <button 
-          onClick={handleSave}
-          disabled={isSaving}
-          className="w-full bg-[#0A0A0A] text-white py-5 text-[11px] font-bold uppercase tracking-[0.25em] transition-all hover:bg-[#161616] disabled:opacity-40 shadow-md"
-        >
-          {isSaving ? "SYNCING..." : "SAVE SETTINGS"}
-        </button>
+        <div className="space-y-4">
+          {success && (
+            <div className="p-3 bg-[#16835B]/10 border border-[#16835B] text-[9px] font-bold text-[#16835B] uppercase flex items-center gap-2 animate-in fade-in duration-300">
+              <CheckCircle2 className="w-4 h-4" /> Preferences Updated
+            </div>
+          )}
+          <button 
+            onClick={handleSave}
+            disabled={isSaving}
+            className="w-full bg-[#0A0A0A] text-white py-5 text-[11px] font-bold uppercase tracking-[0.25em] transition-all hover:bg-[#161616] disabled:opacity-40 shadow-md"
+          >
+            {isSaving ? "SYNCING..." : "SAVE SETTINGS"}
+          </button>
+        </div>
       </Card>
     </div>
   );
