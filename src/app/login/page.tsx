@@ -1,186 +1,72 @@
-
 "use client";
 
 /**
  * @fileOverview Login Workspace.
- * Integrated with Passkey/WebAuthn and Google Authentication.
- * Records active device sessions upon successful sign-in.
+ * Integrated with Supabase Auth.
  */
 
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, User } from "firebase/auth";
-import { useAuth, useFirestore } from "@/firebase";
-import { doc, getDoc, setDoc, serverTimestamp, collection, addDoc } from "firebase/firestore";
+import { createClient } from "@/app/lib/supabase/client";
 import placeholderImages from "@/app/lib/placeholder-images.json";
-import { Eye, EyeOff, Fingerprint, Loader2, ArrowLeft } from "lucide-react";
-import { startAuthentication } from "@simplewebauthn/browser";
+import { Eye, EyeOff, Fingerprint, Loader2, ArrowLeft, Mail } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 
 export default function LoginPage() {
   const router = useRouter();
-  const auth = useAuth();
-  const db = useFirestore();
+  const supabase = createClient();
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getDeviceInfo = () => {
-    const ua = navigator.userAgent;
-    let browser = "Other";
-    let os = "Other";
-
-    if (ua.indexOf("Firefox") > -1) browser = "Firefox";
-    else if (ua.indexOf("Chrome") > -1) browser = "Chrome";
-    else if (ua.indexOf("Safari") > -1) browser = "Safari";
-    else if (ua.indexOf("Edge") > -1) browser = "Edge";
-    
-    if (ua.indexOf("Win") > -1) os = "Windows";
-    else if (ua.indexOf("Mac") > -1) os = "macOS";
-    else if (ua.indexOf("Linux") > -1) os = "Linux";
-    else if (ua.indexOf("Android") > -1) os = "Android";
-    else if (ua.indexOf("iPhone") > -1) os = "iOS";
-
-    return { browser, os, deviceName: `${browser} on ${os}` };
-  };
-
-  const recordSession = async (user: User) => {
-    if (!db) return;
-    const { browser, os, deviceName } = getDeviceInfo();
-    
-    // Attempt to get IP
-    let ip = "0.0.0.0";
-    try {
-      const res = await fetch('https://api.ipify.org?format=json');
-      const data = await res.json();
-      ip = data.ip;
-    } catch (e) {}
-
-    await addDoc(collection(db, `users/${user.uid}/sessions`), {
-      deviceName,
-      browser,
-      os,
-      ip,
-      lastActive: serverTimestamp(),
-      userAgent: navigator.userAgent
-    });
-  };
-
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth) return;
-
     setLoading(true);
     setError(null);
 
     try {
-      const cred = await signInWithEmailAndPassword(auth, email, password);
-      await recordSession(cred.user);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
       router.push("/dashboard");
     } catch (err: any) {
-      setError("The email or password you entered is incorrect.");
+      setError(err.message || "The email or password you entered is incorrect.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
-    if (!auth || !db) return;
     setGoogleLoading(true);
     setError(null);
 
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
 
-      // Check if profile exists
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
-
-      if (!userSnap.exists()) {
-        const nameParts = (user.displayName || "").trim().split(' ');
-        const firstName = nameParts[0] || "";
-        const lastName = nameParts.slice(1).join(' ') || "";
-
-        // Create skeleton profile for Google sign-ups
-        await setDoc(userRef, {
-          fullName: user.displayName || "",
-          firstName: firstName,
-          lastName: lastName,
-          email: user.email?.toLowerCase() || "",
-          balance: 1000.00,
-          equity: 1000.00,
-          currency: "USD",
-          verificationStatus: "Not Verified",
-          role: "Trader",
-          referralCode: 'VRB-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
-          createdAt: new Date().toISOString()
-        });
-      }
-      
-      await recordSession(user);
-      router.push("/dashboard");
+      if (error) throw error;
     } catch (err: any) {
       setError("Google authentication failed. Please try again.");
-    } finally {
       setGoogleLoading(false);
-    }
-  };
-
-  const handlePasskeySignIn = async () => {
-    if (!email) {
-      setError("Please enter your email address to sign in with a passkey.");
-      return;
-    }
-
-    setPasskeyLoading(true);
-    setError(null);
-
-    try {
-      const resp = await fetch('/api/auth/passkey/authenticate/generate-options', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.toLowerCase() }),
-      });
-      
-      const options = await resp.json();
-      if (options.error) throw new Error(options.error);
-
-      const asseResp = await startAuthentication({ optionsJSON: options });
-
-      const verifyResp = await fetch('/api/auth/passkey/authenticate/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...asseResp, email: email.toLowerCase() }),
-      });
-
-      const verificationJSON = await verifyResp.json();
-
-      if (verificationJSON && verificationJSON.verified) {
-        // Find user by email manually as Passkey doesn't use standard Firebase Auth creds yet in this mock
-        // Note: Real implementation would use custom token or similar
-        router.push("/dashboard");
-      } else {
-        throw new Error('Verification failed.');
-      }
-    } catch (err: any) {
-      setError(err.message || "Passkey authentication failed.");
-    } finally {
-      setPasskeyLoading(false);
     }
   };
 
   return (
     <div className="bg-[#F7F7F5] min-h-[calc(100vh-64px)] flex items-center justify-center py-16 px-4">
       <div className="bg-white border border-[#E4E4E4] max-w-4xl w-full shadow-lg flex overflow-hidden min-h-[600px] relative">
-        {/* Back Button */}
         <Link 
           href="/" 
           className="absolute top-6 left-6 z-20 flex items-center space-x-2 text-[10px] font-bold uppercase tracking-widest text-[#6B7280] hover:text-[#0A0A0A] transition-colors lg:text-white lg:hover:text-[#0055FF]"
@@ -259,7 +145,7 @@ export default function LoginPage() {
             <div className="space-y-3">
               <button
                 type="submit"
-                disabled={loading || passkeyLoading || googleLoading}
+                disabled={loading || googleLoading}
                 className="w-full btn-institutional-primary py-4 shadow-sm"
               >
                 {loading ? "Logging in..." : "Log in to Account"}
@@ -270,25 +156,15 @@ export default function LoginPage() {
                 <span className="relative bg-white px-3 text-[8px] font-bold uppercase text-[#6B7280] tracking-[0.2em]">Other ways to sign in</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3">
                 <button
                   type="button"
                   onClick={handleGoogleSignIn}
-                  disabled={loading || passkeyLoading || googleLoading}
+                  disabled={loading || googleLoading}
                   className="py-3.5 border border-[#E4E4E4] text-[#0A0A0A] text-[10px] font-bold uppercase tracking-widest flex items-center justify-center space-x-2 hover:bg-[#F7F7F5] transition-colors"
                 >
                   {googleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-4 h-4" alt="Google" />}
-                  <span>Google</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handlePasskeySignIn}
-                  disabled={loading || passkeyLoading || googleLoading}
-                  className="py-3.5 border border-[#E4E4E4] text-[#0A0A0A] text-[10px] font-bold uppercase tracking-widest flex items-center justify-center space-x-2 hover:bg-[#F7F7F5] transition-colors"
-                >
-                  {passkeyLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Fingerprint className="w-4 h-4" />}
-                  <span>Passkey</span>
+                  <span>Sign in with Google</span>
                 </button>
               </div>
             </div>

@@ -2,10 +2,9 @@
 
 import AuthedSidebar from "./AuthedSidebar";
 import AdminSidebar from "./AdminSidebar";
-import AdminHeader from "./AdminHeader";
 import ProfileDropdown from "./ProfileDropdown";
 import LoadingOverlay from "@/components/shared/LoadingOverlay";
-import { Bell, Menu, X, ChevronDown, User } from "lucide-react";
+import { Menu } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useUser, useDoc, useFirestore } from "@/firebase";
@@ -13,6 +12,7 @@ import { useTranslation } from "@/app/lib/i18n-context";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import { cn } from "@/app/lib/utils";
+import { useSupabaseAuth } from "@/app/lib/supabase/auth-context";
 
 const STRICT_PATHS = [
   '/terminal', '/dashboard', '/portfolio', '/positions', 
@@ -33,6 +33,7 @@ interface AuthedLayoutProps {
 
 export default function AuthedLayout({ children, title, subtitle, isTerminal = false }: AuthedLayoutProps) {
   const { user, loading } = useUser();
+  const { signOut } = useSupabaseAuth();
   const db = useFirestore();
   const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   const { formatNumber } = useTranslation();
@@ -121,6 +122,10 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
               localStorage.setItem('varban_account_mode', m); 
               window.dispatchEvent(new Event('varban_account_mode_changed')); 
             }} 
+            onSignOut={async () => {
+              await signOut();
+              router.push('/');
+            }}
           />
         </div>
       </header>

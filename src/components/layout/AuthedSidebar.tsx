@@ -1,19 +1,17 @@
-
 "use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   LayoutDashboard, Monitor, Globe, Briefcase, Target, 
-  FileText, Clock, Star, Wallet, Activity, User, ShieldCheck, Lock, 
-  Bell, Settings, HelpCircle, Mail, ShieldAlert,
-  Share2, Newspaper, ArrowDownCircle, ArrowUpCircle, Inbox, FileSpreadsheet, Database, Shield, LogOut
+  FileText, Clock, Star, Wallet, User, Bell, ShieldAlert,
+  Share2, Newspaper, HelpCircle, Mail, LogOut
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
-import { useUser, useDoc, useFirestore, useAuth } from "@/firebase";
+import { useUser, useDoc, useFirestore } from "@/firebase";
+import { useSupabaseAuth } from "@/app/lib/supabase/auth-context";
 import { useMemo } from "react";
-import { signOut } from "firebase/auth";
 
 interface AuthedSidebarProps {
   onLinkClick?: () => void;
@@ -21,31 +19,27 @@ interface AuthedSidebarProps {
   isMobile?: boolean;
 }
 
-// Defined Super Admin Accounts with Root Authority
 const SUPER_ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
 
 export default function AuthedSidebar({ onLinkClick, className, isMobile = false }: AuthedSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const auth = useAuth();
+  const { signOut } = useSupabaseAuth();
   const { t } = useTranslation();
   const { user } = useUser();
   const db = useFirestore();
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
 
-  // Authority Verification: Super Admin (Hardcoded) OR Admin Role (Firestore)
   const isAdmin = useMemo(() => {
     if (!user?.email) return false;
     const email = user.email.toLowerCase();
-    return SUPER_ADMIN_EMAILS.includes(email) || profile?.role === 'Admin';
+    return SUPER_ADMIN_EMAILS.includes(email) || profile?.status?.role === 'Admin';
   }, [user, profile]);
 
   const handleLogout = async () => {
-    if (!auth) return;
-    try {
-      await signOut(auth);
-      router.push('/');
-    } catch (e) {}
+    await signOut();
+    onLinkClick?.();
+    router.push('/');
   };
 
   const sections = [
@@ -84,20 +78,16 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     }
   ];
 
-  // Consolidated Administration Node for standard trader view
-  const adminSection = {
-    title: "ADMINISTRATION",
-    items: [
-      { label: "Admin Oversight", href: "/admin", icon: ShieldAlert },
-    ]
-  };
-
-  const finalSections = [...sections];
   if (isAdmin) {
-    finalSections.push(adminSection);
+    sections.push({
+      title: "ADMINISTRATION",
+      items: [
+        { label: "Admin Oversight", href: "/admin", icon: ShieldAlert },
+      ]
+    });
   }
   
-  finalSections.push({
+  sections.push({
     title: "SUPPORT",
     items: [
       { label: "Help Center", href: "/help", icon: HelpCircle },
@@ -131,20 +121,30 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     );
   });
 
-  if (isMobile) {
-    return (
-      <div className={cn("flex flex-col h-full bg-white", className)}>
-        <nav className="flex-grow space-y-8 px-6 py-8 overflow-y-auto no-scrollbar pb-32">
-          {finalSections.map((section) => (
-            <div key={section.title} className="space-y-2">
-              <h3 className="text-[10px] font-bold text-[#D1D5DB] uppercase tracking-[0.2em] px-2 mb-2">
-                {section.title}
-              </h3>
-              <div className="space-y-1">
-                {renderItems(section.items)}
-              </div>
+  return (
+    <aside className={cn(
+      isMobile ? "flex flex-col h-full bg-white" : "group absolute left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-[#E4E4E4] flex flex-col transition-all duration-300 z-[40] overflow-hidden no-scrollbar hidden lg:flex",
+      className
+    )}>
+      <div className="pt-4"></div>
+      <nav className={cn(
+        "flex-grow space-y-6 px-4 pb-6 overflow-y-auto no-scrollbar",
+        isMobile && "space-y-8 px-6 py-8 pb-32"
+      )}>
+        {sections.map((section) => (
+          <div key={section.title} className="space-y-1">
+            <h3 className={cn(
+              "text-[9px] font-bold text-[#D1D5DB] uppercase tracking-[0.2em] mb-2 px-2 transition-opacity duration-300 whitespace-nowrap",
+              !isMobile && "opacity-0 group-hover:opacity-100"
+            )}>
+              {section.title}
+            </h3>
+            <div className="space-y-0.5">
+              {renderItems(section.items)}
             </div>
-          ))}
+          </div>
+        ))}
+        {isMobile && (
           <div className="pt-6 border-t border-[#F7F7F5]">
              <button 
                 onClick={handleLogout}
@@ -154,37 +154,21 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
                 <span>End Session</span>
               </button>
           </div>
-        </nav>
-      </div>
-    );
-  }
-
-  return (
-    <aside className={cn("group absolute left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-[#E4E4E4] flex flex-col transition-all duration-300 z-[40] overflow-hidden no-scrollbar hidden lg:flex", className)}>
-      <div className="pt-4"></div>
-      <nav className="flex-grow space-y-6 px-4 pb-6 overflow-y-auto no-scrollbar">
-        {finalSections.map((section) => (
-          <div key={section.title} className="space-y-1">
-            <h3 className="text-[9px] font-bold text-[#D1D5DB] uppercase tracking-[0.2em] mb-2 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-              {section.title}
-            </h3>
-            <div className="space-y-0.5">
-              {renderItems(section.items)}
-            </div>
-          </div>
-        ))}
+        )}
       </nav>
-      <div className="p-4 border-t border-[#F7F7F5] bg-[#F7F7F5]/30">
-        <button 
-          onClick={handleLogout}
-          className="flex items-center h-8 px-2 text-[10px] font-bold uppercase tracking-widest text-[#C43D3D] hover:bg-[#C43D3D]/5 transition-all w-full group/logout"
-        >
-          <LogOut className="w-3.5 h-3.5 shrink-0" />
-          <span className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-            End Session
-          </span>
-        </button>
-      </div>
+      {!isMobile && (
+        <div className="p-4 border-t border-[#F7F7F5] bg-[#F7F7F5]/30">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center h-8 px-2 text-[10px] font-bold uppercase tracking-widest text-[#C43D3D] hover:bg-[#C43D3D]/5 transition-all w-full group/logout"
+          >
+            <LogOut className="w-3.5 h-3.5 shrink-0" />
+            <span className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+              End Session
+            </span>
+          </button>
+        </div>
+      )}
     </aside>
   );
 }

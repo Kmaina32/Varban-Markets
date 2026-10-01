@@ -1,15 +1,14 @@
 'use client';
 
 /**
- * @fileOverview Universal Profile Dropdown Component with Account Balances & Demo Switcher.
- * Enhanced for high-precision institutional aesthetic and Profile Photo support.
+ * @fileOverview Universal Profile Dropdown Component.
+ * Updated to handle Supabase SignOut.
  */
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { 
-  User, 
   Wallet, 
   Check, 
   ArrowUpRight, 
@@ -17,11 +16,11 @@ import {
   Shield, 
   Settings, 
   LogOut, 
-  ChevronRight,
-  LayoutDashboard
+  ChevronRight
 } from "lucide-react";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
+import { useSupabaseAuth } from "@/app/lib/supabase/auth-context";
 
 interface ProfileDropdownProps {
   user: any;
@@ -31,9 +30,9 @@ interface ProfileDropdownProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectMode: (mode: 'REAL' | 'DEMO') => void;
+  onSignOut?: () => void;
 }
 
-// Defined Super Admin Accounts
 const SUPER_ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
 
 export default function ProfileDropdown({
@@ -43,15 +42,16 @@ export default function ProfileDropdown({
   demoBalance,
   isOpen,
   onClose,
-  onSelectMode
+  onSelectMode,
+  onSignOut
 }: ProfileDropdownProps) {
   const router = useRouter();
+  const { signOut } = useSupabaseAuth();
   const { formatNumber } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const realBalance = profile?.balance || 0;
 
-  // Authority Verification
   const isAdmin = useMemo(() => {
     if (!user?.email) return false;
     return SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase()) || profile?.status?.role === 'Admin';
@@ -69,6 +69,16 @@ export default function ProfileDropdown({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, onClose]);
 
+  const handleLogout = async () => {
+    if (onSignOut) {
+      onSignOut();
+    } else {
+      await signOut();
+      onClose();
+      router.push('/');
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -76,7 +86,6 @@ export default function ProfileDropdown({
       ref={dropdownRef}
       className="absolute right-0 top-full mt-2 w-80 bg-white border border-[#E4E4E4] shadow-2xl z-[300] overflow-hidden text-[#0A0A0A] animate-in fade-in slide-in-from-top-2 duration-200"
     >
-      {/* Profile Header Banner */}
       <div className="bg-[#F7F7F5] p-5 border-b border-[#E4E4E4] flex items-center justify-between">
         <div className="flex items-center space-x-4 overflow-hidden">
           <div className="w-12 h-12 border-2 border-[#E4E4E4] rounded-full bg-white flex items-center justify-center font-bold text-sm shadow-sm overflow-hidden shrink-0">
@@ -106,7 +115,6 @@ export default function ProfileDropdown({
         </div>
       </div>
 
-      {/* Account Balances & Mode Switcher Section */}
       <div className="p-5 bg-white border-b border-[#E4E4E4] space-y-4">
         <div className="flex items-center justify-between">
           <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#6B7280] flex items-center gap-2">
@@ -117,9 +125,7 @@ export default function ProfileDropdown({
           </span>
         </div>
 
-        {/* Mode Options Cards */}
         <div className="grid grid-cols-1 gap-2">
-          {/* Real Account Selection Option */}
           <button
             onClick={() => {
               onSelectMode('REAL');
@@ -138,7 +144,7 @@ export default function ProfileDropdown({
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Real Capital</span>
               </div>
               <span className="text-base font-mono font-bold text-[#16835B] block mt-1">
-                ${formatNumber(realBalance, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ${formatNumber(realBalance, { minimumFractionDigits: 2 })}
               </span>
             </div>
             {accountMode === 'REAL' && (
@@ -148,7 +154,6 @@ export default function ProfileDropdown({
             )}
           </button>
 
-          {/* Demo Account Selection Option */}
           <button
             onClick={() => {
               onSelectMode('DEMO');
@@ -167,7 +172,7 @@ export default function ProfileDropdown({
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Practice Sandbox</span>
               </div>
               <span className="text-base font-mono font-bold text-[#0055FF] block mt-1">
-                ${formatNumber(demoBalance, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ${formatNumber(demoBalance, { minimumFractionDigits: 2 })}
               </span>
             </div>
             {accountMode === 'DEMO' && (
@@ -178,10 +183,9 @@ export default function ProfileDropdown({
           </button>
         </div>
 
-        {/* Quick Deposit & Withdraw Buttons */}
         <div className="grid grid-cols-2 gap-3 pt-2">
           <Link
-            href="/deposit"
+            href="/wallet?tab=deposit"
             onClick={onClose}
             className="py-3 px-3 bg-[#0A0A0A] text-white text-[9px] font-bold uppercase tracking-[0.2em] flex items-center justify-center space-x-2 hover:bg-[#0055FF] transition-all shadow-md group"
           >
@@ -189,7 +193,7 @@ export default function ProfileDropdown({
             <span>Deposit</span>
           </Link>
           <Link
-            href="/withdraw"
+            href="/wallet?tab=withdraw"
             onClick={onClose}
             className="py-3 px-3 bg-white border border-[#E4E4E4] text-[#0A0A0A] text-[9px] font-bold uppercase tracking-[0.2em] flex items-center justify-center space-x-2 hover:bg-[#F7F7F5] shadow-sm group"
           >
@@ -199,7 +203,6 @@ export default function ProfileDropdown({
         </div>
       </div>
 
-      {/* Navigation Menu Options */}
       <div className="p-2 space-y-1">
         {isAdmin && (
           <Link
@@ -226,10 +229,7 @@ export default function ProfileDropdown({
         </Link>
 
         <button
-          onClick={() => {
-            onClose();
-            router.push('/');
-          }}
+          onClick={handleLogout}
           className="w-full px-4 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest text-[#C43D3D] hover:bg-[#C43D3D]/5 transition-all flex items-center justify-between group border-t border-[#F7F7F5] mt-1"
         >
           <span className="flex items-center gap-3">

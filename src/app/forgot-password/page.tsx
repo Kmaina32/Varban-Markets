@@ -3,13 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { sendPasswordResetEmail } from "firebase/auth";
-import { useAuth } from "@/firebase";
+import { createClient } from "@/app/lib/supabase/client";
 import placeholderImages from "@/app/lib/placeholder-images.json";
-import { ArrowLeft, CheckCircle2, Mail } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Mail, Loader2 } from "lucide-react";
 
 export default function ForgotPasswordPage() {
-  const auth = useAuth();
+  const supabase = createClient();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -17,16 +16,18 @@ export default function ForgotPasswordPage() {
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth) return;
-
     setLoading(true);
     setError(null);
 
     try {
-      await sendPasswordResetEmail(auth, email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+
+      if (error) throw error;
       setSuccess(true);
     } catch (err: any) {
-      setError("We could not find an account with that email address.");
+      setError(err.message || "We could not send a recovery link to that email address.");
     } finally {
       setLoading(false);
     }
@@ -35,7 +36,6 @@ export default function ForgotPasswordPage() {
   return (
     <div className="bg-[#F7F7F5] min-h-[calc(100vh-64px)] flex items-center justify-center py-16 px-4">
       <div className="bg-white border border-[#E4E4E4] max-w-4xl w-full shadow-lg flex overflow-hidden min-h-[600px] relative">
-        {/* Back Button */}
         <Link 
           href="/login" 
           className="absolute top-6 left-6 z-20 flex items-center space-x-2 text-[10px] font-bold uppercase tracking-widest text-[#6B7280] hover:text-[#0A0A0A] transition-colors lg:text-white lg:hover:text-[#0055FF]"
@@ -44,7 +44,6 @@ export default function ForgotPasswordPage() {
           <span>Back to Sign In</span>
         </Link>
 
-        {/* Left Side: Full Color Auth Image */}
         <div className="hidden lg:block w-1/2 relative">
           <Image
             src={placeholderImages.auth.url}
@@ -64,7 +63,6 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
 
-        {/* Right Side: Reset Form */}
         <div className="w-full lg:w-1/2 p-8 sm:p-12 flex flex-col justify-center bg-white">
           <div className="border-b border-[#E4E4E4] pb-6 mb-8 mt-4 lg:mt-0">
             <h1 className="text-2xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Reset Password</h1>
@@ -109,7 +107,7 @@ export default function ForgotPasswordPage() {
               </div>
 
               <div className="bg-[#F7F7F5] p-4 text-[10px] text-[#6B7280] leading-relaxed uppercase font-bold">
-                A secure link will be sent to your email address to confirm your identity and allow password modification.
+                A secure link will be sent to your email address to allow password modification.
               </div>
 
               <button
@@ -117,15 +115,8 @@ export default function ForgotPasswordPage() {
                 disabled={loading}
                 className="w-full btn-institutional-primary py-4 shadow-sm"
               >
-                {loading ? "Transmitting..." : "Send Recovery Link"}
+                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "Send Recovery Link"}
               </button>
-
-              <div className="text-center pt-4">
-                <Link href="/login" className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest hover:text-[#0A0A0A] transition-colors flex items-center justify-center gap-2">
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Back to Sign In</span>
-                </Link>
-              </div>
             </form>
           )}
         </div>
