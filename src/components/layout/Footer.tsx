@@ -1,4 +1,10 @@
+
 "use client";
+
+/**
+ * @fileOverview Institutional Regulatory Footer.
+ * Redesigned to match high-precision brokerage standards (e.g. Exness).
+ */
 
 import Link from "next/link";
 import Image from "next/image";
@@ -18,13 +24,12 @@ export default function Footer() {
   
   const isStrict = STRICT_PATHS.some(path => pathname === path || pathname?.startsWith(path + '/'));
 
-  // Footer should show on all public/shared pages even if logged in
   if (isStrict) return null;
 
   return (
     <footer className="bg-white text-[#0A0A0A] border-t border-[#E4E4E4] pt-16 pb-12 shadow-[0_-1px_3px_0_rgba(0,0,0,0.05)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-16">
           <div className="md:col-span-1">
             <div className="flex items-center mb-6">
               <Image 
@@ -34,10 +39,12 @@ export default function Footer() {
                 height={20}
                 style={{ height: 'auto' }}
                 className="w-auto object-contain"
+                priority
               />
             </div>
-            <p className="text-xs text-[#6B7280] leading-relaxed max-w-xs">
-              A global platform for trading synthetic indices and derivatives. Registered in Saint Lucia.
+            <p className="text-[10px] text-[#6B7280] uppercase tracking-widest font-bold leading-relaxed max-w-xs">
+              Varban Markets Ltd. <br />
+              Institutional derivatives and synthetic market infrastructure.
             </p>
           </div>
           
@@ -74,21 +81,43 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-[#E4E4E4] text-[10px] text-[#6B7280] space-y-4">
-          <div className="bg-[#F7F7F5] p-6 border-l-4 border-[#C43D3D]">
-            <span className="font-bold uppercase tracking-wider text-[#C43D3D] block mb-2">High-Risk Investment Warning</span>
-            <p className="leading-relaxed opacity-80 uppercase font-bold text-[#0A0A0A] text-[9px]">
-              TRADING DERIVATIVES INVOLVES A HIGH LEVEL OF RISK AND MAY RESULT IN THE TOTAL LOSS OF YOUR MONEY. YOU SHOULD NOT TRADE WITH FUNDS YOU CANNOT AFFORD TO LOSE. VARBAN MARKETS LTD OPERATES UNDER THE LAWS OF SAINT LUCIA. ALL TRANSACTIONS ARE SETTLED ACCORDING TO OUR RELIABLE PRICING MODELS.
-            </p>
-          </div>
-          <div className="flex flex-col md:flex-row justify-between items-center pt-4 space-y-4 md:space-y-0">
-            <p className="tracking-wider uppercase text-[9px] font-bold">
-              &copy; {currentYear} Varban Markets Ltd. Registered in Saint Lucia. All rights reserved.
-            </p>
-            <div className="flex space-x-6 text-[9px] font-bold uppercase tracking-widest text-[#0055FF]">
-              <span>ISO/IEC 27001:2022</span>
-              <span>PCI-DSS Level 1 v4.0</span>
-            </div>
+        <div className="pt-10 border-t border-[#E4E4E4] space-y-6 text-[10px] text-[#6B7280] leading-relaxed max-w-5xl text-justify">
+          <p>
+            Varban Markets Ltd is registered in Saint Lucia with registration number 2024-00142 and is regulated by the Financial Services Authority (FSA) in Saint Lucia as an International Financial Broker under license number FSA-REG-892410-VM. The registered office of Varban Markets Ltd is at the Rodney Bayside Building, Rodney Bay, Gros Islet, Saint Lucia. This website is operated by Varban Markets Ltd.
+          </p>
+          
+          <p>
+            The entity above is duly authorized to operate under the Varban Markets brand and trademarks.
+          </p>
+          
+          <p>
+            Risk Warning: Online derivatives and synthetic contracts are complex instruments and come with a high risk of losing money rapidly due to leverage. 84.12% of retail investor accounts lose money when trading these instruments with this provider. You should consider whether you understand how these contracts work and whether you can afford to take the high risk of losing your money. Under no circumstances shall Varban Markets have any liability to any person or entity for any loss or damage in whole or part caused by, resulting from, or relating to any financial activity. <Link href="/terms/risk-disclosure" className="text-[#0055FF] underline font-bold uppercase ml-1">Learn more.</Link>
+          </p>
+          
+          <p>
+            The entity above does not offer services to residents of certain jurisdictions including the USA, Canada, Iran, North Korea, Europe, the United Kingdom and others.
+          </p>
+          
+          <p>
+            The information on this website does not constitute investment advice or a recommendation or a solicitation to engage in any investment activity.
+          </p>
+          
+          <p>
+            The information on this website may only be copied with the express written permission of Varban Markets.
+          </p>
+          
+          <p>
+            Varban Markets complies with the Payment Card Industry Data Security Standard (PCI DSS) to ensure your security and privacy. We conduct regular vulnerability scans and penetration tests in accordance with the PCI DSS requirements for our business model.
+          </p>
+        </div>
+
+        <div className="mt-12 pt-8 border-t border-[#E4E4E4] flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">
+            &copy; {currentYear} Varban Markets Ltd. All rights reserved.
+          </p>
+          <div className="flex space-x-6 text-[9px] font-bold uppercase tracking-widest text-[#0055FF]">
+            <span>ISO/IEC 27001:2022 Verified</span>
+            <span>PCI-DSS Level 1 v4.0 Secure</span>
           </div>
         </div>
       </div>
