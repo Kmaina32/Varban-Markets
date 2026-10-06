@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -7,7 +6,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'kit';
+import { z } from 'genkit';
 
 const SupportChatInputSchema = z.object({
   message: z.string(),

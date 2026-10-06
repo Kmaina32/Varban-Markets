@@ -147,7 +147,7 @@ export default function HomePage() {
               className="bg-[#141414] border border-white/10 hover:bg-[#1A1A1A] text-white px-6 py-3 rounded-lg flex items-center gap-3 transition-all min-w-[200px]"
             >
               <div className="w-8 h-8 flex items-center justify-center">
-                <svg viewBox="0 0 512 512" fill="currentColor" className="w-6 h-6"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-10.3 18-28.5-1.2-40.8zM325.3 277.7l-52.1-52.1-256.6 256.6 204.1-117.3 104.6-104.6z"/></svg>
+                <svg viewBox="0 0 512 512" fill="currentColor" className="w-6 h-6"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-103 18-28.5-1.2-40.8zM325.3 277.7l-52.1-52.1-256.6 256.6 204.1-117.3 104.6-104.6z"/></svg>
               </div>
               <div className="text-left">
                 <span className="text-[10px] uppercase font-bold block leading-none mb-1">Get it on</span>
@@ -312,11 +312,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Floating Action Button */}
-      <button className="fixed bottom-6 right-6 w-14 h-14 bg-[#FFDE00] text-[#0A0A0A] rounded-full flex items-center justify-center shadow-xl hover:scale-110 transition-transform z-[120]">
-        <MessageSquare className="w-6 h-6" />
-      </button>
     </div>
   );
 }

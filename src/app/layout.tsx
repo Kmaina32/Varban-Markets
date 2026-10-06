@@ -6,6 +6,7 @@ import { FirebaseProvider } from "@/firebase";
 import { I18nProvider } from "@/app/lib/i18n-context";
 import { SupabaseAuthProvider } from "@/app/lib/supabase/auth-context";
 import CookieConsent from "@/components/layout/CookieConsent";
+import ChatSupport from "@/components/ChatSupport";
 
 export const metadata: Metadata = {
   title: "Varban Markets | Easy & Secure Global Trading for Everyone",
@@ -34,6 +35,7 @@ export default function RootLayout({
               </main>
               <Footer />
               <CookieConsent />
+              <ChatSupport />
             </I18nProvider>
           </FirebaseProvider>
         </SupabaseAuthProvider>
