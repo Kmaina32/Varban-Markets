@@ -16,14 +16,18 @@ const STRICT_PATHS = [
   '/referral', '/admin', '/markets', '/news'
 ];
 
+const AUTH_PATHS = ['/login', '/register', '/forgot-password'];
+
 export default function Navbar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   
   const isStrict = STRICT_PATHS.some(path => pathname === path || pathname?.startsWith(path + '/'));
+  const isAuthPage = AUTH_PATHS.some(path => pathname === path);
 
-  if (isStrict) return null;
+  // No regular navbar on authed or simple auth pages
+  if (isStrict || isAuthPage) return null;
 
   const publicLinks = [
     { 
