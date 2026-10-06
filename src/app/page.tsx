@@ -67,45 +67,46 @@ export default function HomePage() {
             <span>Institutional Execution Node</span>
           </div>
           
-          <h1 className="text-5xl md:text-8xl font-bold tracking-tight text-[#0A0A0A] font-display leading-[0.95]">
+          <h1 className="text-4xl sm:text-5xl md:text-8xl font-bold tracking-tight text-[#0A0A0A] font-display leading-[0.95]">
             Trade Online <br />
             <span className="text-[#0055FF]">{location}</span>
           </h1>
           
-          <p className="text-lg md:text-xl text-[#6B7280] max-w-2xl mx-auto leading-relaxed font-medium">
+          <p className="text-base md:text-xl text-[#6B7280] max-w-2xl mx-auto leading-relaxed font-medium">
             Discover the world's most stable derivative infrastructure. <br className="hidden md:block" />
             Engineered for precision, speed, and total financial integrity.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+          {/* Buttons Side-by-Side on Mobile */}
+          <div className="flex flex-row items-center justify-center gap-2 sm:gap-4 pt-4 px-2">
             <Link 
               href="/register" 
-              className="bg-[#FFDE00] hover:bg-[#F2D200] text-[#0A0A0A] px-12 py-4 text-xs font-bold uppercase tracking-widest transition-all shadow-md min-w-[220px]"
+              className="flex-1 sm:flex-none bg-[#FFDE00] hover:bg-[#F2D200] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all shadow-md sm:min-w-[220px] text-center"
             >
               Open Account
             </Link>
             <Link 
               href="/terminal" 
-              className="bg-white border border-[#E4E4E4] hover:bg-[#F7F7F5] text-[#0A0A0A] px-12 py-4 text-xs font-bold uppercase tracking-widest transition-all min-w-[220px]"
+              className="flex-1 sm:flex-none bg-white border border-[#E4E4E4] hover:bg-[#F7F7F5] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all sm:min-w-[220px] text-center"
             >
-              Try Practice Demo
+              Try Demo
             </Link>
           </div>
 
-          <div className="pt-12 flex items-center justify-center space-x-8 opacity-40 grayscale group hover:grayscale-0 transition-all">
-             <div className="flex flex-col items-center">
-               <span className="text-xl font-bold font-mono">$1.4B+</span>
-               <span className="text-[8px] font-bold uppercase tracking-widest">Monthly Vol</span>
+          <div className="pt-12 flex items-center justify-center space-x-4 sm:space-x-8 opacity-40 grayscale group hover:grayscale-0 transition-all overflow-x-auto no-scrollbar">
+             <div className="flex flex-col items-center shrink-0">
+               <span className="text-lg sm:text-xl font-bold font-mono">$1.4B+</span>
+               <span className="text-[7px] sm:text-[8px] font-bold uppercase tracking-widest">Monthly Vol</span>
              </div>
              <div className="w-px h-8 bg-[#E4E4E4]"></div>
-             <div className="flex flex-col items-center">
-               <span className="text-xl font-bold font-mono">&lt;45ms</span>
-               <span className="text-[8px] font-bold uppercase tracking-widest">Execution</span>
+             <div className="flex flex-col items-center shrink-0">
+               <span className="text-lg sm:text-xl font-bold font-mono">&lt;45ms</span>
+               <span className="text-[7px] sm:text-[8px] font-bold uppercase tracking-widest">Execution</span>
              </div>
              <div className="w-px h-8 bg-[#E4E4E4]"></div>
-             <div className="flex flex-col items-center">
-               <span className="text-xl font-bold font-mono">140+</span>
-               <span className="text-[8px] font-bold uppercase tracking-widest">Countries</span>
+             <div className="flex flex-col items-center shrink-0">
+               <span className="text-lg sm:text-xl font-bold font-mono">140+</span>
+               <span className="text-[7px] sm:text-[8px] font-bold uppercase tracking-widest">Countries</span>
              </div>
           </div>
         </div>
@@ -119,40 +120,41 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-10 max-w-5xl mx-auto space-y-10">
-          <h2 className="text-4xl md:text-7xl font-bold tracking-tight text-white font-display leading-[1.1]">
+          <h2 className="text-3xl md:text-7xl font-bold tracking-tight text-white font-display leading-[1.1]">
             Discover better-than-market <br />
             conditions
           </h2>
           
-          <p className="text-lg md:text-xl text-[#94A3B8] max-w-2xl mx-auto leading-relaxed font-medium">
+          <p className="text-base md:text-xl text-[#94A3B8] max-w-2xl mx-auto leading-relaxed font-medium">
             Trading conditions can make or break a strategy, <br className="hidden md:block" />
             that's why you need the best in Varban Markets.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
+          {/* Store Buttons Side-by-Side on Mobile */}
+          <div className="flex flex-row items-center justify-center gap-2 sm:gap-4 pt-6 max-w-full overflow-hidden">
             <Link 
               href="https://apps.apple.com" 
-              className="bg-[#141414] border border-white/10 hover:bg-[#1A1A1A] text-white px-6 py-3 rounded-lg flex items-center gap-3 transition-all min-w-[200px]"
+              className="flex-1 sm:flex-none bg-[#141414] border border-white/10 hover:bg-[#1A1A1A] text-white px-3 sm:px-6 py-3 rounded-lg flex items-center gap-2 sm:gap-3 transition-all sm:min-w-[200px]"
             >
-              <div className="w-8 h-8 flex items-center justify-center">
-                <svg viewBox="0 0 384 512" fill="currentColor" className="w-6 h-6"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 21.8-88.5 21.8-14.7 0-51.4-22.2-84.6-21.8-44.1.6-84.6 28.5-107.1 68.8-46.3 80.2-11.9 198.4 33 263.2 22 31.8 48.6 67.1 82.9 65.9 32.5-1.2 44.7-21.8 84.1-21.8 39.4 0 50.4 21.8 84.5 21.1 35.3-.6 58.7-31.4 80.6-63.3 25.4-36.9 35.9-72.7 36.1-74.5-.8-.3-69.1-26.5-69.3-105.7zM271.8 81.6c19-23 31.9-55.1 28.4-87.1-27.6 1.1-61.1 18.3-80.9 41.5-17.7 20.6-33.2 53.3-29 84.5 30.7 2.4 62.6-15.9 81.5-38.9z"/></svg>
+              <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
+                <svg viewBox="0 0 384 512" fill="currentColor" className="w-5 h-5 sm:w-6 sm:h-6"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 21.8-88.5 21.8-14.7 0-51.4-22.2-84.6-21.8-44.1.6-84.6 28.5-107.1 68.8-46.3 80.2-11.9 198.4 33 263.2 22 31.8 48.6 67.1 82.9 65.9 32.5-1.2 44.7-21.8 84.1-21.8 39.4 0 50.4 21.8 84.5 21.1 35.3-.6 58.7-31.4 80.6-63.3 25.4-36.9 35.9-72.7 36.1-74.5-.8-.3-69.1-26.5-69.3-105.7zM271.8 81.6c19-23 31.9-55.1 28.4-87.1-27.6 1.1-61.1 18.3-80.9 41.5-17.7 20.6-33.2 53.3-29 84.5 30.7 2.4 62.6-15.9 81.5-38.9z"/></svg>
               </div>
               <div className="text-left">
-                <span className="text-[10px] uppercase font-bold block leading-none mb-1">Download on the</span>
-                <span className="text-base font-bold block leading-none">App Store</span>
+                <span className="text-[7px] sm:text-[10px] uppercase font-bold block leading-none mb-0.5 sm:mb-1">App Store</span>
+                <span className="text-[10px] sm:text-base font-bold block leading-none">Download</span>
               </div>
             </Link>
             
             <Link 
               href="https://play.google.com" 
-              className="bg-[#141414] border border-white/10 hover:bg-[#1A1A1A] text-white px-6 py-3 rounded-lg flex items-center gap-3 transition-all min-w-[200px]"
+              className="flex-1 sm:flex-none bg-[#141414] border border-white/10 hover:bg-[#1A1A1A] text-white px-3 sm:px-6 py-3 rounded-lg flex items-center gap-2 sm:gap-3 transition-all sm:min-w-[200px]"
             >
-              <div className="w-8 h-8 flex items-center justify-center">
-                <svg viewBox="0 0 512 512" fill="currentColor" className="w-6 h-6"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-103 18-28.5-1.2-40.8zM325.3 277.7l-52.1-52.1-256.6 256.6 204.1-117.3 104.6-104.6z"/></svg>
+              <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
+                <svg viewBox="0 0 512 512" fill="currentColor" className="w-5 h-5 sm:w-6 sm:h-6"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-103 18-28.5-1.2-40.8zM325.3 277.7l-52.1-52.1-256.6 256.6 204.1-117.3 104.6-104.6z"/></svg>
               </div>
               <div className="text-left">
-                <span className="text-[10px] uppercase font-bold block leading-none mb-1">Get it on</span>
-                <span className="text-base font-bold block leading-none">Google Play</span>
+                <span className="text-[7px] sm:text-[10px] uppercase font-bold block leading-none mb-0.5 sm:mb-1">Google Play</span>
+                <span className="text-[10px] sm:text-base font-bold block leading-none">Get it on</span>
               </div>
             </Link>
           </div>
@@ -164,7 +166,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-12 lg:gap-0">
             {/* Left Features */}
-            <div className="lg:col-span-4 space-y-24 order-2 lg:order-1 text-center lg:text-right">
+            <div className="lg:col-span-4 space-y-12 sm:space-y-24 order-2 lg:order-1 text-center lg:text-right">
               <div className="space-y-3">
                 <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">Instant withdrawals</h3>
                 <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:ml-auto">
@@ -181,7 +183,7 @@ export default function HomePage() {
 
             {/* Mobile Image */}
             <div className="lg:col-span-4 flex justify-center order-1 lg:order-2">
-              <div className="relative w-[300px] h-[600px] md:w-[350px] md:h-[700px] transition-transform duration-1000 hover:scale-105">
+              <div className="relative w-[280px] h-[560px] sm:w-[350px] sm:h-[700px] transition-transform duration-1000 hover:scale-105">
                 <Image 
                   src="/assets/mobile.jpg" 
                   alt="Varban Mobile App" 
@@ -194,7 +196,7 @@ export default function HomePage() {
             </div>
 
             {/* Right Features */}
-            <div className="lg:col-span-4 space-y-24 order-3 lg:order-3 text-center lg:text-left">
+            <div className="lg:col-span-4 space-y-12 sm:space-y-24 order-3 lg:order-3 text-center lg:text-left">
               <div className="space-y-3">
                 <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">Ultra-fast execution</h3>
                 <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:mr-auto">
