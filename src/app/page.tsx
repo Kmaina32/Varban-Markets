@@ -51,7 +51,7 @@ export default function HomePage() {
       </div>
 
       {/* MAIN HERO SECTION - Institutional White */}
-      <section className="relative pt-20 pb-24 bg-white overflow-hidden border-b border-[#E4E4E4]">
+      <section className="relative pt-24 pb-28 bg-white overflow-hidden border-b border-[#E4E4E4]">
         {/* Subtle Watermark Background */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none flex items-center justify-center">
            <svg width="800" height="800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.5">
@@ -62,11 +62,6 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-10 max-w-5xl mx-auto px-4 text-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 bg-[#F7F7F5] border border-[#E4E4E4] text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">
-            <Globe className="w-3 h-3" />
-            <span>Institutional Execution Node</span>
-          </div>
-          
           <h1 className="text-4xl sm:text-5xl md:text-8xl font-bold tracking-tight text-[#0A0A0A] font-display leading-[0.95]">
             Trade Online <br />
             <span className="text-[#0055FF]">{location}</span>
@@ -163,7 +158,7 @@ export default function HomePage() {
 
       {/* Mobile App Showcase Section */}
       <section className="bg-[#010813] pt-10 pb-32 px-4 border-t border-white/5 overflow-hidden">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-12 lg:gap-0">
             {/* Left Features */}
             <div className="lg:col-span-4 space-y-12 sm:space-y-24 order-2 lg:order-1 text-center lg:text-right">
