@@ -1,17 +1,18 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, ChevronRight, MessageSquare, Download, Check } from "lucide-react";
+import { ArrowRight, ChevronRight, MessageSquare, Download, Check, ShieldCheck, Zap, Globe } from "lucide-react";
 import { MarketIcon } from "@/components/MarketIcon";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
 import placeholderImages from "@/app/lib/placeholder-images.json";
+import { detectLocation } from "@/app/lib/geolocation-service";
 
 export default function HomePage() {
   const [trendingNews, setTrendingNews] = useState<NewsItem[]>([]);
   const [newsLoading, setNewsLoading] = useState(true);
+  const [location, setLocation] = useState("Globally");
 
   useEffect(() => {
     async function loadNews() {
@@ -24,7 +25,16 @@ export default function HomePage() {
         setNewsLoading(false);
       }
     }
+
+    async function loadLoc() {
+      const geo = await detectLocation();
+      if (geo?.country_name) {
+        setLocation(`in ${geo.country_name}`);
+      }
+    }
+
     loadNews();
+    loadLoc();
   }, []);
 
   return (
@@ -39,19 +49,79 @@ export default function HomePage() {
         </p>
       </div>
 
-      {/* Hero Section - Dark Institutional Style */}
+      {/* MAIN HERO SECTION - Institutional White */}
+      <section className="relative pt-20 pb-24 bg-white overflow-hidden border-b border-[#E4E4E4]">
+        {/* Subtle Watermark Background */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none flex items-center justify-center">
+           <svg width="800" height="800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.5">
+             <path d="M12 2L2 7L12 12L22 7L12 2Z" />
+             <path d="M2 17L12 22L22 17" />
+             <path d="M2 12L12 17L22 12" />
+           </svg>
+        </div>
+
+        <div className="relative z-10 max-w-5xl mx-auto px-4 text-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 bg-[#F7F7F5] border border-[#E4E4E4] text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">
+            <Globe className="w-3 h-3" />
+            <span>Institutional Execution Node</span>
+          </div>
+          
+          <h1 className="text-5xl md:text-8xl font-bold tracking-tight text-[#0A0A0A] font-display leading-[0.95]">
+            Trade Online <br />
+            <span className="text-[#0055FF]">{location}</span>
+          </h1>
+          
+          <p className="text-lg md:text-xl text-[#6B7280] max-w-2xl mx-auto leading-relaxed font-medium">
+            Discover the world's most stable derivative infrastructure. <br className="hidden md:block" />
+            Engineered for precision, speed, and total financial integrity.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <Link 
+              href="/register" 
+              className="bg-[#FFDE00] hover:bg-[#F2D200] text-[#0A0A0A] px-12 py-4 text-xs font-bold uppercase tracking-widest transition-all shadow-md min-w-[220px]"
+            >
+              Open Account
+            </Link>
+            <Link 
+              href="/terminal" 
+              className="bg-white border border-[#E4E4E4] hover:bg-[#F7F7F5] text-[#0A0A0A] px-12 py-4 text-xs font-bold uppercase tracking-widest transition-all min-w-[220px]"
+            >
+              Try Practice Demo
+            </Link>
+          </div>
+
+          <div className="pt-12 flex items-center justify-center space-x-8 opacity-40 grayscale group hover:grayscale-0 transition-all">
+             <div className="flex flex-col items-center">
+               <span className="text-xl font-bold font-mono">$1.4B+</span>
+               <span className="text-[8px] font-bold uppercase tracking-widest">Monthly Vol</span>
+             </div>
+             <div className="w-px h-8 bg-[#E4E4E4]"></div>
+             <div className="flex flex-col items-center">
+               <span className="text-xl font-bold font-mono">&lt;45ms</span>
+               <span className="text-[8px] font-bold uppercase tracking-widest">Execution</span>
+             </div>
+             <div className="w-px h-8 bg-[#E4E4E4]"></div>
+             <div className="flex flex-col items-center">
+               <span className="text-xl font-bold font-mono">140+</span>
+               <span className="text-[8px] font-bold uppercase tracking-widest">Countries</span>
+             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECONDARY HERO SECTION - Dark Institutional Style */}
       <section className="relative pt-24 pb-40 bg-[#010813] overflow-hidden text-center px-4">
-        {/* Abstract Background Elements */}
         <div className="absolute inset-0 opacity-10 pointer-events-none">
            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-white/20 rounded-full"></div>
            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-white/10 rounded-full"></div>
         </div>
 
-        <div className="relative z-10 max-w-5xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-          <h1 className="text-4xl md:text-7xl font-bold tracking-tight text-white font-display leading-[1.1]">
+        <div className="relative z-10 max-w-5xl mx-auto space-y-10">
+          <h2 className="text-4xl md:text-7xl font-bold tracking-tight text-white font-display leading-[1.1]">
             Discover better-than-market <br />
             conditions
-          </h1>
+          </h2>
           
           <p className="text-lg md:text-xl text-[#94A3B8] max-w-2xl mx-auto leading-relaxed font-medium">
             Trading conditions can make or break a strategy, <br className="hidden md:block" />
@@ -94,13 +164,13 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-12 lg:gap-0">
             {/* Left Features */}
             <div className="lg:col-span-4 space-y-24 order-2 lg:order-1 text-center lg:text-right">
-              <div className="space-y-3 animate-in slide-in-from-left duration-1000">
+              <div className="space-y-3">
                 <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">Instant withdrawals</h3>
                 <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:ml-auto">
                   Withdraw and deposit funds within seconds using popular payment options.
                 </p>
               </div>
-              <div className="space-y-3 animate-in slide-in-from-left duration-1000 delay-200">
+              <div className="space-y-3">
                 <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">Unmatched pricing</h3>
                 <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:ml-auto">
                   Trade with tightest spreads in the industry, powered by our multi-source liquidity.
@@ -124,13 +194,13 @@ export default function HomePage() {
 
             {/* Right Features */}
             <div className="lg:col-span-4 space-y-24 order-3 lg:order-3 text-center lg:text-left">
-              <div className="space-y-3 animate-in slide-in-from-right duration-1000">
+              <div className="space-y-3">
                 <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">Ultra-fast execution</h3>
                 <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:mr-auto">
                   Execute trades in milliseconds, no matter the size, for precise market entries.
                 </p>
               </div>
-              <div className="space-y-3 animate-in slide-in-from-right duration-1000 delay-200">
+              <div className="space-y-3">
                 <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">Swap-free trading</h3>
                 <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:mr-auto">
                   Hold positions overnight without incurring interest charges on major instruments.
