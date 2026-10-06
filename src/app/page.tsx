@@ -3,9 +3,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronRight, MessageSquare } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, ChevronRight, MessageSquare, Download, Check } from "lucide-react";
 import { MarketIcon } from "@/components/MarketIcon";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
+import placeholderImages from "@/app/lib/placeholder-images.json";
 
 export default function HomePage() {
   const [trendingNews, setTrendingNews] = useState<NewsItem[]>([]);
@@ -28,100 +30,186 @@ export default function HomePage() {
   return (
     <div className="flex flex-col bg-white min-h-screen">
       {/* Top Risk Disclaimer */}
-      <div className="bg-[#0A0A0A] text-white py-2.5 px-4 text-center">
-        <p className="text-[10px] md:text-[11px] leading-relaxed max-w-5xl mx-auto opacity-90">
+      <div className="bg-[#0A0A0A] text-white py-2.5 px-4 text-center z-[110]">
+        <p className="text-[10px] md:text-[11px] leading-relaxed max-w-7xl mx-auto opacity-90">
           Online Forex/CFDs are complex instruments and come with a high risk of losing money rapidly due to leverage. 
-          <span className="font-bold"> 82.18% of retail investor accounts lose money </span> 
+          <span className="font-bold text-[#FFDE00]"> 82.18% of retail investor accounts lose money </span> 
           when trading Online Forex/CFDs with this provider. You should consider whether you understand how CFDs work and whether you can afford to take the high risk of losing your money. 
           <Link href="/terms/risk-disclosure" className="text-[#FFDE00] font-bold underline ml-1">Learn more.</Link>
         </p>
       </div>
 
-      {/* Main Hero Section */}
-      <section className="relative pt-20 pb-32 overflow-hidden flex flex-col items-center justify-center text-center px-4">
-        {/* Abstract Background Watermark */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] select-none">
-          <svg width="600" height="600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="transform rotate-12 scale-150">
-            <path d="M12 2L2 7L12 12L22 7L12 2Z" />
-            <path d="M2 17L12 22L22 17" />
-            <path d="M2 12L12 17L22 12" />
-          </svg>
+      {/* Hero Section - Dark Institutional Style */}
+      <section className="relative pt-24 pb-40 bg-[#010813] overflow-hidden text-center px-4">
+        {/* Abstract Background Elements */}
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-white/20 rounded-full"></div>
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-white/10 rounded-full"></div>
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-          <h1 className="text-4xl md:text-7xl font-bold tracking-tight text-[#0A0A0A] font-display leading-[1.05]">
-            Trade online Global <br />
-            with a leading broker
+        <div className="relative z-10 max-w-5xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+          <h1 className="text-4xl md:text-7xl font-bold tracking-tight text-white font-display leading-[1.1]">
+            Discover better-than-market <br />
+            conditions
           </h1>
           
-          <p className="text-lg md:text-xl text-[#6B7280] max-w-2xl mx-auto leading-relaxed">
-            Trade with a reliable licensed broker. Experience Varban Markets' leading online trading platform with tight spreads and fast execution.
+          <p className="text-lg md:text-xl text-[#94A3B8] max-w-2xl mx-auto leading-relaxed font-medium">
+            Trading conditions can make or break a strategy, <br className="hidden md:block" />
+            that's why you need the best in Varban Markets.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
             <Link 
-              href="/register" 
-              className="w-full sm:w-auto bg-[#FFDE00] hover:bg-[#F2D200] text-[#0A0A0A] font-bold text-sm uppercase tracking-widest px-10 py-4 shadow-sm transition-all transform active:scale-[0.98]"
+              href="https://apps.apple.com" 
+              className="bg-[#141414] border border-white/10 hover:bg-[#1A1A1A] text-white px-6 py-3 rounded-lg flex items-center gap-3 transition-all min-w-[200px]"
             >
-              Register
+              <div className="w-8 h-8 flex items-center justify-center">
+                <svg viewBox="0 0 384 512" fill="currentColor" className="w-6 h-6"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 21.8-88.5 21.8-14.7 0-51.4-22.2-84.6-21.8-44.1.6-84.6 28.5-107.1 68.8-46.3 80.2-11.9 198.4 33 263.2 22 31.8 48.6 67.1 82.9 65.9 32.5-1.2 44.7-21.8 84.1-21.8 39.4 0 50.4 21.8 84.5 21.1 35.3-.6 58.7-31.4 80.6-63.3 25.4-36.9 35.9-72.7 36.1-74.5-.8-.3-69.1-26.5-69.3-105.7zM271.8 81.6c19-23 31.9-55.1 28.4-87.1-27.6 1.1-61.1 18.3-80.9 41.5-17.7 20.6-33.2 53.3-29 84.5 30.7 2.4 62.6-15.9 81.5-38.9z"/></svg>
+              </div>
+              <div className="text-left">
+                <span className="text-[10px] uppercase font-bold block leading-none mb-1">Download on the</span>
+                <span className="text-base font-bold block leading-none">App Store</span>
+              </div>
             </Link>
+            
             <Link 
-              href="/terminal" 
-              className="w-full sm:w-auto bg-[#F2F2F2] hover:bg-[#EAEAEA] text-[#0A0A0A] font-bold text-sm uppercase tracking-widest px-10 py-4 transition-all"
+              href="https://play.google.com" 
+              className="bg-[#141414] border border-white/10 hover:bg-[#1A1A1A] text-white px-6 py-3 rounded-lg flex items-center gap-3 transition-all min-w-[200px]"
             >
-              Try free demo
+              <div className="w-8 h-8 flex items-center justify-center">
+                <svg viewBox="0 0 512 512" fill="currentColor" className="w-6 h-6"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-10.3 18-28.5-1.2-40.8zM325.3 277.7l-52.1-52.1-256.6 256.6 204.1-117.3 104.6-104.6z"/></svg>
+              </div>
+              <div className="text-left">
+                <span className="text-[10px] uppercase font-bold block leading-none mb-1">Get it on</span>
+                <span className="text-base font-bold block leading-none">Google Play</span>
+              </div>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Floating Action Button */}
-      <button className="fixed bottom-6 right-6 w-14 h-14 bg-[#FFDE00] text-[#0A0A0A] rounded-full flex items-center justify-center shadow-xl hover:scale-110 transition-transform z-[100]">
-        <MessageSquare className="w-6 h-6" />
-      </button>
+      {/* Mobile App Showcase Section */}
+      <section className="bg-[#010813] pt-10 pb-32 px-4 border-t border-white/5 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-12 lg:gap-0">
+            {/* Left Features */}
+            <div className="lg:col-span-4 space-y-24 order-2 lg:order-1 text-center lg:text-right">
+              <div className="space-y-3 animate-in slide-in-from-left duration-1000">
+                <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">Instant withdrawals</h3>
+                <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:ml-auto">
+                  Withdraw and deposit funds within seconds using popular payment options.
+                </p>
+              </div>
+              <div className="space-y-3 animate-in slide-in-from-left duration-1000 delay-200">
+                <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">Unmatched pricing</h3>
+                <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:ml-auto">
+                  Trade with tightest spreads in the industry, powered by our multi-source liquidity.
+                </p>
+              </div>
+            </div>
 
-      {/* Markets Preview Section */}
-      <section className="py-24 bg-[#F9F9F9] border-t border-[#E4E4E4]">
+            {/* Mobile Image */}
+            <div className="lg:col-span-4 flex justify-center order-1 lg:order-2">
+              <div className="relative w-[300px] h-[600px] md:w-[350px] md:h-[700px] transition-transform duration-1000 hover:scale-105">
+                <Image 
+                  src="/assets/mobile.png" 
+                  alt="Varban Mobile App" 
+                  fill 
+                  className="object-contain" 
+                  priority
+                  data-ai-hint="trading mobile app"
+                />
+              </div>
+            </div>
+
+            {/* Right Features */}
+            <div className="lg:col-span-4 space-y-24 order-3 lg:order-3 text-center lg:text-left">
+              <div className="space-y-3 animate-in slide-in-from-right duration-1000">
+                <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">Ultra-fast execution</h3>
+                <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:mr-auto">
+                  Execute trades in milliseconds, no matter the size, for precise market entries.
+                </p>
+              </div>
+              <div className="space-y-3 animate-in slide-in-from-right duration-1000 delay-200">
+                <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">Swap-free trading</h3>
+                <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:mr-auto">
+                  Hold positions overnight without incurring interest charges on major instruments.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Active Markets Section - Clean Table Design */}
+      <section className="py-24 bg-white border-t border-[#E4E4E4]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
             <div className="space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">Global Registry</span>
-              <h2 className="text-3xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Active Markets</h2>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">Global Market Registry</span>
+              <h2 className="text-3xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Active Instruments</h2>
             </div>
-            <Link href="/markets" className="text-[11px] font-bold uppercase tracking-widest text-[#0055FF] flex items-center gap-1 hover:underline">
-              View All Instruments <ArrowRight className="w-4 h-4" />
+            <Link href="/markets" className="text-[11px] font-bold uppercase tracking-widest text-[#0055FF] flex items-center gap-1.5 hover:underline">
+              View All 150+ Symbols <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { symbol: "XAU/USD", name: "Gold Spot", price: "2,743.21", change: "+1.25%", isUp: true },
-              { symbol: "EUR/USD", name: "Euro / USD", price: "1.0512", change: "+0.45%", isUp: true },
-              { symbol: "BTC/USD", name: "Bitcoin", price: "67,842.20", change: "+2.50%", isUp: true },
-              { symbol: "AAPL", name: "Apple Inc.", price: "189.47", change: "+1.15%", isUp: true }
-            ].map((ticker) => (
-              <div key={ticker.symbol} className="bg-white border border-[#E4E4E4] p-6 hover:shadow-md transition-all group">
-                <div className="flex items-center justify-between mb-6">
-                  <MarketIcon symbol={ticker.symbol} size="md" />
-                  <span className="text-[10px] font-bold text-[#0A0A0A] uppercase tracking-tighter font-mono">{ticker.symbol}</span>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[9px] text-[#6B7280] uppercase tracking-wider block font-bold">{ticker.name}</span>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xl font-bold text-[#0A0A0A] font-display">{ticker.price}</span>
-                    <span className={`text-[10px] font-bold ${ticker.isUp ? 'text-[#16835B]' : 'text-[#C43D3D]'}`}>
-                      {ticker.change}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="bg-white border border-[#E4E4E4] overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-[#F7F7F5] border-b border-[#E4E4E4]">
+                  <tr className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">
+                    <th className="p-5">Instrument</th>
+                    <th className="p-5">Last Price</th>
+                    <th className="p-5">24h Change</th>
+                    <th className="p-5 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#E4E4E4]">
+                  {[
+                    { symbol: "BTC/USD", name: "Bitcoin", price: "97,842.20", change: "+2.50%", isUp: true },
+                    { symbol: "XAU/USD", name: "Gold Spot", price: "2,743.21", change: "+1.25%", isUp: true },
+                    { symbol: "EUR/USD", name: "Euro / US Dollar", price: "1.0512", change: "-0.45%", isUp: false },
+                    { symbol: "AAPL", name: "Apple Inc.", price: "189.47", change: "+1.15%", isUp: true },
+                    { symbol: "WTI/USD", name: "Crude Oil", price: "72.18", change: "-0.82%", isUp: false }
+                  ].map((ticker) => (
+                    <tr key={ticker.symbol} className="hover:bg-[#F7F7F5] transition-colors group">
+                      <td className="p-5">
+                        <div className="flex items-center space-x-4">
+                          <MarketIcon symbol={ticker.symbol} size="md" />
+                          <div>
+                            <span className="text-xs font-bold text-[#0A0A0A] block uppercase font-mono">{ticker.symbol}</span>
+                            <span className="text-[10px] text-[#6B7280] uppercase font-bold tracking-tight">{ticker.name}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-5">
+                        <span className="text-lg font-bold text-[#0A0A0A] font-mono">{ticker.price}</span>
+                      </td>
+                      <td className="p-5">
+                        <span className={`text-xs font-bold font-mono ${ticker.isUp ? 'text-[#16835B]' : 'text-[#C43D3D]'}`}>
+                          {ticker.isUp ? '+' : ''}{ticker.change}
+                        </span>
+                      </td>
+                      <td className="p-5 text-right">
+                        <Link 
+                          href={`/terminal?symbol=${ticker.symbol}`}
+                          className="inline-flex items-center px-6 py-2 bg-[#FFDE00] hover:bg-[#F2D200] text-[#0A0A0A] text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm"
+                        >
+                          Trade
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Intelligence Section */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-[#F9F9F9]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 space-y-4">
             <h2 className="text-3xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Market Intelligence</h2>
@@ -132,26 +220,33 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {newsLoading ? (
-              [1, 2, 3, 4].map(i => <div key={i} className="bg-[#F7F7F5] h-64 animate-pulse border border-[#E4E4E4]" />)
+              [1, 2, 3, 4].map(i => <div key={i} className="bg-white h-64 animate-pulse border border-[#E4E4E4]" />)
             ) : trendingNews.map((item) => (
-              <Link href={`/news/${item.uuid}`} key={item.uuid} className="group block space-y-4">
-                <div className="aspect-video bg-[#F7F7F5] border border-[#E4E4E4] overflow-hidden relative">
-                  {item.image && <img src={item.image} alt={item.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />}
+              <Link href={`/news/${item.uuid}`} key={item.uuid} className="group block bg-white border border-[#E4E4E4] p-2 hover:shadow-lg transition-all duration-300">
+                <div className="aspect-video bg-[#F7F7F5] overflow-hidden relative">
+                  {item.image && <img src={item.image} alt={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />}
                   <div className="absolute top-2 left-2 px-2 py-0.5 bg-white/90 backdrop-blur-sm text-[8px] font-bold uppercase tracking-widest text-[#0055FF] border border-[#E4E4E4]">
                     {item.publisher}
                   </div>
                 </div>
-                <h4 className="text-sm font-bold text-[#0A0A0A] leading-snug group-hover:text-[#0055FF] transition-colors line-clamp-2">
-                  {item.title}
-                </h4>
-                <div className="flex items-center text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">
-                  Read Report <ChevronRight className="w-3 h-3 ml-1" />
+                <div className="p-4 space-y-3">
+                  <h4 className="text-sm font-bold text-[#0A0A0A] leading-snug group-hover:text-[#0055FF] transition-colors line-clamp-2">
+                    {item.title}
+                  </h4>
+                  <div className="flex items-center text-[9px] font-bold text-[#6B7280] uppercase tracking-widest pt-2 border-t border-[#F7F7F5]">
+                    Read Report <ChevronRight className="w-3 h-3 ml-1" />
+                  </div>
                 </div>
               </Link>
             ))}
           </div>
         </div>
       </section>
+
+      {/* Floating Action Button */}
+      <button className="fixed bottom-6 right-6 w-14 h-14 bg-[#FFDE00] text-[#0A0A0A] rounded-full flex items-center justify-center shadow-xl hover:scale-110 transition-transform z-[120]">
+        <MessageSquare className="w-6 h-6" />
+      </button>
     </div>
   );
 }
