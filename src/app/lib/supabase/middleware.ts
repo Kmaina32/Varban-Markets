@@ -13,9 +13,14 @@ export const updateSession = async (request: NextRequest) => {
     },
   });
 
+  // CRITICAL: Prevent crash if Supabase is not yet configured
+  if (!supabaseUrl || !supabaseKey || supabaseUrl === 'https://your-project-id.supabase.co') {
+    return supabaseResponse;
+  }
+
   const supabase = createServerClient(
-    supabaseUrl!,
-    supabaseKey!,
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         getAll() {

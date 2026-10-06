@@ -1,3 +1,4 @@
+
 # VARBAN MARKETS — INSTITUTIONAL SYSTEM DOCUMENTATION
 
 ## PLATFORM OVERVIEW
@@ -29,21 +30,23 @@ Varban Markets is a professional electronic trading protocol engineered for adva
 
 ---
 
-## 2. PRODUCTION STATUS TRACKER
+## 2. ENVIRONMENT SETUP REQUIRED
+The following keys must be populated in `.env` to enable full platform functionality:
+
+- **Supabase**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+- **Genkit AI**: `GOOGLE_GENAI_API_KEY`.
+- **Market Data**: `FINNHUB_API_KEY`, `ALPHA_VANTAGE_API_KEY`.
+- **Storage**: `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`.
+
+---
+
+## 3. PRODUCTION STATUS TRACKER
 - [x] **Institutional White Design System**: High-contrast, minimalist UI with brand-yellow accents.
 - [x] **Supabase Migration**: Core data transitioned from Firestore to Supabase for enhanced performance.
 - [x] **AI Chatbot**: Gemini-powered Varban Assistant integrated globally.
 - [x] **Mobile Showcase**: Symmetrical value proposition section featuring high-fidelity device renders.
 - [x] **Passkey Biometric Auth**: WebAuthn infrastructure for passwordless, secure session entry.
 - [x] **Admin Oversight Desk**: Dedicated nodes for KYC review, deposit verification, and withdrawal dispatch.
-
----
-
-## 3. DEVELOPER RESOURCES
-- [Full API Documentation](./API_DOCS.md)
-- [Design Style Guide](./SKILLS.md)
-- [Implementation TODO](./TODO.md)
-- [Security Policy](./SECURITY.md)
 
 ---
 *Operational Ledger Status: Finalized, Synchronized & Locked.*
