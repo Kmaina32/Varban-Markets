@@ -3,6 +3,7 @@
 /**
  * @fileOverview Varban Assistant AI Flow.
  * Handles conversational support for traders using Genkit and Gemini.
+ * Updated for Genkit v1.x API compatibility.
  */
 
 import { ai } from '@/ai/genkit';
@@ -22,18 +23,20 @@ export async function supportChat(input: z.infer<typeof SupportChatInputSchema>)
   try {
     const response = await ai.generate({
       model: 'googleai/gemini-1.5-flash',
-      history: input.history?.map(h => ({
-        role: h.role,
-        content: [{ text: h.content }]
-      })),
-      prompt: input.message,
       system: `You are the Varban Markets AI Assistant. 
       You help users with trading, account questions, and platform navigation. 
       Be professional, concise, and helpful. 
       Varban Markets is an institutional trading platform for derivatives and synthetic markets.
       If users ask about logging in, refer them to https://varbanmarkets.com/login.
       If they ask about account verification, refer them to the Account Hub.
-      Maintain the institutional tone: use terms like 'Capital Hub', 'Trade Terminal', and 'Market Registry'.`
+      Maintain the institutional tone: use terms like 'Capital Hub', 'Trade Terminal', and 'Market Registry'.`,
+      messages: [
+        ...(input.history?.map(h => ({
+          role: h.role,
+          content: [{ text: h.content }]
+        })) || []),
+        { role: 'user', content: [{ text: input.message }] }
+      ]
     });
 
     return response.text;

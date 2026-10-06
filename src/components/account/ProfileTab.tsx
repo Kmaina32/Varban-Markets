@@ -1,12 +1,12 @@
-
 'use client';
 
 /**
  * @fileOverview Profile Management Tab (Supabase Version).
- * Handles identity metadata and profile photo synchronization with Supabase Storage.
+ * Handles identity metadata and photo synchronization.
+ * Feature: Idempotent profile initialization to handle missing records.
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Camera, Loader2, ShieldAlert, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { createClient } from '@/app/lib/supabase/client';
@@ -26,6 +26,37 @@ export default function ProfileTab() {
   const [form, setForm] = useState({
     firstName: "", lastName: "", phone: "", country: "United Kingdom", dialCode: "+44"
   });
+
+  const initializeProfile = async () => {
+    if (!user?.uid) return;
+    
+    // Create profile from metadata if missing
+    const { data: newProfile, error: createError } = await supabase
+      .from('profiles')
+      .insert({
+        id: user.uid,
+        first_name: user.user_metadata?.first_name || "",
+        last_name: user.user_metadata?.last_name || "",
+        full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
+        email: user.email,
+        country: user.user_metadata?.country || "United Kingdom",
+        balance: 1000.00,
+        equity: 1000.00
+      })
+      .select()
+      .single();
+
+    if (newProfile) {
+      setProfile(newProfile);
+      setForm({
+        firstName: newProfile.first_name || "",
+        lastName: newProfile.last_name || "",
+        phone: "",
+        country: newProfile.country || "United Kingdom",
+        dialCode: "+44"
+      });
+    }
+  };
 
   useEffect(() => {
     async function loadProfile() {
@@ -48,6 +79,9 @@ export default function ProfileTab() {
             country: data.country || "United Kingdom",
             dialCode: phoneParts.length > 1 ? phoneParts[0] : "+44"
           });
+        } else {
+          // If profile missing, attempt to initialize it
+          await initializeProfile();
         }
       } catch (err) {
         console.error("Profile Fetch Error:", err);
@@ -123,15 +157,6 @@ export default function ProfileTab() {
             </p>
           </div>
         </div>
-
-        {!profile && (
-          <div className="mb-8 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 flex items-start gap-3">
-            <AlertCircle className="w-4 h-4 text-[#C43D3D] shrink-0 mt-0.5" />
-            <p className="text-[10px] text-[#C43D3D] uppercase font-bold leading-relaxed">
-              Profile Registry missing. Please update your details below to initialize your institutional record.
-            </p>
-          </div>
-        )}
 
         <form onSubmit={handleSave} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
