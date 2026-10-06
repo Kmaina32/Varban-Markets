@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -182,7 +183,7 @@ export default function HomePage() {
             <div className="lg:col-span-4 flex justify-center order-1 lg:order-2">
               <div className="relative w-[300px] h-[600px] md:w-[350px] md:h-[700px] transition-transform duration-1000 hover:scale-105">
                 <Image 
-                  src="/assets/mobile.png" 
+                  src="/assets/mobile.jpg" 
                   alt="Varban Mobile App" 
                   fill 
                   className="object-contain" 
