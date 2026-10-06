@@ -27,12 +27,15 @@ export const updateSession = async (request: NextRequest) => {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value, options)
+          // In Next.js Middleware, request.cookies.set only accepts name and value 
+          // or a single RequestCookie object.
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
           )
           supabaseResponse = NextResponse.next({
             request,
           })
+          // NextResponse.cookies.set (ResponseCookies) accepts name, value, and options
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
