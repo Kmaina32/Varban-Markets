@@ -2,15 +2,15 @@
 
 /**
  * @fileOverview Institutional KYC Document Verification Desk.
- * Hardened against null database references.
+ * Hardened against null database references and refactored for Next.js 15 build compatibility.
  */
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { Search, ShieldCheck, X, FileText, Check, AlertTriangle } from "lucide-react";
 import { useCollection, useFirestore } from "@/firebase";
-import { collection, doc, setDoc, addDoc, getDocs, serverTimestamp } from "firebase/firestore";
+import { collection, query, orderBy } from "firebase/firestore";
 import { cn } from "@/app/lib/utils";
 
 interface UserEntity {
@@ -54,19 +54,33 @@ export default function AdminKycApprovalsPage() {
   return (
     <AuthedLayout title="KYC Approvals" subtitle="Institutional Verification Desk">
       <div className="space-y-6">
-        <Card className="p-4 bg-white border-[#E4E4E4] flex items-center justify-between gap-4">
+        <Card className="p-4 bg-white border-[#E4E4E4] flex items-center justify-between gap-4 shadow-sm">
           <div className="flex gap-2">
             {['All', 'Pending', 'Verified'].map(f => (
-              <button key={f} onClick={() => setActiveFilter(f)} className={cn("px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all", activeFilter === f ? "bg-[#0A0A0A] text-white" : "text-[#6B7280] border-[#E4E4E4]")}>{f}</button>
+              <button 
+                key={f} 
+                onClick={() => setActiveFilter(f)} 
+                className={cn(
+                  "px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all", 
+                  activeFilter === f ? "bg-[#0A0A0A] text-white" : "text-[#6B7280] border-[#E4E4E4]"
+                )}
+              >
+                {f}
+              </button>
             ))}
           </div>
           <div className="relative max-w-sm w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6B7280]" />
-            <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Filter entities..." className="w-full pl-9 pr-4 py-2 border border-[#E4E4E4] text-xs focus:outline-none" />
+            <input 
+              value={searchQuery} 
+              onChange={e => setSearchQuery(e.target.value)} 
+              placeholder="Filter entities..." 
+              className="w-full pl-9 pr-4 py-2 border border-[#E4E4E4] text-xs focus:outline-none" 
+            />
           </div>
         </Card>
 
-        <Card className="bg-white border-[#E4E4E4] overflow-hidden">
+        <Card className="bg-white border-[#E4E4E4] overflow-hidden shadow-sm">
           <table className="w-full text-left text-xs border-collapse">
             <thead className="bg-[#F7F7F5] border-b text-[9px] font-bold uppercase text-[#6B7280]">
               <tr>
@@ -102,7 +116,7 @@ export default function AdminKycApprovalsPage() {
 
         {!db && (
           <div className="p-4 bg-[#C9A227]/10 border border-[#C9A227] flex items-start gap-3">
-            <AlertTriangle className="w-4 h-4 text-[#C9A227] shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-[#C9A227] shrink-0 mt-0.5" />
             <p className="text-[10px] font-bold text-[#C9A227] uppercase leading-relaxed">
               Database Sync Restricted: Manual document verification requires an active institutional database connection.
             </p>
@@ -111,7 +125,7 @@ export default function AdminKycApprovalsPage() {
       </div>
 
       {inspectUser && (
-        <div className="fixed inset-0 z-[400] bg-[#0A0A0A]/40 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[400] bg-[#0A0A0A]/40 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
           <Card className="bg-white w-full max-w-md p-8 shadow-2xl space-y-6">
             <div className="flex justify-between items-center border-b border-[#F7F7F5] pb-4">
               <h3 className="text-xs font-bold uppercase tracking-widest">Entity Inspection</h3>

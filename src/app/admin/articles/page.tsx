@@ -3,10 +3,10 @@
 /**
  * @fileOverview Admin Intelligence Desk.
  * Allows administrators to author market insights, strategies, and technical briefings.
- * Hardened against null database references.
+ * Hardened against null database references and refactored to resolve syntax errors.
  */
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { 
@@ -77,7 +77,9 @@ export default function AdminArticlesPage() {
 
     setIsSaving(true);
     try {
-      const id = editingArticle.id || doc(collection(db, "articles")).id;
+      const articlesRef = collection(db, "articles");
+      const id = editingArticle.id || doc(articlesRef).id;
+      
       await setDoc(doc(db, "articles", id), {
         ...editingArticle,
         id,
@@ -89,7 +91,7 @@ export default function AdminArticlesPage() {
       setIsModalOpen(false);
       setEditingArticle(null);
     } catch (err) {
-      alert("Handshake Failure: Database connection inactive.");
+      console.error("Save failure:", err);
     } finally {
       setIsSaving(false);
     }
@@ -101,14 +103,18 @@ export default function AdminArticlesPage() {
     try {
       await deleteDoc(doc(db, "articles", id));
     } catch (err) {
-      alert("Authority Failure.");
+      console.error("Delete failure:", err);
     }
   };
 
-  const filteredArticles = articles?.filter(a => 
-    a.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    (a.assetTag || "").toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const filteredArticles = useMemo(() => {
+    if (!articles) return [];
+    const queryLower = searchQuery.toLowerCase();
+    return articles.filter(a => 
+      (a.title || "").toLowerCase().includes(queryLower) || 
+      (a.assetTag || "").toLowerCase().includes(queryLower)
+    );
+  }, [articles, searchQuery]);
 
   return (
     <AuthedLayout title="Intelligence Desk" subtitle="Author proprietary briefings and market strategies">
@@ -201,11 +207,11 @@ export default function AdminArticlesPage() {
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4 overflow-y-auto no-scrollbar">
               <div>
-                <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1">Title</label>
+                <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Title</label>
                 <input required value={editingArticle.title} onChange={e => setEditingArticle({...editingArticle, title: e.target.value})} className="w-full text-xs p-3 border border-[#E4E4E4] outline-none" />
               </div>
               <div>
-                <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1">Content</label>
+                <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Content</label>
                 <textarea required rows={8} value={editingArticle.body} onChange={e => setEditingArticle({...editingArticle, body: e.target.value})} className="w-full text-xs p-4 border border-[#E4E4E4] outline-none" />
               </div>
               <button type="submit" disabled={isSaving || !db} className="w-full btn-institutional-primary py-4">
@@ -215,6 +221,6 @@ export default function AdminArticlesPage() {
           </Card>
         </div>
       )}
-    </div>
+    </AuthedLayout>
   );
 }
