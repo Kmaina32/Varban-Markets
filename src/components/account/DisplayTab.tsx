@@ -3,6 +3,7 @@
 /**
  * @fileOverview Institutional Settings Workspace (Supabase Version).
  * Handles global preferences for Currency, Language, and Timezone.
+ * Updated with resilient schema detection to avoid 400 Bad Request errors.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -49,7 +50,14 @@ export default function DisplayTab() {
           .eq('id', user.uid)
           .maybeSingle();
         
-        if (error) throw error;
+        if (error) {
+          console.warn("Supabase Preference Load Warning:", error.message);
+          // If error is column missing (400), don't throw, just allow initialization
+          if (error.code !== 'PGRST116') {
+             setLoading(false);
+             return;
+          }
+        }
         
         if (data) {
           setForm({
@@ -88,11 +96,11 @@ export default function DisplayTab() {
         title: 'Preferences Updated',
         message: 'Universal display settings have been synchronized across your trading workspace.'
       });
-    } catch (e) {
+    } catch (e: any) {
       setDialog({
         status: 'error',
         title: 'Sync Interrupted',
-        message: 'Platform synchronization failure. Please verify database connectivity.'
+        message: e.message || 'Platform synchronization failure. Please verify database connectivity or run SQL setup.'
       });
     } finally {
       setIsSaving(false);

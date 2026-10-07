@@ -23,7 +23,6 @@ export default function ProfileTab() {
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   
-  // Dialog State
   const [dialog, setDialog] = useState<{ status: DialogStatus; title: string; message: string }>({
     status: null,
     title: '',
@@ -65,14 +64,6 @@ export default function ProfileTab() {
       }
     } catch (err: any) {
       console.error("Initialization Error:", err);
-      // Handle the case where table doesn't exist yet
-      if (err.code === '42P01') {
-        setDialog({
-          status: 'error',
-          title: 'Database Schema Required',
-          message: 'The profiles table has not been initialized in your Supabase project. Please execute the provided SQL setup instructions.'
-        });
-      }
     }
   };
 
@@ -86,7 +77,18 @@ export default function ProfileTab() {
           .eq('id', user.uid)
           .maybeSingle();
         
-        if (error) throw error;
+        if (error) {
+          // If table doesn't exist, Supabase returns 404 or 42P01
+          if (error.code === '42P01') {
+            setDialog({
+              status: 'error',
+              title: 'Database Schema Required',
+              message: 'The "profiles" table is missing. Please run the provided SQL setup instructions in your Supabase dashboard.'
+            });
+            return;
+          }
+          throw error;
+        }
 
         if (data) {
           setProfile(data);
@@ -104,13 +106,6 @@ export default function ProfileTab() {
         }
       } catch (err: any) {
         console.error("Profile Fetch Error:", err);
-        if (err.code === '42P01') {
-          setDialog({
-            status: 'error',
-            title: 'Database Sync Failure',
-            message: 'Table "profiles" not found. Please ensure you have run the database setup SQL in your Supabase dashboard.'
-          });
-        }
       } finally {
         setLoading(false);
       }

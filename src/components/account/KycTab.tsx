@@ -2,6 +2,7 @@
 
 /**
  * @fileOverview Institutional 3-Slot KYC Verification Pipeline.
+ * Updated with Firebase null-guards to prevent "collection()" crashes.
  */
 
 import React, { useState } from 'react';
@@ -67,7 +68,7 @@ export default function KycTab() {
   });
 
   const handleUpload = async (files: FileList | File[], type: string) => {
-    if (!user || !db) return;
+    if (!user) return;
     setIsUploading(type);
     
     try {
@@ -93,23 +94,26 @@ export default function KycTab() {
           body: file 
         });
 
-        await addDoc(collection(db, `users/${user.uid}/kyc_submissions`), {
-          type,
-          storageKey: key,
-          fileType: file.type,
-          fileName: file.name,
-          timestamp: serverTimestamp(),
-          status: 'Pending'
-        });
+        // Guard Firebase usage
+        if (db) {
+          await addDoc(collection(db, `users/${user.uid}/kyc_submissions`), {
+            type,
+            storageKey: key,
+            fileType: file.type,
+            fileName: file.name,
+            timestamp: serverTimestamp(),
+            status: 'Pending'
+          });
+        }
       }
 
-      if (profile?.status?.verificationStatus !== 'Verified') {
+      // Update Supabase profiles table
+      await supabase.from('profiles').update({ verification_status: 'Pending' }).eq('id', user.uid);
+
+      if (db && profile?.status?.verificationStatus !== 'Verified') {
         await setDoc(doc(db, "users", user.uid), {
           status: { verificationStatus: 'Pending' }
         }, { merge: true });
-
-        // Sync with Supabase profiles table
-        await supabase.from('profiles').update({ verification_status: 'Pending' }).eq('id', user.uid);
       }
 
       setDialog({
@@ -128,7 +132,7 @@ export default function KycTab() {
     }
   };
 
-  const status = profile?.status?.verificationStatus || 'Not Verified';
+  const status = profile?.verification_status || profile?.status?.verificationStatus || 'Not Verified';
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
