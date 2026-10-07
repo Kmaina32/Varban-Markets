@@ -1,10 +1,10 @@
 
 {
   "hero": {
-    "url": "/assets/hero1.png",
-    "width": 1920,
-    "height": 1080,
-    "hint": "professional terminal"
+    "url": "https://picsum.photos/seed/varban_hero/1000/1000",
+    "width": 1000,
+    "height": 1000,
+    "hint": "abstract 3d sculpture"
   },
   "auth": {
     "url": "/assets/auth.png",

@@ -62,44 +62,51 @@ export default function HomePage() {
         </p>
       </div>
 
-      {/* MAIN HERO SECTION - Institutional White with Abstract BG */}
-      <section className="relative pt-20 pb-0 bg-white overflow-hidden">
-        {/* Centered Background Graphic */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40 md:opacity-100 mt-[-40px]">
-          <div className="relative w-[450px] h-[450px] md:w-[650px] md:h-[650px]">
-             <Image 
-                src={placeholderImages.hero.url} 
-                alt="Varban Background Design" 
-                fill 
-                className="object-contain"
-                priority
-                data-ai-hint="3d white abstract knot"
-             />
-          </div>
-        </div>
+      {/* MAIN HERO SECTION - Institutional White Side-by-Side */}
+      <section className="relative bg-white overflow-hidden pt-12 lg:pt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            
+            {/* Hero Text Content */}
+            <div className="relative z-10 space-y-8 animate-in fade-in slide-in-from-left-4 duration-1000 text-center lg:text-left">
+              <h1 className="text-4xl sm:text-5xl md:text-[64px] font-bold tracking-tight text-[#0A0A0A] font-display leading-[1.1]">
+                Trade online {location} <br className="hidden md:block" /> with a leading broker
+              </h1>
+              
+              <p className="text-sm md:text-base text-[#6B7280] max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
+                Trade with a reliable licensed broker. Experience Varban&apos;s leading online trading platform with tight spreads and fast execution.
+              </p>
 
-        <div className="relative z-10 max-w-5xl mx-auto px-4 text-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-          <h1 className="text-4xl sm:text-5xl md:text-[64px] font-bold tracking-tight text-[#0A0A0A] font-display leading-[1.1]">
-            Trade online {location} <br className="hidden md:block" /> with a leading broker
-          </h1>
-          
-          <p className="text-sm md:text-base text-[#6B7280] max-w-xl mx-auto leading-relaxed font-medium">
-            Trade with a reliable licensed broker. Experience Varban&apos;s leading online trading platform with tight spreads and fast execution.
-          </p>
+              <div className="flex flex-row items-center justify-center lg:justify-start gap-2 sm:gap-4 pt-4">
+                <Link 
+                  href="/register" 
+                  className="flex-1 sm:flex-none bg-[#FFDE00] hover:bg-[#F2D200] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all shadow-md sm:min-w-[180px] text-center"
+                >
+                  Register
+                </Link>
+                <Link 
+                  href="/accounts/demo" 
+                  className="flex-1 sm:flex-none bg-[#F2F2F2] hover:bg-[#EAEAEA] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all sm:min-w-[180px] text-center"
+                >
+                  Try free demo
+                </Link>
+              </div>
+            </div>
 
-          <div className="flex flex-row items-center justify-center gap-2 sm:gap-4 pt-4 px-2">
-            <Link 
-              href="/register" 
-              className="flex-1 sm:flex-none bg-[#FFDE00] hover:bg-[#F2D200] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all shadow-md sm:min-w-[180px] text-center"
-            >
-              Register
-            </Link>
-            <Link 
-              href="/accounts/demo" 
-              className="flex-1 sm:flex-none bg-[#F2F2F2] hover:bg-[#EAEAEA] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all sm:min-w-[180px] text-center"
-            >
-              Try free demo
-            </Link>
+            {/* Hero Visual Asset */}
+            <div className="relative hidden lg:flex items-center justify-center animate-in fade-in zoom-in-95 duration-1000 delay-200">
+              <div className="relative w-full aspect-square max-w-[550px]">
+                <Image 
+                  src={placeholderImages.hero.url} 
+                  alt="Institutional Visual" 
+                  fill 
+                  className="object-contain"
+                  priority
+                  data-ai-hint={placeholderImages.hero.hint}
+                />
+              </div>
+            </div>
+
           </div>
         </div>
 
