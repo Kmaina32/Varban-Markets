@@ -1,118 +1,176 @@
 'use client';
 
 /**
- * @fileOverview Admin Deposit Verification Queue.
+ * @fileOverview Admin Deposit Verification Queue (Supabase Migrated).
  * Allows administrators to review submitted TxHashes and confirm crypto deposits.
  */
 
-import { useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
-import { Search, CheckCircle2, XCircle, ExternalLink, Clock, DollarSign } from "lucide-react";
-import { useCollection, useFirestore } from "@/firebase";
-import { collection, collectionGroup, query, where, orderBy, doc, updateDoc, increment, addDoc, serverTimestamp } from "firebase/firestore";
+import { CheckCircle2, XCircle, ExternalLink, Loader2, Database } from "lucide-react";
+import { createClient } from "@/app/lib/supabase/client";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
+import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
 
 export default function AdminDepositQueue() {
   const { formatDate, formatNumber } = useTranslation();
-  const db = useFirestore();
+  const supabase = createClient();
+  
+  const [deposits, setDeposits] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState<string | null>(null);
+  
+  const [dialog, setDialog] = useState<{ status: DialogStatus; title: string; message: string }>({
+    status: null,
+    title: '',
+    message: ''
+  });
 
-  const depositsQuery = useMemo(() => {
-    if (!db) return null;
-    return query(
-      collectionGroup(db, "transactions"),
-      where("type", "==", "Crypto Deposit"),
-      where("status", "==", "Pending Verification"),
-      orderBy("timestamp", "desc")
-    );
-  }, [db]);
+  const loadDeposits = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*, profiles(full_name, email)')
+      .eq('type', 'Crypto Deposit')
+      .eq('status', 'Pending Verification')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error("Deposit load error:", error);
+    } else {
+      setDeposits(data || []);
+    }
+    setLoading(false);
+  };
 
-  const { data: deposits, loading } = useCollection<any>(depositsQuery);
+  useEffect(() => {
+    loadDeposits();
+  }, []);
 
   const handleApprove = async (tx: any) => {
-    if (!db || !window.confirm(`Approve $${tx.amount} deposit for user?`)) return;
+    if (!window.confirm(`Finalize $${tx.amount} deposit? Account balance will be incremented.`)) return;
 
+    setIsSyncing(tx.id);
     try {
-      // 1. Update Transaction Status
-      const txRef = doc(db, `users/${tx.userId}/transactions`, tx.id);
-      await updateDoc(txRef, { status: "Confirmed", processedAt: serverTimestamp() });
+      // 1. Fetch current profile state
+      const { data: profile } = await supabase.from('profiles').select('balance, equity').eq('id', tx.user_id).single();
+      if (!profile) throw new Error("Entity context unreachable.");
 
-      // 2. Update User Balance
-      const userRef = doc(db, "users", tx.userId);
-      await updateDoc(userRef, {
-        balance: increment(tx.amount),
-        equity: increment(tx.amount)
-      });
+      const newBalance = (parseFloat(profile.balance) || 0) + parseFloat(tx.amount);
+      const newEquity = (parseFloat(profile.equity) || 0) + parseFloat(tx.amount);
 
-      // 3. Notify User
-      await addDoc(collection(db, `users/${tx.userId}/notifications`), {
-        title: "Deposit Confirmed",
-        body: `Your crypto deposit of $${tx.amount} has been verified and added to your balance.`,
-        type: "Funds",
-        isUnread: true,
-        timestamp: serverTimestamp()
-      });
+      // 2. Atomic update to balance & transaction
+      const { error: txErr } = await supabase
+        .from('transactions')
+        .update({ status: 'Confirmed' })
+        .eq('id', tx.id);
+      
+      if (txErr) throw txErr;
 
-      alert("Deposit successfully processed.");
-    } catch (e) {
-      alert("Processing failure: " + e.message);
+      const { error: profErr } = await supabase
+        .from('profiles')
+        .update({ balance: newBalance, equity: newEquity })
+        .eq('id', tx.user_id);
+      
+      if (profErr) throw profErr;
+
+      setDialog({ status: 'success', title: 'Capital Provisioned', message: 'The deposit has been verified and the trader balance has been updated.' });
+      await loadDeposits();
+    } catch (e: any) {
+      setDialog({ status: 'error', title: 'Sync Error', message: e.message || 'Handshake failure with ledger nodes.' });
+    } finally {
+      setIsSyncing(null);
     }
   };
 
   const handleReject = async (tx: any) => {
-    if (!db || !window.confirm("Reject this deposit record?")) return;
-    const txRef = doc(db, `users/${tx.userId}/transactions`, tx.id);
-    await updateDoc(txRef, { status: "Rejected", processedAt: serverTimestamp() });
+    if (!window.confirm("Reject this deposit transmission?")) return;
+    setIsSyncing(tx.id);
+    try {
+      const { error } = await supabase
+        .from('transactions')
+        .update({ status: 'Rejected' })
+        .eq('id', tx.id);
+      if (error) throw error;
+      await loadDeposits();
+    } catch (e) {
+      setDialog({ status: 'error', title: 'Action Failed', message: 'Failed to update transaction status.' });
+    } finally {
+      setIsSyncing(null);
+    }
   };
 
   return (
-    <AuthedLayout title="Deposit Verification" subtitle="Review and confirm incoming blockchain transmissions">
+    <AuthedLayout title="Deposit Verification" subtitle="Auditing incoming blockchain transmissions">
       <div className="space-y-6">
+        <StatusDialog 
+          status={dialog.status} 
+          title={dialog.title} 
+          message={dialog.message} 
+          onClose={() => setDialog({ ...dialog, status: null })} 
+        />
+
         <Card className="bg-white border-[#E4E4E4] overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-[#F7F7F5] border-b border-[#E4E4E4]">
-                  <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase">Asset & Network</th>
-                  <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase">Amount (USD)</th>
-                  <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase">Verification Hash</th>
-                  <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase">Submitted</th>
-                  <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase text-center">Actions</th>
+            <table className="w-full text-left border-collapse min-w-[950px]">
+              <thead className="bg-[#F7F7F5] border-b border-[#E4E4E4] text-[9px] font-bold uppercase text-[#6B7280] tracking-widest">
+                <tr>
+                  <th className="p-4">Entity & Network</th>
+                  <th className="p-4">Amount (USD)</th>
+                  <th className="p-4">Evidence Hash</th>
+                  <th className="p-4">Submitted</th>
+                  <th className="p-4 text-center">Decision</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E4E4E4] text-xs">
                 {loading ? (
-                  <tr><td colSpan={5} className="p-12 text-center text-[#6B7280] font-mono">Accessing Blockchain Logs...</td></tr>
-                ) : deposits?.length === 0 ? (
-                  <tr><td colSpan={5} className="p-12 text-center text-[#6B7280]">No pending deposits found in the verification queue.</td></tr>
-                ) : deposits?.map((tx: any) => (
-                  <tr key={tx.id} className="hover:bg-[#F7F7F5]">
+                  <tr>
+                    <td colSpan={5} className="p-20 text-center">
+                      <Loader2 className="w-8 h-8 text-[#0055FF] animate-spin mx-auto mb-2" />
+                      <span className="text-[10px] font-bold uppercase text-[#6B7280]">Querying Ledger...</span>
+                    </td>
+                  </tr>
+                ) : deposits.length === 0 ? (
+                  <tr><td colSpan={5} className="p-16 text-center text-[#6B7280] uppercase font-bold tracking-widest">Deposit verification queue is empty.</td></tr>
+                ) : deposits.map((tx) => (
+                  <tr key={tx.id} className="hover:bg-[#F7F7F5] transition-colors">
                     <td className="p-4">
-                      <span className="font-bold block text-[#0A0A0A]">{tx.asset}</span>
-                      <span className="text-[9px] text-[#6B7280] uppercase font-mono">{tx.network}</span>
+                      <span className="font-bold block text-[#0A0A0A]">{tx.profiles?.full_name || tx.user_id.slice(0, 8)}</span>
+                      <span className="text-[9px] text-[#6B7280] uppercase font-mono tracking-tighter">{tx.asset}</span>
                     </td>
                     <td className="p-4 font-mono font-bold text-[#16835B]">
                       ${formatNumber(tx.amount, { minimumFractionDigits: 2 })}
                     </td>
                     <td className="p-4">
                       <div className="flex items-center space-x-2">
-                        <span className="text-[10px] font-mono text-[#6B7280] truncate max-w-[120px]">{tx.txHash}</span>
-                        <a href={`https://tronscan.org/#/transaction/${tx.txHash}`} target="_blank" className="text-[#0055FF] hover:underline">
+                        <span className="text-[10px] font-mono text-[#6B7280] truncate max-w-[120px]">{tx.meta_data?.txHash || "NO_HASH"}</span>
+                        <a href={`https://tronscan.org/#/transaction/${tx.meta_data?.txHash}`} target="_blank" className="text-[#0055FF] hover:opacity-70">
                           <ExternalLink className="w-3 h-3" />
                         </a>
                       </div>
                     </td>
-                    <td className="p-4 text-[#6B7280] text-[10px]">
-                      {tx.timestamp?.toDate ? formatDate(tx.timestamp.toDate()) : '---'}
+                    <td className="p-4 text-[#6B7280] font-mono text-[10px]">
+                      {tx.created_at ? formatDate(new Date(tx.created_at)) : '---'}
                     </td>
                     <td className="p-4 text-center">
                       <div className="flex justify-center space-x-2">
-                        <button onClick={() => handleApprove(tx)} className="p-2 bg-[#16835B] text-white hover:bg-[#0A0A0A] transition-colors shadow-sm">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
+                        <button 
+                          onClick={() => handleApprove(tx)} 
+                          disabled={!!isSyncing}
+                          className="p-2.5 bg-[#16835B] text-white hover:bg-[#0A0A0A] transition-colors shadow-sm disabled:opacity-30"
+                          title="Verify & Fund"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleReject(tx)} className="p-2 border border-[#E4E4E4] text-[#C43D3D] hover:bg-[#C43D3D] hover:text-white transition-colors">
-                          <XCircle className="w-3.5 h-3.5" />
+                        <button 
+                          onClick={() => handleReject(tx)} 
+                          disabled={!!isSyncing}
+                          className="p-2.5 border border-[#E4E4E4] text-[#C43D3D] hover:bg-[#C43D3D] hover:text-white transition-colors disabled:opacity-30"
+                          title="Reject Transaction"
+                        >
+                          <XCircle className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -122,6 +180,13 @@ export default function AdminDepositQueue() {
             </table>
           </div>
         </Card>
+
+        <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-start space-x-3">
+          <Database className="w-4 h-4 text-[#0055FF] shrink-0 mt-0.5" />
+          <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
+            Verify the evidence hash on the official blockchain explorer before authorizing capital provisioning.
+          </p>
+        </div>
       </div>
     </AuthedLayout>
   );

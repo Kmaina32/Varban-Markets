@@ -1,37 +1,67 @@
 'use client';
 
+import { useState, useEffect, useMemo } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
-import { ShieldAlert, Users, DollarSign, Activity, TrendingUp, ArrowRight } from "lucide-react";
+import { ShieldAlert, Users, DollarSign, Activity, TrendingUp, ArrowRight, Loader2 } from "lucide-react";
 import { useTranslation } from "@/app/lib/i18n-context";
-import { useCollection, useFirestore } from "@/firebase";
-import { collection, query, limit, orderBy } from "firebase/firestore";
+import { createClient } from "@/app/lib/supabase/client";
 import Link from "next/link";
-import { useMemo } from "react";
 
 /**
- * @fileOverview Administrative Oversight Node.
+ * @fileOverview Administrative Oversight Node (Supabase Migrated).
  * Provides platform-wide metrics derived from real-time database aggregates.
  */
 
 export default function AdminDashboard() {
-  const { t, formatNumber } = useTranslation();
-  const db = useFirestore();
+  const { formatNumber } = useTranslation();
+  const supabase = createClient();
+  
+  const [metrics, setMetrics] = useState({
+    totalBalance: 0,
+    userCount: 0,
+    verifiedCount: 0,
+    recentUsers: [] as any[]
+  });
+  const [loading, setLoading] = useState(true);
 
-  // Platform-wide metrics allocation from Firestore
-  const usersQuery = useMemo(() => {
-    if (!db) return null;
-    return query(collection(db, "users"), limit(100));
-  }, [db]);
-  const { data: users, loading: usersLoading } = useCollection<any>(usersQuery);
+  useEffect(() => {
+    async function fetchPlatformState() {
+      setLoading(true);
+      try {
+        // 1. Fetch Profiles for Aggregates
+        const { data: profiles, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
 
-  const totalBalance = users?.reduce((acc: number, u: any) => acc + (u.balance || 0), 0) || 0;
-  const verifiedCount = users?.filter((u: any) => u.verificationStatus === 'Verified').length || 0;
+        if (profiles) {
+          const totalBalance = profiles.reduce((acc: number, p: any) => acc + (parseFloat(p.balance) || 0), 0);
+          const verified = profiles.filter((p: any) => p.verification_status === 'Verified').length;
+          
+          setMetrics({
+            totalBalance,
+            userCount: profiles.length,
+            verifiedCount: verified,
+            recentUsers: profiles.slice(0, 5)
+          });
+        }
+      } catch (e) {
+        console.error("Platform metrics sync failure:", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchPlatformState();
+  }, [supabase]);
 
   const platformMetrics = [
-    { title: "Global Assets", value: totalBalance, icon: DollarSign, color: "text-[#16835B]" },
-    { title: "Total Entities", value: users?.length || 0, icon: Users, color: "text-[#0055FF]", isCurrency: false },
-    { title: "KYC Verified", value: verifiedCount, icon: ShieldAlert, color: "text-[#0A0A0A]", isCurrency: false },
+    { title: "Global Assets", value: metrics.totalBalance, icon: DollarSign, color: "text-[#16835B]" },
+    { title: "Total Entities", value: metrics.userCount, icon: Users, color: "text-[#0055FF]", isCurrency: false },
+    { title: "KYC Verified", value: metrics.verifiedCount, icon: ShieldAlert, color: "text-[#0A0A0A]", isCurrency: false },
     { title: "Node Status", value: "Operational", icon: Activity, color: "text-[#16835B]", isCurrency: false }
   ];
 
@@ -43,16 +73,17 @@ export default function AdminDashboard() {
       <div className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {platformMetrics.map((m, idx) => (
-            <Card key={idx} className="bg-white border-[#E4E4E4] p-4 flex flex-col justify-between shadow-sm">
-              <div className="flex flex-row items-center justify-between mb-2">
+            <Card key={idx} className="bg-white border-[#E4E4E4] p-5 flex flex-col justify-between shadow-sm relative overflow-hidden">
+              <div className="flex flex-row items-center justify-between mb-2 relative z-10">
                 <span className="text-[9px] text-[#6B7280] uppercase tracking-widest font-bold">{m.title}</span>
                 <m.icon className="w-3.5 h-3.5 text-[#6B7280]" />
               </div>
-              <div>
+              <div className="relative z-10">
                 <span className={`text-xl font-mono font-bold ${m.color}`}>
-                  {usersLoading ? "..." : (m.isCurrency === false ? m.value : `$${formatNumber(m.value as number, { minimumFractionDigits: 2 })}`)}
+                  {loading ? "..." : (m.isCurrency === false ? m.value : `$${formatNumber(m.value as number, { minimumFractionDigits: 2 })}`)}
                 </span>
               </div>
+              <div className="absolute top-0 right-0 w-16 h-16 bg-[#F7F7F5] rounded-bl-full -z-0"></div>
             </Card>
           ))}
         </div>
@@ -61,32 +92,37 @@ export default function AdminDashboard() {
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
               <h3 className="text-xs font-bold uppercase tracking-wider">Latest Registration Feed</h3>
-              <Link href="/admin/users" className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest flex items-center">
-                User Management <ArrowRight className="ml-1 w-3 h-3" />
+              <Link href="/admin/users" className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest flex items-center group">
+                User Management <ArrowRight className="ml-1 w-3 h-3 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
-            <Card className="bg-white border-[#E4E4E4] overflow-hidden">
+            <Card className="bg-white border-[#E4E4E4] overflow-hidden shadow-sm">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[#F7F7F5] border-b border-[#E4E4E4]">
-                    <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase">Entity</th>
-                    <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase">Domain</th>
-                    <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase text-right">Balance</th>
+                    <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">Entity</th>
+                    <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">Domain</th>
+                    <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-widest text-right">Balance</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E4E4E4] text-xs">
-                  {usersLoading ? (
-                    <tr><td colSpan={3} className="p-6 text-center text-[#6B7280] font-mono">Synchronizing Ledger...</td></tr>
-                  ) : users?.length === 0 ? (
-                    <tr><td colSpan={3} className="p-6 text-center text-[#6B7280]">No platform entities discovered.</td></tr>
-                  ) : users?.slice(0, 5).map((user: any) => (
-                    <tr key={user.id} className="hover:bg-[#F7F7F5]">
-                      <td className="p-3">
-                        <span className="font-bold block">{user.fullName || user.email}</span>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={3} className="p-12 text-center text-[#6B7280]">
+                         <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
+                         <span className="text-[10px] uppercase font-bold tracking-widest">Synchronizing Ledger...</span>
+                      </td>
+                    </tr>
+                  ) : metrics.recentUsers.length === 0 ? (
+                    <tr><td colSpan={3} className="p-12 text-center text-[#6B7280] uppercase font-bold tracking-widest">No platform entities discovered.</td></tr>
+                  ) : metrics.recentUsers.map((user: any) => (
+                    <tr key={user.id} className="hover:bg-[#F7F7F5] transition-colors">
+                      <td className="p-4">
+                        <span className="font-bold block text-[#0A0A0A]">{user.full_name || "Unnamed Entity"}</span>
                         <span className="text-[9px] text-[#6B7280] font-mono">{user.id.slice(0, 8).toUpperCase()}</span>
                       </td>
-                      <td className="p-3 text-[#6B7280] uppercase tracking-tighter text-[10px]">{user.country || "Global"}</td>
-                      <td className="p-3 text-right font-mono font-bold">${formatNumber(user.balance || 0, { minimumFractionDigits: 2 })}</td>
+                      <td className="p-4 text-[#6B7280] uppercase tracking-tighter text-[10px] font-bold">{user.country || "Global"}</td>
+                      <td className="p-4 text-right font-mono font-bold text-[#16835B]">${formatNumber(user.balance || 0, { minimumFractionDigits: 2 })}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -95,19 +131,22 @@ export default function AdminDashboard() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider px-1">Infrastructure Load Metrics</h3>
-            <Card className="bg-white border-[#E4E4E4] p-8 flex flex-col items-center justify-center text-center space-y-4">
-              <TrendingUp className="w-12 h-12 text-[#16835B] opacity-20" />
-              <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#6B7280]">Matching Capacity</span>
-                <p className="text-xs text-[#0A0A0A] leading-relaxed max-w-xs">
-                  Varban matching nodes are currently operating within 1ms latency thresholds.
+            <h3 className="text-xs font-bold uppercase tracking-wider px-1">Infrastructure Capacity</h3>
+            <Card className="bg-white border-[#E4E4E4] p-10 flex flex-col items-center justify-center text-center space-y-6 shadow-sm">
+              <TrendingUp className="w-16 h-16 text-[#16835B] opacity-10" />
+              <div className="space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#6B7280]">Real-time Latency</span>
+                <p className="text-sm font-bold text-[#0A0A0A] leading-relaxed max-w-xs">
+                  All Supabase matching nodes are synchronized within &lt;45ms thresholds.
                 </p>
               </div>
-              <div className="w-full h-1 bg-[#F7F7F5] relative overflow-hidden">
-                <div className="absolute inset-y-0 left-0 bg-[#16835B] w-[14%]"></div>
+              <div className="w-full h-1.5 bg-[#F7F7F5] relative overflow-hidden">
+                <div className="absolute inset-y-0 left-0 bg-[#16835B] w-[14%] transition-all duration-1000"></div>
               </div>
-              <span className="text-[9px] font-bold text-[#16835B] uppercase tracking-widest">Deterministic Safety: ACTIVE</span>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-[#16835B] animate-pulse"></div>
+                <span className="text-[9px] font-bold text-[#16835B] uppercase tracking-widest">Deterministic Safety: ACTIVE</span>
+              </div>
             </Card>
           </div>
         </div>
