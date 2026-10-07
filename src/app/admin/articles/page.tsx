@@ -3,6 +3,7 @@
 /**
  * @fileOverview Admin Intelligence Desk.
  * Allows administrators to author market insights, strategies, and technical briefings.
+ * Hardened against null database references.
  */
 
 import { useState, useMemo } from "react";
@@ -14,11 +15,8 @@ import {
   FileText, 
   Edit3, 
   Trash2, 
-  Globe, 
-  Eye, 
   X, 
   Save, 
-  CheckCircle2, 
   Clock,
   AlertTriangle
 } from "lucide-react";
@@ -49,7 +47,7 @@ export default function AdminArticlesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // Load articles from Firestore
+  // Load articles from Firestore (Guarded)
   const articlesQuery = useMemo(() => {
     if (!db) return null;
     return query(collection(db, "articles"), orderBy("timestamp", "desc"));
@@ -78,9 +76,8 @@ export default function AdminArticlesPage() {
     if (!db || !editingArticle || isSaving) return;
 
     setIsSaving(true);
-    const id = editingArticle.id || doc(collection(db, "articles")).id;
-
     try {
+      const id = editingArticle.id || doc(collection(db, "articles")).id;
       await setDoc(doc(db, "articles", id), {
         ...editingArticle,
         id,
@@ -92,7 +89,7 @@ export default function AdminArticlesPage() {
       setIsModalOpen(false);
       setEditingArticle(null);
     } catch (err) {
-      alert("Handshake Failure: Could not synchronize article state.");
+      alert("Handshake Failure: Database connection inactive.");
     } finally {
       setIsSaving(false);
     }
@@ -100,11 +97,11 @@ export default function AdminArticlesPage() {
 
   const handleDelete = async (id: string) => {
     if (!db) return;
-    if (!window.confirm("Confirm permanent removal of this briefing from the intelligence registry?")) return;
+    if (!window.confirm("Confirm permanent removal?")) return;
     try {
       await deleteDoc(doc(db, "articles", id));
     } catch (err) {
-      alert("Authority Failure: Could not delete record.");
+      alert("Authority Failure.");
     }
   };
 
@@ -116,13 +113,12 @@ export default function AdminArticlesPage() {
   return (
     <AuthedLayout title="Intelligence Desk" subtitle="Author proprietary briefings and market strategies">
       <div className="space-y-6">
-        {/* Toolbar */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="relative w-full max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]" />
             <input 
               type="text" 
-              placeholder="Search briefings by title or asset tag..."
+              placeholder="Search briefings..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-white border border-[#E4E4E4] text-xs focus:outline-none focus:border-[#0055FF] shadow-sm"
@@ -137,203 +133,88 @@ export default function AdminArticlesPage() {
           </button>
         </div>
 
-        {/* Article Grid */}
-        <div className="grid grid-cols-1 gap-4">
-          <Card className="bg-white border-[#E4E4E4] overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[800px]">
-                <thead>
-                  <tr className="bg-[#F7F7F5] border-b border-[#E4E4E4]">
-                    <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">Document</th>
-                    <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">Category</th>
-                    <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">Asset</th>
-                    <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-widest text-center">Status</th>
-                    <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-widest text-right">Published</th>
-                    <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-widest text-center">Actions</th>
+        <Card className="bg-white border-[#E4E4E4] overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[800px]">
+              <thead>
+                <tr className="bg-[#F7F7F5] border-b border-[#E4E4E4]">
+                  <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">Document</th>
+                  <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-widest text-center">Status</th>
+                  <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-widest text-right">Published</th>
+                  <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase tracking-widest text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E4E4E4] text-xs">
+                {loading ? (
+                  <tr><td colSpan={4} className="p-12 text-center text-[#6B7280] font-mono italic">Syncing Ledger...</td></tr>
+                ) : filteredArticles.length === 0 ? (
+                  <tr><td colSpan={4} className="p-12 text-center text-[#6B7280]">No active briefings detected.</td></tr>
+                ) : filteredArticles.map((article) => (
+                  <tr key={article.id} className="hover:bg-[#F7F7F5] transition-colors">
+                    <td className="p-4">
+                      <span className="font-bold block text-[#0A0A0A] truncate max-w-xs">{article.title}</span>
+                      <span className="text-[9px] text-[#6B7280] font-mono">REF: {article.id.slice(0, 8)}</span>
+                    </td>
+                    <td className="p-4 text-center">
+                      <span className={cn(
+                        "px-2 py-0.5 border text-[9px] font-bold uppercase",
+                        article.status === 'Published' ? "border-[#16835B] text-[#16835B] bg-[#16835B]/5" : "border-[#6B7280] text-[#6B7280] bg-[#F7F7F5]"
+                      )}>
+                        {article.status}
+                      </span>
+                    </td>
+                    <td className="p-4 text-right text-[#6B7280] font-mono text-[10px]">
+                      {article.timestamp?.toDate ? formatDate(article.timestamp.toDate()) : 'Draft'}
+                    </td>
+                    <td className="p-4 text-center">
+                      <div className="flex items-center justify-center space-x-2">
+                        <button onClick={() => handleOpenEdit(article)} className="p-1.5 border border-[#E4E4E4] bg-white hover:text-[#0055FF]"><Edit3 className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => handleDelete(article.id)} className="p-1.5 border border-[#E4E4E4] bg-white hover:text-[#C43D3D]"><Trash2 className="w-3.5 h-3.5" /></button>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E4E4E4] text-xs">
-                  {loading ? (
-                    <tr><td colSpan={6} className="p-12 text-center text-[#6B7280] font-mono italic">Accessing Intelligence Registry...</td></tr>
-                  ) : filteredArticles.length === 0 ? (
-                    <tr><td colSpan={6} className="p-12 text-center text-[#6B7280]">No briefings detected in current search scope.</td></tr>
-                  ) : filteredArticles.map((article) => (
-                    <tr key={article.id} className="hover:bg-[#F7F7F5] transition-colors group">
-                      <td className="p-4">
-                        <span className="font-bold block text-[#0A0A0A] truncate max-w-xs">{article.title}</span>
-                        <span className="text-[9px] text-[#6B7280] uppercase font-mono tracking-tighter">ID: {article.id.slice(0, 10)}</span>
-                      </td>
-                      <td className="p-4">
-                        <span className="px-2 py-0.5 bg-[#F7F7F5] border border-[#E4E4E4] text-[9px] font-bold uppercase text-[#0A0A0A]">
-                          {article.category}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <span className="font-mono text-[#0055FF] font-bold">{article.assetTag || "GLOBAL"}</span>
-                      </td>
-                      <td className="p-4 text-center">
-                        <span className={cn(
-                          "px-2 py-0.5 border text-[9px] font-bold uppercase",
-                          article.status === 'Published' ? "border-[#16835B] text-[#16835B] bg-[#16835B]/5" : "border-[#6B7280] text-[#6B7280] bg-[#F7F7F5]"
-                        )}>
-                          {article.status}
-                        </span>
-                      </td>
-                      <td className="p-4 text-right text-[#6B7280] font-mono text-[10px]">
-                        {article.timestamp?.toDate ? formatDate(article.timestamp.toDate()) : 'Draft'}
-                      </td>
-                      <td className="p-4 text-center">
-                        <div className="flex items-center justify-center space-x-2">
-                          <button 
-                            onClick={() => handleOpenEdit(article)}
-                            className="p-1.5 border border-[#E4E4E4] bg-white text-[#6B7280] hover:text-[#0055FF] transition-colors shadow-sm"
-                          >
-                            <Edit3 className="w-3.5 h-3.5" />
-                          </button>
-                          <button 
-                            onClick={() => handleDelete(article.id)}
-                            className="p-1.5 border border-[#E4E4E4] bg-white text-[#6B7280] hover:text-[#C43D3D] transition-colors shadow-sm"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
 
-        <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-start space-x-3 shadow-sm">
-          <AlertTriangle className="w-4 h-4 text-[#C9A227] shrink-0 mt-0.5" />
-          <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
-            Proprietary briefings authored here propagate to all trader news feeds instantly upon publishing. Ensure all data citations are verified against institutional sources.
-          </p>
-        </div>
+        {!db && (
+          <div className="p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 flex items-center space-x-3">
+            <AlertTriangle className="w-4 h-4 text-[#C43D3D]" />
+            <p className="text-[10px] font-bold text-[#C43D3D] uppercase tracking-widest">
+              Firebase Node Offline: Synchronize Supabase connection to enable authoring.
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Editor Modal */}
       {isModalOpen && editingArticle && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-[#0A0A0A]/40 backdrop-blur-sm animate-in fade-in duration-200">
           <Card className="w-full max-w-2xl bg-white border-[#E4E4E4] shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-5 border-b border-[#E4E4E4] flex justify-between items-center bg-[#F7F7F5] shrink-0">
+            <div className="p-5 border-b border-[#E4E4E4] flex justify-between items-center bg-[#F7F7F5]">
               <div className="flex items-center space-x-2">
                 <FileText className="w-4 h-4 text-[#0055FF]" />
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">
-                  Briefing Editor
-                </h3>
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Briefing Editor</h3>
               </div>
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="text-[#6B7280] hover:text-[#0A0A0A] transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <button onClick={() => setIsModalOpen(false)} className="text-[#6B7280] hover:text-[#0A0A0A]"><X className="w-4 h-4" /></button>
             </div>
-
-            <form onSubmit={handleSave} className="p-6 space-y-6 overflow-y-auto flex-grow no-scrollbar">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
-                  <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Article Title</label>
-                  <input
-                    type="text"
-                    required
-                    value={editingArticle.title}
-                    onChange={(e) => setEditingArticle({ ...editingArticle, title: e.target.value })}
-                    className="w-full text-xs p-3 border border-[#E4E4E4] bg-white focus:outline-none focus:border-[#0055FF]"
-                    placeholder="e.g. BTC Market Dynamics Q3 Technical Update"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Category</label>
-                  <select
-                    value={editingArticle.category}
-                    onChange={(e) => setEditingArticle({ ...editingArticle, category: e.target.value as any })}
-                    className="w-full text-xs p-3 border border-[#E4E4E4] bg-[#F7F7F5] focus:outline-none appearance-none"
-                  >
-                    <option value="Insight">Insight</option>
-                    <option value="Strategy">Strategy</option>
-                    <option value="Market Update">Market Update</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Primary Asset Tag</label>
-                  <input
-                    type="text"
-                    value={editingArticle.assetTag}
-                    onChange={(e) => setEditingArticle({ ...editingArticle, assetTag: e.target.value.toUpperCase() })}
-                    className="w-full text-xs p-3 border border-[#E4E4E4] bg-white focus:outline-none focus:border-[#0055FF] font-mono"
-                    placeholder="e.g. BTC, EUR/USD"
-                  />
-                </div>
-              </div>
-
+            <form onSubmit={handleSave} className="p-6 space-y-4 overflow-y-auto no-scrollbar">
               <div>
-                <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Briefing Body (Full Content)</label>
-                <textarea
-                  required
-                  rows={10}
-                  value={editingArticle.body}
-                  onChange={(e) => setEditingArticle({ ...editingArticle, body: e.target.value })}
-                  className="w-full text-xs p-4 border border-[#E4E4E4] bg-white focus:outline-none focus:border-[#0055FF] leading-relaxed"
-                  placeholder="Draft your professional market analysis here..."
-                ></textarea>
+                <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1">Title</label>
+                <input required value={editingArticle.title} onChange={e => setEditingArticle({...editingArticle, title: e.target.value})} className="w-full text-xs p-3 border border-[#E4E4E4] outline-none" />
               </div>
-
-              <div className="p-4 border border-[#E4E4E4] bg-[#F7F7F5] flex items-center justify-between">
-                <div>
-                  <span className="text-[9px] font-bold uppercase block text-[#0A0A0A]">Visibility Status</span>
-                  <p className="text-[8px] text-[#6B7280] uppercase tracking-wider">Controls broadcast to trader terminals</p>
-                </div>
-                <div className="flex bg-white border border-[#E4E4E4] rounded-none overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => setEditingArticle({...editingArticle, status: 'Draft'})}
-                    className={cn(
-                      "px-4 py-2 text-[9px] font-bold uppercase transition-colors",
-                      editingArticle.status === 'Draft' ? "bg-[#0A0A0A] text-white" : "text-[#6B7280] hover:bg-[#F7F7F5]"
-                    )}
-                  >
-                    Draft
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditingArticle({...editingArticle, status: 'Published'})}
-                    className={cn(
-                      "px-4 py-2 text-[9px] font-bold uppercase transition-colors border-l",
-                      editingArticle.status === 'Published' ? "bg-[#16835B] text-white border-[#16835B]" : "text-[#6B7280] hover:bg-[#F7F7F5]"
-                    )}
-                  >
-                    Publish
-                  </button>
-                </div>
+              <div>
+                <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1">Content</label>
+                <textarea required rows={8} value={editingArticle.body} onChange={e => setEditingArticle({...editingArticle, body: e.target.value})} className="w-full text-xs p-4 border border-[#E4E4E4] outline-none" />
               </div>
+              <button type="submit" disabled={isSaving || !db} className="w-full btn-institutional-primary py-4">
+                {isSaving ? "Authorizing..." : "Finalize Briefing"}
+              </button>
             </form>
-
-            <div className="p-5 border-t border-[#E4E4E4] flex justify-end items-center bg-[#F7F7F5] gap-4 shrink-0">
-              <button 
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280] hover:text-[#0A0A0A]"
-              >
-                Discard Changes
-              </button>
-              <button 
-                onClick={handleSave}
-                disabled={isSaving}
-                className="bg-[#0A0A0A] text-white px-8 py-3 text-[10px] font-bold uppercase tracking-widest flex items-center space-x-2 shadow-md hover:bg-[#0055FF] transition-all"
-              >
-                <Save className="w-3.5 h-3.5" />
-                <span>{isSaving ? "Synchronizing..." : "Save Record"}</span>
-              </button>
-            </div>
           </Card>
         </div>
       )}
-    </AuthedLayout>
+    </div>
   );
 }
