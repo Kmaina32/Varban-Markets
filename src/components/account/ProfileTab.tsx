@@ -7,12 +7,13 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { User, Camera, Loader2, ShieldAlert, CheckCircle2, AlertCircle } from 'lucide-react';
+import { User, Camera, Loader2, ShieldAlert } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { createClient } from '@/app/lib/supabase/client';
 import { COUNTRIES } from '@/app/lib/countries';
 import { cn } from '@/app/lib/utils';
 import { useUser } from '@/firebase';
+import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
 
 export default function ProfileTab() {
   const { user } = useUser();
@@ -21,7 +22,13 @@ export default function ProfileTab() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [feedback, setFeedback] = useState<string | null>(null);
+  
+  // Dialog State
+  const [dialog, setDialog] = useState<{ status: DialogStatus; title: string; message: string }>({
+    status: null,
+    title: '',
+    message: ''
+  });
 
   const [form, setForm] = useState({
     firstName: "", lastName: "", phone: "", country: "United Kingdom", dialCode: "+44"
@@ -30,31 +37,42 @@ export default function ProfileTab() {
   const initializeProfile = async () => {
     if (!user?.uid) return;
     
-    // Create profile from metadata if missing
-    const { data: newProfile, error: createError } = await supabase
-      .from('profiles')
-      .insert({
-        id: user.uid,
-        first_name: user.user_metadata?.first_name || "",
-        last_name: user.user_metadata?.last_name || "",
-        full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
-        email: user.email,
-        country: user.user_metadata?.country || "United Kingdom",
-        balance: 1000.00,
-        equity: 1000.00
-      })
-      .select()
-      .single();
+    try {
+      const { data: newProfile, error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.uid,
+          first_name: user.user_metadata?.first_name || "",
+          last_name: user.user_metadata?.last_name || "",
+          full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
+          email: user.email,
+          country: user.user_metadata?.country || "United Kingdom"
+        }, { onConflict: 'id' })
+        .select()
+        .single();
 
-    if (newProfile) {
-      setProfile(newProfile);
-      setForm({
-        firstName: newProfile.first_name || "",
-        lastName: newProfile.last_name || "",
-        phone: "",
-        country: newProfile.country || "United Kingdom",
-        dialCode: "+44"
-      });
+      if (error) throw error;
+
+      if (newProfile) {
+        setProfile(newProfile);
+        setForm({
+          firstName: newProfile.first_name || "",
+          lastName: newProfile.last_name || "",
+          phone: "",
+          country: newProfile.country || "United Kingdom",
+          dialCode: "+44"
+        });
+      }
+    } catch (err: any) {
+      console.error("Initialization Error:", err);
+      // Handle the case where table doesn't exist yet
+      if (err.code === '42P01') {
+        setDialog({
+          status: 'error',
+          title: 'Database Schema Required',
+          message: 'The profiles table has not been initialized in your Supabase project. Please execute the provided SQL setup instructions.'
+        });
+      }
     }
   };
 
@@ -66,8 +84,10 @@ export default function ProfileTab() {
           .from('profiles')
           .select('*')
           .eq('id', user.uid)
-          .single();
+          .maybeSingle();
         
+        if (error) throw error;
+
         if (data) {
           setProfile(data);
           const rawPhone = data.phone || "";
@@ -80,11 +100,17 @@ export default function ProfileTab() {
             dialCode: phoneParts.length > 1 ? phoneParts[0] : "+44"
           });
         } else {
-          // If profile missing, attempt to initialize it
           await initializeProfile();
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Profile Fetch Error:", err);
+        if (err.code === '42P01') {
+          setDialog({
+            status: 'error',
+            title: 'Database Sync Failure',
+            message: 'Table "profiles" not found. Please ensure you have run the database setup SQL in your Supabase dashboard.'
+          });
+        }
       } finally {
         setLoading(false);
       }
@@ -113,10 +139,18 @@ export default function ProfileTab() {
         .eq('id', user.uid);
       
       if (error) throw error;
-      setFeedback("Identity updated successfully.");
-      setTimeout(() => setFeedback(null), 3000);
-    } catch (err) {
-      alert("Failed to synchronize changes. Root authority handshake failed.");
+
+      setDialog({
+        status: 'success',
+        title: 'Identity Verified',
+        message: 'Your profile modifications have been successfully registered in the institutional ledger.'
+      });
+    } catch (err: any) {
+      setDialog({
+        status: 'error',
+        title: 'Handshake Failed',
+        message: err.message || 'Failed to synchronize changes. Root authority handshake failed.'
+      });
     } finally {
       setIsSaving(false);
     }
@@ -131,6 +165,13 @@ export default function ProfileTab() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <StatusDialog 
+        status={dialog.status} 
+        title={dialog.title} 
+        message={dialog.message} 
+        onClose={() => setDialog({ ...dialog, status: null })} 
+      />
+
       <Card className="p-8 bg-white border-[#E4E4E4] lg:col-span-2 shadow-sm">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-8 mb-10 border-b border-[#F7F7F5] pb-8">
           <div className="relative group">
@@ -184,9 +225,8 @@ export default function ProfileTab() {
               {COUNTRIES.map(c => <option key={c.code} value={c.name}>{c.name}</option>)}
             </select>
           </div>
-          {feedback && <div className="p-3 bg-[#16835B]/10 border border-[#16835B] text-[9px] font-bold text-[#16835B] uppercase flex items-center gap-2 animate-in fade-in duration-300"><CheckCircle2 className="w-4 h-4" /> {feedback}</div>}
           <button type="submit" disabled={isSaving} className="w-full btn-institutional-primary py-4">
-            {isSaving ? "Synchronizing..." : "Save Identity Changes"}
+            {isSaving ? "SYNCHRONIZING..." : "Save Identity Changes"}
           </button>
         </form>
       </Card>

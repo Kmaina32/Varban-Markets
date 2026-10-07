@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -12,6 +11,7 @@ import { Card } from '@/components/ui/card';
 import { createClient } from '@/app/lib/supabase/client';
 import { useUser } from '@/firebase';
 import { cn } from '@/app/lib/utils';
+import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
 
 const TIMEZONES = [
   { label: "UTC -08:00 (PT)", value: "UTC-8" },
@@ -32,25 +32,37 @@ export default function DisplayTab() {
   });
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
+  
+  const [dialog, setDialog] = useState<{ status: DialogStatus; title: string; message: string }>({
+    status: null,
+    title: '',
+    message: ''
+  });
 
   useEffect(() => {
     async function loadSettings() {
       if (!user?.uid) return;
-      const { data } = await supabase
-        .from('profiles')
-        .select('currency, language, timezone')
-        .eq('id', user.uid)
-        .single();
-      
-      if (data) {
-        setForm({
-          currency: data.currency || 'USD',
-          language: data.language || 'ENGLISH',
-          timezone: data.timezone || 'UTC+0'
-        });
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('currency, language, timezone')
+          .eq('id', user.uid)
+          .maybeSingle();
+        
+        if (error) throw error;
+        
+        if (data) {
+          setForm({
+            currency: data.currency || 'USD',
+            language: data.language || 'ENGLISH',
+            timezone: data.timezone || 'UTC+0'
+          });
+        }
+      } catch (e) {
+        console.error("Display Settings Load Error:", e);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     loadSettings();
   }, [user?.uid, supabase]);
@@ -58,7 +70,6 @@ export default function DisplayTab() {
   const handleSave = async () => {
     if (!user?.uid || isSaving) return;
     setIsSaving(true);
-    setSuccess(false);
     
     try {
       const { error } = await supabase
@@ -71,10 +82,18 @@ export default function DisplayTab() {
         .eq('id', user.uid);
       
       if (error) throw error;
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+
+      setDialog({
+        status: 'success',
+        title: 'Preferences Updated',
+        message: 'Universal display settings have been synchronized across your trading workspace.'
+      });
     } catch (e) {
-      alert("Platform synchronization failure.");
+      setDialog({
+        status: 'error',
+        title: 'Sync Interrupted',
+        message: 'Platform synchronization failure. Please verify database connectivity.'
+      });
     } finally {
       setIsSaving(false);
     }
@@ -84,6 +103,13 @@ export default function DisplayTab() {
 
   return (
     <div className="max-w-2xl mx-auto py-4">
+      <StatusDialog 
+        status={dialog.status} 
+        title={dialog.title} 
+        message={dialog.message} 
+        onClose={() => setDialog({ ...dialog, status: null })} 
+      />
+
       <Card className="bg-white border-[#E4E4E4] p-10 shadow-sm space-y-10">
         <div className="space-y-0 divide-y divide-[#F7F7F5]">
           {/* CURRENCY SELECTOR */}
@@ -149,20 +175,13 @@ export default function DisplayTab() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          {success && (
-            <div className="p-3 bg-[#16835B]/10 border border-[#16835B] text-[9px] font-bold text-[#16835B] uppercase flex items-center gap-2 animate-in fade-in duration-300">
-              <CheckCircle2 className="w-4 h-4" /> Preferences Updated
-            </div>
-          )}
-          <button 
-            onClick={handleSave}
-            disabled={isSaving}
-            className="w-full bg-[#0A0A0A] text-white py-5 text-[11px] font-bold uppercase tracking-[0.25em] transition-all hover:bg-[#161616] disabled:opacity-40 shadow-md"
-          >
-            {isSaving ? "SYNCING..." : "SAVE SETTINGS"}
-          </button>
-        </div>
+        <button 
+          onClick={handleSave}
+          disabled={isSaving}
+          className="w-full bg-[#0A0A0A] text-white py-5 text-[11px] font-bold uppercase tracking-[0.25em] transition-all hover:bg-[#161616] disabled:opacity-40 shadow-md"
+        >
+          {isSaving ? "SYNCING..." : "SAVE SETTINGS"}
+        </button>
       </Card>
     </div>
   );

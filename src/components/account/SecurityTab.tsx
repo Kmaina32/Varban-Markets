@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -7,13 +6,14 @@
  */
 
 import React, { useState } from 'react';
-import { Key, Shield, Laptop, AlertTriangle, Loader2, CheckCircle2 } from 'lucide-react';
+import { Key, Shield, Laptop, AlertTriangle, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { useUser, useFirestore, useCollection, useAuth, useDoc } from '@/firebase';
 import { collection, query, orderBy, limit, getDocs, deleteDoc, doc, setDoc } from 'firebase/firestore';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { useTranslation } from '@/app/lib/i18n-context';
 import { cn } from '@/app/lib/utils';
+import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
 
 export default function SecurityTab() {
   const { user } = useUser();
@@ -24,7 +24,12 @@ export default function SecurityTab() {
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   const [isRevoking, setIsRevoking] = useState(false);
   const [isProvisioning, setIsProvisioning] = useState(false);
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error', msg: string } | null>(null);
+  
+  const [dialog, setDialog] = useState<{ status: DialogStatus; title: string; message: string }>({
+    status: null,
+    title: '',
+    message: ''
+  });
 
   const { data: sessions, loading: sessionsLoading } = useCollection<any>(
     user ? query(collection(db, `users/${user.uid}/sessions`), orderBy('lastActive', 'desc'), limit(10)) : null
@@ -34,32 +39,48 @@ export default function SecurityTab() {
     if (!auth || !user?.email) return;
     try {
       await sendPasswordResetEmail(auth, user.email);
-      setFeedback({ type: 'success', msg: "Reset link dispatched to your registered email domain." });
-      setTimeout(() => setFeedback(null), 5000);
+      setDialog({
+        status: 'success',
+        title: 'Reset link dispatched',
+        message: `A security link has been transmitted to ${user.email}. Please follow the instructions to update your credentials.`
+      });
     } catch (e) {
-      setFeedback({ type: 'error', msg: "Identity synchronization failure." });
+      setDialog({
+        status: 'error',
+        title: 'Sync Failure',
+        message: 'Unable to communicate with the identity provider. Please try again later.'
+      });
     }
   };
 
   const handleRevokeSessions = async () => {
     if (!user || !db || isRevoking) return;
-    if (!window.confirm("CONFIRM AUTHORITY: Invalidate all remote session tokens? This will force-logout all other devices.")) return;
     
-    setIsRevoking(true);
-    try {
-      const sessionsRef = collection(db, `users/${user.uid}/sessions`);
-      const snapshot = await getDocs(sessionsRef);
-      
-      const deletions = snapshot.docs.map(d => deleteDoc(doc(db, `users/${user.uid}/sessions`, d.id)));
-      await Promise.all(deletions);
-      
-      setFeedback({ type: 'success', msg: "Global session revocation executed." });
-    } catch (e) {
-      setFeedback({ type: 'error', msg: "Revocation command failed." });
-    } finally {
-      setIsRevoking(false);
-      setTimeout(() => setFeedback(null), 3000);
-    }
+    setDialog({
+      status: 'warning',
+      title: 'Confirm Revocation',
+      message: 'This will instantly invalidate all active session tokens on other devices. You will need to log back in manually everywhere else.',
+      onAction: async () => {
+        setIsRevoking(true);
+        setDialog({ ...dialog, status: 'loading', title: 'Executing Revocation' });
+        try {
+          const sessionsRef = collection(db, `users/${user.uid}/sessions`);
+          const snapshot = await getDocs(sessionsRef);
+          const deletions = snapshot.docs.map(d => deleteDoc(doc(db, `users/${user.uid}/sessions`, d.id)));
+          await Promise.all(deletions);
+          
+          setDialog({
+            status: 'success',
+            title: 'Global Revocation Complete',
+            message: 'All remote session tokens have been invalidated successfully.'
+          });
+        } catch (e) {
+          setDialog({ status: 'error', title: 'Command Failed', message: 'Failed to execute revocation across all nodes.' });
+        } finally {
+          setIsRevoking(false);
+        }
+      }
+    } as any);
   };
 
   const handleToggleMFA = async () => {
@@ -72,12 +93,15 @@ export default function SecurityTab() {
         preferences: { mfaEnabled: !currentStatus }
       }, { merge: true });
       
-      setFeedback({ type: 'success', msg: `MFA Node Status: ${!currentStatus ? 'ACTIVE' : 'DISABLED'}` });
+      setDialog({
+        status: 'success',
+        title: 'Security State Updated',
+        message: `Multi-factor authentication is now ${!currentStatus ? 'ACTIVE' : 'DISABLED'} for this entity.`
+      });
     } catch (e) {
-      setFeedback({ type: 'error', msg: "MFA state synchronization error." });
+      setDialog({ status: 'error', title: 'Sync Error', message: 'MFA state synchronization interrupted.' });
     } finally {
       setIsProvisioning(false);
-      setTimeout(() => setFeedback(null), 3000);
     }
   };
 
@@ -85,18 +109,16 @@ export default function SecurityTab() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {feedback && (
-        <div className={cn(
-          "p-4 border text-[10px] font-bold uppercase tracking-widest flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300",
-          feedback.type === 'success' ? "bg-[#16835B]/10 border-[#16835B] text-[#16835B]" : "bg-[#C43D3D]/10 border-[#C43D3D] text-[#C43D3D]"
-        )}>
-          {feedback.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
-          <span>{feedback.msg}</span>
-        </div>
-      )}
+      <StatusDialog 
+        status={dialog.status} 
+        title={dialog.title} 
+        message={dialog.message} 
+        onClose={() => setDialog({ ...dialog, status: null })}
+        actionLabel={(dialog as any).onAction ? 'Confirm Command' : undefined}
+        onAction={(dialog as any).onAction}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Credentials Card */}
         <Card className="p-8 bg-white border-[#E4E4E4] space-y-6 shadow-sm">
           <div className="flex items-center gap-3 border-b border-[#F7F7F5] pb-4">
             <Key className="w-5 h-5 text-[#0055FF]" />
@@ -118,7 +140,6 @@ export default function SecurityTab() {
           </div>
         </Card>
 
-        {/* MFA Card */}
         <Card className="p-8 bg-white border-[#E4E4E4] space-y-6 shadow-sm">
           <div className="flex items-center gap-3 border-b border-[#F7F7F5] pb-4">
             <Shield className="w-5 h-5 text-[#16835B]" />
@@ -149,7 +170,6 @@ export default function SecurityTab() {
         </Card>
       </div>
 
-      {/* Sessions Ledger */}
       <Card className="bg-white border-[#E4E4E4] shadow-sm overflow-hidden">
         <div className="p-5 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5]">
           <div className="flex items-center gap-3">
@@ -193,13 +213,6 @@ export default function SecurityTab() {
           </table>
         </div>
       </Card>
-
-      <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-start gap-3">
-         <AlertTriangle className="w-4 h-4 text-[#C9A227] shrink-0 mt-0.5" />
-         <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
-           Critical Security: Forging device signatures or bypassing session encryption will result in an immediate lock of all account assets. Maintain credential integrity at all times.
-         </p>
-      </div>
     </div>
   );
 }

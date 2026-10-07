@@ -1,11 +1,7 @@
-
 'use client';
 
 /**
  * @fileOverview Institutional 3-Slot KYC Verification Pipeline.
- * 1. Identity Document (Supports multi-file selection for Front/Back).
- * 2. Proof of Residence (PDF/Image).
- * 3. Biometric Selfie (Launches custom hardware camera interface).
  */
 
 import React, { useState } from 'react';
@@ -13,8 +9,10 @@ import { ShieldCheck, FileText, Camera, Plus, Loader2, ShieldAlert, AlertCircle 
 import { Card } from '@/components/ui/card';
 import { useUser, useDoc, useFirestore } from '@/firebase';
 import { doc, setDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { createClient } from '@/app/lib/supabase/client';
 import { cn } from '@/app/lib/utils';
 import CameraCaptureModal from './CameraCaptureModal';
+import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
 
 interface KycSlot {
   id: string;
@@ -57,10 +55,16 @@ const KYC_SLOTS: KycSlot[] = [
 export default function KycTab() {
   const { user } = useUser();
   const db = useFirestore();
+  const supabase = createClient();
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   
   const [isUploading, setIsUploading] = useState<string | null>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [dialog, setDialog] = useState<{ status: DialogStatus; title: string; message: string }>({
+    status: null,
+    title: '',
+    message: ''
+  });
 
   const handleUpload = async (files: FileList | File[], type: string) => {
     if (!user || !db) return;
@@ -70,7 +74,6 @@ export default function KycTab() {
       const fileArray = Array.isArray(files) ? files : Array.from(files);
       
       for (const file of fileArray) {
-        // 1. Generate secure R2 transmission token
         const resp = await fetch('/api/storage/presigned-url', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -84,14 +87,12 @@ export default function KycTab() {
         
         const { uploadUrl, key } = await resp.json();
 
-        // 2. Perform direct PUT to Cloudflare R2
         await fetch(uploadUrl, { 
           method: 'PUT', 
           headers: { 'Content-Type': file.type }, 
           body: file 
         });
 
-        // 3. Register entry in compliance ledger
         await addDoc(collection(db, `users/${user.uid}/kyc_submissions`), {
           type,
           storageKey: key,
@@ -102,17 +103,26 @@ export default function KycTab() {
         });
       }
 
-      // Update global verification state
       if (profile?.status?.verificationStatus !== 'Verified') {
         await setDoc(doc(db, "users", user.uid), {
           status: { verificationStatus: 'Pending' }
         }, { merge: true });
+
+        // Sync with Supabase profiles table
+        await supabase.from('profiles').update({ verification_status: 'Pending' }).eq('id', user.uid);
       }
 
-      alert("Evidence successfully registered in the compliance ledger.");
+      setDialog({
+        status: 'success',
+        title: 'Evidence Registered',
+        message: 'Your documents have been submitted to the compliance node for manual audit.'
+      });
     } catch (e) {
-      console.error("KYC Upload Failure:", e);
-      alert("Transmission Failure: Could not establish a secure link with the compliance node.");
+      setDialog({
+        status: 'error',
+        title: 'Transmission failure',
+        message: 'Handshake Error: Could not establish a secure link with the compliance node.'
+      });
     } finally {
       setIsUploading(null);
     }
@@ -122,6 +132,13 @@ export default function KycTab() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
+      <StatusDialog 
+        status={dialog.status} 
+        title={dialog.title} 
+        message={dialog.message} 
+        onClose={() => setDialog({ ...dialog, status: null })} 
+      />
+
       <CameraCaptureModal 
         isOpen={isCameraOpen} 
         onClose={() => setIsCameraOpen(false)} 
@@ -193,28 +210,6 @@ export default function KycTab() {
             </div>
           ))}
         </div>
-
-        <div className="p-6 bg-[#F7F7F5] border border-[#E4E4E4] border-l-4 border-l-[#C9A227] flex items-start gap-4 shadow-sm">
-          <ShieldAlert className="w-5 h-5 text-[#C9A227] shrink-0" />
-          <div className="space-y-2">
-            <p className="text-[10px] text-[#0A0A0A] uppercase font-bold leading-relaxed tracking-wider">
-              Institutional Compliance Notice
-            </p>
-            <p className="text-[9px] text-[#6B7280] leading-relaxed uppercase">
-              All documents are manually verified against global AML standards within 24-48 hours. Ensure your profile name exactly matches your identity documents to prevent account freezes.
-            </p>
-          </div>
-        </div>
-      </Card>
-
-      <Card className="p-6 bg-white border-[#E4E4E4] flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-3">
-          <AlertCircle className="w-4 h-4 text-[#0055FF]" />
-          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#6B7280]">Verification Level: Standard Trader</span>
-        </div>
-        <button className="text-[9px] font-bold text-[#0055FF] uppercase underline decoration-2 underline-offset-4">
-          View Limit Matrix
-        </button>
       </Card>
     </div>
   );
