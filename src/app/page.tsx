@@ -21,11 +21,18 @@ import { MarketIcon } from "@/components/MarketIcon";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { detectLocation } from "@/app/lib/geolocation-service";
+import { cn } from "@/app/lib/utils";
 
 export default function HomePage() {
   const [trendingNews, setTrendingNews] = useState<NewsItem[]>([]);
   const [newsLoading, setNewsLoading] = useState(true);
   const [location, setLocation] = useState("Globally");
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+
+  const heroImages = [
+    placeholderImages.hero.url,
+    placeholderImages.hero_alt.url
+  ];
 
   useEffect(() => {
     async function loadNews() {
@@ -48,7 +55,13 @@ export default function HomePage() {
 
     loadNews();
     loadLoc();
-  }, []);
+
+    const interval = setInterval(() => {
+      setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [heroImages.length]);
 
   return (
     <div className="flex flex-col bg-white min-h-screen">
@@ -62,30 +75,28 @@ export default function HomePage() {
         </p>
       </div>
 
-      {/* MAIN HERO SECTION - Full Width Backgrounds */}
+      {/* MAIN HERO SECTION - Slideshow Architecture */}
       <section className="relative bg-white overflow-hidden pt-20 lg:pt-32 pb-16 min-h-[600px] flex items-center">
-        {/* Background Layer spans left to right behind text */}
-        <div className="absolute inset-0 z-0 flex pointer-events-none opacity-40">
-          <div className="relative w-1/2 h-full">
-            <Image 
-              src={placeholderImages.hero.url} 
-              alt="Hero Background Left" 
-              fill 
-              className="object-cover"
-              priority
-              data-ai-hint={placeholderImages.hero.hint}
-            />
-          </div>
-          <div className="relative w-1/2 h-full">
-            <Image 
-              src={placeholderImages.hero_alt.url} 
-              alt="Hero Background Right" 
-              fill 
-              className="object-cover"
-              priority
-              data-ai-hint={placeholderImages.hero_alt.hint}
-            />
-          </div>
+        {/* Background Slideshow Layer */}
+        <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
+          {heroImages.map((src, idx) => (
+            <div 
+              key={src}
+              className={cn(
+                "absolute inset-0 transition-opacity duration-1000 ease-in-out",
+                idx === currentHeroIndex ? "opacity-100" : "opacity-0"
+              )}
+            >
+              <Image 
+                src={src} 
+                alt={`Hero Background ${idx}`} 
+                fill 
+                className="object-cover"
+                priority={idx === 0}
+                data-ai-hint="trading background"
+              />
+            </div>
+          ))}
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
