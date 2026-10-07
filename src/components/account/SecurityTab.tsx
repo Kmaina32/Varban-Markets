@@ -2,10 +2,10 @@
 
 /**
  * @fileOverview Institutional Identity Protection & Session Security.
- * Real implementation for password resets, MFA status, and global session revocation.
+ * Hardened against Firebase null database references to prevent runtime crashes.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Key, Shield, Laptop, AlertTriangle, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { useUser, useFirestore, useCollection, useAuth, useDoc } from '@/firebase';
@@ -31,9 +31,13 @@ export default function SecurityTab() {
     message: ''
   });
 
-  const { data: sessions, loading: sessionsLoading } = useCollection<any>(
-    user ? query(collection(db, `users/${user.uid}/sessions`), orderBy('lastActive', 'desc'), limit(10)) : null
-  );
+  // Guard: Only create the query if db is active to prevent Firebase crashes
+  const sessionsQuery = useMemo(() => {
+    if (!db || !user) return null;
+    return query(collection(db, `users/${user.uid}/sessions`), orderBy('lastActive', 'desc'), limit(10));
+  }, [db, user]);
+
+  const { data: sessions, loading: sessionsLoading } = useCollection<any>(sessionsQuery);
 
   const handlePasswordReset = async () => {
     if (!auth || !user?.email) return;
@@ -195,7 +199,9 @@ export default function SecurityTab() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E4E4E4] text-[10px] font-mono">
-              {sessionsLoading ? (
+              {!db ? (
+                <tr><td colSpan={4} className="p-12 text-center text-[#6B7280] font-bold uppercase">Security Ledger Node Offline.</td></tr>
+              ) : sessionsLoading ? (
                 <tr><td colSpan={4} className="p-12 text-center text-[#6B7280] animate-pulse">Syncing Security Registry...</td></tr>
               ) : !sessions || sessions.length === 0 ? (
                 <tr><td colSpan={4} className="p-12 text-center text-[#6B7280] font-bold uppercase">No remote sessions detected.</td></tr>

@@ -3,10 +3,10 @@
 /**
  * @fileOverview Admin Intelligence Desk.
  * Allows administrators to author market insights, strategies, and technical briefings.
- * Hardened against null database references and refactored to resolve syntax errors.
+ * Refactored to eliminate syntax errors and harden database guards.
  */
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { 
@@ -151,7 +151,9 @@ export default function AdminArticlesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E4E4E4] text-xs">
-                {loading ? (
+                {!db ? (
+                   <tr><td colSpan={4} className="p-12 text-center text-[#6B7280] font-mono italic">Database Node Offline.</td></tr>
+                ) : loading ? (
                   <tr><td colSpan={4} className="p-12 text-center text-[#6B7280] font-mono italic">Syncing Ledger...</td></tr>
                 ) : filteredArticles.length === 0 ? (
                   <tr><td colSpan={4} className="p-12 text-center text-[#6B7280]">No active briefings detected.</td></tr>
