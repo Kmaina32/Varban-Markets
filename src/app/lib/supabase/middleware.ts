@@ -2,23 +2,21 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
 /**
- * @fileOverview Hardened Supabase Middleware.
- * Refined to prevent crashes during Next.js 15 build and prerendering.
+ * @fileOverview Next.js 15 Middleware for Supabase Session Refreshing.
+ * Standardized cookie-sync pattern to ensure both request and response context.
  */
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 export const updateSession = async (request: NextRequest) => {
-  // Create an unmodified response
+  // Create an initial response
   let supabaseResponse = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
+    request,
   });
 
   // Guard against missing Supabase credentials during build/deployment
-  if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('your-project-id')) {
+  if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('placeholder')) {
     return supabaseResponse;
   }
 
@@ -31,13 +29,17 @@ export const updateSession = async (request: NextRequest) => {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          // Standardized for Next.js 15 Middleware compatibility
+          // 1. Set on the request for current session visibility
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
+          
+          // 2. Refresh response object
           supabaseResponse = NextResponse.next({
             request,
           })
+          
+          // 3. Set on the response to persist to browser
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
@@ -46,7 +48,7 @@ export const updateSession = async (request: NextRequest) => {
     },
   );
 
-  // Refresh user session state
+  // Refresh user session state (required to persist auth state)
   await supabase.auth.getUser();
 
   return supabaseResponse;
