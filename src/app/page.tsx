@@ -4,7 +4,19 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, ChevronRight, MessageSquare, Download, Check, ShieldCheck, Zap, Globe } from "lucide-react";
+import { 
+  ArrowRight, 
+  ChevronRight, 
+  MessageSquare, 
+  Download, 
+  Check, 
+  ShieldCheck, 
+  Zap, 
+  Globe, 
+  FileText, 
+  Headset, 
+  Lock 
+} from "lucide-react";
 import { MarketIcon } from "@/components/MarketIcon";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
 import placeholderImages from "@/app/lib/placeholder-images.json";
@@ -50,32 +62,68 @@ export default function HomePage() {
         </p>
       </div>
 
-      {/* MAIN HERO SECTION - Institutional White */}
-      <section className="relative pt-24 pb-28 bg-white overflow-hidden border-b border-[#E4E4E4]">
+      {/* MAIN HERO SECTION - Institutional White with Abstract BG */}
+      <section className="relative pt-20 pb-0 bg-white overflow-hidden">
+        {/* Centered Background Graphic */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40 md:opacity-100 mt-[-40px]">
+          <div className="relative w-[450px] h-[450px] md:w-[650px] md:h-[650px]">
+             <Image 
+                src={placeholderImages.hero.url} 
+                alt="Varban Background Design" 
+                fill 
+                className="object-contain"
+                priority
+                data-ai-hint="3d white abstract knot"
+             />
+          </div>
+        </div>
+
         <div className="relative z-10 max-w-5xl mx-auto px-4 text-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-          <h1 className="text-4xl sm:text-5xl md:text-8xl font-bold tracking-tight text-[#0A0A0A] font-display leading-[0.95]">
-            Trade Online <br />
-            <span className="text-[#0055FF]">{location}</span>
+          <h1 className="text-4xl sm:text-5xl md:text-[64px] font-bold tracking-tight text-[#0A0A0A] font-display leading-[1.1]">
+            Trade online {location} <br className="hidden md:block" /> with a leading broker
           </h1>
           
-          <p className="text-base md:text-xl text-[#6B7280] max-w-2xl mx-auto leading-relaxed font-medium">
-            Discover the world's most stable derivative infrastructure. <br className="hidden md:block" />
-            Engineered for precision, speed, and total financial integrity.
+          <p className="text-sm md:text-base text-[#6B7280] max-w-xl mx-auto leading-relaxed font-medium">
+            Trade with a reliable licensed broker. Experience Varban&apos;s leading online trading platform with tight spreads and fast execution.
           </p>
 
           <div className="flex flex-row items-center justify-center gap-2 sm:gap-4 pt-4 px-2">
             <Link 
               href="/register" 
-              className="flex-1 sm:flex-none bg-[#FFDE00] hover:bg-[#F2D200] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all shadow-md sm:min-w-[220px] text-center"
+              className="flex-1 sm:flex-none bg-[#FFDE00] hover:bg-[#F2D200] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all shadow-md sm:min-w-[180px] text-center"
             >
-              Open Account
+              Register
             </Link>
             <Link 
               href="/accounts/demo" 
-              className="flex-1 sm:flex-none bg-white border border-[#E4E4E4] hover:bg-[#F7F7F5] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all sm:min-w-[220px] text-center"
+              className="flex-1 sm:flex-none bg-[#F2F2F2] hover:bg-[#EAEAEA] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all sm:min-w-[180px] text-center"
             >
-              Try Demo
+              Try free demo
             </Link>
+          </div>
+        </div>
+
+        {/* Trust Indicators Bar */}
+        <div className="relative z-10 border-t border-[#E4E4E4] mt-24">
+          <div className="max-w-7xl mx-auto px-4 py-8 overflow-x-auto no-scrollbar">
+            <div className="flex items-center justify-between min-w-[850px] md:min-w-0 gap-8">
+              <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
+                 <ShieldCheck className="w-4 h-4 text-[#0A0A0A] opacity-30" />
+                 <span>Trusted since 2008</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
+                 <FileText className="w-4 h-4 text-[#0A0A0A] opacity-30" />
+                 <span>Authorized by FSA in Saint Lucia</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
+                 <Headset className="w-4 h-4 text-[#0A0A0A] opacity-30" />
+                 <span>24/7 customer support</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
+                 <Lock className="w-4 h-4 text-[#0A0A0A] opacity-30" />
+                 <span>PCI DSS certified</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -235,7 +283,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* NEW SECTION: Lowest Forex Spreads Section */}
+      {/* Spreads Section */}
       <section className="relative w-full bg-white pt-12 pb-32">
         <div className="max-w-[1440px] mx-auto px-0 md:px-4">
           <div className="relative w-full aspect-[21/9] md:aspect-[32/9] overflow-hidden bg-[#F7F7F5]">
