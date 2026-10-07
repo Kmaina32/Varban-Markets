@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -13,7 +12,6 @@ import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
 import { 
   CheckCircle2, 
-  Zap,
   TrendingUp,
   TrendingDown,
   Info,
@@ -150,7 +148,6 @@ export default function TerminalWorkspace() {
           <Link href="/dashboard"><Image src="/assets/logo2.png" alt="Varban" width={80} height={20} className="w-auto object-contain" priority /></Link>
           <div className="h-6 w-px bg-[#E4E4E4] hidden md:block"></div>
           <div className="hidden md:flex items-center space-x-2 text-[10px] font-bold uppercase text-[#6B7280]">
-            <Zap className="w-3.5 h-3.5 text-[#0055FF]" />
             <span>Deterministic Execution Layer</span>
           </div>
         </div>
