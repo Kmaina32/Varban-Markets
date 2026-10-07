@@ -3,12 +3,13 @@
 /**
  * @fileOverview Global Platform Ledger (Supabase Migrated).
  * Monitors all transaction activities across every user account.
+ * Hardened against missing schema relationships (PGRST200).
  */
 
 import { useState, useEffect, useMemo } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
-import { Download, Search, Loader2, FileSpreadsheet } from "lucide-react";
+import { Download, Search, Loader2, FileSpreadsheet, AlertCircle } from "lucide-react";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { createClient } from "@/app/lib/supabase/client";
 import { cn } from "@/app/lib/utils";
@@ -20,10 +21,14 @@ export default function GlobalLedger() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [schemaError, setSchemaError] = useState(false);
 
   useEffect(() => {
     async function loadLedger() {
       setLoading(true);
+      setSchemaError(false);
+      
+      // Attempt joined query
       const { data, error } = await supabase
         .from('transactions')
         .select('*, profiles(full_name, email)')
@@ -32,6 +37,18 @@ export default function GlobalLedger() {
       
       if (error) {
         console.error("Ledger load error:", error);
+        
+        // Handle missing relationship (PGRST200)
+        if (error.code === 'PGRST200') {
+          setSchemaError(true);
+          // Fallback to non-joined query
+          const { data: fallbackData } = await supabase
+            .from('transactions')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(200);
+          setTransactions(fallbackData || []);
+        }
       } else {
         setTransactions(data || []);
       }
@@ -46,7 +63,8 @@ export default function GlobalLedger() {
     return transactions.filter(tx => 
       (tx.ref || "").toLowerCase().includes(q) || 
       (tx.profiles?.email || "").toLowerCase().includes(q) ||
-      (tx.type || "").toLowerCase().includes(q)
+      (tx.type || "").toLowerCase().includes(q) ||
+      (tx.user_id || "").toLowerCase().includes(q)
     );
   }, [transactions, searchQuery]);
 
@@ -56,6 +74,18 @@ export default function GlobalLedger() {
       subtitle="Institutional transaction monitoring and auditing conduit"
     >
       <div className="space-y-6">
+        {schemaError && (
+          <div className="p-4 bg-[#C9A227]/5 border border-[#C9A227]/20 flex items-start space-x-3 shadow-sm">
+            <AlertCircle className="w-5 h-5 text-[#C9A227] shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-[#C9A227] uppercase tracking-widest">Database relationship missing (PGRST200)</p>
+              <p className="text-[10px] text-[#6B7280] leading-relaxed">
+                Supabase cannot link transactions to profile names. Using entity IDs as fallback. Please apply the SQL Foreign Key fix to enable full identity resolution.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="relative w-full sm:max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]" />
@@ -103,7 +133,9 @@ export default function GlobalLedger() {
                       {tx.ref || tx.id.slice(0, 12).toUpperCase()}
                     </td>
                     <td className="p-4">
-                      <span className="block font-bold text-[#0A0A0A] truncate max-w-[150px]">{tx.profiles?.full_name || "---"}</span>
+                      <span className="block font-bold text-[#0A0A0A] truncate max-w-[150px]">
+                        {tx.profiles?.full_name || (schemaError ? `ID: ${tx.user_id.slice(0, 8)}` : "---")}
+                      </span>
                       <span className="text-[8px] text-[#6B7280] lowercase">{tx.profiles?.email}</span>
                     </td>
                     <td className="p-4 text-[#6B7280] uppercase text-[10px] tracking-tight">{tx.type}</td>

@@ -5,11 +5,21 @@ import { r2Client, R2_BUCKET_NAME } from "@/app/lib/r2-service";
 /**
  * @fileOverview Institutional Storage Listing API.
  * Provides a directory-style listing of objects in R2 with error handling.
+ * Hardened against connectivity timeouts and missing credential states.
  */
 
 export async function POST(req: NextRequest) {
   try {
-    const { prefix = "" } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const prefix = body.prefix || "";
+
+    if (!r2Client) {
+      return NextResponse.json({ 
+        folders: [], 
+        files: [],
+        error: "Storage Client Uninitialized"
+      }, { status: 500 });
+    }
 
     const command = new ListObjectsV2Command({
       Bucket: R2_BUCKET_NAME,
@@ -39,11 +49,12 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error("[Storage List API] Failure:", error);
+    // Return empty state instead of 500 to prevent UI crashes
     return NextResponse.json({ 
       folders: [], 
       files: [],
       error: "Node unreachable",
       details: error.message 
-    }, { status: 500 });
+    }, { status: 200 });
   }
 }

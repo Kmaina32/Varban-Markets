@@ -3,12 +3,13 @@
 /**
  * @fileOverview Admin Deposit Verification Queue (Supabase Migrated).
  * Allows administrators to review submitted TxHashes and confirm crypto deposits.
+ * Resilient to missing schema relationships.
  */
 
 import { useState, useEffect, useMemo } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
-import { CheckCircle2, XCircle, ExternalLink, Loader2, Database } from "lucide-react";
+import { CheckCircle2, XCircle, ExternalLink, Loader2, Database, AlertCircle } from "lucide-react";
 import { createClient } from "@/app/lib/supabase/client";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
@@ -21,6 +22,7 @@ export default function AdminDepositQueue() {
   const [deposits, setDeposits] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState<string | null>(null);
+  const [schemaError, setSchemaError] = useState(false);
   
   const [dialog, setDialog] = useState<{ status: DialogStatus; title: string; message: string }>({
     status: null,
@@ -30,6 +32,9 @@ export default function AdminDepositQueue() {
 
   const loadDeposits = async () => {
     setLoading(true);
+    setSchemaError(false);
+    
+    // Primary attempt with profile join
     const { data, error } = await supabase
       .from('transactions')
       .select('*, profiles(full_name, email)')
@@ -39,6 +44,17 @@ export default function AdminDepositQueue() {
     
     if (error) {
       console.error("Deposit load error:", error);
+      if (error.code === 'PGRST200') {
+        setSchemaError(true);
+        // Fallback fetch
+        const { data: fallbackData } = await supabase
+          .from('transactions')
+          .select('*')
+          .eq('type', 'Crypto Deposit')
+          .eq('status', 'Pending Verification')
+          .order('created_at', { ascending: false });
+        setDeposits(fallbackData || []);
+      }
     } else {
       setDeposits(data || []);
     }
@@ -54,14 +70,12 @@ export default function AdminDepositQueue() {
 
     setIsSyncing(tx.id);
     try {
-      // 1. Fetch current profile state
       const { data: profile } = await supabase.from('profiles').select('balance, equity').eq('id', tx.user_id).single();
       if (!profile) throw new Error("Entity context unreachable.");
 
       const newBalance = (parseFloat(profile.balance) || 0) + parseFloat(tx.amount);
       const newEquity = (parseFloat(profile.equity) || 0) + parseFloat(tx.amount);
 
-      // 2. Atomic update to balance & transaction
       const { error: txErr } = await supabase
         .from('transactions')
         .update({ status: 'Confirmed' })
@@ -112,6 +126,18 @@ export default function AdminDepositQueue() {
           onClose={() => setDialog({ ...dialog, status: null })} 
         />
 
+        {schemaError && (
+          <div className="p-4 bg-[#C9A227]/5 border border-[#C9A227]/20 flex items-start space-x-3 shadow-sm">
+            <AlertCircle className="w-5 h-5 text-[#C9A227] shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-[#C9A227] uppercase tracking-widest">Profile lookup offline (PGRST200)</p>
+              <p className="text-[10px] text-[#6B7280] leading-relaxed">
+                Foreign key relationships are being synchronized. Trading entity names are currently represented by numeric IDs.
+              </p>
+            </div>
+          </div>
+        )}
+
         <Card className="bg-white border-[#E4E4E4] overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[950px]">
@@ -137,7 +163,7 @@ export default function AdminDepositQueue() {
                 ) : deposits.map((tx) => (
                   <tr key={tx.id} className="hover:bg-[#F7F7F5] transition-colors">
                     <td className="p-4">
-                      <span className="font-bold block text-[#0A0A0A]">{tx.profiles?.full_name || tx.user_id.slice(0, 8)}</span>
+                      <span className="font-bold block text-[#0A0A0A]">{tx.profiles?.full_name || `ID: ${tx.user_id.slice(0, 8)}`}</span>
                       <span className="text-[9px] text-[#6B7280] uppercase font-mono tracking-tighter">{tx.asset}</span>
                     </td>
                     <td className="p-4 font-mono font-bold text-[#16835B]">

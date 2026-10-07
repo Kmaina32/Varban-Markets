@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
-import { Search, Loader2, UserCog, ShieldCheck } from "lucide-react";
+import { Search, Loader2, UserCog, ShieldCheck, AlertTriangle } from "lucide-react";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { createClient } from "@/app/lib/supabase/client";
 import { cn } from "@/app/lib/utils";
@@ -17,6 +17,7 @@ export default function UserManagement() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
+  const [recursionError, setRecursionError] = useState(false);
   
   const [dialog, setDialog] = useState<{ status: DialogStatus; title: string; message: string }>({
     status: null,
@@ -26,7 +27,8 @@ export default function UserManagement() {
 
   const loadUsers = async () => {
     setLoading(true);
-    // Use a multi-column order attempt to prevent 42703 errors if created_at is missing
+    setRecursionError(false);
+    
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -34,7 +36,7 @@ export default function UserManagement() {
     
     if (error) {
       console.error("Error fetching users:", error);
-      // Fallback for empty state or schema mismatch
+      if (error.code === '42P17') setRecursionError(true);
       setUsers([]);
     } else {
       setUsers(data || []);
@@ -104,6 +106,18 @@ export default function UserManagement() {
           message={dialog.message} 
           onClose={() => setDialog({ ...dialog, status: null })} 
         />
+
+        {recursionError && (
+          <div className="p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 flex items-start space-x-3 shadow-sm">
+            <AlertTriangle className="w-5 h-5 text-[#C43D3D] shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-[#C43D3D] uppercase tracking-widest">Infinite Recursion Detected (42P17)</p>
+              <p className="text-[10px] text-[#6B7280] leading-relaxed">
+                Your database security policies are creating a circular check. Please apply the SQL fix provided in the platform overview to resolve this authority loop.
+              </p>
+            </div>
+          </div>
+        )}
 
         <Card className="p-4 bg-white shadow-sm flex items-center gap-4 border-[#E4E4E4]">
           <Search className="w-4 h-4 text-[#6B7280]" />
