@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -70,7 +71,7 @@ export default function HomePage() {
               Open Account
             </Link>
             <Link 
-              href="/terminal" 
+              href="/accounts/demo" 
               className="flex-1 sm:flex-none bg-white border border-[#E4E4E4] hover:bg-[#F7F7F5] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all sm:min-w-[220px] text-center"
             >
               Try Demo
@@ -103,12 +104,12 @@ export default function HomePage() {
             <div className="lg:col-span-4 flex justify-center order-1 lg:order-2">
               <div className="relative w-[280px] h-[560px] sm:w-[350px] sm:h-[700px] transition-transform duration-1000 hover:scale-105">
                 <Image 
-                  src="/assets/mobile.jpg" 
+                  src={placeholderImages.mobile_app.url} 
                   alt="Varban Mobile App" 
                   fill 
                   className="object-contain" 
                   priority
-                  data-ai-hint="trading mobile app"
+                  data-ai-hint={placeholderImages.mobile_app.hint}
                 />
               </div>
             </div>
@@ -237,14 +238,14 @@ export default function HomePage() {
       {/* NEW SECTION: Lowest Forex Spreads Section */}
       <section className="relative w-full bg-white pt-12 pb-32">
         <div className="max-w-[1440px] mx-auto px-0 md:px-4">
-          <div className="relative w-full aspect-[21/9] md:aspect-[32/9] overflow-hidden">
+          <div className="relative w-full aspect-[21/9] md:aspect-[32/9] overflow-hidden bg-[#F7F7F5]">
             <Image 
-              src="/assets/footer.jpeg" 
+              src={placeholderImages.footer_banner.url} 
               alt="Institutional Banner"
               fill
               className="object-cover"
               priority
-              data-ai-hint="gold particles abstract"
+              data-ai-hint={placeholderImages.footer_banner.hint}
             />
           </div>
           

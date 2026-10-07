@@ -35,5 +35,11 @@
     "width": 500,
     "height": 900,
     "hint": "trading app"
+  },
+  "footer_banner": {
+    "url": "/assets/footer.jpeg",
+    "width": 1920,
+    "height": 600,
+    "hint": "gold particles abstract"
   }
 }
