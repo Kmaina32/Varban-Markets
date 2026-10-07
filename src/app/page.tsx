@@ -52,15 +52,6 @@ export default function HomePage() {
 
       {/* MAIN HERO SECTION - Institutional White */}
       <section className="relative pt-24 pb-28 bg-white overflow-hidden border-b border-[#E4E4E4]">
-        {/* Subtle Watermark Background */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none flex items-center justify-center">
-           <svg width="800" height="800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.5">
-             <path d="M12 2L2 7L12 12L22 7L12 2Z" />
-             <path d="M2 17L12 22L22 17" />
-             <path d="M2 12L12 17L22 12" />
-           </svg>
-        </div>
-
         <div className="relative z-10 max-w-5xl mx-auto px-4 text-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
           <h1 className="text-4xl sm:text-5xl md:text-8xl font-bold tracking-tight text-[#0A0A0A] font-display leading-[0.95]">
             Trade Online <br />
@@ -72,7 +63,6 @@ export default function HomePage() {
             Engineered for precision, speed, and total financial integrity.
           </p>
 
-          {/* Buttons Side-by-Side on Mobile */}
           <div className="flex flex-row items-center justify-center gap-2 sm:gap-4 pt-4 px-2">
             <Link 
               href="/register" 
@@ -86,23 +76,6 @@ export default function HomePage() {
             >
               Try Demo
             </Link>
-          </div>
-
-          <div className="pt-12 flex items-center justify-center space-x-4 sm:space-x-8 opacity-40 grayscale group hover:grayscale-0 transition-all overflow-x-auto no-scrollbar">
-             <div className="flex flex-col items-center shrink-0">
-               <span className="text-lg sm:text-xl font-bold font-mono">$1.4B+</span>
-               <span className="text-[7px] sm:text-[8px] font-bold uppercase tracking-widest">Monthly Vol</span>
-             </div>
-             <div className="w-px h-8 bg-[#E4E4E4]"></div>
-             <div className="flex flex-col items-center shrink-0">
-               <span className="text-lg sm:text-xl font-bold font-mono">&lt;45ms</span>
-               <span className="text-[7px] sm:text-[8px] font-bold uppercase tracking-widest">Execution</span>
-             </div>
-             <div className="w-px h-8 bg-[#E4E4E4]"></div>
-             <div className="flex flex-col items-center shrink-0">
-               <span className="text-lg sm:text-xl font-bold font-mono">140+</span>
-               <span className="text-[7px] sm:text-[8px] font-bold uppercase tracking-widest">Countries</span>
-             </div>
           </div>
         </div>
       </section>
@@ -125,7 +98,6 @@ export default function HomePage() {
             that's why you need the best in Varban Markets.
           </p>
 
-          {/* Store Buttons Side-by-Side on Mobile */}
           <div className="flex flex-row items-center justify-center gap-2 sm:gap-4 pt-6 max-w-full overflow-hidden">
             <Link 
               href="https://apps.apple.com" 
@@ -158,7 +130,7 @@ export default function HomePage() {
 
       {/* Mobile App Showcase Section */}
       <section className="bg-[#010813] pt-10 pb-32 px-4 border-t border-white/5 overflow-hidden">
-        <div className="max-w-7xl auto">
+        <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-12 lg:gap-0">
             {/* Left Features */}
             <div className="lg:col-span-4 space-y-12 sm:space-y-24 order-2 lg:order-1 text-center lg:text-right">
@@ -307,6 +279,50 @@ export default function HomePage() {
                 </div>
               </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* NEW SECTION: Lowest Forex Spreads Section */}
+      <section className="relative w-full bg-white pt-12 pb-32">
+        <div className="max-w-[1440px] mx-auto px-0 md:px-4">
+          <div className="relative w-full aspect-[21/9] md:aspect-[32/9] overflow-hidden">
+            <Image 
+              src="/assets/footer.png" 
+              alt="Institutional Banner"
+              fill
+              className="object-cover"
+              priority
+              data-ai-hint="gold particles abstract"
+            />
+          </div>
+          
+          <div className="relative -mt-16 md:-mt-24 z-10 max-w-5xl mx-auto px-4">
+            <div className="bg-[#010813] text-white p-8 md:p-12 shadow-2xl flex flex-col md:flex-row justify-between items-center gap-8 border border-white/5">
+              <div className="space-y-4 max-w-xl">
+                <h2 className="text-2xl md:text-4xl font-bold uppercase tracking-tight leading-tight">
+                  The lowest forex spreads on the market
+                </h2>
+                <p className="text-xs md:text-sm text-[#94A3B8] leading-relaxed">
+                  Cut your trading costs in half on 28 FX majors and minors with 50% lower spreads than the industry average.²
+                </p>
+              </div>
+              
+              <div className="flex flex-row items-center gap-3 w-full md:w-auto shrink-0">
+                <Link 
+                  href="/register" 
+                  className="flex-1 md:flex-none bg-[#FFDE00] hover:bg-[#F2D200] text-[#0A0A0A] px-8 py-3.5 text-[10px] font-bold uppercase tracking-widest transition-all text-center"
+                >
+                  Register
+                </Link>
+                <Link 
+                  href="/accounts/demo" 
+                  className="flex-1 md:flex-none bg-[#1A2333] border border-white/10 hover:bg-[#252E3F] text-white px-8 py-3.5 text-[10px] font-bold uppercase tracking-widest transition-all text-center"
+                >
+                  Try free demo
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
