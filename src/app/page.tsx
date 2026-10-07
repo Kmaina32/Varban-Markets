@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -75,54 +74,6 @@ export default function HomePage() {
               className="flex-1 sm:flex-none bg-white border border-[#E4E4E4] hover:bg-[#F7F7F5] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all sm:min-w-[220px] text-center"
             >
               Try Demo
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* SECONDARY HERO SECTION - Dark Institutional Style */}
-      <section className="relative pt-24 pb-40 bg-[#010813] overflow-hidden text-center px-4">
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-white/20 rounded-full"></div>
-           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-white/10 rounded-full"></div>
-        </div>
-
-        <div className="relative z-10 max-w-5xl mx-auto space-y-10">
-          <h2 className="text-3xl md:text-7xl font-bold tracking-tight text-white font-display leading-[1.1]">
-            Discover better-than-market <br />
-            conditions
-          </h2>
-          
-          <p className="text-base md:text-xl text-[#94A3B8] max-w-2xl mx-auto leading-relaxed font-medium">
-            Trading conditions can make or break a strategy, <br className="hidden md:block" />
-            that's why you need the best in Varban Markets.
-          </p>
-
-          <div className="flex flex-row items-center justify-center gap-2 sm:gap-4 pt-6 max-w-full overflow-hidden">
-            <Link 
-              href="https://apps.apple.com" 
-              className="flex-1 sm:flex-none bg-[#141414] border border-white/10 hover:bg-[#1A1A1A] text-white px-3 sm:px-6 py-3 rounded-lg flex items-center gap-2 sm:gap-3 transition-all sm:min-w-[200px]"
-            >
-              <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
-                <svg viewBox="0 0 384 512" fill="currentColor" className="w-5 h-5 sm:w-6 sm:h-6"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 21.8-88.5 21.8-14.7 0-51.4-22.2-84.6-21.8-44.1.6-84.6 28.5-107.1 68.8-46.3 80.2-11.9 198.4 33 263.2 22 31.8 48.6 67.1 82.9 65.9 32.5-1.2 44.7-21.8 84.1-21.8 39.4 0 50.4 21.8 84.5 21.1 35.3-.6 58.7-31.4 80.6-63.3 25.4-36.9 35.9-72.7 36.1-74.5-.8-.3-69.1-26.5-69.3-105.7zM271.8 81.6c19-23 31.9-55.1 28.4-87.1-27.6 1.1-61.1 18.3-80.9 41.5-17.7 20.6-33.2 53.3-29 84.5 30.7 2.4 62.6-15.9 81.5-38.9z"/></svg>
-              </div>
-              <div className="text-left">
-                <span className="text-[7px] sm:text-[10px] uppercase font-bold block leading-none mb-0.5 sm:mb-1">App Store</span>
-                <span className="text-[10px] sm:text-base font-bold block leading-none">Download</span>
-              </div>
-            </Link>
-            
-            <Link 
-              href="https://play.google.com" 
-              className="flex-1 sm:flex-none bg-[#141414] border border-white/10 hover:bg-[#1A1A1A] text-white px-3 sm:px-6 py-3 rounded-lg flex items-center gap-2 sm:gap-3 transition-all sm:min-w-[200px]"
-            >
-              <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
-                <svg viewBox="0 0 512 512" fill="currentColor" className="w-5 h-5 sm:w-6 sm:h-6"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-103 18-28.5-1.2-40.8zM325.3 277.7l-52.1-52.1-256.6 256.6 204.1-117.3 104.6-104.6z"/></svg>
-              </div>
-              <div className="text-left">
-                <span className="text-[7px] sm:text-[10px] uppercase font-bold block leading-none mb-0.5 sm:mb-1">Google Play</span>
-                <span className="text-[10px] sm:text-base font-bold block leading-none">Get it on</span>
-              </div>
             </Link>
           </div>
         </div>
@@ -288,7 +239,7 @@ export default function HomePage() {
         <div className="max-w-[1440px] mx-auto px-0 md:px-4">
           <div className="relative w-full aspect-[21/9] md:aspect-[32/9] overflow-hidden">
             <Image 
-              src="/assets/footer.png" 
+              src="/assets/footer.jpeg" 
               alt="Institutional Banner"
               fill
               className="object-cover"
