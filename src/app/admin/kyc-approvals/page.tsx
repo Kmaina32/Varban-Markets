@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -105,7 +104,10 @@ export default function AdminKycApprovalsPage() {
     setViewingDoc(null);
     setDocsLoading(true);
     
-    if (!db) return;
+    if (!db) {
+      setDocsLoading(false);
+      return;
+    }
     
     try {
       const docsSnap = await getDocs(collection(db, `users/${userItem.id}/kyc_submissions`));

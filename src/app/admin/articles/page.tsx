@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -100,7 +99,8 @@ export default function AdminArticlesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!db || !window.confirm("Confirm permanent removal of this briefing from the intelligence registry?")) return;
+    if (!db) return;
+    if (!window.confirm("Confirm permanent removal of this briefing from the intelligence registry?")) return;
     try {
       await deleteDoc(doc(db, "articles", id));
     } catch (err) {
@@ -110,7 +110,7 @@ export default function AdminArticlesPage() {
 
   const filteredArticles = articles?.filter(a => 
     a.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    a.assetTag.toLowerCase().includes(searchQuery.toLowerCase())
+    (a.assetTag || "").toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
 
   return (
@@ -130,7 +130,7 @@ export default function AdminArticlesPage() {
           </div>
           <button 
             onClick={handleOpenCreate}
-            className="w-full md:w-auto bg-[#0055FF] text-white px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center space-x-2 shadow-sm hover:bg-[#0A0A0A] transition-colors"
+            className="w-full md:w-auto bg-[#0A0A0A] text-white px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center space-x-2 shadow-sm hover:bg-[#0055FF] transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>New Briefing</span>

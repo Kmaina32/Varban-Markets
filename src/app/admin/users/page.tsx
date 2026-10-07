@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState } from "react";
@@ -25,14 +24,14 @@ export default function UserManagement() {
   const handleVerify = (userId: string, currentStatus: string) => {
     if (!db) return;
     const nextStatus = currentStatus === 'Verified' ? 'Not Verified' : 'Verified';
-    updateDoc(doc(db, "users", userId), { "status.verificationStatus": nextStatus });
+    updateDoc(doc(db, "users", userId), { "status.verificationStatus": nextStatus }).catch(() => {});
   };
 
   const handleToggleRole = (userId: string, currentRole: string) => {
     if (!db) return;
     const nextRole = currentRole === 'Admin' ? 'Trader' : 'Admin';
     if (!window.confirm(`Modify authority to ${nextRole}?`)) return;
-    updateDoc(doc(db, "users", userId), { "status.role": nextRole });
+    updateDoc(doc(db, "users", userId), { "status.role": nextRole }).catch(() => {});
   };
 
   const filteredUsers = useMemo(() => {
