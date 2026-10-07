@@ -1,6 +1,10 @@
-
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+
+/**
+ * @fileOverview Hardened Supabase Server Client.
+ * Implements a safety guard to prevent build-time crashes when environment variables are missing.
+ */
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -8,9 +12,29 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 export const createClient = async () => {
   const cookieStore = await cookies();
 
+  // If variables are missing during build/prerender, use placeholders to prevent @supabase/ssr from throwing
+  if (!supabaseUrl || !supabaseKey) {
+    return createServerClient(
+      supabaseUrl || 'https://placeholder-project.supabase.co',
+      supabaseKey || 'placeholder-anon-key',
+      {
+        cookies: {
+          getAll() { return cookieStore.getAll() },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              )
+            } catch {}
+          },
+        },
+      }
+    );
+  }
+
   return createServerClient(
-    supabaseUrl!,
-    supabaseKey!,
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         getAll() {
@@ -22,9 +46,7 @@ export const createClient = async () => {
               cookieStore.set(name, value, options)
             )
           } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
+            // Safe to ignore in Server Components if middleware handles refreshes
           }
         },
       },

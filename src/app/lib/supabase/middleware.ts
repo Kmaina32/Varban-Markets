@@ -1,6 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
+/**
+ * @fileOverview Hardened Supabase Middleware.
+ * Refined to prevent crashes during Next.js 15 build and prerendering.
+ */
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
@@ -12,8 +17,8 @@ export const updateSession = async (request: NextRequest) => {
     },
   });
 
-  // CRITICAL: Prevent crash if Supabase is not yet configured
-  if (!supabaseUrl || !supabaseKey || supabaseUrl === 'https://your-project-id.supabase.co') {
+  // Guard against missing Supabase credentials during build/deployment
+  if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('your-project-id')) {
     return supabaseResponse;
   }
 
@@ -26,15 +31,13 @@ export const updateSession = async (request: NextRequest) => {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          // In Next.js Middleware, request.cookies.set only accepts name and value 
-          // or a single RequestCookie object.
+          // Standardized for Next.js 15 Middleware compatibility
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
           supabaseResponse = NextResponse.next({
             request,
           })
-          // NextResponse.cookies.set (ResponseCookies) accepts name, value, and options
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
@@ -43,7 +46,7 @@ export const updateSession = async (request: NextRequest) => {
     },
   );
 
-  // Refreshing the auth token
+  // Refresh user session state
   await supabase.auth.getUser();
 
   return supabaseResponse;
