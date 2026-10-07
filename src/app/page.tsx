@@ -62,78 +62,83 @@ export default function HomePage() {
         </p>
       </div>
 
-      {/* MAIN HERO SECTION - Institutional White Side-by-Side */}
-      <section className="relative bg-white overflow-hidden pt-12 lg:pt-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            
-            {/* Hero Text Content */}
-            <div className="relative z-10 space-y-8 animate-in fade-in slide-in-from-left-4 duration-1000 text-center lg:text-left">
-              <h1 className="text-4xl sm:text-5xl md:text-[64px] font-bold tracking-tight text-[#0A0A0A] font-display leading-[1.1]">
-                Trade online {location} <br className="hidden md:block" /> with a leading broker
-              </h1>
-              
-              <p className="text-sm md:text-base text-[#6B7280] max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
-                Trade with a reliable licensed broker. Experience Varban&apos;s leading online trading platform with tight spreads and fast execution.
-              </p>
-
-              <div className="flex flex-row items-center justify-center lg:justify-start gap-2 sm:gap-4 pt-4">
-                <Link 
-                  href="/register" 
-                  className="flex-1 sm:flex-none bg-[#FFDE00] hover:bg-[#F2D200] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all shadow-md sm:min-w-[180px] text-center"
-                >
-                  Register
-                </Link>
-                <Link 
-                  href="/accounts/demo" 
-                  className="flex-1 sm:flex-none bg-[#F2F2F2] hover:bg-[#EAEAEA] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all sm:min-w-[180px] text-center"
-                >
-                  Try free demo
-                </Link>
-              </div>
-            </div>
-
-            {/* Hero Visual Asset */}
-            <div className="relative hidden lg:flex items-center justify-center animate-in fade-in zoom-in-95 duration-1000 delay-200">
-              <div className="relative w-full aspect-square max-w-[550px]">
-                <Image 
-                  src={placeholderImages.hero.url} 
-                  alt="Institutional Visual" 
-                  fill 
-                  className="object-contain"
-                  priority
-                  data-ai-hint={placeholderImages.hero.hint}
-                />
-              </div>
-            </div>
-
+      {/* MAIN HERO SECTION - Full Width Backgrounds */}
+      <section className="relative bg-white overflow-hidden pt-20 lg:pt-32 pb-16 min-h-[600px] flex items-center">
+        {/* Background Layer spans left to right behind text */}
+        <div className="absolute inset-0 z-0 flex pointer-events-none opacity-40">
+          <div className="relative w-1/2 h-full">
+            <Image 
+              src={placeholderImages.hero.url} 
+              alt="Hero Background Left" 
+              fill 
+              className="object-cover"
+              priority
+              data-ai-hint={placeholderImages.hero.hint}
+            />
+          </div>
+          <div className="relative w-1/2 h-full">
+            <Image 
+              src={placeholderImages.hero_alt.url} 
+              alt="Hero Background Right" 
+              fill 
+              className="object-cover"
+              priority
+              data-ai-hint={placeholderImages.hero_alt.hint}
+            />
           </div>
         </div>
 
-        {/* Trust Indicators Bar */}
-        <div className="relative z-10 border-t border-[#E4E4E4] mt-24">
-          <div className="max-w-7xl mx-auto px-4 py-8 overflow-x-auto no-scrollbar">
-            <div className="flex items-center justify-between min-w-[850px] md:min-w-0 gap-8">
-              <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
-                 <ShieldCheck className="w-4 h-4 text-[#0A0A0A] opacity-30" />
-                 <span>Trusted since 2008</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
-                 <FileText className="w-4 h-4 text-[#0A0A0A] opacity-30" />
-                 <span>Authorized by FSA in Saint Lucia</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
-                 <Headset className="w-4 h-4 text-[#0A0A0A] opacity-30" />
-                 <span>24/7 customer support</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
-                 <Lock className="w-4 h-4 text-[#0A0A0A] opacity-30" />
-                 <span>PCI DSS certified</span>
-              </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="max-w-3xl space-y-8 animate-in fade-in slide-in-from-left-4 duration-1000 text-center lg:text-left">
+            <h1 className="text-4xl sm:text-5xl md:text-[64px] font-bold tracking-tight text-[#0A0A0A] font-display leading-[1.1]">
+              Trade online {location} <br className="hidden md:block" /> with a leading broker
+            </h1>
+            
+            <p className="text-sm md:text-base text-[#6B7280] max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
+              Trade with a reliable licensed broker. Experience Varban&apos;s leading online trading platform with tight spreads and fast execution.
+            </p>
+
+            <div className="flex flex-row items-center justify-center lg:justify-start gap-2 sm:gap-4 pt-4">
+              <Link 
+                href="/register" 
+                className="flex-1 sm:flex-none bg-[#FFDE00] hover:bg-[#F2D200] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all shadow-md sm:min-w-[180px] text-center"
+              >
+                Register
+              </Link>
+              <Link 
+                href="/accounts/demo" 
+                className="flex-1 sm:flex-none bg-[#F2F2F2] hover:bg-[#EAEAEA] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all sm:min-w-[180px] text-center"
+              >
+                Try free demo
+              </Link>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Trust Indicators Bar */}
+      <div className="relative z-10 border-y border-[#E4E4E4] bg-white">
+        <div className="max-w-7xl mx-auto px-4 py-8 overflow-x-auto no-scrollbar">
+          <div className="flex items-center justify-between min-w-[850px] md:min-w-0 gap-8">
+            <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
+               <ShieldCheck className="w-4 h-4 text-[#0A0A0A] opacity-30" />
+               <span>Trusted since 2008</span>
+            </div>
+            <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
+               <FileText className="w-4 h-4 text-[#0A0A0A] opacity-30" />
+               <span>Authorized by FSA in Saint Lucia</span>
+            </div>
+            <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
+               <Headset className="w-4 h-4 text-[#0A0A0A] opacity-30" />
+               <span>24/7 customer support</span>
+            </div>
+            <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
+               <Lock className="w-4 h-4 text-[#0A0A0A] opacity-30" />
+               <span>PCI DSS certified</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Mobile App Showcase Section */}
       <section className="bg-[#010813] pt-10 pb-32 px-4 border-t border-white/5 overflow-hidden">
