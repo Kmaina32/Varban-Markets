@@ -134,7 +134,11 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
           <div className="fixed inset-0 z-[250] lg:hidden">
             <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
             <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white text-[#0A0A0A] animate-in slide-in-from-left duration-300 shadow-2xl">
-               <AuthedSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
+               {isAdminPath ? (
+                 <AdminSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
+               ) : (
+                 <AuthedSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
+               )}
             </div>
           </div>
         )}

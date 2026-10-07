@@ -16,7 +16,9 @@ import {
   TrendingUp,
   TrendingDown,
   Info,
-  ChevronDown
+  ChevronDown,
+  Menu,
+  X
 } from "lucide-react";
 import { TradingViewChart } from "@/components/terminal/TradingViewChart";
 import { useUser } from "@/firebase";
@@ -51,6 +53,7 @@ export default function TerminalWorkspace() {
   const [duration, setDuration] = useState<string>("5m");
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [leftTab, setLeftTab] = useState<'TICKET' | 'MARKETS' | 'ANALYSIS'>('TICKET');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
@@ -132,6 +135,16 @@ export default function TerminalWorkspace() {
     <div className="h-screen flex flex-col overflow-hidden bg-white text-[#0A0A0A]">
       <TerminalTutorial />
 
+      {/* Mobile Drawer Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-[300] lg:hidden">
+          <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+          <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white text-[#0A0A0A] animate-in slide-in-from-left duration-300 shadow-2xl">
+             <AuthedSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
+          </div>
+        </div>
+      )}
+
       {successMessage && (
         <div className="fixed top-20 right-4 z-[260] bg-white border-2 border-[#16835B] text-[#16835B] px-4 py-3 shadow-xl animate-in fade-in slide-in-from-top-2 duration-200">
           <CheckCircle2 className="w-4 h-4 mr-2 inline-block" />
@@ -145,7 +158,10 @@ export default function TerminalWorkspace() {
       </div>
 
       <header className="relative h-14 border-b flex items-center justify-between px-4 shrink-0 z-50 bg-white border-[#E4E4E4]">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3 md:space-x-4">
+          <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 lg:hidden text-[#0A0A0A]">
+            <Menu className="w-5 h-5" />
+          </button>
           <Link href="/dashboard"><Image src="/assets/logo2.png" alt="Varban" width={80} height={20} className="w-auto object-contain" priority /></Link>
           <div className="h-6 w-px bg-[#E4E4E4] hidden md:block"></div>
           <div className="hidden md:flex items-center space-x-2 text-[10px] font-bold uppercase text-[#6B7280]">
