@@ -1,4 +1,3 @@
-
 "use client";
 
 /**
@@ -8,7 +7,7 @@
  */
 
 import { useState, useEffect } from "react";
-import Link from "next/image";
+import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/client";
@@ -37,7 +36,7 @@ export default function RegisterPage() {
   const [showPartnerCode, setShowPartnerCode] = useState(false);
 
   const [formData, setFormData] = useState({
-    firstName: "Macos", // Mocking from screenshot context
+    firstName: "Macos", 
     lastName: "25",
     email: "macos8388@gmail.com",
     country: "Kenya",
