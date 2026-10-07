@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { ShieldAlert, Users, DollarSign, Activity, TrendingUp, ArrowRight, Loader2 } from "lucide-react";
@@ -29,13 +29,17 @@ export default function AdminDashboard() {
     async function fetchPlatformState() {
       setLoading(true);
       try {
-        // 1. Fetch Profiles for Aggregates
+        // Fetch profiles with a fallback order to avoid schema missing errors
         const { data: profiles, error } = await supabase
           .from('profiles')
           .select('*')
-          .order('created_at', { ascending: false });
+          .order('id', { ascending: false });
         
-        if (error) throw error;
+        if (error) {
+          console.error("Platform metrics fetch error:", error);
+          setLoading(false);
+          return;
+        }
 
         if (profiles) {
           const totalBalance = profiles.reduce((acc: number, p: any) => acc + (parseFloat(p.balance) || 0), 0);
@@ -59,7 +63,7 @@ export default function AdminDashboard() {
   }, [supabase]);
 
   const platformMetrics = [
-    { title: "Global Assets", value: metrics.totalBalance, icon: DollarSign, color: "text-[#16835B]" },
+    { title: "Global Assets", value: metrics.totalBalance, icon: DollarSign, color: "text-[#16835B]", isCurrency: true },
     { title: "Total Entities", value: metrics.userCount, icon: Users, color: "text-[#0055FF]", isCurrency: false },
     { title: "KYC Verified", value: metrics.verifiedCount, icon: ShieldAlert, color: "text-[#0A0A0A]", isCurrency: false },
     { title: "Node Status", value: "Operational", icon: Activity, color: "text-[#16835B]", isCurrency: false }

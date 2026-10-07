@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
-import { Search, ShieldCheck, X, FileText, Check, AlertTriangle, Loader2 } from "lucide-react";
+import { Search, ShieldCheck, X, Check, Loader2 } from "lucide-react";
 import { createClient } from "@/app/lib/supabase/client";
 import { cn } from "@/app/lib/utils";
 import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
@@ -27,10 +27,11 @@ export default function AdminKycApprovalsPage() {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('id', { ascending: false });
     
     if (error) {
       console.error("KYC load error:", error);
+      setUsers([]);
     } else {
       setUsers(data || []);
     }

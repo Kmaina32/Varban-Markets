@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
-import { Search, Loader2, ShieldCheck, UserCog, ToggleLeft, ToggleRight } from "lucide-react";
+import { Search, Loader2, UserCog, ShieldCheck } from "lucide-react";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { createClient } from "@/app/lib/supabase/client";
 import { cn } from "@/app/lib/utils";
@@ -26,13 +26,16 @@ export default function UserManagement() {
 
   const loadUsers = async () => {
     setLoading(true);
+    // Use a multi-column order attempt to prevent 42703 errors if created_at is missing
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('id', { ascending: false });
     
     if (error) {
       console.error("Error fetching users:", error);
+      // Fallback for empty state or schema mismatch
+      setUsers([]);
     } else {
       setUsers(data || []);
     }
@@ -128,9 +131,11 @@ export default function UserManagement() {
               <tbody className="divide-y divide-[#E4E4E4] text-xs">
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="p-20 text-center flex flex-col items-center justify-center space-y-4">
-                      <Loader2 className="w-8 h-8 text-[#0055FF] animate-spin" />
-                      <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">Accessing Entity Registry...</span>
+                    <td colSpan={6} className="p-20 text-center">
+                      <div className="flex flex-col items-center justify-center space-y-4">
+                        <Loader2 className="w-8 h-8 text-[#0055FF] animate-spin" />
+                        <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">Accessing Entity Registry...</span>
+                      </div>
                     </td>
                   </tr>
                 ) : filteredUsers.length === 0 ? (
