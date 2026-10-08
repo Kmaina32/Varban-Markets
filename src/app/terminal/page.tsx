@@ -3,6 +3,7 @@
 /**
  * @fileOverview High-Performance Electronic Trading Terminal Workspace.
  * Optimized with side-opening mobile drawers and compact mobile execution components.
+ * Feature: Mobile Settings Modal for Stake/Duration to maximize chart area.
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
@@ -23,7 +24,9 @@ import {
   Activity,
   BarChart2,
   FileText,
-  Search
+  Search,
+  Settings2,
+  ChevronUp
 } from "lucide-react";
 import { TradingViewChart } from "@/components/terminal/TradingViewChart";
 import { useUser } from "@/firebase";
@@ -63,7 +66,7 @@ export default function TerminalWorkspace() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // MOBILE DRAWER STATE
-  const [activeMobileDrawer, setActiveMobileDrawer] = useState<'MARKETS' | 'ANALYSIS' | 'POSITIONS' | null>(null);
+  const [activeMobileDrawer, setActiveMobileDrawer] = useState<'MARKETS' | 'ANALYSIS' | 'POSITIONS' | 'SETTINGS' | null>(null);
   
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
@@ -188,18 +191,30 @@ export default function TerminalWorkspace() {
           </div>
         )}
 
-        {/* TERMINAL SIDE-OPENING DRAWERS (MOBILE ONLY) */}
+        {/* TERMINAL MOBILE DRAWERS */}
         {activeMobileDrawer && (
-          <div className="fixed inset-0 z-[350] lg:hidden flex justify-end">
+          <div className={cn(
+            "fixed inset-0 z-[350] lg:hidden flex",
+            activeMobileDrawer === 'SETTINGS' ? "items-end" : "justify-end"
+          )}>
             <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setActiveMobileDrawer(null)}></div>
-            <div className="relative w-full max-w-[90%] h-full bg-white shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
-              <div className="p-4 border-b border-[#E4E4E4] flex justify-between items-center bg-[#F7F7F5]">
+            
+            <div className={cn(
+              "relative bg-white shadow-2xl animate-in flex flex-col transition-all",
+              activeMobileDrawer === 'SETTINGS' 
+                ? "w-full rounded-t-xl slide-in-from-bottom duration-300" 
+                : "w-full max-w-[90%] h-full slide-in-from-right duration-300"
+            )}>
+              <div className="p-4 border-b border-[#E4E4E4] flex justify-between items-center bg-[#F7F7F5] shrink-0">
                 <div className="flex items-center gap-2">
                   {activeMobileDrawer === 'MARKETS' && <Globe className="w-4 h-4 text-[#0055FF]" />}
                   {activeMobileDrawer === 'ANALYSIS' && <BarChart2 className="w-4 h-4 text-[#0055FF]" />}
                   {activeMobileDrawer === 'POSITIONS' && <Activity className="w-4 h-4 text-[#16835B]" />}
+                  {activeMobileDrawer === 'SETTINGS' && <Settings2 className="w-4 h-4 text-[#0055FF]" />}
                   <span className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">
-                    {activeMobileDrawer === 'MARKETS' ? 'Market Registry' : activeMobileDrawer === 'ANALYSIS' ? 'Market Insights' : 'Live Positions'}
+                    {activeMobileDrawer === 'MARKETS' ? 'Market Registry' : 
+                     activeMobileDrawer === 'ANALYSIS' ? 'Market Insights' : 
+                     activeMobileDrawer === 'POSITIONS' ? 'Live Positions' : 'Execution Settings'}
                   </span>
                 </div>
                 <button onClick={() => setActiveMobileDrawer(null)} className="p-2 hover:bg-[#E4E4E4] rounded-full transition-colors">
@@ -260,6 +275,43 @@ export default function TerminalWorkspace() {
                        </Card>
                      ))}
                    </div>
+                )}
+                {activeMobileDrawer === 'SETTINGS' && (
+                  <div className="space-y-6 pb-8">
+                    <div>
+                      <label className="text-[10px] font-bold text-[#6B7280] uppercase block mb-3 tracking-widest">Duration Block</label>
+                      <div className="grid grid-cols-4 gap-2">
+                        {['1m', '5m', '15m', '1h'].map(d => (
+                          <button key={d} onClick={() => setDuration(d)} className={cn("py-3 text-[11px] font-bold border transition-all", duration === d ? "bg-[#0A0A0A] text-white border-[#0A0A0A] shadow-md" : "bg-white text-[#6B7280] border-[#E4E4E4]")}>{d}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-[#6B7280] uppercase block mb-3 tracking-widest">Stake (USD Capital)</label>
+                      <input 
+                        type="number" 
+                        value={stake} 
+                        onChange={e => setStake(Number(e.target.value))} 
+                        className="w-full p-4 border border-[#E4E4E4] font-mono text-xl font-bold bg-[#F7F7F5] focus:outline-none focus:border-[#0055FF]" 
+                      />
+                    </div>
+                    <div className="p-5 bg-[#F7F7F5] border border-[#E4E4E4] space-y-2">
+                      <div className="flex justify-between items-center text-[10px] font-bold uppercase">
+                        <span className="text-[#6B7280]">Payout Estimate (85%)</span>
+                        <span className="text-[#16835B] font-mono">+$${(stake * 0.85).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between items-center border-t border-[#E4E4E4] pt-2 text-[10px] font-bold uppercase">
+                        <span className="text-[#0A0A0A]">Total Settlement Value</span>
+                        <span className="text-[#0A0A0A] font-mono">${(stake * 1.85).toFixed(2)}</span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setActiveMobileDrawer(null)}
+                      className="w-full py-4 bg-[#0A0A0A] text-white text-[11px] font-bold uppercase tracking-widest hover:bg-[#0055FF] transition-all shadow-xl"
+                    >
+                      Apply Configuration
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -412,31 +464,51 @@ export default function TerminalWorkspace() {
                       </button>
                     </div>
 
-                    <div className="space-y-3 lg:space-y-4 pt-1">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                    {/* MOBILE CONFIGURATION TRIGGER */}
+                    <div className="lg:hidden">
+                      <button 
+                        onClick={() => setActiveMobileDrawer('SETTINGS')}
+                        className="w-full flex items-center justify-between p-3.5 bg-white border border-[#E4E4E4] shadow-sm active:bg-[#F7F7F5] transition-colors group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Settings2 className="w-4 h-4 text-[#0055FF]" />
+                          <div className="text-left">
+                            <span className="text-[10px] font-bold text-[#0A0A0A] uppercase tracking-wider block">Trade Settings</span>
+                            <span className="text-[9px] font-mono text-[#6B7280] uppercase">
+                              ${stake.toFixed(2)} • {duration} • 85% Payout
+                            </span>
+                          </div>
+                        </div>
+                        <ChevronUp className="w-4 h-4 text-[#D1D5DB] group-hover:text-[#0A0A0A]" />
+                      </button>
+                    </div>
+
+                    {/* DESKTOP PERSISTENT INPUTS */}
+                    <div className="hidden lg:block space-y-4 pt-1">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Duration Block</label>
                           <div className="grid grid-cols-4 gap-1">
                             {['1m', '5m', '15m', '1h'].map(d => (
-                              <button key={d} onClick={() => setDuration(d)} className={cn("py-1.5 lg:py-2 text-[10px] font-bold border", duration === d ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white text-[#6B7280] border-[#E4E4E4]")}>{d}</button>
+                              <button key={d} onClick={() => setDuration(d)} className={cn("py-2 text-[10px] font-bold border", duration === d ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white text-[#6B7280] border-[#E4E4E4]")}>{d}</button>
                             ))}
                           </div>
                         </div>
                         <div>
                           <label className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Stake (USD)</label>
-                          <input type="number" value={stake} onChange={e => setStake(Number(e.target.value))} className="w-full p-2 lg:p-2.5 border border-[#E4E4E4] font-mono text-sm font-bold bg-[#F7F7F5] focus:outline-none focus:border-[#0055FF]" />
+                          <input type="number" value={stake} onChange={e => setStake(Number(e.target.value))} className="w-full p-2.5 border border-[#E4E4E4] font-mono text-sm font-bold bg-[#F7F7F5] focus:outline-none focus:border-[#0055FF]" />
                         </div>
                       </div>
-                    </div>
 
-                    <div className="p-3 lg:p-4 bg-[#F7F7F5] border border-[#E4E4E4] space-y-1 lg:space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[8px] lg:text-[9px] font-bold uppercase text-[#6B7280]">Payout (85%)</span>
-                        <span className="text-xs font-mono font-bold text-[#16835B]">+$${(stake * 0.85).toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between items-center border-t border-[#E4E4E4] pt-1 lg:pt-2">
-                        <span className="text-[8px] lg:text-[9px] font-bold uppercase text-[#6B7280]">Total Return</span>
-                        <span className="text-xs font-mono font-bold text-[#0A0A0A]">${(stake * 1.85).toFixed(2)}</span>
+                      <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[9px] font-bold uppercase text-[#6B7280]">Payout (85%)</span>
+                          <span className="text-xs font-mono font-bold text-[#16835B]">+$${(stake * 0.85).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between items-center border-t border-[#E4E4E4] pt-2">
+                          <span className="text-[9px] font-bold uppercase text-[#6B7280]">Total Return</span>
+                          <span className="text-xs font-mono font-bold text-[#0A0A0A]">${(stake * 1.85).toFixed(2)}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
