@@ -2,12 +2,10 @@
 
 /**
  * @fileOverview High-Performance Electronic Trading Terminal Workspace.
- * Optimized with TradingView Widgets for supplementary intelligence.
- * Layout refined for mobile visibility (Chart-First Architecture).
- * Secured with AuthedLayout guard to prevent unauthenticated access.
+ * Optimized with TradingView Widgets and resizable desktop layout.
  */
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
@@ -19,7 +17,8 @@ import {
   Info,
   ChevronDown,
   Menu,
-  X
+  X,
+  GripHorizontal
 } from "lucide-react";
 import { TradingViewChart } from "@/components/terminal/TradingViewChart";
 import { useUser } from "@/firebase";
@@ -62,6 +61,38 @@ export default function TerminalWorkspace() {
   const [realBalance, setRealBalance] = useState<number>(5420.50);
 
   const [positions, setPositions] = useState<Position[]>([]);
+
+  // RESIZABLE PANEL LOGIC
+  const [bottomPanelHeight, setBottomPanelHeight] = useState(200);
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeRef = useRef<HTMLDivElement>(null);
+
+  const startResizing = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  }, []);
+
+  const stopResizing = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  const resize = useCallback((e: MouseEvent) => {
+    if (isResizing) {
+      const newHeight = window.innerHeight - e.clientY;
+      if (newHeight >= 120 && newHeight <= 600) {
+        setBottomPanelHeight(newHeight);
+      }
+    }
+  }, [isResizing]);
+
+  useEffect(() => {
+    window.addEventListener('mousemove', resize);
+    window.addEventListener('mouseup', stopResizing);
+    return () => {
+      window.removeEventListener('mousemove', resize);
+      window.removeEventListener('mouseup', stopResizing);
+    };
+  }, [resize, stopResizing]);
 
   const activePositions = useMemo(() => {
     return positions.filter(p => p.status === 'Open' && p.isDemo === (accountMode === 'DEMO'));
@@ -197,40 +228,58 @@ export default function TerminalWorkspace() {
                 <TradingViewChart symbol={activeInst.symbol} />
               </div>
 
-              <div className="h-40 lg:h-48 border-t border-[#E4E4E4] bg-white overflow-y-auto no-scrollbar shrink-0 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
-                <div className="px-4 py-2 border-b bg-[#F7F7F5] flex justify-between items-center sticky top-0 z-10 border-[#E4E4E4]">
+              {/* RESIZABLE BOTTOM PANEL */}
+              <div 
+                ref={resizeRef}
+                style={{ height: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${bottomPanelHeight}px` : undefined }}
+                className="h-40 lg:h-auto border-t border-[#E4E4E4] bg-white overflow-hidden flex flex-col shrink-0 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]"
+              >
+                {/* DRAGGABLE HEADER HANDLE */}
+                <div 
+                  onMouseDown={startResizing}
+                  className="px-4 py-2 border-b bg-[#F7F7F5] flex justify-between items-center sticky top-0 z-10 border-[#E4E4E4] lg:cursor-row-resize select-none active:bg-gray-100 transition-colors"
+                >
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-[#16835B] animate-pulse"></div>
                     <span className="text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A]">Live Positions ({activePositions.length})</span>
                   </div>
+                  
+                  {/* Visual Drag Indicator */}
+                  <div className="hidden lg:flex items-center justify-center">
+                    <GripHorizontal className="w-4 h-4 text-[#D1D5DB]" />
+                  </div>
+
                   <span className="text-[8px] font-bold uppercase text-[#6B7280] tracking-widest hidden sm:block">Node ID: VRB-AGG-04</span>
                 </div>
-                <table className="w-full text-[10px] text-left">
-                  <thead className="text-[#6B7280] uppercase font-bold border-b border-[#E4E4E4] bg-white">
-                    <tr>
-                      <th className="p-3">Reference</th>
-                      <th className="p-3">Market</th>
-                      <th className="p-3">Vector</th>
-                      <th className="p-3 text-right">Stake</th>
-                      <th className="p-3 text-right hidden sm:table-cell">Entry</th>
-                      <th className="p-3 text-center">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#E4E4E4]">
-                    {activePositions.length === 0 ? (
-                      <tr><td colSpan={6} className="p-10 text-center text-[#D1D5DB] font-bold uppercase italic text-[9px]">Awaiting trades in the current domain...</td></tr>
-                    ) : activePositions.map(pos => (
-                      <tr key={pos.id} className="hover:bg-[#F7F7F5] transition-colors">
-                        <td className="p-3 font-mono text-[#6B7280]">{pos.id.slice(0, 10)}</td>
-                        <td className="p-3 font-mono font-bold">{pos.instrument}</td>
-                        <td className="p-3"><span className={cn("px-2 py-0.5 border text-[9px] font-bold", pos.vector === 'BUY' ? 'border-[#16835B] text-[#16835B] bg-[#16835B]/5' : 'border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5')}>{pos.vector}</span></td>
-                        <td className="p-3 text-right font-mono font-bold">${pos.stake.toFixed(2)}</td>
-                        <td className="p-3 text-right font-mono hidden sm:table-cell">${pos.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                        <td className="p-3 text-center"><span className="text-[9px] font-bold uppercase text-[#0055FF] animate-pulse bg-[#0055FF]/5 px-2 py-0.5 border border-[#0055FF]/20">ACTIVE</span></td>
+
+                <div className="flex-grow overflow-y-auto no-scrollbar">
+                  <table className="w-full text-[10px] text-left">
+                    <thead className="text-[#6B7280] uppercase font-bold border-b border-[#E4E4E4] bg-white sticky top-0">
+                      <tr>
+                        <th className="p-3">Reference</th>
+                        <th className="p-3">Market</th>
+                        <th className="p-3">Vector</th>
+                        <th className="p-3 text-right">Stake</th>
+                        <th className="p-3 text-right hidden sm:table-cell">Entry</th>
+                        <th className="p-3 text-center">Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-[#E4E4E4]">
+                      {activePositions.length === 0 ? (
+                        <tr><td colSpan={6} className="p-10 text-center text-[#D1D5DB] font-bold uppercase italic text-[9px]">Awaiting trades in the current domain...</td></tr>
+                      ) : activePositions.map(pos => (
+                        <tr key={pos.id} className="hover:bg-[#F7F7F5] transition-colors">
+                          <td className="p-3 font-mono text-[#6B7280]">{pos.id.slice(0, 10)}</td>
+                          <td className="p-3 font-mono font-bold">{pos.instrument}</td>
+                          <td className="p-3"><span className={cn("px-2 py-0.5 border text-[9px] font-bold", pos.vector === 'BUY' ? 'border-[#16835B] text-[#16835B] bg-[#16835B]/5' : 'border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5')}>{pos.vector}</span></td>
+                          <td className="p-3 text-right font-mono font-bold">${pos.stake.toFixed(2)}</td>
+                          <td className="p-3 text-right font-mono hidden sm:table-cell">${pos.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                          <td className="p-3 text-center"><span className="text-[9px] font-bold uppercase text-[#0055FF] animate-pulse bg-[#0055FF]/5 px-2 py-0.5 border border-[#0055FF]/20">ACTIVE</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
 
