@@ -22,10 +22,18 @@ export default function HomePage() {
   const [trendingNews, setTrendingNews] = useState<NewsItem[]>([]);
   const [newsLoading, setNewsLoading] = useState(true);
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+  const [activeTrustIndex, setActiveTrustIndex] = useState(0);
 
   const heroImages = [
     placeholderImages.hero.url,
     placeholderImages.hero_alt.url
+  ];
+
+  const trustIndicators = [
+    { icon: ShieldCheck, text: "FAST WITHDRAWALS" },
+    { icon: FileText, text: "Authorized by FSA in Saint Lucia" },
+    { icon: Headset, text: "24/7 customer support" },
+    { icon: Lock, text: "PCI DSS certified" }
   ];
 
   useEffect(() => {
@@ -42,12 +50,19 @@ export default function HomePage() {
 
     loadNews();
 
-    const interval = setInterval(() => {
+    const heroInterval = setInterval(() => {
       setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length);
     }, 5000);
 
-    return () => clearInterval(interval);
-  }, [heroImages.length]);
+    const trustInterval = setInterval(() => {
+      setActiveTrustIndex((prev) => (prev + 1) % trustIndicators.length);
+    }, 3000);
+
+    return () => {
+      clearInterval(heroInterval);
+      clearInterval(trustInterval);
+    };
+  }, [heroImages.length, trustIndicators.length]);
 
   return (
     <div className="flex flex-col bg-white min-h-screen">
@@ -140,26 +155,33 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Trust Indicators Bar */}
+      {/* Trust Indicators Bar - ADAPTIVE SLIDESHOW */}
       <div className="relative z-10 border-y border-[#E4E4E4] bg-white">
-        <div className="max-w-7xl mx-auto px-4 py-8 overflow-x-auto no-scrollbar">
-          <div className="flex items-center justify-between min-w-[850px] md:min-w-0 gap-8">
-            <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
-               <ShieldCheck className="w-4 h-4 text-[#0A0A0A] opacity-30" />
-               <span>Trusted since 2008</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
-               <FileText className="w-4 h-4 text-[#0A0A0A] opacity-30" />
-               <span>Authorized by FSA in Saint Lucia</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
-               <Headset className="w-4 h-4 text-[#0A0A0A] opacity-30" />
-               <span>24/7 customer support</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
-               <Lock className="w-4 h-4 text-[#0A0A0A] opacity-30" />
-               <span>PCI DSS certified</span>
-            </div>
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Desktop View: Static Row */}
+          <div className="hidden md:flex items-center justify-between gap-8">
+            {trustIndicators.map((item, idx) => (
+              <div key={idx} className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
+                <item.icon className="w-4 h-4 text-[#0A0A0A] opacity-30" />
+                <span>{item.text}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile View: Automated Slideshow */}
+          <div className="md:hidden flex justify-center items-center h-4 overflow-hidden relative">
+            {trustIndicators.map((item, idx) => (
+              <div 
+                key={idx}
+                className={cn(
+                  "absolute inset-0 flex items-center justify-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest transition-all duration-700",
+                  idx === activeTrustIndex ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                )}
+              >
+                <item.icon className="w-4 h-4 text-[#0A0A0A] opacity-30" />
+                <span>{item.text}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
