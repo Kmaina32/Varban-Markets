@@ -71,7 +71,7 @@ export default function HomePage() {
       </div>
 
       {/* MAIN HERO SECTION - Slideshow Architecture */}
-      <section className="relative bg-white overflow-hidden pt-20 lg:pt-32 pb-16 min-h-[600px] flex items-center">
+      <section className="relative bg-white overflow-hidden pt-20 lg:pt-32 pb-24 lg:pb-16 min-h-[650px] flex items-center">
         {/* Background Slideshow Layer */}
         <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
           {heroImages.map((src, idx) => (
@@ -121,25 +121,25 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Mobile App Icons - Bottom Right */}
-        <div className="absolute bottom-12 right-12 hidden lg:flex items-center space-x-4 z-20">
-          <Link href="#" className="opacity-80 hover:opacity-100 transition-opacity">
+        {/* Mobile App Icons - Adaptive Position */}
+        <div className="absolute bottom-8 left-0 right-0 lg:left-auto lg:bottom-12 lg:right-12 flex justify-center lg:justify-end items-center space-x-4 z-20 px-4">
+          <Link href="#" className="opacity-90 hover:opacity-100 transition-opacity">
             <Image 
               src={placeholderImages.app_store.url} 
               alt="Download on App Store" 
               width={placeholderImages.app_store.width} 
               height={placeholderImages.app_store.height} 
-              className="h-10 w-auto"
+              className="h-9 md:h-10 w-auto"
               data-ai-hint={placeholderImages.app_store.hint}
             />
           </Link>
-          <Link href="#" className="opacity-80 hover:opacity-100 transition-opacity">
+          <Link href="#" className="opacity-90 hover:opacity-100 transition-opacity">
             <Image 
               src={placeholderImages.google_play.url} 
               alt="Get it on Google Play" 
               width={placeholderImages.google_play.width} 
               height={placeholderImages.google_play.height} 
-              className="h-10 w-auto"
+              className="h-9 md:h-10 w-auto"
               data-ai-hint={placeholderImages.google_play.hint}
             />
           </Link>
