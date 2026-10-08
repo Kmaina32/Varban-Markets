@@ -1,4 +1,7 @@
+
 import Link from "next/link";
+import Image from "next/image";
+import placeholderImages from "@/app/lib/placeholder-images.json";
 
 export default function TechnologyArchitecturePage() {
   const techPillars = [
@@ -33,6 +36,22 @@ export default function TechnologyArchitecturePage() {
           <p className="text-sm text-[#6B7280] mt-4 leading-relaxed max-w-2xl">
             Varban Markets is built on a foundation of speed, accuracy, and security. We use professional standards to ensure that every trade is executed fairly and every account is protected.
           </p>
+        </div>
+
+        {/* MT5 Integrated Image Section */}
+        <div className="mb-16 relative aspect-video bg-[#0A0A0A] border border-[#E4E4E4] shadow-2xl overflow-hidden group">
+          <Image 
+            src={placeholderImages.mt5_hero.url} 
+            alt="MetaTrader 5 Integration" 
+            fill 
+            className="object-cover opacity-60 transition-transform duration-[2000ms] group-hover:scale-110"
+            data-ai-hint={placeholderImages.mt5_hero.hint}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+          <div className="absolute bottom-8 left-8">
+             <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.4em] block mb-1">Advanced Trading Nodes</span>
+             <h3 className="text-xl font-bold text-white uppercase tracking-tight">MetaTrader 5 Native Integration</h3>
+          </div>
         </div>
 
         {/* Core Content - Reduced Containers */}

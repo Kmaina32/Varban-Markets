@@ -37,10 +37,10 @@
     "hint": "laptop phone trading"
   },
   "mobile_app": {
-    "url": "/assets/mobile.jpg",
+    "url": "/assets/mobileapp.jpg",
     "width": 500,
     "height": 900,
-    "hint": "trading app"
+    "hint": "mobile trading"
   },
   "footer_banner": {
     "url": "/assets/footer.jpg",
@@ -73,9 +73,21 @@
     "hint": "person phone"
   },
   "forex_hero": {
-    "url": "https://picsum.photos/seed/varban_forex/1920/800",
+    "url": "/assets/forex.jpg",
     "width": 1920,
     "height": 800,
-    "hint": "city architecture"
+    "hint": "forex trading"
+  },
+  "pro_hero": {
+    "url": "/assets/pro.jpg",
+    "width": 1920,
+    "height": 800,
+    "hint": "pro trading"
+  },
+  "mt5_hero": {
+    "url": "/assets/mt5.jpg",
+    "width": 1200,
+    "height": 800,
+    "hint": "metatrader 5"
   }
 }

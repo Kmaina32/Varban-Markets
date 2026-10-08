@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import placeholderImages from "@/app/lib/placeholder-images.json";
 
 /**
  * @fileOverview Professional Account Specification Page.
@@ -79,12 +80,12 @@ export default function ProfessionalAccountsPage() {
       <section className="relative h-[450px] md:h-[550px] bg-[#0A1921] overflow-hidden flex items-center">
         <div className="absolute inset-0 z-0">
           <Image 
-            src="https://picsum.photos/seed/pro_banner/1920/800" 
+            src={placeholderImages.pro_hero.url} 
             alt="Professional Accounts" 
             fill 
             className="object-cover opacity-60" 
             priority
-            data-ai-hint="financial district"
+            data-ai-hint={placeholderImages.pro_hero.hint}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0A1921] via-[#0A1921]/60 to-transparent"></div>
         </div>
