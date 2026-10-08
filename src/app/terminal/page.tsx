@@ -3,7 +3,7 @@
 /**
  * @fileOverview High-Performance Electronic Trading Terminal Workspace.
  * Optimized with side-opening mobile drawers and compact mobile execution components.
- * Feature: Mobile Settings Modal for Stake/Duration to maximize chart area.
+ * Fixed: Profile Dropdown integration for identity management.
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
@@ -15,29 +15,28 @@ import {
   CheckCircle2, 
   TrendingUp,
   TrendingDown,
-  Info,
-  ChevronDown,
-  Menu,
   X,
   GripHorizontal,
   Globe,
   Activity,
   BarChart2,
   FileText,
-  Search,
   Settings2,
-  ChevronUp
+  ChevronUp,
+  Menu
 } from "lucide-react";
 import { TradingViewChart } from "@/components/terminal/TradingViewChart";
-import { useUser } from "@/firebase";
+import { useUser, useFirestore, useDoc } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 import AuthedSidebar from "@/components/layout/AuthedSidebar";
 import AuthedLayout from "@/components/layout/AuthedLayout";
+import ProfileDropdown from "@/components/layout/ProfileDropdown";
 import TerminalTutorial from "@/components/terminal/TerminalTutorial";
 import TickerTape from "@/components/tradingview/TickerTape";
 import TechnicalAnalysis from "@/components/tradingview/TechnicalAnalysis";
 import { Card } from "@/components/ui/card";
+import { createClient } from "@/app/lib/supabase/client";
 
 interface Position {
   id: string;
@@ -53,9 +52,17 @@ interface Position {
 
 export default function TerminalWorkspace() {
   const { user } = useUser();
+  const db = useFirestore();
+  const supabase = createClient();
   const { t, formatNumber } = useTranslation();
 
-  // APP STATE
+  // IDENTITY & UI STATE
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeMobileDrawer, setActiveMobileDrawer] = useState<'MARKETS' | 'ANALYSIS' | 'POSITIONS' | 'SETTINGS' | null>(null);
+  const [profile, setProfile] = useState<any>(null);
+
+  // TRADING STATE
   const [activeInst, setActiveInst] = useState<Instrument>(AVAILABLE_INSTRUMENTS[0]);
   const [livePrice, setLivePrice] = useState<number | null>(null);
   const [liveMetrics, setLiveMetrics] = useState<{ change: number | null, percent: number | null }>({ change: null, percent: null });
@@ -63,15 +70,9 @@ export default function TerminalWorkspace() {
   const [duration, setDuration] = useState<string>("5m");
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [leftTab, setLeftTab] = useState<'TICKET' | 'MARKETS' | 'ANALYSIS'>('TICKET');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  // MOBILE DRAWER STATE
-  const [activeMobileDrawer, setActiveMobileDrawer] = useState<'MARKETS' | 'ANALYSIS' | 'POSITIONS' | 'SETTINGS' | null>(null);
   
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
-  const [realBalance, setRealBalance] = useState<number>(5420.50);
-
   const [positions, setPositions] = useState<Position[]>([]);
 
   // RESIZABLE PANEL LOGIC (DESKTOP ONLY)
@@ -110,12 +111,20 @@ export default function TerminalWorkspace() {
     return positions.filter(p => p.status === 'Open' && p.isDemo === (accountMode === 'DEMO'));
   }, [positions, accountMode]);
 
+  // DATA SYNC
   useEffect(() => {
     const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
     if (savedMode) setAccountMode(savedMode);
     const savedDemo = localStorage.getItem('varban_demo_balance');
     if (savedDemo) setDemoBalance(parseFloat(savedDemo));
-  }, []);
+
+    async function loadProfile() {
+      if (!user?.uid) return;
+      const { data } = await supabase.from('profiles').select('*').eq('id', user.uid).single();
+      if (data) setProfile(data);
+    }
+    loadProfile();
+  }, [user?.uid, supabase]);
 
   useEffect(() => {
     let active = true;
@@ -165,8 +174,8 @@ export default function TerminalWorkspace() {
       if (stake > demoBalance) return alert("Practice Balance Exhausted.");
       setDemoBalance(prev => prev - stake);
     } else {
-      if (stake > realBalance) return alert("Insufficient Capital.");
-      setRealBalance(prev => prev - stake);
+      if (stake > (profile?.balance || 0)) return alert("Insufficient Capital.");
+      // In real app, this would be a Supabase update call
     }
 
     setPositions(prev => [newPos, ...prev]);
@@ -174,7 +183,13 @@ export default function TerminalWorkspace() {
     setTimeout(() => setSuccessMessage(null), 3500);
   };
 
-  const activeBalance = accountMode === 'REAL' ? realBalance : demoBalance;
+  const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
+
+  const handleSelectMode = (mode: 'REAL' | 'DEMO') => {
+    setAccountMode(mode);
+    localStorage.setItem('varban_account_mode', mode);
+    window.dispatchEvent(new Event('varban_account_mode_changed'));
+  };
 
   return (
     <AuthedLayout title="Terminal" isTerminal={true}>
@@ -341,16 +356,33 @@ export default function TerminalWorkspace() {
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 relative">
             <div className="flex flex-col text-right">
               <span className="text-[8px] font-bold uppercase text-[#6B7280]">{accountMode} BALANCE</span>
               <span className={cn("text-xs font-mono font-bold", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>
                 ${formatNumber(activeBalance, { minimumFractionDigits: 2 })}
               </span>
             </div>
-            <div className="w-8 h-8 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs uppercase">
-              {user?.email?.substring(0,2)}
-            </div>
+            <button 
+              onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+              className="w-8 h-8 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs uppercase border border-transparent hover:border-[#0055FF] transition-all"
+            >
+              {profile?.photo_url ? (
+                <img src={profile.photo_url} alt="Avatar" className="w-full h-full object-cover rounded-full" />
+              ) : (
+                user?.email?.substring(0,2).toUpperCase()
+              )}
+            </button>
+            
+            <ProfileDropdown 
+              user={user}
+              profile={profile}
+              accountMode={accountMode}
+              demoBalance={demoBalance}
+              isOpen={isProfileDropdownOpen}
+              onClose={() => setIsProfileDropdownOpen(false)}
+              onSelectMode={handleSelectMode}
+            />
           </div>
         </header>
 
