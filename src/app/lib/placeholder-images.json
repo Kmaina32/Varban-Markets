@@ -71,5 +71,11 @@
     "width": 1000,
     "height": 1000,
     "hint": "person phone"
+  },
+  "forex_hero": {
+    "url": "https://picsum.photos/seed/varban_forex/1920/800",
+    "width": 1920,
+    "height": 800,
+    "hint": "city architecture"
   }
 }
