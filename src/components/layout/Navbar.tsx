@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -26,7 +25,6 @@ export default function Navbar() {
   const isStrict = STRICT_PATHS.some(path => pathname === path || pathname?.startsWith(path + '/'));
   const isAuthPage = AUTH_PATHS.some(path => pathname === path);
 
-  // No regular navbar on authed or simple auth pages
   if (isStrict || isAuthPage) return null;
 
   const publicLinks = [
@@ -94,20 +92,20 @@ export default function Navbar() {
 
                   {/* Mega Menu Dropdown */}
                   {link.hasDropdown && activeDropdown === link.label && (
-                    <div className="absolute top-full left-0 w-[500px] bg-white border border-[#E4E4E4] shadow-2xl p-8 grid grid-cols-2 gap-8 animate-in fade-in slide-in-from-top-1 duration-200">
-                      <div className="space-y-4">
-                        <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block border-b border-[#F7F7F5] pb-2">Accounts</span>
-                        <div className="flex flex-col space-y-3">
-                          {link.dropdownItems.accounts.map(item => (
-                            <Link key={item.href} href={item.href} className="text-xs font-bold text-[#0A0A0A] hover:text-[#0055FF] transition-colors">{item.label}</Link>
+                    <div className="absolute top-[80px] left-0 w-[550px] bg-white border border-[#E4E4E4] shadow-2xl p-10 grid grid-cols-2 gap-12 animate-in fade-in slide-in-from-top-1 duration-200">
+                      <div className="space-y-6">
+                        <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest block border-b border-[#F7F7F5] pb-3">Accounts</span>
+                        <div className="flex flex-col space-y-4">
+                          {link.dropdownItems!.accounts.map(item => (
+                            <Link key={item.href} href={item.href} className="text-sm font-bold text-[#0A0A0A] hover:text-[#0055FF] transition-colors">{item.label}</Link>
                           ))}
                         </div>
                       </div>
-                      <div className="space-y-4">
-                        <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block border-b border-[#F7F7F5] pb-2">Conditions</span>
-                        <div className="flex flex-col space-y-3">
-                          {link.dropdownItems.conditions.map(item => (
-                            <Link key={item.href} href={item.href} className="text-xs font-bold text-[#0A0A0A] hover:text-[#0055FF] transition-colors">{item.label}</Link>
+                      <div className="space-y-6">
+                        <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest block border-b border-[#F7F7F5] pb-3">Conditions</span>
+                        <div className="flex flex-col space-y-4">
+                          {link.dropdownItems!.conditions.map(item => (
+                            <Link key={item.href} href={item.href} className="text-sm font-bold text-[#0A0A0A] hover:text-[#0055FF] transition-colors">{item.label}</Link>
                           ))}
                         </div>
                       </div>
@@ -167,30 +165,41 @@ export default function Navbar() {
               <nav className="flex flex-col space-y-6">
                 {publicLinks.map((link) => (
                   <div key={link.label}>
-                    <Link
-                      href={link.href}
-                      onClick={() => !link.hasDropdown && setIsMobileMenuOpen(false)}
+                    <div
                       className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A] flex items-center justify-between"
+                      onClick={() => !link.hasDropdown && setIsMobileMenuOpen(false)}
                     >
-                      {link.label}
-                      <ChevronRight className="w-4 h-4 opacity-30" />
-                    </Link>
+                      {link.hasDropdown ? (
+                         <span>{link.label}</span>
+                      ) : (
+                        <Link href={link.href} className="w-full">{link.label}</Link>
+                      )}
+                      {link.isExternal && <ArrowUpRight className="w-4 h-4 opacity-30" />}
+                    </div>
                     {link.hasDropdown && (
-                      <div className="mt-4 pl-4 flex flex-col space-y-4 border-l-2 border-[#F7F7F5]">
-                        <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">Accounts</span>
-                        {link.dropdownItems.accounts.map(item => (
-                          <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className="text-xs font-bold text-[#6B7280]">{item.label}</Link>
-                        ))}
-                        <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">Conditions</span>
-                        {link.dropdownItems.conditions.map(item => (
-                          <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className="text-xs font-bold text-[#6B7280]">{item.label}</Link>
-                        ))}
+                      <div className="mt-4 pl-4 flex flex-col space-y-6 border-l-2 border-[#F7F7F5]">
+                        <div>
+                          <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest mb-3 block">Accounts</span>
+                          <div className="flex flex-col space-y-3">
+                            {link.dropdownItems!.accounts.map(item => (
+                              <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className="text-xs font-bold text-[#0A0A0A]">{item.label}</Link>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest mb-3 block">Conditions</span>
+                          <div className="flex flex-col space-y-3">
+                            {link.dropdownItems!.conditions.map(item => (
+                              <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className="text-xs font-bold text-[#0A0A0A]">{item.label}</Link>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
                 ))}
               </nav>
-              <div className="flex flex-col gap-4 pt-4">
+              <div className="flex flex-col gap-4 pt-4 pb-12">
                 <Link 
                   href="/register" 
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -212,23 +221,4 @@ export default function Navbar() {
       )}
     </nav>
   );
-}
-
-function ChevronRight(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m9 18 6-6-6-6" />
-    </svg>
-  )
 }
