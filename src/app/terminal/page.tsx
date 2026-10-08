@@ -1,9 +1,8 @@
-
 'use client';
 
 /**
  * @fileOverview High-Performance Electronic Trading Terminal Workspace.
- * Optimized with side-opening mobile drawers and resizable desktop panels.
+ * Optimized with side-opening mobile drawers and compact mobile execution components.
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
@@ -35,6 +34,7 @@ import AuthedLayout from "@/components/layout/AuthedLayout";
 import TerminalTutorial from "@/components/terminal/TerminalTutorial";
 import TickerTape from "@/components/tradingview/TickerTape";
 import TechnicalAnalysis from "@/components/tradingview/TechnicalAnalysis";
+import { Card } from "@/components/ui/card";
 
 interface Position {
   id: string;
@@ -384,12 +384,13 @@ export default function TerminalWorkspace() {
               </div>
 
               {/* TICKET CONTENT (The primary interaction node) */}
-              <div className="p-4 flex-grow overflow-y-auto no-scrollbar space-y-4">
+              <div className="p-3 lg:p-4 flex-grow overflow-y-auto no-scrollbar space-y-3 lg:space-y-4">
                 {(leftTab === 'TICKET' || typeof window !== 'undefined' && window.innerWidth < 1024) && (
-                  <div id="tour-settings" className="space-y-4">
-                    <div className="p-3 border bg-[#F7F7F5] border-[#E4E4E4] flex justify-between items-center">
+                  <div id="tour-settings" className="space-y-3 lg:space-y-4">
+                    {/* Compact Instrument Info */}
+                    <div className="p-2 lg:p-3 border bg-[#F7F7F5] border-[#E4E4E4] flex justify-between items-center">
                       <div>
-                        <span className="text-[9px] uppercase font-bold text-[#6B7280] block">Active Terminal</span>
+                        <span className="text-[8px] lg:text-[9px] uppercase font-bold text-[#6B7280] block">Active</span>
                         <span className="text-xs font-mono font-bold text-[#0A0A0A]">{activeInst.symbol}</span>
                       </div>
                       <div className="text-right">
@@ -401,40 +402,40 @@ export default function TerminalWorkspace() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
-                      <button onClick={() => handleExecute('BUY')} className="py-5 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-widest flex flex-col items-center gap-1 shadow-md hover:opacity-90 active:scale-[0.98] transition-all">
-                        <TrendingUp className="w-5 h-5" />
+                      <button onClick={() => handleExecute('BUY')} className="py-2.5 lg:py-5 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-widest flex flex-col items-center gap-1 shadow-md hover:opacity-90 active:scale-[0.98] transition-all">
+                        <TrendingUp className="w-4 h-4 lg:w-5 lg:h-5" />
                         <span>Buy</span>
                       </button>
-                      <button onClick={() => handleExecute('SELL')} className="py-5 bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest flex flex-col items-center gap-1 shadow-md hover:opacity-90 active:scale-[0.98] transition-all">
-                        <TrendingDown className="w-5 h-5" />
+                      <button onClick={() => handleExecute('SELL')} className="py-2.5 lg:py-5 bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest flex flex-col items-center gap-1 shadow-md hover:opacity-90 active:scale-[0.98] transition-all">
+                        <TrendingDown className="w-4 h-4 lg:w-5 lg:h-5" />
                         <span>Sell</span>
                       </button>
                     </div>
 
-                    <div className="space-y-4 pt-2">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3 lg:space-y-4 pt-1">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
                         <div>
                           <label className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Duration Block</label>
                           <div className="grid grid-cols-4 gap-1">
                             {['1m', '5m', '15m', '1h'].map(d => (
-                              <button key={d} onClick={() => setDuration(d)} className={cn("py-2 text-[10px] font-bold border", duration === d ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white text-[#6B7280] border-[#E4E4E4]")}>{d}</button>
+                              <button key={d} onClick={() => setDuration(d)} className={cn("py-1.5 lg:py-2 text-[10px] font-bold border", duration === d ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white text-[#6B7280] border-[#E4E4E4]")}>{d}</button>
                             ))}
                           </div>
                         </div>
                         <div>
                           <label className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Stake (USD)</label>
-                          <input type="number" value={stake} onChange={e => setStake(Number(e.target.value))} className="w-full p-2.5 border border-[#E4E4E4] font-mono text-sm font-bold bg-[#F7F7F5] focus:outline-none focus:border-[#0055FF]" />
+                          <input type="number" value={stake} onChange={e => setStake(Number(e.target.value))} className="w-full p-2 lg:p-2.5 border border-[#E4E4E4] font-mono text-sm font-bold bg-[#F7F7F5] focus:outline-none focus:border-[#0055FF]" />
                         </div>
                       </div>
                     </div>
 
-                    <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] space-y-2">
+                    <div className="p-3 lg:p-4 bg-[#F7F7F5] border border-[#E4E4E4] space-y-1 lg:space-y-2">
                       <div className="flex justify-between items-center">
-                        <span className="text-[9px] font-bold uppercase text-[#6B7280]">Contract Payout (85%)</span>
+                        <span className="text-[8px] lg:text-[9px] font-bold uppercase text-[#6B7280]">Payout (85%)</span>
                         <span className="text-xs font-mono font-bold text-[#16835B]">+$${(stake * 0.85).toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between items-center border-t border-[#E4E4E4] pt-2">
-                        <span className="text-[9px] font-bold uppercase text-[#6B7280]">Total Return</span>
+                      <div className="flex justify-between items-center border-t border-[#E4E4E4] pt-1 lg:pt-2">
+                        <span className="text-[8px] lg:text-[9px] font-bold uppercase text-[#6B7280]">Total Return</span>
                         <span className="text-xs font-mono font-bold text-[#0A0A0A]">${(stake * 1.85).toFixed(2)}</span>
                       </div>
                     </div>
@@ -508,4 +509,3 @@ export default function TerminalWorkspace() {
     </AuthedLayout>
   );
 }
-
