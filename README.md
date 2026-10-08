@@ -13,20 +13,26 @@ Varban Markets is a professional electronic trading protocol engineered for adva
 *   **Financial Ledger**: Immutable transactional records for deposits, withdrawals, and trade settlements.
 *   **Watchlist Persistence**: Cloud-synced asset tracking across all device nodes.
 
-### B. MULTI-SOURCE MARKET DATA FAILOVER
+### B. ADVANCED CHARTING (TRADINGVIEW)
+*   **Pro Widget**: Integration of the TradingView Advanced Charting Widget for institutional analysis.
+*   **Tools & Indicators**: Full support for RSI, EMA, Bollinger Bands, and professional drawing tools.
+*   **Deterministic Sync**: Branded terminal headers with real-time connectivity status and source verification.
+
+### C. MULTI-SOURCE MARKET DATA FAILOVER
 *   **Primary Feed**: Twelve Data (Institutional API).
-*   **Tier-1 Nodes**: Coinbase CDP Integration for majors (BTC, ETH); Polygon.io for Equities.
-*   **Fail-Safe Chain**: Alpha Vantage (Forex) and Finnhub (Global Equities).
+*   **Tier-1 Nodes**: Coinbase CDP Integration for high-precision major assets (BTC, ETH, SOL).
+*   **Fail-Safe Chain**: Alpha Vantage (Forex/Stocks) and Finnhub (Global Equities).
 *   **Zero-Config Fallback**: Binance Public API for uninterrupted crypto signals.
 
-### C. INTELLIGENCE & NEWS HUB
+### D. INTELLIGENCE & NEWS HUB
 *   **Protocol**: Server-side secure proxy with caching to prevent key leakage and CORS issues.
-*   **Contextual Feeds**: Real-time Headlines refined for high-volatility drivers (Digital Assets, Forex, Global Politics).
+*   **Internal Reader**: Contextual headlines refined for high-volatility drivers (Digital Assets, Forex, Global Politics) with in-app analysis reports.
 *   **AI Assistant**: Varban Assistant (Genkit/Gemini 1.5 Flash) for institutional support and platform navigation.
 
-### D. DECENTRALIZED ASSETS (CLOUDFLARE R2)
-*   **Infrastructure**: Cloudflare R2 Storage for encrypted KYC documents and biometric evidence.
-*   **Security**: Presigned URL protocol for authorized client-side uploads directly to private buckets.
+### E. RESPONSIVE WORKSPACE
+*   **Desktop Pro**: Resizable terminal panels for customized chart/ledger balance on computer screens.
+*   **Mobile Side-Opening**: "Side opening page" architecture for Registry, Insights, and Positions to maximize chart visibility on mobile.
+*   **Native Performance**: Optimized Windows App (Electron) with multi-monitor and biometric support.
 
 ---
 
@@ -35,18 +41,19 @@ The following keys must be populated in `.env` to enable full platform functiona
 
 - **Supabase**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
 - **Genkit AI**: `GOOGLE_GENAI_API_KEY`.
-- **Market Data**: `FINNHUB_API_KEY`, `ALPHA_VANTAGE_API_KEY`.
+- **Market Data**: `FINNHUB_API_KEY`, `ALPHA_VANTAGE_API_KEY`, `TWELVE_DATA_API_KEY`, `POLYGON_API_KEY`.
 - **Storage**: `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`.
 
 ---
 
 ## 3. PRODUCTION STATUS TRACKER
-- [x] **Institutional White Design System**: High-contrast, minimalist UI with brand-yellow accents.
-- [x] **Supabase Migration**: Core data transitioned from Firestore to Supabase for enhanced performance.
-- [x] **AI Chatbot**: Gemini-powered Varban Assistant integrated globally.
-- [x] **Mobile Showcase**: Symmetrical value proposition section featuring high-fidelity device renders.
-- [x] **Passkey Biometric Auth**: WebAuthn infrastructure for passwordless, secure session entry.
+- [x] **Institutional White Design System**: High-contrast, minimalist UI with brand-blue and gold accents.
+- [x] **Advanced Charting**: Full TradingView terminal integration.
+- [x] **Next.js 15 Optimization**: Resolved state update conflicts and implemented strict param unwrapping.
+- [x] **Hardened Route Guards**: Deterministic unauthenticated redirection across all secure nodes.
+- [x] **Asset Registry**: Local high-fidelity assets (`mobileapp.jpg`, `mt5.jpg`, `pro.jpg`, `forex.jpg`) wired into heroes.
+- [x] **Mobile UX Refinement**: Side-sliding drawers for terminal analysis and registry.
 - [x] **Admin Oversight Desk**: Dedicated nodes for KYC review, deposit verification, and withdrawal dispatch.
 
 ---
-*Operational Ledger Status: Finalized, Synchronized & Locked.*
+*Operational Ledger Status: Finalized, Synchronized & Build Optimized.*
