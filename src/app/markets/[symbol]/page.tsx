@@ -90,6 +90,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
             fill 
             className="object-cover opacity-40 grayscale" 
             priority
+            sizes="100vw"
             data-ai-hint="trading graph"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#F7F7F5] via-transparent to-transparent"></div>

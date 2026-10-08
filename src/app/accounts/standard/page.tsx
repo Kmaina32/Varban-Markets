@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import Image from "next/image";
 import { Check, ShieldCheck, Zap, Globe, Table as TableIcon, Info, Clock, AlertTriangle } from "lucide-react";
@@ -72,6 +71,7 @@ export default function StandardAccountsPage() {
             fill 
             className="object-cover opacity-50 grayscale" 
             priority
+            sizes="100vw"
             data-ai-hint="modern skyscraper"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent"></div>

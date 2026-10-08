@@ -88,15 +88,20 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
         router.replace('/dashboard');
         return;
       }
+
+      // 3. Dedicated Terminal Guard
+      if (isTerminal && !user) {
+        router.replace('/login');
+        return;
+      }
     }
-  }, [user, loading, profileLoading, isStrict, isAdminPath, isAdmin, router]);
+  }, [user, loading, profileLoading, isStrict, isAdminPath, isAdmin, isTerminal, router]);
 
   // If not a strict path and not logged in, render as public page (no sidebar/header)
   if (!isStrict && !user) return <>{children}</>;
   
-  // Terminal is a specialized workspace, handle its own layout internally but still guard it
+  // Terminal workspace handling
   if (isTerminal && !user && !loading) {
-    router.replace('/login');
     return null;
   }
   if (isTerminal) return <>{children}</>;

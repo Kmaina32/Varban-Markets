@@ -51,6 +51,7 @@ export default function ForgotPasswordPage() {
             fill
             className="object-cover"
             priority
+            sizes="50vw"
             data-ai-hint={placeholderImages.auth.hint}
           />
           <div className="absolute inset-0 bg-black/30"></div>

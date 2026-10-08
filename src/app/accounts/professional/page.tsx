@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import Image from "next/image";
 import { Check, ShieldCheck, Zap, BarChart3, Sliders, Table as TableIcon, Clock, Info } from "lucide-react";
@@ -85,6 +84,7 @@ export default function ProfessionalAccountsPage() {
             fill 
             className="object-cover opacity-60" 
             priority
+            sizes="100vw"
             data-ai-hint={placeholderImages.pro_hero.hint}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0A1921] via-[#0A1921]/60 to-transparent"></div>
