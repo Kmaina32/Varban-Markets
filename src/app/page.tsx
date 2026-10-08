@@ -21,7 +21,6 @@ import { cn } from "@/app/lib/utils";
 export default function HomePage() {
   const [trendingNews, setTrendingNews] = useState<NewsItem[]>([]);
   const [newsLoading, setNewsLoading] = useState(true);
-  const [location, setLocation] = useState("Globally");
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
   const heroImages = [
@@ -41,15 +40,7 @@ export default function HomePage() {
       }
     }
 
-    async function loadLoc() {
-      const geo = await detectLocation();
-      if (geo?.country_name) {
-        setLocation(`in ${geo.country_name}`);
-      }
-    }
-
     loadNews();
-    loadLoc();
 
     const interval = setInterval(() => {
       setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length);
@@ -73,7 +64,7 @@ export default function HomePage() {
       {/* MAIN HERO SECTION - Slideshow Architecture */}
       <section className="relative bg-white overflow-hidden pt-20 lg:pt-32 pb-24 lg:pb-16 min-h-[650px] flex items-center">
         {/* Background Slideshow Layer */}
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
+        <div className="absolute inset-0 z-0 pointer-events-none">
           {heroImages.map((src, idx) => (
             <div 
               key={src}
@@ -97,7 +88,7 @@ export default function HomePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-3xl space-y-8 animate-in fade-in slide-in-from-left-4 duration-1000 text-center lg:text-left">
             <h1 className="text-4xl sm:text-5xl md:text-[64px] font-bold tracking-tight text-[#0A0A0A] font-display leading-[1.1]">
-              Trade online {location} <br className="hidden md:block" /> with a leading broker
+              Trade online <br className="hidden md:block" /> with a leading broker
             </h1>
             
             <p className="text-sm md:text-base text-[#6B7280] max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
