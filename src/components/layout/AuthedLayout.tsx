@@ -14,12 +14,18 @@ import { useEffect, useState, useMemo } from "react";
 import { cn } from "@/app/lib/utils";
 import { useSupabaseAuth } from "@/app/lib/supabase/auth-context";
 
+/**
+ * @fileOverview Authenticated Workspace Layout.
+ * Manages the trader and admin sidebar/header context.
+ * Strict paths force redirection to login if no session is detected.
+ */
+
 const STRICT_PATHS = [
   '/terminal', '/dashboard', '/portfolio', '/positions', 
   '/orders', '/history', '/watchlist', '/wallet', 
   '/deposit', '/withdraw', '/transactions', '/account', 
   '/verification', '/security', '/notifications', '/preferences',
-  '/referral', '/admin', '/markets', '/news'
+  '/referral', '/admin'
 ];
 
 const SUPER_ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
@@ -75,7 +81,9 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
     }
   }, [user, loading, profileLoading, isStrict, isAdminPath, isAdmin, router]);
 
+  // If not a strict path, return children directly (this allows the page to be public)
   if (isTerminal || !isStrict) return <>{children}</>;
+  
   if (loading || profileLoading) return <LoadingOverlay />;
   if (!user) return null;
 

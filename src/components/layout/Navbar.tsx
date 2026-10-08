@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -8,12 +7,18 @@ import { usePathname } from "next/navigation";
 import { Menu, X, ArrowUpRight, ChevronDown } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 
+/**
+ * @fileOverview Public Landing Page Navigation.
+ * Features institutional mega-menus and responsive mobile drawer.
+ * Hidden on strict authenticated paths.
+ */
+
 const STRICT_PATHS = [
   '/terminal', '/dashboard', '/portfolio', '/positions', 
   '/orders', '/history', '/watchlist', '/wallet', 
   '/deposit', '/withdraw', '/transactions', '/account', 
   '/verification', '/security', '/notifications', '/preferences',
-  '/referral', '/admin', '/markets', '/news'
+  '/referral', '/admin'
 ];
 
 const AUTH_PATHS = ['/login', '/register', '/forgot-password'];
@@ -65,10 +70,11 @@ export default function Navbar() {
             title: "Asset Classes",
             hideTitle: true,
             items: [
+              { label: "All Markets", href: "/markets" },
               { label: "Forex", href: "/markets?cat=Forex" },
               { label: "Digital Assets", href: "/markets?cat=Crypto" },
               { label: "Indices", href: "/markets?cat=Equities" },
-              { label: "Commodities", href: "/markets?cat=Commodities" },
+              { label: "Commodities", href: "/markets/commodities" },
             ]
           }
         ]

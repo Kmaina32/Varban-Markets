@@ -1,9 +1,9 @@
-
 "use client";
 
 /**
  * @fileOverview Institutional Regulatory Footer.
  * Redesigned to match high-precision brokerage standards (e.g. Exness / Deriv).
+ * Hidden on strict authenticated paths to prioritize terminal workspace area.
  */
 
 import Link from "next/link";
@@ -15,7 +15,7 @@ const STRICT_PATHS = [
   '/orders', '/history', '/watchlist', '/wallet', 
   '/deposit', '/withdraw', '/transactions', '/account', 
   '/verification', '/security', '/notifications', '/preferences',
-  '/referral', '/admin', '/markets', '/news'
+  '/referral', '/admin'
 ];
 
 export default function Footer() {
