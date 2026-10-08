@@ -36,8 +36,14 @@
     "height": 500,
     "hint": "laptop phone trading"
   },
-  "mobile_app": {
+  "mobile_app_hero": {
     "url": "/assets/mobileapp.jpg",
+    "width": 1920,
+    "height": 1080,
+    "hint": "mobile platform hero"
+  },
+  "mobile_showcase": {
+    "url": "/assets/mobile.jpg",
     "width": 500,
     "height": 900,
     "hint": "mobile trading"

@@ -79,6 +79,7 @@ export default function HomePage() {
                 fill 
                 className="object-cover"
                 priority={idx === 0}
+                sizes="100vw"
                 data-ai-hint="trading background"
               />
             </div>
@@ -163,7 +164,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Mobile App Showcase Section */}
+      {/* Mobile App Showcase Section (Image Below Hero) */}
       <section className="bg-[#010813] pt-10 pb-32 px-4 border-t border-white/5 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-12 lg:gap-0">
@@ -183,16 +184,17 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Mobile Image */}
+            {/* Mobile Image (mobile.jpg) */}
             <div className="lg:col-span-4 flex justify-center order-1 lg:order-2">
               <div className="relative w-[280px] h-[560px] sm:w-[350px] sm:h-[700px] transition-transform duration-1000 hover:scale-105">
                 <Image 
-                  src={placeholderImages.mobile_app.url} 
-                  alt="Varban Mobile App" 
+                  src={placeholderImages.mobile_showcase.url} 
+                  alt="Varban Mobile App Showcase" 
                   fill 
                   className="object-contain" 
                   priority
-                  data-ai-hint={placeholderImages.mobile_app.hint}
+                  sizes="(max-width: 768px) 280px, 350px"
+                  data-ai-hint={placeholderImages.mobile_showcase.hint}
                 />
               </div>
             </div>
@@ -328,6 +330,7 @@ export default function HomePage() {
               fill
               className="object-cover"
               priority
+              sizes="100vw"
               data-ai-hint={placeholderImages.footer_banner.hint}
             />
           </div>

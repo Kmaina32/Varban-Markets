@@ -97,7 +97,7 @@ export default function Navbar() {
           {
             title: "Mobile App",
             items: [
-              { label: "Varban App (iOS/Android)", href: "/technology" },
+              { label: "Varban App (iOS/Android)", href: "/platforms/mobile" },
               { label: "MetaTrader 5 Mobile", href: "/technology" },
             ]
           }
