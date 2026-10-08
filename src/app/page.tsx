@@ -63,10 +63,10 @@ export default function HomePage() {
       {/* Top Risk Disclaimer */}
       <div className="bg-[#0A0A0A] text-white py-2.5 px-4 text-center z-[110]">
         <p className="text-[10px] md:text-[11px] leading-relaxed max-w-7xl mx-auto opacity-90 uppercase tracking-widest font-bold">
-          Online Forex/CFDs are complex instruments. 
-          <span className="text-[#0055FF]"> 82.18% of retail investor accounts lose money </span> 
-          with this provider. 
-          <Link href="/terms/risk-disclosure" className="text-[#0055FF] underline ml-1">Learn more.</Link>
+          Online Forex/CFDs are complex instruments and come with a high risk of losing money rapidly due to leverage. 
+          <span className="text-[#FFDE00]"> 82.18% of retail investor accounts lose money </span> 
+          when trading Online Forex/CFDs with this provider. You should consider whether you understand how CFDs work and whether you can afford to take the high risk of losing your money. 
+          <Link href="/terms/risk-disclosure" className="text-[#FFDE00] underline ml-1">Learn more.</Link>
         </p>
       </div>
 

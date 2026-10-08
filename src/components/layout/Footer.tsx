@@ -91,7 +91,7 @@ export default function Footer() {
           </p>
           
           <p>
-            Risk Warning: Online derivatives and synthetic contracts are complex instruments and come with a high risk of losing money rapidly due to leverage. 84.12% of retail investor accounts lose money when trading these instruments with this provider. You should consider whether you understand how these contracts work and whether you can afford to take the high risk of losing your money. Under no circumstances shall Varban Markets have any liability to any person or entity for any loss or damage in whole or part caused by, resulting from, or relating to any financial activity. <Link href="/terms/risk-disclosure" className="text-[#0055FF] underline font-bold uppercase ml-1">Learn more.</Link>
+            Risk Warning: Online derivatives and synthetic contracts are complex instruments and come with a high risk of losing money rapidly due to leverage. <span className="text-[#FFDE00]">84.12% of retail investor accounts lose money</span> when trading these instruments with this provider. You should consider whether you understand how these contracts work and whether you can afford to take the high risk of losing your money. Under no circumstances shall Varban Markets have any liability to any person or entity for any loss or damage in whole or part caused by, resulting from, or relating to any financial activity. <Link href="/terms/risk-disclosure" className="text-[#FFDE00] underline font-bold uppercase ml-1">Learn more.</Link>
           </p>
           
           <p>
