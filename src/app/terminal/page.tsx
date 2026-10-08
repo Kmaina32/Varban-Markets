@@ -1,8 +1,9 @@
+
 'use client';
 
 /**
  * @fileOverview High-Performance Electronic Trading Terminal Workspace.
- * Optimized with TradingView Widgets and resizable desktop layout.
+ * Optimized with side-opening mobile drawers and resizable desktop panels.
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
@@ -18,7 +19,12 @@ import {
   ChevronDown,
   Menu,
   X,
-  GripHorizontal
+  GripHorizontal,
+  Globe,
+  Activity,
+  BarChart2,
+  FileText,
+  Search
 } from "lucide-react";
 import { TradingViewChart } from "@/components/terminal/TradingViewChart";
 import { useUser } from "@/firebase";
@@ -56,13 +62,16 @@ export default function TerminalWorkspace() {
   const [leftTab, setLeftTab] = useState<'TICKET' | 'MARKETS' | 'ANALYSIS'>('TICKET');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
+  // MOBILE DRAWER STATE
+  const [activeMobileDrawer, setActiveMobileDrawer] = useState<'MARKETS' | 'ANALYSIS' | 'POSITIONS' | null>(null);
+  
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
   const [realBalance, setRealBalance] = useState<number>(5420.50);
 
   const [positions, setPositions] = useState<Position[]>([]);
 
-  // RESIZABLE PANEL LOGIC
+  // RESIZABLE PANEL LOGIC (DESKTOP ONLY)
   const [bottomPanelHeight, setBottomPanelHeight] = useState(200);
   const [isResizing, setIsResizing] = useState(false);
   const resizeRef = useRef<HTMLDivElement>(null);
@@ -169,12 +178,90 @@ export default function TerminalWorkspace() {
       <div className="h-screen flex flex-col overflow-hidden bg-white text-[#0A0A0A]">
         <TerminalTutorial />
 
-        {/* Mobile Drawer Overlay */}
+        {/* Mobile Navigation Drawer (Sidebar) */}
         {isMobileMenuOpen && (
-          <div className="fixed inset-0 z-[300] lg:hidden">
-            <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+          <div className="fixed inset-0 z-[400] lg:hidden">
+            <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
             <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white text-[#0A0A0A] animate-in slide-in-from-left duration-300 shadow-2xl">
               <AuthedSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
+            </div>
+          </div>
+        )}
+
+        {/* TERMINAL SIDE-OPENING DRAWERS (MOBILE ONLY) */}
+        {activeMobileDrawer && (
+          <div className="fixed inset-0 z-[350] lg:hidden flex justify-end">
+            <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm" onClick={() => setActiveMobileDrawer(null)}></div>
+            <div className="relative w-full max-w-[90%] h-full bg-white shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
+              <div className="p-4 border-b border-[#E4E4E4] flex justify-between items-center bg-[#F7F7F5]">
+                <div className="flex items-center gap-2">
+                  {activeMobileDrawer === 'MARKETS' && <Globe className="w-4 h-4 text-[#0055FF]" />}
+                  {activeMobileDrawer === 'ANALYSIS' && <BarChart2 className="w-4 h-4 text-[#0055FF]" />}
+                  {activeMobileDrawer === 'POSITIONS' && <Activity className="w-4 h-4 text-[#16835B]" />}
+                  <span className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">
+                    {activeMobileDrawer === 'MARKETS' ? 'Market Registry' : activeMobileDrawer === 'ANALYSIS' ? 'Market Insights' : 'Live Positions'}
+                  </span>
+                </div>
+                <button onClick={() => setActiveMobileDrawer(null)} className="p-2 hover:bg-[#E4E4E4] rounded-full transition-colors">
+                  <X className="w-5 h-5 text-[#6B7280]" />
+                </button>
+              </div>
+              
+              <div className="flex-grow overflow-y-auto p-4 no-scrollbar">
+                {activeMobileDrawer === 'MARKETS' && (
+                  <div className="space-y-1 divide-y divide-[#F7F7F5]">
+                    {AVAILABLE_INSTRUMENTS.map(inst => (
+                      <button 
+                        key={inst.symbol} 
+                        onClick={() => { setActiveInst(inst); setActiveMobileDrawer(null); }} 
+                        className={cn(
+                          "w-full p-4 text-left flex justify-between items-center transition-all",
+                          activeInst.symbol === inst.symbol ? "bg-[#0055FF]/5 border-l-4 border-l-[#0055FF]" : "border-l-4 border-l-transparent"
+                        )}
+                      >
+                        <div>
+                          <span className="text-sm font-mono font-bold block text-[#0A0A0A]">{inst.symbol}</span>
+                          <span className="text-[10px] text-[#6B7280] uppercase font-medium">{inst.category}</span>
+                        </div>
+                        <span className="text-[10px] font-mono text-[#16835B] font-bold">ONLINE</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {activeMobileDrawer === 'ANALYSIS' && <TechnicalAnalysis symbol={activeInst.symbol} />}
+                {activeMobileDrawer === 'POSITIONS' && (
+                   <div className="space-y-4">
+                     {activePositions.length === 0 ? (
+                       <div className="py-20 text-center space-y-3">
+                         <Activity className="w-12 h-12 text-[#E4E4E4] mx-auto opacity-30" />
+                         <p className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">No active contracts detected.</p>
+                       </div>
+                     ) : activePositions.map(pos => (
+                       <Card key={pos.id} className="p-4 border-[#E4E4E4] shadow-sm space-y-3">
+                         <div className="flex justify-between items-start">
+                           <div>
+                             <span className="text-[11px] font-mono font-bold text-[#0A0A0A] block">{pos.instrument}</span>
+                             <span className="text-[9px] text-[#6B7280] uppercase">{pos.id.slice(0, 10)}</span>
+                           </div>
+                           <span className={cn("px-2 py-0.5 border text-[9px] font-bold", pos.vector === 'BUY' ? 'border-[#16835B] text-[#16835B]' : 'border-[#0055FF] text-[#0055FF]')}>
+                             {pos.vector}
+                           </span>
+                         </div>
+                         <div className="flex justify-between items-end border-t border-[#F7F7F5] pt-3">
+                            <div>
+                               <span className="text-[8px] text-[#6B7280] uppercase block">Stake</span>
+                               <span className="text-xs font-mono font-bold">${pos.stake.toFixed(2)}</span>
+                            </div>
+                            <div className="text-right">
+                               <span className="text-[8px] text-[#6B7280] uppercase block">Entry</span>
+                               <span className="text-xs font-mono font-bold">${pos.entryPrice.toLocaleString()}</span>
+                            </div>
+                         </div>
+                       </Card>
+                     ))}
+                   </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -186,7 +273,6 @@ export default function TerminalWorkspace() {
           </div>
         )}
 
-        {/* Institutional Ticker Tape - HIDDEN ON MOBILE */}
         <div className="hidden lg:block shrink-0 border-b border-[#E4E4E4] bg-white">
           <TickerTape />
         </div>
@@ -222,45 +308,41 @@ export default function TerminalWorkspace() {
           {/* Workspace Root */}
           <div className="flex-grow flex flex-col lg:flex-row lg:ml-16 overflow-hidden">
             
-            {/* Chart & Positions Module (Prioritized on Mobile) */}
-            <div className="flex-grow flex flex-col overflow-hidden relative h-[55%] lg:h-full order-1 lg:order-2">
-              <div id="tour-chart" className="flex-grow min-h-[250px] bg-[#F7F7F5]">
+            {/* Chart Module (Main focus on mobile) */}
+            <div className="flex-grow flex flex-col overflow-hidden relative h-full order-1 lg:order-2">
+              <div id="tour-chart" className="flex-grow min-h-0 bg-[#F7F7F5]">
                 <TradingViewChart symbol={activeInst.symbol} />
               </div>
 
-              {/* RESIZABLE BOTTOM PANEL */}
+              {/* RESIZABLE BOTTOM PANEL (DESKTOP ONLY) */}
               <div 
                 ref={resizeRef}
                 style={{ height: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${bottomPanelHeight}px` : undefined }}
-                className="h-40 lg:h-auto border-t border-[#E4E4E4] bg-white overflow-hidden flex flex-col shrink-0 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]"
+                className="hidden lg:flex border-t border-[#E4E4E4] bg-white overflow-hidden flex-col shrink-0 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]"
               >
-                {/* DRAGGABLE HEADER HANDLE */}
                 <div 
                   onMouseDown={startResizing}
-                  className="px-4 py-2 border-b bg-[#F7F7F5] flex justify-between items-center sticky top-0 z-10 border-[#E4E4E4] lg:cursor-row-resize select-none active:bg-gray-100 transition-colors"
+                  className="px-4 py-2 border-b bg-[#F7F7F5] flex justify-between items-center sticky top-0 z-10 border-[#E4E4E4] cursor-row-resize select-none active:bg-gray-100 transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-[#16835B] animate-pulse"></div>
                     <span className="text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A]">Live Positions ({activePositions.length})</span>
                   </div>
-                  
-                  {/* Visual Drag Indicator */}
-                  <div className="hidden lg:flex items-center justify-center">
+                  <div className="flex items-center justify-center">
                     <GripHorizontal className="w-4 h-4 text-[#D1D5DB]" />
                   </div>
-
-                  <span className="text-[8px] font-bold uppercase text-[#6B7280] tracking-widest hidden sm:block">Node ID: VRB-AGG-04</span>
+                  <span className="text-[8px] font-bold uppercase text-[#6B7280] tracking-widest">Node ID: VRB-AGG-04</span>
                 </div>
 
                 <div className="flex-grow overflow-y-auto no-scrollbar">
-                  <table className="w-full text-[10px] text-left">
+                  <table className="w-full text-[10px] text-left border-collapse">
                     <thead className="text-[#6B7280] uppercase font-bold border-b border-[#E4E4E4] bg-white sticky top-0">
                       <tr>
                         <th className="p-3">Reference</th>
                         <th className="p-3">Market</th>
                         <th className="p-3">Vector</th>
                         <th className="p-3 text-right">Stake</th>
-                        <th className="p-3 text-right hidden sm:table-cell">Entry</th>
+                        <th className="p-3 text-right">Entry</th>
                         <th className="p-3 text-center">Status</th>
                       </tr>
                     </thead>
@@ -273,7 +355,7 @@ export default function TerminalWorkspace() {
                           <td className="p-3 font-mono font-bold">{pos.instrument}</td>
                           <td className="p-3"><span className={cn("px-2 py-0.5 border text-[9px] font-bold", pos.vector === 'BUY' ? 'border-[#16835B] text-[#16835B] bg-[#16835B]/5' : 'border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5')}>{pos.vector}</span></td>
                           <td className="p-3 text-right font-mono font-bold">${pos.stake.toFixed(2)}</td>
-                          <td className="p-3 text-right font-mono hidden sm:table-cell">${pos.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                          <td className="p-3 text-right font-mono">${pos.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                           <td className="p-3 text-center"><span className="text-[9px] font-bold uppercase text-[#0055FF] animate-pulse bg-[#0055FF]/5 px-2 py-0.5 border border-[#0055FF]/20">ACTIVE</span></td>
                         </tr>
                       ))}
@@ -283,9 +365,10 @@ export default function TerminalWorkspace() {
               </div>
             </div>
 
-            {/* Execution & Registry Module (Bottom on Mobile) */}
-            <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-r border-[#E4E4E4] flex flex-col shrink-0 bg-white h-[45%] lg:h-full order-2 lg:order-1">
-              <div className="flex border-b bg-[#F7F7F5] border-[#E4E4E4]">
+            {/* Execution Sidebar (Desktop) / Ticket Panel (Mobile) */}
+            <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-r border-[#E4E4E4] flex flex-col shrink-0 bg-white order-2 lg:order-1 overflow-hidden">
+              {/* Tabs only visible on Desktop */}
+              <div className="hidden lg:flex border-b bg-[#F7F7F5] border-[#E4E4E4]">
                 {['TICKET', 'MARKETS', 'ANALYSIS'].map((tab) => (
                   <button 
                     key={tab}
@@ -300,8 +383,9 @@ export default function TerminalWorkspace() {
                 ))}
               </div>
 
+              {/* TICKET CONTENT (The primary interaction node) */}
               <div className="p-4 flex-grow overflow-y-auto no-scrollbar space-y-4">
-                {leftTab === 'TICKET' && (
+                {(leftTab === 'TICKET' || typeof window !== 'undefined' && window.innerWidth < 1024) && (
                   <div id="tour-settings" className="space-y-4">
                     <div className="p-3 border bg-[#F7F7F5] border-[#E4E4E4] flex justify-between items-center">
                       <div>
@@ -328,17 +412,19 @@ export default function TerminalWorkspace() {
                     </div>
 
                     <div className="space-y-4 pt-2">
-                      <div>
-                        <label className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Duration Block</label>
-                        <div className="grid grid-cols-4 gap-1">
-                          {['1m', '5m', '15m', '1h'].map(d => (
-                            <button key={d} onClick={() => setDuration(d)} className={cn("py-2 text-[10px] font-bold border", duration === d ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white text-[#6B7280] border-[#E4E4E4]")}>{d}</button>
-                          ))}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Duration Block</label>
+                          <div className="grid grid-cols-4 gap-1">
+                            {['1m', '5m', '15m', '1h'].map(d => (
+                              <button key={d} onClick={() => setDuration(d)} className={cn("py-2 text-[10px] font-bold border", duration === d ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white text-[#6B7280] border-[#E4E4E4]")}>{d}</button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <label className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Execution Stake (USD)</label>
-                        <input type="number" value={stake} onChange={e => setStake(Number(e.target.value))} className="w-full p-2.5 border border-[#E4E4E4] font-mono text-sm font-bold bg-[#F7F7F5] focus:outline-none focus:border-[#0055FF]" />
+                        <div>
+                          <label className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Stake (USD)</label>
+                          <input type="number" value={stake} onChange={e => setStake(Number(e.target.value))} className="w-full p-2.5 border border-[#E4E4E4] font-mono text-sm font-bold bg-[#F7F7F5] focus:outline-none focus:border-[#0055FF]" />
+                        </div>
                       </div>
                     </div>
 
@@ -355,34 +441,71 @@ export default function TerminalWorkspace() {
                   </div>
                 )}
 
-                {leftTab === 'MARKETS' && (
-                  <div id="tour-market-select" className="divide-y divide-[#E4E4E4]">
-                    {AVAILABLE_INSTRUMENTS.map(inst => (
-                      <button key={inst.symbol} onClick={() => setActiveInst(inst)} className={cn("w-full p-3 text-left hover:bg-[#F7F7F5] transition-colors flex justify-between items-center group", activeInst.symbol === inst.symbol ? "bg-[#0055FF]/5 border-l-4 border-l-[#0055FF]" : "border-l-4 border-l-transparent")}>
-                        <div><span className="text-xs font-mono font-bold block group-hover:text-[#0055FF] transition-colors">{inst.symbol}</span><span className="text-[9px] text-[#6B7280] uppercase">{inst.category}</span></div>
-                        <span className="text-[10px] font-mono text-[#16835B] font-bold">ONLINE</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {leftTab === 'ANALYSIS' && (
-                  <div className="animate-in fade-in duration-300">
-                    <TechnicalAnalysis symbol={activeInst.symbol} />
-                    <div className="mt-4 p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-start gap-3">
-                      <Info className="w-4 h-4 text-[#0055FF] shrink-0 mt-0.5" />
-                      <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
-                        Technical signals are informational. Execution is deterministic and based on raw index feeds.
-                      </p>
+                {/* DESKTOP ONLY REGISTRY/INSIGHTS VIEW */}
+                <div className="hidden lg:block">
+                  {leftTab === 'MARKETS' && (
+                    <div id="tour-market-select" className="divide-y divide-[#E4E4E4]">
+                      {AVAILABLE_INSTRUMENTS.map(inst => (
+                        <button key={inst.symbol} onClick={() => setActiveInst(inst)} className={cn("w-full p-3 text-left hover:bg-[#F7F7F5] transition-colors flex justify-between items-center group", activeInst.symbol === inst.symbol ? "bg-[#0055FF]/5 border-l-4 border-l-[#0055FF]" : "border-l-4 border-l-transparent")}>
+                          <div><span className="text-xs font-mono font-bold block group-hover:text-[#0055FF] transition-colors">{inst.symbol}</span><span className="text-[9px] text-[#6B7280] uppercase">{inst.category}</span></div>
+                          <span className="text-[10px] font-mono text-[#16835B] font-bold">ONLINE</span>
+                        </button>
+                      ))}
                     </div>
-                  </div>
-                )}
+                  )}
+
+                  {leftTab === 'ANALYSIS' && (
+                    <div className="animate-in fade-in duration-300">
+                      <TechnicalAnalysis symbol={activeInst.symbol} />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
           </div>
         </div>
+
+        {/* MOBILE TERMINAL FOOTER NAVIGATION */}
+        <div className="lg:hidden h-16 border-t border-[#E4E4E4] bg-white flex items-center shrink-0 z-[100] shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+          <button 
+            onClick={() => setActiveMobileDrawer('MARKETS')}
+            className={cn("flex-1 h-full flex flex-col items-center justify-center gap-1 transition-colors", activeMobileDrawer === 'MARKETS' ? "text-[#0055FF]" : "text-[#6B7280]")}
+          >
+            <Globe className="w-5 h-5" />
+            <span className="text-[8px] font-bold uppercase tracking-widest">Market</span>
+          </button>
+          <button 
+            onClick={() => setActiveMobileDrawer('POSITIONS')}
+            className={cn("flex-1 h-full flex flex-col items-center justify-center gap-1 transition-colors", activeMobileDrawer === 'POSITIONS' ? "text-[#16835B]" : "text-[#6B7280]")}
+          >
+            <div className="relative">
+              <Activity className="w-5 h-5" />
+              {activePositions.length > 0 && (
+                <span className="absolute -top-1 -right-2 w-3.5 h-3.5 bg-[#16835B] text-white text-[7px] flex items-center justify-center rounded-full font-bold">
+                  {activePositions.length}
+                </span>
+              )}
+            </div>
+            <span className="text-[8px] font-bold uppercase tracking-widest">Trades</span>
+          </button>
+          <button 
+            onClick={() => setActiveMobileDrawer(null)}
+            className={cn("flex-1 h-full flex flex-col items-center justify-center gap-1 transition-colors", activeMobileDrawer === null ? "text-[#0055FF]" : "text-[#6B7280]")}
+          >
+            <FileText className="w-5 h-5" />
+            <span className="text-[8px] font-bold uppercase tracking-widest">Order</span>
+          </button>
+          <button 
+            onClick={() => setActiveMobileDrawer('ANALYSIS')}
+            className={cn("flex-1 h-full flex flex-col items-center justify-center gap-1 transition-colors", activeMobileDrawer === 'ANALYSIS' ? "text-[#0055FF]" : "text-[#6B7280]")}
+          >
+            <BarChart2 className="w-5 h-5" />
+            <span className="text-[8px] font-bold uppercase tracking-widest">Insights</span>
+          </button>
+        </div>
       </div>
     </AuthedLayout>
   );
 }
+
