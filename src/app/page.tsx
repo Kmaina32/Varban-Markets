@@ -7,17 +7,10 @@ import Image from "next/image";
 import { 
   ArrowRight, 
   ChevronRight, 
-  MessageSquare, 
-  Download, 
-  Check, 
   ShieldCheck, 
-  Zap, 
-  Globe, 
   FileText, 
   Headset, 
-  Lock,
-  Apple,
-  Smartphone
+  Lock
 } from "lucide-react";
 import { MarketIcon } from "@/components/MarketIcon";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
@@ -129,19 +122,27 @@ export default function HomePage() {
         </div>
 
         {/* Mobile App Icons - Bottom Right */}
-        <div className="absolute bottom-12 right-12 hidden lg:flex items-center space-x-6 z-20">
-          <div className="flex flex-col items-center space-y-2 group cursor-pointer opacity-60 hover:opacity-100 transition-opacity">
-            <div className="w-10 h-10 bg-[#0A0A0A] text-white flex items-center justify-center rounded-sm">
-              <Apple className="w-6 h-6" />
-            </div>
-            <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-[#0A0A0A]">iOS</span>
-          </div>
-          <div className="flex flex-col items-center space-y-2 group cursor-pointer opacity-60 hover:opacity-100 transition-opacity">
-            <div className="w-10 h-10 bg-[#0A0A0A] text-white flex items-center justify-center rounded-sm">
-              <Smartphone className="w-6 h-6" />
-            </div>
-            <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-[#0A0A0A]">Android</span>
-          </div>
+        <div className="absolute bottom-12 right-12 hidden lg:flex items-center space-x-4 z-20">
+          <Link href="#" className="opacity-80 hover:opacity-100 transition-opacity">
+            <Image 
+              src={placeholderImages.app_store.url} 
+              alt="Download on App Store" 
+              width={placeholderImages.app_store.width} 
+              height={placeholderImages.app_store.height} 
+              className="h-10 w-auto"
+              data-ai-hint={placeholderImages.app_store.hint}
+            />
+          </Link>
+          <Link href="#" className="opacity-80 hover:opacity-100 transition-opacity">
+            <Image 
+              src={placeholderImages.google_play.url} 
+              alt="Get it on Google Play" 
+              width={placeholderImages.google_play.width} 
+              height={placeholderImages.google_play.height} 
+              className="h-10 w-auto"
+              data-ai-hint={placeholderImages.google_play.hint}
+            />
+          </Link>
         </div>
       </section>
 

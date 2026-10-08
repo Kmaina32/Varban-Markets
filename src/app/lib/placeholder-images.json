@@ -47,5 +47,17 @@
     "width": 1920,
     "height": 600,
     "hint": "gold particles abstract"
+  },
+  "app_store": {
+    "url": "/assets/appstore.png",
+    "width": 135,
+    "height": 40,
+    "hint": "app store"
+  },
+  "google_play": {
+    "url": "/assets/google.png",
+    "width": 135,
+    "height": 40,
+    "hint": "google play"
   }
 }
