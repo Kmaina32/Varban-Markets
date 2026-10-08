@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview Natural Multi-Language Dictionary Matrix for Varban Markets.
  * Updated with simplified, natural English labels for a better user experience.
@@ -147,7 +146,8 @@ export const DICTIONARY = {
       contactTitle: 'Support',
       contactSubtitle: 'Message our team',
       adminTitle: 'Control Center',
-      adminSubtitle: 'System-wide monitoring'
+      adminSubtitle: 'System-wide monitoring',
+      profileCompletionRequired: 'Profile Completion Required'
     },
     common: {
       loading: 'Loading...',
@@ -297,7 +297,8 @@ export const DICTIONARY = {
       contactTitle: 'Support',
       contactSubtitle: 'Message à l’équipe',
       adminTitle: 'Centre de Contrôle',
-      adminSubtitle: 'Surveillance du système'
+      adminSubtitle: 'Surveillance du système',
+      profileCompletionRequired: 'Complétion du profil requise'
     },
     common: {
       loading: 'Chargement...',
