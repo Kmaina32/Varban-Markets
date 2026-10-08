@@ -12,7 +12,7 @@ Varban Markets is a professional electronic trading protocol engineered for adva
 *   **Profiles & Identity**: Real-time synchronization of trader metadata using Supabase Auth and PostgreSQL triggers.
 *   **Financial Ledger**: Immutable transactional records for deposits, withdrawals, and trade settlements.
 *   **Watchlist Persistence**: Cloud-synced asset tracking across all device nodes.
-*   **Database Setup**: See `SUPABASE_SETUP.sql` for the complete schema and RLS security rules.
+*   **Database Setup**: Run `SUPABASE_SETUP.sql` in your Supabase SQL Editor to initialize the ledger and RLS policies.
 
 ### B. ADVANCED CHARTING (TRADINGVIEW)
 *   **Pro Widget**: Integration of the TradingView Advanced Charting Widget for institutional analysis.
@@ -30,9 +30,9 @@ Varban Markets is a professional electronic trading protocol engineered for adva
 *   **Internal Reader**: Contextual headlines refined for high-volatility drivers (Digital Assets, Forex, Global Politics) with in-app analysis reports.
 
 ### E. RESPONSIVE WORKSPACE
-*   **Desktop Pro**: Resizable terminal panels for customized chart/ledger balance on computer screens.
-*   **Mobile Side-Opening**: "Side opening page" architecture for Registry, Insights, and Positions to maximize chart visibility on mobile.
-*   **Profile Enforcement**: Mandatory completion of physical address and investor profile before accessing trading nodes.
+*   **Desktop Pro**: Resizable terminal panels for customized chart/ledger balance.
+*   **Mobile Drawers**: Side-opening architecture for Registry, Insights, and Positions to maximize chart visibility on small screens.
+*   **Profile Enforcement**: Mandatory completion of physical address and investor profile (KYC) before accessing trading or deposit nodes.
 
 ---
 
@@ -49,9 +49,9 @@ The following keys must be populated in `.env` to enable full platform functiona
 ## 3. PRODUCTION STATUS TRACKER
 - [x] **Institutional White Design System**: High-contrast, minimalist UI with brand-blue and gold accents.
 - [x] **Advanced Charting**: Full TradingView terminal integration.
-- [x] **Profile Enforcement**: Address and KYC data required for terminal/wallet access.
-- [x] **Supabase Migration**: Core identity and financial ledger synchronized.
-- [x] **Hardened Route Guards**: Deterministic unauthenticated redirection across all secure nodes.
+- [x] **Profile Enforcement**: Physical address and regulatory data required for terminal/wallet access.
+- [x] **Supabase Migration**: Core identity and financial ledger synchronized with idempotent RLS scripts.
+- [x] **Mobile Drawer Architecture**: Specialized sliding panels for high-performance mobile trading.
 - [x] **Admin Oversight Desk**: Dedicated nodes for KYC review, deposit verification, and withdrawal dispatch.
 
 ---
