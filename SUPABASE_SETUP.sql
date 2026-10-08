@@ -1,8 +1,13 @@
--- VARBAN MARKETS — INSTITUTIONAL SUPABASE SETUP
--- This script initializes the ledger tables and security policies.
--- Run this in your Supabase SQL Editor.
 
--- 1. PROFILES TABLE (Identity & Registration)
+-- ==========================================
+-- VARBAN MARKETS — INSTITUTIONAL LEDGER SETUP
+-- Version: 2.1 (Idempotent)
+-- ==========================================
+
+-- 1. EXTENSIONS & PREREQUISITES
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- 2. TABLE: PROFILES (Core Identity Node)
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
   first_name TEXT,
@@ -11,180 +16,152 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   email TEXT,
   phone TEXT,
   country TEXT,
-  photo_url TEXT,
-  balance DECIMAL(20,2) DEFAULT 0.00,
-  equity DECIMAL(20,2) DEFAULT 0.00,
-  currency TEXT DEFAULT 'USD',
-  verification_status TEXT DEFAULT 'Not Verified',
-  role TEXT DEFAULT 'Trader',
-  profile_completed BOOLEAN DEFAULT FALSE,
-  
-  -- Address Information
   address_line1 TEXT,
   address_line2 TEXT,
   city TEXT,
   state TEXT,
   zip_code TEXT,
-  
-  -- Investor Profile
-  account_purpose TEXT,
-  origin_funds TEXT,
-  net_worth TEXT,
-  annual_income TEXT,
-  trade_forecast TEXT,
-  education TEXT,
-  employment_status TEXT,
-  source_wealth TEXT,
-  
-  -- Preferences
+  photo_url TEXT,
+  verification_status TEXT DEFAULT 'Not Verified',
+  role TEXT DEFAULT 'Trader',
+  balance NUMERIC(20, 2) DEFAULT 0,
+  equity NUMERIC(20, 2) DEFAULT 0,
+  currency TEXT DEFAULT 'USD',
   language TEXT DEFAULT 'ENGLISH',
   timezone TEXT DEFAULT 'UTC+0',
   alert_preferences JSONB DEFAULT '{"newTrades": true, "withdrawSuccess": true, "securityAlerts": true, "systemStatus": true}'::jsonb,
-  
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  profile_completed BOOLEAN DEFAULT FALSE,
+  referral_code TEXT DEFAULT UPPER(SUBSTRING(MD5(RANDOM()::TEXT) FROM 1 FOR 6)),
+  referred_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
 
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-
--- 2. TRANSACTIONS TABLE (Financial Ledger)
+-- 3. TABLE: TRANSACTIONS (Financial Ledger)
 CREATE TABLE IF NOT EXISTS public.transactions (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
-  type TEXT NOT NULL, -- 'Deposit', 'Withdrawal', 'Trade Settlement'
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  type TEXT NOT NULL, -- 'Crypto Deposit', 'Withdrawal', 'Vault Deposit'
+  amount NUMERIC(20, 2) NOT NULL,
   asset TEXT DEFAULT 'USD',
-  amount DECIMAL(20,2) NOT NULL,
   status TEXT DEFAULT 'Pending',
   ref TEXT UNIQUE,
   provider TEXT,
-  meta_data JSONB DEFAULT '{}'::jsonb,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  meta_data JSONB,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
 
-ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
-
--- 3. WATCHLIST TABLE (User Market Favorites)
+-- 4. TABLE: WATCHLIST (Custom Market Nodes)
 CREATE TABLE IF NOT EXISTS public.watchlist (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
   symbol TEXT NOT NULL,
   name TEXT,
   category TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
   UNIQUE(user_id, symbol)
 );
 
-ALTER TABLE public.watchlist ENABLE ROW LEVEL SECURITY;
-
--- 4. CONTACT MESSAGES (Public Ingestion)
+-- 5. TABLE: CONTACT_MESSAGES (Support Ingestion)
 CREATE TABLE IF NOT EXISTS public.contact_messages (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id TEXT, -- Might be 'anonymous'
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id TEXT, -- Can be UUID string or 'anonymous'
   full_name TEXT,
   email TEXT,
   topic TEXT,
   message TEXT,
   status TEXT DEFAULT 'New',
   ref TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
 
-ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
+-- 6. TABLE: ARTICLES (Intelligence Registry)
+CREATE TABLE IF NOT EXISTS public.articles (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  title TEXT NOT NULL,
+  body TEXT,
+  category TEXT,
+  asset_tag TEXT,
+  status TEXT DEFAULT 'Published',
+  author TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
 
--- 5. INTELLIGENCE CACHE (Market News)
+-- 7. TABLE: NEWS_CACHE (Real-time Proxy Cache)
 CREATE TABLE IF NOT EXISTS public.news_cache (
   uuid TEXT PRIMARY KEY,
   title TEXT,
   publisher TEXT,
-  published_at TEXT,
   description TEXT,
   url TEXT,
   image TEXT,
   category JSONB,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  published_at TIMESTAMP WITH TIME ZONE,
+  synced_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
 
+-- ==========================================
+-- ROW-LEVEL SECURITY (RLS) POLICIES
+-- ==========================================
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.watchlist ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.articles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.news_cache ENABLE ROW LEVEL SECURITY;
 
--- 6. ARTICLES (Admin Authored)
-CREATE TABLE IF NOT EXISTS public.articles (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  title TEXT,
-  body TEXT,
-  category TEXT,
-  asset_tag TEXT,
-  status TEXT DEFAULT 'Draft',
-  author TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+-- ADMIN HELPER FUNCTION
+CREATE OR REPLACE FUNCTION is_admin() RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN (
+    auth.jwt() ->> 'email' IN ('macos8388@gmail.com', 'gmaina4242@gmail.com') OR
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'Admin')
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
-ALTER TABLE public.articles ENABLE ROW LEVEL SECURITY;
-
--- IDEMPOTENT RLS POLICIES (DROP BEFORE CREATE)
-
--- Profiles Policies
+-- PROFILES POLICIES
 DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
-CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id OR is_admin());
 
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
-CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id OR is_admin());
 
-DROP POLICY IF EXISTS "Admins can view all profiles" ON public.profiles;
-CREATE POLICY "Admins can view all profiles" ON public.profiles FOR SELECT USING (
-  auth.jwt() ->> 'email' IN ('macos8388@gmail.com', 'gmaina4242@gmail.com') OR
-  (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'Admin'
-);
+DROP POLICY IF EXISTS "Admins have full profile access" ON public.profiles;
+CREATE POLICY "Admins have full profile access" ON public.profiles FOR ALL USING (is_admin());
 
-DROP POLICY IF EXISTS "Admins can update all profiles" ON public.profiles;
-CREATE POLICY "Admins can update all profiles" ON public.profiles FOR UPDATE USING (
-  auth.jwt() ->> 'email' IN ('macos8388@gmail.com', 'gmaina4242@gmail.com') OR
-  (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'Admin'
-);
-
--- Transactions Policies
+-- TRANSACTIONS POLICIES
 DROP POLICY IF EXISTS "Users can view own transactions" ON public.transactions;
-CREATE POLICY "Users can view own transactions" ON public.transactions FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own transactions" ON public.transactions FOR SELECT USING (auth.uid() = user_id OR is_admin());
 
-DROP POLICY IF EXISTS "Admins can view all transactions" ON public.transactions;
-CREATE POLICY "Admins can view all transactions" ON public.transactions FOR SELECT USING (
-  auth.jwt() ->> 'email' IN ('macos8388@gmail.com', 'gmaina4242@gmail.com') OR
-  (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'Admin'
-);
+DROP POLICY IF EXISTS "Users can insert own transactions" ON public.transactions;
+CREATE POLICY "Users can insert own transactions" ON public.transactions FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-DROP POLICY IF EXISTS "Admins can update transactions" ON public.transactions;
-CREATE POLICY "Admins can update transactions" ON public.transactions FOR UPDATE USING (
-  auth.jwt() ->> 'email' IN ('macos8388@gmail.com', 'gmaina4242@gmail.com') OR
-  (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'Admin'
-);
+DROP POLICY IF EXISTS "Admins have full transaction access" ON public.transactions;
+CREATE POLICY "Admins have full transaction access" ON public.transactions FOR ALL USING (is_admin());
 
--- Watchlist Policies
+-- WATCHLIST POLICIES
 DROP POLICY IF EXISTS "Users can manage own watchlist" ON public.watchlist;
 CREATE POLICY "Users can manage own watchlist" ON public.watchlist FOR ALL USING (auth.uid() = user_id);
 
--- Contact Messages Policies
+-- CONTACT MESSAGES POLICIES
 DROP POLICY IF EXISTS "Public create contact" ON public.contact_messages;
 CREATE POLICY "Public create contact" ON public.contact_messages FOR INSERT WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Admins can view contacts" ON public.contact_messages;
-CREATE POLICY "Admins can view contacts" ON public.contact_messages FOR SELECT USING (
-  auth.jwt() ->> 'email' IN ('macos8388@gmail.com', 'gmaina4242@gmail.com') OR
-  (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'Admin'
-);
+DROP POLICY IF EXISTS "Admins manage contact messages" ON public.contact_messages;
+CREATE POLICY "Admins manage contact messages" ON public.contact_messages FOR ALL USING (is_admin());
 
--- News Cache Policies
-DROP POLICY IF EXISTS "Public can view news" ON public.news_cache;
-CREATE POLICY "Public can view news" ON public.news_cache FOR SELECT USING (true);
+-- ARTICLES & NEWS POLICIES
+DROP POLICY IF EXISTS "Anyone can read articles" ON public.articles;
+CREATE POLICY "Anyone can read articles" ON public.articles FOR SELECT USING (true);
 
-DROP POLICY IF EXISTS "Allow insertion to news cache" ON public.news_cache;
-CREATE POLICY "Allow insertion to news cache" ON public.news_cache FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Admins manage articles" ON public.articles;
+CREATE POLICY "Admins manage articles" ON public.articles FOR ALL USING (is_admin());
 
--- Articles Policies
-DROP POLICY IF EXISTS "Public can view published articles" ON public.articles;
-CREATE POLICY "Public can view published articles" ON public.articles FOR SELECT USING (status = 'Published');
+DROP POLICY IF EXISTS "Anyone can read news cache" ON public.news_cache;
+CREATE POLICY "Anyone can read news cache" ON public.news_cache FOR SELECT USING (true);
 
-DROP POLICY IF EXISTS "Admins can manage articles" ON public.articles;
-CREATE POLICY "Admins can manage articles" ON public.articles FOR ALL USING (
-  auth.jwt() ->> 'email' IN ('macos8388@gmail.com', 'gmaina4242@gmail.com') OR
-  (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'Admin'
-);
+DROP POLICY IF EXISTS "System can update news cache" ON public.news_cache;
+CREATE POLICY "System can update news cache" ON public.news_cache FOR ALL USING (true); -- Usually updated via server-side service role
