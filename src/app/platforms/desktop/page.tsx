@@ -84,7 +84,7 @@ export default function DesktopPlatformPage() {
                 Download for Windows
               </a>
               <Link 
-                href="/help/terminal" 
+                href="/platforms/desktop/install" 
                 className="bg-white hover:bg-[#F7F7F5] text-[#0A0A0A] border border-[#E4E4E4] px-10 py-5 text-[11px] font-bold uppercase tracking-[0.2em] transition-all text-center"
               >
                 Installation Guide
