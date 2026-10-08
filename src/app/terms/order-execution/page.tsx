@@ -1,5 +1,5 @@
 
-import Link from "next/policy";
+import Link from "next/link";
 import { Sliders, Zap, Award, ArrowLeft } from "lucide-react";
 
 /**

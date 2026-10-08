@@ -1,3 +1,4 @@
+
 'use client';
 
 import AuthedSidebar from "./AuthedSidebar";
@@ -70,46 +71,43 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   const isAdmin = useMemo(() => {
     if (!user?.email) return false;
     const isSuper = SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase());
-    const hasAdminRole = profile?.status?.role === 'Admin';
+    const hasAdminRole = profile?.status?.role === 'Admin' || profile?.role === 'Admin';
     return isSuper || hasAdminRole;
   }, [user, profile]);
 
   // REDIRECTION LOGIC: Core Security Protocol
   useEffect(() => {
-    if (!loading) {
-      // 1. Unauthenticated users trying to access strict paths
-      if (!user && isStrict) {
-        router.replace('/login');
-        return;
-      }
-      
-      // 2. Authenticated users trying to access admin paths without authority
-      if (user && isAdminPath && !isAdmin && !profileLoading) {
-        router.replace('/dashboard');
-        return;
-      }
+    if (loading) return;
 
-      // 3. Dedicated Terminal Guard
-      if (isTerminal && !user) {
-        router.replace('/login');
-        return;
-      }
+    // 1. Unauthenticated users trying to access strict paths
+    if (!user && isStrict) {
+      router.replace('/login');
+      return;
+    }
+    
+    // 2. Authenticated users trying to access admin paths without authority
+    if (user && isAdminPath && !isAdmin && !profileLoading) {
+      router.replace('/dashboard');
+      return;
+    }
+
+    // 3. Dedicated Terminal Guard
+    if (isTerminal && !user) {
+      router.replace('/login');
+      return;
     }
   }, [user, loading, profileLoading, isStrict, isAdminPath, isAdmin, isTerminal, router]);
+
+  // If loading or redirection is pending, show high-fidelity loading reveal
+  if (loading || (isStrict && !user)) {
+    return <LoadingOverlay />;
+  }
 
   // If not a strict path and not logged in, render as public page (no sidebar/header)
   if (!isStrict && !user) return <>{children}</>;
   
-  // Terminal workspace handling
-  if (isTerminal && !user && !loading) {
-    return null;
-  }
+  // Terminal workspace handling (no standard layout wrappers)
   if (isTerminal) return <>{children}</>;
-
-  // Loading state
-  if (loading || (isStrict && !user)) {
-    return <LoadingOverlay />;
-  }
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
