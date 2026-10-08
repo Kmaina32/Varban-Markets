@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -90,7 +91,7 @@ export default function Navbar() {
             title: "Trading Terminals",
             items: [
               { label: "Varban Terminal (Web)", href: "/terminal" },
-              { label: "Varban for Desktop", href: "/technology" },
+              { label: "Varban for Desktop", href: "/platforms/desktop" },
             ]
           },
           {
