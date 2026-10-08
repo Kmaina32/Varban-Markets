@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -33,23 +34,123 @@ export default function Navbar() {
       href: "/how-it-works",
       hasDropdown: true,
       dropdownItems: {
-        accounts: [
-          { label: "Standard accounts", href: "/accounts/standard" },
-          { label: "Professional accounts", href: "/accounts/professional" },
-          { label: "Demo trading account", href: "/accounts/demo" },
-        ],
-        conditions: [
-          { label: "Deposits and withdrawals", href: "/how-it-works/payments" },
-          { label: "Fees", href: "/terms/fees" },
-          { label: "Client protection", href: "/protection" },
-          { label: "Order execution", href: "/terms/order-execution" },
+        sections: [
+          {
+            title: "Accounts",
+            items: [
+              { label: "Standard accounts", href: "/accounts/standard" },
+              { label: "Professional accounts", href: "/accounts/professional" },
+              { label: "Demo trading account", href: "/accounts/demo" },
+            ]
+          },
+          {
+            title: "Conditions",
+            items: [
+              { label: "Deposits and withdrawals", href: "/how-it-works/payments" },
+              { label: "Fees", href: "/terms/fees" },
+              { label: "Client protection", href: "/protection" },
+              { label: "Order execution", href: "/terms/order-execution" },
+            ]
+          }
         ]
       }
     },
-    { label: "Markets", href: "/markets" },
-    { label: "Platforms", href: "/technology" },
-    { label: "Resources", href: "/help" },
-    { label: "Company", href: "/about" },
+    { 
+      label: "Markets", 
+      href: "/markets",
+      hasDropdown: true,
+      dropdownItems: {
+        sections: [
+          {
+            title: "Asset Classes",
+            items: [
+              { label: "Forex", href: "/markets?cat=Forex" },
+              { label: "Digital Assets", href: "/markets?cat=Crypto" },
+              { label: "Indices", href: "/markets?cat=Equities" },
+              { label: "Commodities", href: "/markets?cat=Commodities" },
+            ]
+          }
+        ]
+      }
+    },
+    { 
+      label: "Platforms", 
+      href: "/technology",
+      hasDropdown: true,
+      dropdownItems: {
+        sections: [
+          {
+            title: "Trading Terminals",
+            items: [
+              { label: "Varban Terminal (Web)", href: "/terminal" },
+              { label: "Varban for Desktop", href: "/technology" },
+            ]
+          },
+          {
+            title: "Mobile App",
+            items: [
+              { label: "Varban App (iOS/Android)", href: "/technology" },
+              { label: "MetaTrader 5 Mobile", href: "/technology" },
+            ]
+          }
+        ]
+      }
+    },
+    { 
+      label: "Resources", 
+      href: "/help",
+      hasDropdown: true,
+      dropdownItems: {
+        sections: [
+          {
+            title: "Analysis",
+            items: [
+              { label: "Market Intelligence", href: "/news" },
+              { label: "Economic Calendar", href: "/help/markets" },
+            ]
+          },
+          {
+            title: "Support",
+            items: [
+              { label: "Help Center", href: "/help" },
+              { label: "FAQ", href: "/help" },
+            ]
+          }
+        ]
+      }
+    },
+    { 
+      label: "Company", 
+      href: "/about",
+      hasDropdown: true,
+      dropdownItems: {
+        sections: [
+          {
+            title: "About",
+            items: [
+              { label: "About us", href: "/about" },
+              { label: "Why Varban", href: "/technology" },
+              { label: "Contact us", href: "/about/contact" },
+              { label: "Blog", href: "/about/press" },
+            ]
+          },
+          {
+            title: "Corporate",
+            items: [
+              { label: "Regulation", href: "/about/licenses" },
+              { label: "Legal documents", href: "/terms" },
+              { label: "Compensation fund", href: "/protection" },
+            ]
+          },
+          {
+            title: "Solutions",
+            items: [
+              { label: "Varban Rewards", href: "/referral" },
+            ]
+          }
+        ]
+      }
+    },
     { label: "Partners", href: "/referral", isExternal: true }
   ];
 
@@ -92,23 +193,25 @@ export default function Navbar() {
 
                   {/* Mega Menu Dropdown */}
                   {link.hasDropdown && activeDropdown === link.label && (
-                    <div className="absolute top-[80px] left-0 w-[550px] bg-white border border-[#E4E4E4] shadow-2xl p-10 grid grid-cols-2 gap-12 animate-in fade-in slide-in-from-top-1 duration-200">
-                      <div className="space-y-6">
-                        <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest block border-b border-[#F7F7F5] pb-3">Accounts</span>
-                        <div className="flex flex-col space-y-4">
-                          {link.dropdownItems!.accounts.map(item => (
-                            <Link key={item.href} href={item.href} className="text-sm font-bold text-[#0A0A0A] hover:text-[#0055FF] transition-colors">{item.label}</Link>
-                          ))}
+                    <div className={cn(
+                      "absolute top-[80px] left-0 bg-white border border-[#E4E4E4] shadow-2xl p-10 grid gap-12 animate-in fade-in slide-in-from-top-1 duration-200",
+                      link.dropdownItems!.sections.length === 1 ? "w-[300px] grid-cols-1" : 
+                      link.dropdownItems!.sections.length === 2 ? "w-[550px] grid-cols-2" : "w-[800px] grid-cols-3"
+                    )}>
+                      {link.dropdownItems!.sections.map((section, sIdx) => (
+                        <div key={sIdx} className="space-y-6">
+                          <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest block border-b border-[#F7F7F5] pb-3">
+                            {section.title}
+                          </span>
+                          <div className="flex flex-col space-y-4">
+                            {section.items.map((item, iIdx) => (
+                              <Link key={iIdx} href={item.href} className="text-sm font-bold text-[#0A0A0A] hover:text-[#0055FF] transition-colors">
+                                {item.label}
+                              </Link>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                      <div className="space-y-6">
-                        <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest block border-b border-[#F7F7F5] pb-3">Conditions</span>
-                        <div className="flex flex-col space-y-4">
-                          {link.dropdownItems!.conditions.map(item => (
-                            <Link key={item.href} href={item.href} className="text-sm font-bold text-[#0A0A0A] hover:text-[#0055FF] transition-colors">{item.label}</Link>
-                          ))}
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -178,22 +281,25 @@ export default function Navbar() {
                     </div>
                     {link.hasDropdown && (
                       <div className="mt-4 pl-4 flex flex-col space-y-6 border-l-2 border-[#F7F7F5]">
-                        <div>
-                          <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest mb-3 block">Accounts</span>
-                          <div className="flex flex-col space-y-3">
-                            {link.dropdownItems!.accounts.map(item => (
-                              <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className="text-xs font-bold text-[#0A0A0A]">{item.label}</Link>
-                            ))}
+                        {link.dropdownItems!.sections.map((section, sIdx) => (
+                          <div key={sIdx}>
+                            <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest mb-3 block">
+                              {section.title}
+                            </span>
+                            <div className="flex flex-col space-y-3">
+                              {section.items.map((item, iIdx) => (
+                                <Link 
+                                  key={iIdx} 
+                                  href={item.href} 
+                                  onClick={() => setIsMobileMenuOpen(false)} 
+                                  className="text-xs font-bold text-[#0A0A0A]"
+                                >
+                                  {item.label}
+                                </Link>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                        <div>
-                          <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest mb-3 block">Conditions</span>
-                          <div className="flex flex-col space-y-3">
-                            {link.dropdownItems!.conditions.map(item => (
-                              <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className="text-xs font-bold text-[#0A0A0A]">{item.label}</Link>
-                            ))}
-                          </div>
-                        </div>
+                        ))}
                       </div>
                     )}
                   </div>
