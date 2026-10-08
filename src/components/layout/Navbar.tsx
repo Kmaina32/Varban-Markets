@@ -63,6 +63,7 @@ export default function Navbar() {
         sections: [
           {
             title: "Asset Classes",
+            hideTitle: true,
             items: [
               { label: "Forex", href: "/markets?cat=Forex" },
               { label: "Digital Assets", href: "/markets?cat=Crypto" },
@@ -155,7 +156,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="bg-white border-b border-[#E4E4E4] sticky top-0 z-[100] h-20 flex items-center shadow-sm">
+    <nav className="bg-white border-b border-[#E4E4E4] sticky top-0 z-[500] h-20 flex items-center shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-8">
@@ -194,17 +195,20 @@ export default function Navbar() {
                   {/* Mega Menu Dropdown */}
                   {link.hasDropdown && activeDropdown === link.label && (
                     <div className={cn(
-                      "absolute top-[80px] left-0 bg-white border border-[#E4E4E4] shadow-2xl p-10 grid gap-12 animate-in fade-in slide-in-from-top-1 duration-200",
-                      link.dropdownItems!.sections.length === 1 ? "w-[300px] grid-cols-1" : 
-                      link.dropdownItems!.sections.length === 2 ? "w-[550px] grid-cols-2" : "w-[800px] grid-cols-3"
+                      "absolute top-full left-0 bg-white border border-[#E4E4E4] shadow-2xl animate-in fade-in slide-in-from-top-1 duration-200 z-[600]",
+                      link.dropdownItems!.sections.length === 1 ? "w-[250px] p-6 grid-cols-1" : 
+                      link.dropdownItems!.sections.length === 2 ? "w-[550px] p-10 grid-cols-2" : "w-[800px] p-10 grid-cols-3",
+                      "grid gap-8"
                     )}>
-                      {link.dropdownItems!.sections.map((section, sIdx) => (
-                        <div key={sIdx} className="space-y-6">
-                          <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest block border-b border-[#F7F7F5] pb-3">
-                            {section.title}
-                          </span>
+                      {link.dropdownItems!.sections.map((section: any, sIdx) => (
+                        <div key={sIdx} className="space-y-4">
+                          {!section.hideTitle && (
+                            <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest block border-b border-[#F7F7F5] pb-3">
+                              {section.title}
+                            </span>
+                          )}
                           <div className="flex flex-col space-y-4">
-                            {section.items.map((item, iIdx) => (
+                            {section.items.map((item: any, iIdx: number) => (
                               <Link key={iIdx} href={item.href} className="text-sm font-bold text-[#0A0A0A] hover:text-[#0055FF] transition-colors">
                                 {item.label}
                               </Link>
@@ -247,7 +251,7 @@ export default function Navbar() {
       </div>
 
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[200] bg-white lg:hidden animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[1000] bg-white lg:hidden animate-in fade-in duration-200">
           <div className="flex flex-col h-full">
             <div className="h-20 border-b border-[#E4E4E4] flex items-center justify-between px-4 shrink-0">
               <Image 
@@ -281,13 +285,15 @@ export default function Navbar() {
                     </div>
                     {link.hasDropdown && (
                       <div className="mt-4 pl-4 flex flex-col space-y-6 border-l-2 border-[#F7F7F5]">
-                        {link.dropdownItems!.sections.map((section, sIdx) => (
+                        {link.dropdownItems!.sections.map((section: any, sIdx) => (
                           <div key={sIdx}>
-                            <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest mb-3 block">
-                              {section.title}
-                            </span>
+                            {!section.hideTitle && (
+                              <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest mb-3 block">
+                                {section.title}
+                              </span>
+                            )}
                             <div className="flex flex-col space-y-3">
-                              {section.items.map((item, iIdx) => (
+                              {section.items.map((item: any, iIdx: number) => (
                                 <Link 
                                   key={iIdx} 
                                   href={item.href} 
