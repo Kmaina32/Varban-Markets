@@ -67,7 +67,18 @@
 
 ---
 
-## 4. Prioritized Implementation Roadmap
+## 4. Windows Native App (Electron) Implementation Roadmap
+
+- [ ] **Native Build Pipeline**: Configure `electron-builder` to generate a production-ready `.nsis` installer.
+- [ ] **Environment Isolation**: Ensure `.env` keys are securely passed to the Electron main process without exposure.
+- [ ] **Multi-Monitor Logic**: Implement `BrowserWindow` spawning in `main.js` for detached chart windows.
+- [ ] **Biometric Bridge**: Connect `VarbanNative.requestBiometricAuth` in `preload.js` to Windows WebAuthn APIs.
+- [ ] **Auto-Update Node**: Setup an AWS S3 or R2 bucket for hosting the `latest.yml` file for background updates.
+- [ ] **Code Signing**: Procure and integrate a Windows SSL Certificate for "Verified Publisher" status.
+
+---
+
+## 5. Prioritized Implementation Roadmap
 
 1. **Phase 1 (Immediate)**: [COMPLETED] Wire `/verification` document upload and `/security` password change triggers.
 2. **Phase 2**: [COMPLETED] Build `/admin/withdrawals` and `/admin/deposits` approval queues to process pending user cashier requests.
@@ -76,3 +87,4 @@
 5. **Phase 5 (Market Intelligence & UX)**: [COMPLETED] Build `/news` hub with server proxy, implement spotlight tutorials for Dashboard/Terminal, and enforce Zero-AI deterministic protocol.
 6. **Phase 6**: Implement server-side Webhooks for Paystack & Crypto gateways.
 7. **Phase 7**: Upgrade Terminal data pipeline to real-time WebSockets and server-side trade settlement workers.
+8. **Phase 8**: Finalize Windows Native Application and distribution node.

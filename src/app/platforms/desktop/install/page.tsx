@@ -97,13 +97,14 @@ export default function DesktopInstallGuide() {
                   </p>
                 </div>
                 {step.action && (
-                  <Link 
+                  <a 
                     href={step.action.href} 
+                    download
                     className="inline-flex items-center gap-2 text-[10px] font-bold text-[#0055FF] uppercase tracking-widest hover:underline"
                   >
                     <span>{step.action.label}</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </Link>
+                    <Download className="w-3 h-3" />
+                  </a>
                 )}
               </div>
             </Card>

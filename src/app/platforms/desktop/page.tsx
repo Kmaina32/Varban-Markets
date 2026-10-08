@@ -77,7 +77,7 @@ export default function DesktopPlatformPage() {
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <a 
                 href="/downloads/VarbanTerminal_Setup.exe" 
-                download
+                download="VarbanTerminal_Setup.exe"
                 className="bg-[#0A0A0A] hover:bg-[#0055FF] text-white px-10 py-5 text-[11px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl flex items-center justify-center gap-3"
               >
                 <Download className="w-4 h-4" />
@@ -191,6 +191,7 @@ export default function DesktopPlatformPage() {
           <div className="flex flex-col sm:flex-row gap-4 relative z-10 w-full md:w-auto">
             <a 
               href="/downloads/VarbanTerminal_Setup.exe" 
+              download="VarbanTerminal_Setup.exe"
               className="bg-[#0055FF] hover:bg-[#0044cc] text-white px-12 py-5 text-[10px] font-bold uppercase tracking-[0.2em] transition-all text-center"
             >
               Get Installer (.EXE)
