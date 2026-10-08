@@ -295,6 +295,64 @@ export default function CommoditiesMarketPage() {
           </Card>
         </div>
 
+        {/* PROMOTIONAL VALUE PROP SECTION */}
+        <section className="max-w-7xl mx-auto px-6 py-24 border-t border-[#E4E4E4]">
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="text-3xl md:text-5xl font-normal text-[#0A0A0A] tracking-tight font-display">
+              Open an account and start trading <br className="hidden md:block" /> commodities
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div className="space-y-12 order-2 lg:order-1">
+              <div className="space-y-3">
+                <h3 className="text-xl font-bold text-[#0A0A0A] tracking-tight uppercase">Expand your portfolio</h3>
+                <p className="text-sm text-[#6B7280] leading-relaxed font-medium">
+                  by capitalizing on commodity trading opportunities internationally and beyond.
+                </p>
+              </div>
+              <div className="space-y-3 border-t border-[#F7F7F5] pt-12">
+                <h3 className="text-xl font-bold text-[#0A0A0A] tracking-tight uppercase">Enjoy trading gold and oil with tight spreads</h3>
+                <p className="text-sm text-[#6B7280] leading-relaxed font-medium">
+                  and keep more of what you make.
+                </p>
+              </div>
+              <div className="space-y-3 border-t border-[#F7F7F5] pt-12">
+                <h3 className="text-xl font-bold text-[#0A0A0A] tracking-tight uppercase">Leverage unique trading conditions</h3>
+                <p className="text-sm text-[#6B7280] leading-relaxed font-medium">
+                  and optimize your trading strategy with favorable market conditions.
+                </p>
+              </div>
+            </div>
+
+            <div className="relative rounded-lg overflow-hidden aspect-[4/3] lg:aspect-square group shadow-2xl border border-[#E4E4E4] order-1 lg:order-2 bg-[#F7F7F5]">
+              <Image 
+                src={placeholderImages.trading_lifestyle.url} 
+                alt="Trading on Mobile" 
+                fill 
+                className="object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+                data-ai-hint={placeholderImages.trading_lifestyle.hint}
+              />
+              
+              {/* Floating Asset Tags - Precise Placement as per Ref */}
+              <div className="absolute top-[25%] left-[15%] bg-white/90 backdrop-blur-md border border-[#E4E4E4] rounded-full px-4 py-2 flex items-center gap-3 shadow-xl animate-in zoom-in duration-700 delay-500">
+                <MarketIcon symbol="XAU/USD" size="sm" />
+                <span className="text-[10px] font-bold text-[#0A0A0A] uppercase tracking-widest">XAUUSD</span>
+              </div>
+
+              <div className="absolute top-[55%] left-[35%] bg-white/90 backdrop-blur-md border border-[#E4E4E4] rounded-full px-4 py-2 flex items-center gap-3 shadow-xl animate-in zoom-in duration-700 delay-700">
+                <MarketIcon symbol="WTI/USD" size="sm" />
+                <span className="text-[10px] font-bold text-[#0A0A0A] uppercase tracking-widest">UKOIL</span>
+              </div>
+
+              <div className="absolute bottom-[20%] right-[15%] bg-white/90 backdrop-blur-md border border-[#E4E4E4] rounded-full px-4 py-2 flex items-center gap-3 shadow-xl animate-in zoom-in duration-700 delay-1000">
+                <MarketIcon symbol="HG1" size="sm" />
+                <span className="text-[10px] font-bold text-[#0A0A0A] uppercase tracking-widest">XNGUSD</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* PILLAR INFO SECTION */}
         <section className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
            <div className="p-10 bg-white border border-[#E4E4E4] space-y-4 shadow-sm border-t-4 border-t-[#C9A227]">

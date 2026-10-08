@@ -65,5 +65,11 @@
     "width": 1200,
     "height": 600,
     "hint": "gold bars oil"
+  },
+  "trading_lifestyle": {
+    "url": "https://picsum.photos/seed/varbantrading/1000/1000",
+    "width": 1000,
+    "height": 1000,
+    "hint": "person phone"
   }
 }
