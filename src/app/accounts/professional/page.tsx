@@ -1,59 +1,192 @@
 
 import Link from "next/link";
-import { Zap, BarChart3, Database, ShieldCheck } from "lucide-react";
+import { Check, ShieldCheck, Zap, BarChart3, Sliders, Table as TableIcon, Clock, Info } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 /**
  * @fileOverview Professional Account Specification Page.
- * Institutional-tier account details with high-contrast design.
+ * High-performance tier comparison for experienced, day-traders and algotraders.
  */
 
 export default function ProfessionalAccountsPage() {
+  const accountTiers = [
+    {
+      title: "Pro",
+      subtitle: "Our instant execution account, with zero commission & low spread.",
+      features: [
+        { label: "Minimum deposit", value: "$200" },
+        { label: "Spread", value: "From 0.1 pips" },
+        { label: "Commission", value: "No commission" },
+        { label: "Maximum leverage", value: "1:400" },
+        { label: "Order execution", value: "Instant" }
+      ],
+      color: "border-t-[#0055FF]"
+    },
+    {
+      title: "Zero",
+      subtitle: "Zero spread on the top 30 instruments. Market execution, no requotes.",
+      features: [
+        { label: "Minimum deposit", value: "$200" },
+        { label: "Spread", value: "From 0 pips" },
+        { label: "Commission", value: "From $0.05/lot" },
+        { label: "Maximum leverage", value: "1:400" },
+        { label: "Order execution", value: "Market" }
+      ],
+      color: "border-t-[#16835B]"
+    },
+    {
+      title: "Raw Spread",
+      subtitle: "Lowest spreads with fixed commission per lot. Market execution.",
+      features: [
+        { label: "Minimum deposit", value: "$200" },
+        { label: "Spread", value: "From 0 pips" },
+        { label: "Commission", value: "Up to $3.50/lot" },
+        { label: "Maximum leverage", value: "1:400" },
+        { label: "Order execution", value: "Market" }
+      ],
+      color: "border-t-[#0A0A0A]"
+    }
+  ];
+
+  const comparisonRows = [
+    { label: "Minimum deposit", pro: "$200", zero: "$200", raw: "$200" },
+    { label: "Spread¹", pro: "From 0.1 pips", zero: "From 0 pips", raw: "From 0 pips" },
+    { label: "Commission", pro: "No commission", zero: "From $0.05/side per lot", raw: "Up to $3.50/side per lot" },
+    { label: "Maximum leverage", pro: "1:400", zero: "1:400", raw: "1:400" },
+    { label: "Instruments", pro: "Forex, metals, energies, stocks, indices", zero: "Forex, metals, energies, stocks, indices", raw: "Forex, metals, energies, stocks, indices" },
+    { label: "Minimum lot size", pro: "0.01", zero: "0.01", raw: "0.01" },
+    { label: "Maximum lot size", pro: "200 (Day), 60 (Night)", zero: "200 (Day), 60 (Night)", raw: "200 (Day), 60 (Night)" },
+    { label: "Max positions", pro: "Unlimited", zero: "Unlimited", raw: "Unlimited" },
+    { label: "Hedged margin", pro: "0%", zero: "0%", raw: "0%" },
+    { label: "Margin call", pro: "30%", zero: "30%", raw: "30%" },
+    { label: "Stop out", pro: "20%", zero: "20%", raw: "20%" },
+    { label: "Order execution", pro: "Instant", zero: "Market", raw: "Market" },
+    { label: "Swap-free", pro: "Available", zero: "Available", raw: "Available" },
+  ];
+
   return (
-    <div className="bg-white min-h-screen py-20 text-[#0A0A0A]">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="bg-[#F7F7F5] min-h-screen py-20 text-[#0A0A0A]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="text-center mb-20 space-y-6">
-          <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.3em] block">Institutional Series</span>
-          <h1 className="text-4xl md:text-7xl font-bold uppercase tracking-tighter leading-tight">Professional Accounts</h1>
-          <p className="text-sm md:text-lg text-[#6B7280] max-w-2xl mx-auto leading-relaxed">
-            Engineered for high-volume traders and quantitative entities. Experience our tightest spreads and raw institutional liquidity across all major market domains.
+        {/* Header Section */}
+        <div className="border-b border-[#E4E4E4] pb-12 mb-16 text-center lg:text-left">
+          <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.4em] block mb-4">Institutional Series</span>
+          <h1 className="text-4xl md:text-6xl font-bold uppercase tracking-tighter leading-tight">Professional Accounts</h1>
+          <p className="text-sm md:text-base text-[#6B7280] mt-6 max-w-3xl leading-relaxed uppercase font-bold tracking-tight">
+            Accounts that meet the needs of the most experienced traders. Highlights include low spread or spread-free accounts with execution to suit scalpers, day-traders and algotraders.
           </p>
-          <div className="pt-6">
-            <Link href="/register" className="btn-institutional-primary bg-[#0A0A0A] text-white px-16 py-5 rounded-none shadow-xl">Get Started</Link>
+          <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <Link href="/register" className="btn-institutional-primary bg-[#0055FF] border-[#0055FF] text-white px-16">Open Pro Account</Link>
+            <Link href="/accounts/demo" className="btn-institutional-secondary px-16">Try Sandbox</Link>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
-          {[
-            { icon: Zap, title: "Raw Spread", text: "Direct exchange liquidity with spreads from 0.0 pips on majors." },
-            { icon: BarChart3, title: "Zero Requotes", text: "100% automated matching engine execution with no human intervention." },
-            { icon: Database, title: "API Trading", text: "Connect your algorithms directly via FIX or REST protocol nodes." }
-          ].map((item, i) => (
-            <div key={i} className="p-10 border border-[#E4E4E4] bg-[#F7F7F5] space-y-4 hover:border-[#0055FF] transition-all group">
-              <item.icon className="w-8 h-8 text-[#0055FF]" />
-              <h3 className="text-sm font-bold uppercase tracking-widest">{item.title}</h3>
-              <p className="text-xs text-[#6B7280] leading-relaxed font-medium uppercase tracking-tight">{item.text}</p>
-            </div>
+        {/* Feature Cards Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-20">
+          {accountTiers.map((tier, i) => (
+            <Card key={i} className={`p-8 border-[#E4E4E4] bg-white shadow-sm flex flex-col justify-between border-t-4 ${tier.color}`}>
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A]">{tier.title}</h2>
+                  <p className="text-[10px] text-[#6B7280] font-bold uppercase mt-2 tracking-wider leading-relaxed">{tier.subtitle}</p>
+                </div>
+                <div className="space-y-3 pt-4">
+                  {tier.features.map((feat, idx) => (
+                    <div key={idx} className="flex justify-between items-baseline border-b border-[#F7F7F5] pb-2">
+                      <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">{feat.label}</span>
+                      <span className="text-[11px] font-mono font-bold text-[#0A0A0A]">{feat.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-8">
+                 <Link href="/register" className="w-full py-3 bg-[#F7F7F5] border border-[#E4E4E4] text-[#0A0A0A] text-[9px] font-bold uppercase tracking-widest flex items-center justify-center hover:bg-[#0A0A0A] hover:text-white transition-all">Select {tier.title}</Link>
+              </div>
+            </Card>
           ))}
         </div>
 
-        <div className="bg-[#0A0A0A] text-white p-12 md:p-24 space-y-12">
-          <div className="max-w-3xl">
-            <h2 className="text-3xl md:text-5xl font-bold uppercase tracking-tight mb-8">Raw Institutional Pricing.</h2>
-            <div className="space-y-10">
-              <div className="border-l-4 border-[#0055FF] pl-8 space-y-2">
-                <h4 className="text-sm font-bold uppercase">Dynamic Margin Control</h4>
-                <p className="text-xs text-[#94A3B8] leading-relaxed">Automated margin requirements that adapt to your trade size and market volatility in real-time for maximum efficiency.</p>
-              </div>
-              <div className="border-l-4 border-[#16835B] pl-8 space-y-2">
-                <h4 className="text-sm font-bold uppercase">Priority Settlement</h4>
-                <p className="text-xs text-[#94A3B8] leading-relaxed">High-volume orders are prioritized on our core matching nodes for ultra-fast fills and total price integrity.</p>
-              </div>
+        {/* Technical Specification Table */}
+        <div className="mb-24">
+          <div className="flex items-center gap-3 mb-8">
+            <TableIcon className="w-5 h-5 text-[#0055FF]" />
+            <h2 className="text-xl font-bold uppercase tracking-widest text-[#0A0A0A]">Technical Matrix</h2>
+          </div>
+          
+          <Card className="bg-white border-[#E4E4E4] overflow-hidden shadow-sm rounded-none">
+            <Table>
+              <TableHeader className="bg-[#F7F7F5]">
+                <TableRow>
+                  <TableHead className="w-1/4">Parameters</TableHead>
+                  <TableHead className="text-center">Pro</TableHead>
+                  <TableHead className="text-center">Zero</TableHead>
+                  <TableHead className="text-center">Raw Spread</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {comparisonRows.map((row, i) => (
+                  <TableRow key={i} className="hover:bg-[#F7F7F5] transition-colors">
+                    <TableCell className="font-bold text-[#6B7280] uppercase tracking-tighter text-[10px]">{row.label}</TableCell>
+                    <TableCell className="text-center font-bold text-[#0A0A0A] text-xs">{row.pro}</TableCell>
+                    <TableCell className="text-center font-bold text-[#0A0A0A] text-xs">{row.zero}</TableCell>
+                    <TableCell className="text-center font-bold text-[#0A0A0A] text-xs">{row.raw}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+          <div className="flex items-start gap-2 mt-6">
+            <Info className="w-3.5 h-3.5 text-[#0055FF] shrink-0 mt-0.5" />
+            <p className="text-[10px] text-[#6B7280] leading-relaxed uppercase font-medium">
+              ¹ Spreads are dynamic and fluctuate based on market liquidity and volatility. Top 30 instruments on Zero account have 0 spread for 95% of the trading day. Fixed commissions are applied per lot per side.
+            </p>
+          </div>
+        </div>
+
+        {/* Professional Execution Notice */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="space-y-8">
+            <div className="border-l-4 border-[#0055FF] pl-8 space-y-4">
+              <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-[#0A0A0A]">Instant vs Market Execution</h3>
+              <p className="text-xs text-[#6B7280] leading-relaxed font-medium uppercase tracking-tight">
+                Our Pro account offers <span className="text-[#0A0A0A] font-bold">Instant Execution</span>, ensuring your order is filled at the price you see or not at all. Zero and Raw Spread accounts utilize <span className="text-[#0A0A0A] font-bold">Market Execution</span>, where orders are filled at the best available market price with no requotes.
+              </p>
             </div>
-            <div className="mt-16">
-               <Link href="/contact" className="text-xs font-bold uppercase tracking-widest text-[#0055FF] hover:underline">Speak with an Account Executive &rarr;</Link>
+            
+            <div className="p-8 bg-[#0A0A0A] text-white space-y-6 shadow-2xl relative overflow-hidden">
+               <div className="relative z-10 space-y-4">
+                  <div className="flex items-center gap-2 text-[#C9A227]">
+                    <Clock className="w-5 h-5" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Time-Based Limitations</span>
+                  </div>
+                  <p className="text-[11px] font-bold uppercase tracking-tight leading-relaxed">
+                    Maximum lot sizes adapt to market hours. During peak liquidity (7:00 - 21:00 GMT), the engine supports up to 200 lots. Nighttime limits are restricted to 60 lots to maintain price integrity during low-volume sessions.
+                  </p>
+               </div>
+               <div className="absolute bottom-0 right-0 w-32 h-32 bg-white/5 rounded-tl-full"></div>
             </div>
           </div>
+
+          <Card className="p-10 bg-white border-[#E4E4E4] space-y-6">
+            <ShieldCheck className="w-12 h-12 text-[#16835B]" />
+            <h4 className="text-xl font-bold uppercase tracking-tight">Institutional Standards</h4>
+            <p className="text-xs text-[#6B7280] leading-relaxed uppercase font-bold tracking-tight">
+              All professional accounts feature Negative Balance Protection, ensuring you can never lose more than your initial deposit. Algotraders enjoy unrestricted API access and zero execution requotes on all market-execution tiers.
+            </p>
+            <div className="pt-4">
+               <Link href="/contact" className="text-[10px] font-bold uppercase tracking-widest text-[#0055FF] flex items-center gap-2">
+                 Speak with an Institutional Account Manager <Zap className="w-3.5 h-3.5" />
+               </Link>
+            </div>
+          </Card>
         </div>
 
       </div>
