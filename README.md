@@ -12,6 +12,7 @@ Varban Markets is a professional electronic trading protocol engineered for adva
 *   **Profiles & Identity**: Real-time synchronization of trader metadata using Supabase Auth and PostgreSQL triggers.
 *   **Financial Ledger**: Immutable transactional records for deposits, withdrawals, and trade settlements.
 *   **Watchlist Persistence**: Cloud-synced asset tracking across all device nodes.
+*   **Database Setup**: See `SUPABASE_SETUP.sql` for the complete schema and RLS security rules.
 
 ### B. ADVANCED CHARTING (TRADINGVIEW)
 *   **Pro Widget**: Integration of the TradingView Advanced Charting Widget for institutional analysis.
@@ -27,12 +28,11 @@ Varban Markets is a professional electronic trading protocol engineered for adva
 ### D. INTELLIGENCE & NEWS HUB
 *   **Protocol**: Server-side secure proxy with caching to prevent key leakage and CORS issues.
 *   **Internal Reader**: Contextual headlines refined for high-volatility drivers (Digital Assets, Forex, Global Politics) with in-app analysis reports.
-*   **AI Assistant**: Varban Assistant (Genkit/Gemini 1.5 Flash) for institutional support and platform navigation.
 
 ### E. RESPONSIVE WORKSPACE
 *   **Desktop Pro**: Resizable terminal panels for customized chart/ledger balance on computer screens.
 *   **Mobile Side-Opening**: "Side opening page" architecture for Registry, Insights, and Positions to maximize chart visibility on mobile.
-*   **Native Performance**: Optimized Windows App (Electron) with multi-monitor and biometric support.
+*   **Profile Enforcement**: Mandatory completion of physical address and investor profile before accessing trading nodes.
 
 ---
 
@@ -49,10 +49,9 @@ The following keys must be populated in `.env` to enable full platform functiona
 ## 3. PRODUCTION STATUS TRACKER
 - [x] **Institutional White Design System**: High-contrast, minimalist UI with brand-blue and gold accents.
 - [x] **Advanced Charting**: Full TradingView terminal integration.
-- [x] **Next.js 15 Optimization**: Resolved state update conflicts and implemented strict param unwrapping.
+- [x] **Profile Enforcement**: Address and KYC data required for terminal/wallet access.
+- [x] **Supabase Migration**: Core identity and financial ledger synchronized.
 - [x] **Hardened Route Guards**: Deterministic unauthenticated redirection across all secure nodes.
-- [x] **Asset Registry**: Local high-fidelity assets (`mobileapp.jpg`, `mt5.jpg`, `pro.jpg`, `forex.jpg`) wired into heroes.
-- [x] **Mobile UX Refinement**: Side-sliding drawers for terminal analysis and registry.
 - [x] **Admin Oversight Desk**: Dedicated nodes for KYC review, deposit verification, and withdrawal dispatch.
 
 ---
