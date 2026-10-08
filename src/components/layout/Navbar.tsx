@@ -121,7 +121,7 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center space-x-3">
             <Link 
               href="/register" 
-              className="bg-[#FFDE00] hover:bg-[#F2D200] text-[#0A0A0A] text-[11px] font-bold uppercase tracking-widest px-8 py-3 transition-colors duration-200"
+              className="bg-[#0055FF] hover:bg-[#0044cc] text-white text-[11px] font-bold uppercase tracking-widest px-8 py-3 transition-colors duration-200"
             >
               Register
             </Link>
@@ -194,7 +194,7 @@ export default function Navbar() {
                 <Link 
                   href="/register" 
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-full py-4 text-center text-xs font-bold uppercase tracking-widest bg-[#FFDE00] text-[#0A0A0A]"
+                  className="w-full py-4 text-center text-xs font-bold uppercase tracking-widest bg-[#0055FF] text-white"
                 >
                   Register
                 </Link>

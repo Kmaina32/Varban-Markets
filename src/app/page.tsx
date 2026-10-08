@@ -15,7 +15,9 @@ import {
   Globe, 
   FileText, 
   Headset, 
-  Lock 
+  Lock,
+  Apple,
+  Smartphone
 } from "lucide-react";
 import { MarketIcon } from "@/components/MarketIcon";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
@@ -67,11 +69,11 @@ export default function HomePage() {
     <div className="flex flex-col bg-white min-h-screen">
       {/* Top Risk Disclaimer */}
       <div className="bg-[#0A0A0A] text-white py-2.5 px-4 text-center z-[110]">
-        <p className="text-[10px] md:text-[11px] leading-relaxed max-w-7xl mx-auto opacity-90">
-          Online Forex/CFDs are complex instruments and come with a high risk of losing money rapidly due to leverage. 
-          <span className="font-bold text-[#FFDE00]"> 82.18% of retail investor accounts lose money </span> 
-          when trading Online Forex/CFDs with this provider. You should consider whether you understand how CFDs work and whether you can afford to take the high risk of losing your money. 
-          <Link href="/terms/risk-disclosure" className="text-[#FFDE00] font-bold underline ml-1">Learn more.</Link>
+        <p className="text-[10px] md:text-[11px] leading-relaxed max-w-7xl mx-auto opacity-90 uppercase tracking-widest font-bold">
+          Online Forex/CFDs are complex instruments. 
+          <span className="text-[#0055FF]"> 82.18% of retail investor accounts lose money </span> 
+          with this provider. 
+          <Link href="/terms/risk-disclosure" className="text-[#0055FF] underline ml-1">Learn more.</Link>
         </p>
       </div>
 
@@ -112,7 +114,7 @@ export default function HomePage() {
             <div className="flex flex-row items-center justify-center lg:justify-start gap-2 sm:gap-4 pt-4">
               <Link 
                 href="/register" 
-                className="flex-1 sm:flex-none bg-[#FFDE00] hover:bg-[#F2D200] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all shadow-md sm:min-w-[180px] text-center"
+                className="flex-1 sm:flex-none bg-[#0055FF] hover:bg-[#0044cc] text-white px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all shadow-md sm:min-w-[180px] text-center"
               >
                 Register
               </Link>
@@ -123,6 +125,22 @@ export default function HomePage() {
                 Try free demo
               </Link>
             </div>
+          </div>
+        </div>
+
+        {/* Mobile App Icons - Bottom Right */}
+        <div className="absolute bottom-12 right-12 hidden lg:flex items-center space-x-6 z-20">
+          <div className="flex flex-col items-center space-y-2 group cursor-pointer opacity-60 hover:opacity-100 transition-opacity">
+            <div className="w-10 h-10 bg-[#0A0A0A] text-white flex items-center justify-center rounded-sm">
+              <Apple className="w-6 h-6" />
+            </div>
+            <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-[#0A0A0A]">iOS</span>
+          </div>
+          <div className="flex flex-col items-center space-y-2 group cursor-pointer opacity-60 hover:opacity-100 transition-opacity">
+            <div className="w-10 h-10 bg-[#0A0A0A] text-white flex items-center justify-center rounded-sm">
+              <Smartphone className="w-6 h-6" />
+            </div>
+            <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-[#0A0A0A]">Android</span>
           </div>
         </div>
       </section>
@@ -257,7 +275,7 @@ export default function HomePage() {
                       <td className="p-5 text-right">
                         <Link 
                           href={`/terminal?symbol=${ticker.symbol}`}
-                          className="inline-flex items-center px-6 py-2 bg-[#FFDE00] hover:bg-[#F2D200] text-[#0A0A0A] text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm"
+                          className="inline-flex items-center px-6 py-2 bg-[#0055FF] hover:bg-[#0044cc] text-white text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm"
                         >
                           Trade
                         </Link>
@@ -334,7 +352,7 @@ export default function HomePage() {
               <div className="flex flex-row items-center gap-3 w-full md:w-auto shrink-0">
                 <Link 
                   href="/register" 
-                  className="flex-1 md:flex-none bg-[#FFDE00] hover:bg-[#F2D200] text-[#0A0A0A] px-8 py-3.5 text-[10px] font-bold uppercase tracking-widest transition-all text-center"
+                  className="flex-1 md:flex-none bg-[#0055FF] hover:bg-[#0044cc] text-white px-8 py-3.5 text-[10px] font-bold uppercase tracking-widest transition-all text-center"
                 >
                   Register
                 </Link>

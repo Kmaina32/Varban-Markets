@@ -1,10 +1,9 @@
-
 'use client';
 
 /**
  * @fileOverview Varban Assistant Chatbot.
  * Redesigned to match high-precision institutional standards with robot avatars, 
- * character counters, and brand-yellow accents.
+ * character counters, and brand-blue accents.
  */
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -42,26 +41,34 @@ export default function ChatSupport() {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading || input.length > 400) return;
+    if (!input.trim() || isLoading) return;
 
-    const userMsg = input.trim();
-    const newHistory = [...messages, { role: 'user', content: userMsg } as Message];
-    
-    setMessages(newHistory);
+    const userMessage: Message = { role: 'user', content: input.trim() };
+    setMessages(prev => [...prev, userMessage]);
+    const currentInput = input.trim();
     setInput('');
     setIsLoading(true);
 
     try {
-      const response = await supportChat({
-        history: messages,
-        message: userMsg
-      });
+      const history = messages.map(m => ({
+        role: m.role,
+        content: m.content
+      }));
       
-      setMessages(prev => [...prev, { role: 'model', content: response }]);
-    } catch (err) {
+      const response = await supportChat({
+        message: currentInput,
+        history
+      });
+
       setMessages(prev => [...prev, { 
         role: 'model', 
-        content: "Handshake failure: I'm having trouble connecting to our system nodes." 
+        content: response || "I am currently processing high-volume requests. Please try again shortly." 
+      }]);
+    } catch (error) {
+      console.error("Assistant Error:", error);
+      setMessages(prev => [...prev, { 
+        role: 'model', 
+        content: "I encountered a synchronization error. Please refer to our Help Center." 
       }]);
     } finally {
       setIsLoading(false);
@@ -73,7 +80,7 @@ export default function ChatSupport() {
       {/* Institutional FAB */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-[#FFDE00] text-[#0A0A0A] flex items-center justify-center shadow-xl hover:scale-105 transition-all z-[120] rounded-full"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-[#0055FF] text-white flex items-center justify-center shadow-xl hover:scale-105 transition-all z-[120] rounded-full"
         aria-label="Toggle Assistant"
       >
         {isOpen ? <ChevronDown className="w-7 h-7" /> : <MessageSquare className="w-6 h-6" />}
@@ -105,7 +112,7 @@ export default function ChatSupport() {
               <div key={i} className={cn("flex items-start", msg.role === 'user' ? "justify-end" : "justify-start")}>
                 {msg.role === 'model' && (
                   <div className="mr-3 mt-1 shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-[#FFDE00] flex items-center justify-center border border-[#E4E4E4] overflow-hidden">
+                    <div className="w-10 h-10 rounded-full bg-[#0055FF] flex items-center justify-center border border-[#E4E4E4] overflow-hidden">
                       <img src="https://picsum.photos/seed/varbanbot/80/80" alt="Bot" className="w-full h-full object-cover" />
                     </div>
                   </div>
@@ -156,7 +163,7 @@ export default function ChatSupport() {
                 <button 
                   type="submit" 
                   disabled={!input.trim() || isLoading}
-                  className="text-[#FFDE00] disabled:opacity-20 hover:text-[#0A0A0A] transition-colors"
+                  className="text-[#0055FF] disabled:opacity-20 hover:text-[#0A0A0A] transition-colors"
                 >
                   <Send className="w-4.5 h-4.5" />
                 </button>

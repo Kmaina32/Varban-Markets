@@ -1,3 +1,4 @@
+
 "use client";
 
 /**
@@ -113,7 +114,7 @@ export default function RegisterClient() {
 
           {formData.email && (
             <div className="bg-[#F3F4F6] p-6 rounded-lg flex items-center gap-4 border border-[#E4E4E4]/50 shadow-sm">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#FF9800] to-[#F44336] flex items-center justify-center text-white text-xl font-bold">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#0055FF] to-[#0044cc] flex items-center justify-center text-white text-xl font-bold">
                 {formData.firstName ? formData.firstName.charAt(0) : "U"}
               </div>
               <div className="overflow-hidden">
@@ -265,7 +266,7 @@ export default function RegisterClient() {
               className={cn(
                 "w-full py-4 text-xs font-bold uppercase tracking-[0.2em] transition-all duration-300 shadow-lg",
                 canSubmit 
-                  ? "bg-[#FFDE00] text-[#0A0A0A] hover:bg-[#F2D200] hover:scale-[1.01]" 
+                  ? "bg-[#0055FF] text-white hover:bg-[#0044cc] hover:scale-[1.01]" 
                   : "bg-[#F3F4F6] text-[#D1D5DB] cursor-not-allowed border border-[#E4E4E4]"
               )}
             >
@@ -281,7 +282,7 @@ export default function RegisterClient() {
       </main>
 
       <div className="fixed bottom-6 right-6">
-        <button className="w-14 h-14 bg-[#FFDE00] text-[#0A0A0A] flex items-center justify-center rounded-full shadow-2xl hover:scale-105 transition-all">
+        <button className="w-14 h-14 bg-[#0055FF] text-white flex items-center justify-center rounded-full shadow-2xl hover:scale-105 transition-all">
           <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/><path d="M7 9h10v2H7zm0-3h10v2H7zm0 6h7v2H7z"/></svg>
         </button>
       </div>

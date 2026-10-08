@@ -1,3 +1,4 @@
+
 "use client";
 
 /**
@@ -146,7 +147,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading || googleLoading}
-                className="w-full btn-institutional-primary py-4 shadow-sm"
+                className="w-full btn-institutional-primary py-4 shadow-sm bg-[#0055FF] border-[#0055FF] text-white hover:bg-[#0044cc]"
               >
                 {loading ? "Logging in..." : "Log in to Account"}
               </button>
@@ -175,6 +176,12 @@ export default function LoginPage() {
             <Link href="/register" className="text-[11px] font-bold text-[#0A0A0A] uppercase tracking-widest underline decoration-[#0055FF] decoration-2 underline-offset-4 ml-1">Create Account</Link>
           </div>
         </div>
+      </div>
+      
+      <div className="fixed bottom-6 right-6">
+        <button className="w-14 h-14 bg-[#0055FF] text-white flex items-center justify-center rounded-full shadow-2xl hover:scale-105 transition-all">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/><path d="M7 9h10v2H7zm0-3h10v2H7zm0 6h7v2H7z"/></svg>
+        </button>
       </div>
     </div>
   );
