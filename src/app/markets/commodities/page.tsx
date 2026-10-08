@@ -2,22 +2,21 @@
 'use client';
 
 /**
- * @fileOverview Specialized Commodities Market Page.
- * Features a high-fidelity hero section and filtered instrument registry.
- * Design matched to user-provided institutional reference.
+ * @fileOverview Commodities Market Landing Page.
+ * Matched precisely to the provided high-fidelity reference image.
  */
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { 
   Search, 
   Star, 
   Sliders, 
-  ArrowRight, 
-  TrendingUp, 
   Droplets, 
-  Coins,
-  ShieldCheck
+  TrendingUp, 
+  ShieldCheck,
+  Coins
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
@@ -36,6 +35,7 @@ import { doc, setDoc, deleteDoc, collection } from "firebase/firestore";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { MarketIcon } from "@/components/MarketIcon";
+import placeholderImages from "@/app/lib/placeholder-images.json";
 import { cn } from "@/app/lib/utils";
 
 export default function CommoditiesMarketPage() {
@@ -46,7 +46,6 @@ export default function CommoditiesMarketPage() {
   const [marketPrices, setMarketPrices] = useState<Record<string, { price: number; percent: number; status: string }>>({});
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Filtering only for Commodities
   const commodityInstruments = useMemo(() => {
     return AVAILABLE_INSTRUMENTS.filter(inst => inst.category === 'Commodities');
   }, []);
@@ -59,7 +58,6 @@ export default function CommoditiesMarketPage() {
     );
   }, [commodityInstruments, searchQuery]);
 
-  // Watchlist synchronization
   const watchlistQuery = useMemo(() => {
     if (!db || !user) return null;
     return collection(db, `users/${user.uid}/watchlist`);
@@ -113,80 +111,102 @@ export default function CommoditiesMarketPage() {
   }, [commodityInstruments]);
 
   return (
-    <AuthedLayout title="Commodities" subtitle="Global Metals & Energy Markets">
-      <div className="space-y-12 pb-20">
+    <AuthedLayout title="Commodities" subtitle="Global Metals & Energy Registry">
+      <div className="space-y-0 pb-20">
         
-        {/* HIGH-FIDELITY HERO SECTION (Reference Image Match) */}
-        <section className="relative w-full h-[400px] md:h-[500px] bg-[#0A1929] overflow-hidden flex items-center">
-          {/* Background Graphic Simulation */}
-          <div className="absolute right-0 top-0 bottom-0 w-1/2 hidden lg:block">
-            <div className="relative w-full h-full">
-              <img 
-                src="https://picsum.photos/seed/goldbars/1200/800" 
-                alt="Commodities Background" 
-                className="w-full h-full object-cover opacity-60 mix-blend-overlay"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#0A1929] via-transparent to-transparent"></div>
-              
-              {/* Floating ID Tags matching reference */}
-              <div className="absolute top-[30%] right-[40%] bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 flex items-center gap-2 animate-bounce">
-                <div className="w-5 h-5 bg-[#C9A227] rounded-full flex items-center justify-center text-[8px] font-bold text-white">XAU</div>
-                <span className="text-[10px] font-bold text-white uppercase tracking-widest">Gold Spot</span>
-              </div>
-              <div className="absolute top-[50%] right-[60%] bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-3 py-1 flex items-center gap-2">
-                 <Droplets className="w-3.5 h-3.5 text-[#0055FF]" />
-                 <span className="text-[9px] font-bold text-white uppercase tracking-widest">WTI Oil</span>
-              </div>
-            </div>
+        {/* HIGH-FIDELITY REFERENCE HERO */}
+        <section className="relative w-full h-[450px] md:h-[550px] bg-[#0A1921] overflow-hidden flex items-center mb-12">
+          {/* Main Hero Image Context */}
+          <div className="absolute inset-0 z-0">
+            <Image 
+              src={placeholderImages.commodities_hero.url}
+              alt="Commodities Background"
+              fill
+              className="object-cover opacity-60"
+              priority
+              data-ai-hint={placeholderImages.commodities_hero.hint}
+            />
+            {/* Gradient Overlay for Text Readability */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0A1921] via-[#0A1921]/60 to-transparent"></div>
           </div>
 
-          <div className="relative z-10 max-w-3xl px-6 md:px-12 space-y-6">
-            <h1 className="text-4xl md:text-6xl font-normal text-white tracking-tight leading-tight">
-              Commodity trading <br /> platform
-            </h1>
-            <p className="text-sm md:text-lg text-white/70 max-w-xl leading-relaxed">
-              Trade commodities with tight spreads on gold and oil while accessing global markets to diversify your portfolio.
-            </p>
-            <div className="flex items-center gap-4 pt-4">
-              <Link 
-                href="/register" 
-                className="bg-[#FFDE00] hover:bg-[#E5C700] text-[#0A0A0A] px-10 py-4 text-xs font-bold uppercase tracking-widest transition-all shadow-lg"
-              >
-                Register
-              </Link>
-              <Link 
-                href="/accounts/demo" 
-                className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-10 py-4 text-xs font-bold uppercase tracking-widest transition-all backdrop-blur-sm"
-              >
-                Try free demo
-              </Link>
+          <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 items-center w-full gap-12">
+            <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-700">
+              <h1 className="text-4xl md:text-6xl font-normal text-white tracking-tight leading-[1.1] font-display">
+                Commodity trading <br /> platform
+              </h1>
+              <p className="text-sm md:text-lg text-white/80 max-w-lg leading-relaxed">
+                Trade commodities with tight spreads on gold and oil while accessing global markets to diversify your portfolio.
+              </p>
+              <div className="flex flex-row items-center gap-4 pt-4">
+                <Link 
+                  href="/register" 
+                  className="bg-[#FFDE00] hover:bg-[#E5C700] text-[#0A0A0A] px-10 py-4 text-[10px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl"
+                >
+                  Register
+                </Link>
+                <Link 
+                  href="/accounts/demo" 
+                  className="bg-[#1E2E36]/80 hover:bg-[#1E2E36] text-white border border-white/10 px-10 py-4 text-[10px] font-bold uppercase tracking-[0.2em] transition-all backdrop-blur-sm"
+                >
+                  Try free demo
+                </Link>
+              </div>
+            </div>
+
+            {/* Floating Asset Tags Visualizer */}
+            <div className="relative hidden lg:block h-[400px]">
+              {/* Asset Tag: XAU */}
+              <div className="absolute top-10 right-20 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-2 flex items-center gap-3 shadow-2xl animate-in zoom-in duration-1000 delay-300">
+                <div className="w-6 h-6 bg-[#C9A227] rounded-sm flex items-center justify-center">
+                  <div className="w-3 h-1.5 bg-white/30 rounded-full"></div>
+                </div>
+                <span className="text-[11px] font-bold text-white uppercase tracking-[0.3em]">XAU</span>
+              </div>
+
+              {/* Asset Tag: Oil */}
+              <div className="absolute top-[40%] left-[20%] bg-white/10 backdrop-blur-md border border-white/20 rounded-full p-2 flex items-center justify-center shadow-2xl animate-in zoom-in duration-1000 delay-500">
+                 <Droplets className="w-4 h-4 text-[#0055FF] fill-[#0055FF]/20" />
+              </div>
+
+              {/* 3D Bars Projection Placeholder */}
+              <div className="absolute right-0 bottom-0 w-[450px] h-[300px] opacity-90 transition-transform duration-1000 hover:scale-105 pointer-events-none">
+                 <Image 
+                  src="https://picsum.photos/seed/goldrender/800/600" 
+                  alt="Gold Bars Projection" 
+                  width={800}
+                  height={600}
+                  className="w-full h-full object-contain"
+                  data-ai-hint="gold bars"
+                 />
+              </div>
             </div>
           </div>
         </section>
 
-        {/* SEARCH & FILTER BAR */}
-        <div className="max-w-7xl mx-auto px-4">
-          <Card className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-[#E4E4E4] bg-white shadow-sm">
+        {/* REGISTRY FILTERS */}
+        <div className="max-w-7xl mx-auto px-6 mb-8">
+          <Card className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-[#E4E4E4] bg-white shadow-sm rounded-none">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-[#0055FF]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Active Commodity Registry</span>
+              <div className="w-2 h-2 rounded-full bg-[#16835B] animate-pulse"></div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Live Commodity Domain</span>
             </div>
             <div className="relative max-w-xs w-full">
               <Search className="absolute inset-y-0 left-3 flex items-center pointer-events-none w-3.5 h-3.5 text-[#6B7280]" />
               <input
                 type="text"
-                placeholder="Search metals & energy..."
+                placeholder="Search metal or energy assets..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full text-xs pl-9 pr-3 py-2.5 bg-[#F7F7F5] border border-[#E4E4E4] focus:outline-none focus:border-[#0A0A0A]"
+                className="w-full text-xs pl-9 pr-3 py-2.5 bg-[#F7F7F5] border border-[#E4E4E4] focus:outline-none focus:border-[#0055FF] rounded-none"
               />
             </div>
           </Card>
         </div>
 
-        {/* REGISTRY TABLE */}
-        <div className="max-w-7xl mx-auto px-4">
-          <Card className="border-[#E4E4E4] overflow-hidden shadow-sm">
+        {/* DATA REGISTRY TABLE */}
+        <div className="max-w-7xl mx-auto px-6 mb-20">
+          <Card className="border-[#E4E4E4] overflow-hidden shadow-sm rounded-none">
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader className="bg-[#F7F7F5]">
@@ -196,7 +216,7 @@ export default function CommoditiesMarketPage() {
                     <TableHead className="text-[10px] font-bold uppercase tracking-wider">Market Type</TableHead>
                     <TableHead className="text-right text-[10px] font-bold uppercase tracking-wider">Live Price</TableHead>
                     <TableHead className="text-right text-[10px] font-bold uppercase tracking-wider">24h Change</TableHead>
-                    <TableHead className="text-center text-[10px] font-bold uppercase tracking-wider">Status</TableHead>
+                    <TableHead className="text-center text-[10px] font-bold uppercase tracking-wider">Node Status</TableHead>
                     <TableHead className="text-right text-[10px] font-bold uppercase tracking-wider">Action</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -204,7 +224,7 @@ export default function CommoditiesMarketPage() {
                   {filteredInstruments.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="p-12 text-center text-[#6B7280] uppercase font-bold tracking-widest">
-                        No commodity matches found.
+                        No commodity matches detected in registry.
                       </TableCell>
                     </TableRow>
                   ) : filteredInstruments.map((inst) => {
@@ -234,7 +254,7 @@ export default function CommoditiesMarketPage() {
                             <MarketIcon symbol={inst.symbol} size="md" />
                             <div className="flex flex-col">
                               <span className="font-mono font-bold text-xs text-[#0A0A0A]">{inst.symbol}</span>
-                              <span className="text-[9px] text-[#6B7280] uppercase font-bold tracking-tight">{inst.name}</span>
+                              <span className="text-[9px] text-[#6B7280] uppercase font-bold tracking-tighter">{inst.name}</span>
                             </div>
                           </div>
                         </TableCell>
@@ -259,9 +279,9 @@ export default function CommoditiesMarketPage() {
                           </span>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button asChild size="sm" variant="brand" className="h-8 px-6">
+                          <Button asChild size="sm" variant="brand" className="h-8 px-6 rounded-none">
                             <Link href={user ? `/terminal?symbol=${inst.symbol}` : '/login'}>
-                              <span className="text-[9px] font-bold uppercase tracking-widest">Trade</span>
+                              <span className="text-[9px] font-bold uppercase tracking-widest">Execute</span>
                               <Sliders className="ml-2 w-3 h-3" />
                             </Link>
                           </Button>
@@ -275,27 +295,27 @@ export default function CommoditiesMarketPage() {
           </Card>
         </div>
 
-        {/* BOTTOM INTEGRITY SECTION */}
-        <section className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
-           <div className="p-6 bg-white border border-[#E4E4E4] space-y-3">
-              <ShieldCheck className="w-6 h-6 text-[#0055FF]" />
-              <h4 className="text-xs font-bold uppercase text-[#0A0A0A]">Deterministic Pricing</h4>
-              <p className="text-[10px] text-[#6B7280] leading-relaxed uppercase font-bold tracking-tight">
-                Our commodity feeds are derived from multi-source global exchange data to ensure total price integrity and zero slippage.
+        {/* PILLAR INFO SECTION */}
+        <section className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+           <div className="p-10 bg-white border border-[#E4E4E4] space-y-4 shadow-sm border-t-4 border-t-[#C9A227]">
+              <ShieldCheck className="w-8 h-8 text-[#0055FF]" />
+              <h4 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Audited Pricing</h4>
+              <p className="text-[11px] text-[#6B7280] leading-relaxed uppercase font-bold tracking-tight">
+                Deterministic price matching derived from multi-node liquidity providers. No asymmetric slippage or dealer intervention.
               </p>
            </div>
-           <div className="p-6 bg-white border border-[#E4E4E4] space-y-3">
-              <TrendingUp className="w-6 h-6 text-[#16835B]" />
-              <h4 className="text-xs font-bold uppercase text-[#0A0A0A]">Leveraged Exposure</h4>
-              <p className="text-[10px] text-[#6B7280] leading-relaxed uppercase font-bold tracking-tight">
-                Maximize your market presence with professional leverage across gold, silver, and energy derivatives.
+           <div className="p-10 bg-white border border-[#E4E4E4] space-y-4 shadow-sm border-t-4 border-t-[#0055FF]">
+              <TrendingUp className="w-8 h-8 text-[#16835B]" />
+              <h4 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Risk Management</h4>
+              <p className="text-[11px] text-[#6B7280] leading-relaxed uppercase font-bold tracking-tight">
+                Negative balance protection and defined-risk contract structures. Your exposure is strictly limited to your initial stake.
               </p>
            </div>
-           <div className="p-6 bg-white border border-[#E4E4E4] space-y-3">
-              <Coins className="w-6 h-6 text-[#0055FF]" />
-              <h4 className="text-xs font-bold uppercase text-[#0A0A0A]">Instant Settlement</h4>
-              <p className="text-[10px] text-[#6B7280] leading-relaxed uppercase font-bold tracking-tight">
-                Execution and settlement occur in real-time, with results credited instantly to your institutional ledger.
+           <div className="p-10 bg-white border border-[#E4E4E4] space-y-4 shadow-sm border-t-4 border-t-[#161616]">
+              <Coins className="w-8 h-8 text-[#0055FF]" />
+              <h4 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Instant Clearing</h4>
+              <p className="text-[11px] text-[#6B7280] leading-relaxed uppercase font-bold tracking-tight">
+                Capital moves at the speed of electronic markets. 100% automated settlement with results credited instantly to your ledger.
               </p>
            </div>
         </section>

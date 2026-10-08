@@ -59,5 +59,11 @@
     "width": 135,
     "height": 40,
     "hint": "google play"
+  },
+  "commodities_hero": {
+    "url": "/assets/commodities.jpg",
+    "width": 1200,
+    "height": 600,
+    "hint": "gold bars oil"
   }
 }
