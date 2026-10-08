@@ -2,22 +2,19 @@
 
 /**
  * @fileOverview Institutional Charting Module with Integrated Toolbar.
- * Uses TradingView Lightweight Charts with support for Multiple Chart Types.
+ * Updated with Native Detachment support for Windows Desktop.
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart, ColorType, IChartApi, ISeriesApi, CandlestickData, AreaData } from 'lightweight-charts';
+import { createChart, ColorType, IChartApi, ISeriesApi } from 'lightweight-charts';
 import { fetchHistoricalData } from '@/app/lib/market-service';
 import { 
-  LineChart, 
   AreaChart as AreaIcon, 
-  Settings, 
   Maximize2, 
   MousePointer2, 
   TrendingUp,
   BarChart3,
-  Search,
-  Clock
+  ExternalLink
 } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 
@@ -27,6 +24,15 @@ interface TradingViewChartProps {
 }
 
 type ChartType = 'CANDLES' | 'AREA';
+
+declare global {
+  interface Window {
+    VarbanNative?: {
+      isNative: boolean;
+      detachChart: (symbol: string) => void;
+    };
+  }
+}
 
 export const TradingViewChart: React.FC<TradingViewChartProps> = ({ 
   symbol, 
@@ -39,11 +45,17 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   const [activeType, setActiveType] = useState<ChartType>('CANDLES');
   const [activeTimeframe, setActiveTimeframe] = useState('5m');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isNative, setIsNative] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.VarbanNative?.isNative) {
+      setIsNative(true);
+    }
+  }, []);
 
   const initChart = async () => {
     if (!containerRef.current) return;
     
-    // Clear previous
     if (chartRef.current) {
       chartRef.current.remove();
     }
@@ -117,12 +129,17 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     initChart();
   }, [symbol, activeType, activeTimeframe]);
 
+  const handleDetach = () => {
+    if (window.VarbanNative) {
+      window.VarbanNative.detachChart(symbol);
+    }
+  };
+
   return (
     <div className={cn(
       "w-full h-full flex flex-col bg-white overflow-hidden transition-all",
       isFullscreen && "fixed inset-0 z-[600] p-4"
     )}>
-      {/* TRADINGVIEW STYLE TOOLBAR */}
       <div className="h-9 border-b border-[#E4E4E4] bg-white flex items-center justify-between px-2 shrink-0 overflow-x-auto no-scrollbar">
         <div className="flex items-center space-x-1">
           <div className="flex items-center bg-[#F7F7F5] border border-[#E4E4E4] p-0.5 mr-2">
@@ -159,6 +176,16 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
         </div>
 
         <div className="flex items-center space-x-2">
+          {isNative && (
+            <button 
+              onClick={handleDetach}
+              className="p-1.5 text-[#0055FF] hover:bg-[#0055FF]/5 transition-colors flex items-center gap-1.5"
+              title="Detach to new window"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span className="text-[8px] font-bold uppercase hidden sm:inline">Detach</span>
+            </button>
+          )}
           <button className="p-1.5 text-[#6B7280] hover:text-[#0A0A0A] transition-colors">
             <MousePointer2 className="w-3.5 h-3.5" />
           </button>
@@ -177,7 +204,6 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
       <div ref={containerRef} className="flex-grow min-h-0" />
       
-      {/* WATERMARK LOGO */}
       <div className="absolute bottom-4 left-4 opacity-10 pointer-events-none">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

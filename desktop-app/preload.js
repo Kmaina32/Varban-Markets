@@ -1,25 +1,22 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 /**
- * @fileOverview Native API Bridge.
- * Securely exposes specific desktop capabilities to the React frontend.
+ * @fileOverview Native API Bridge v2.0.
+ * Securely exposes multi-monitor and biometric capabilities to the frontend.
  */
 
 contextBridge.exposeInMainWorld('VarbanNative', {
   getAppVersion: () => "4.2.0-win-native",
   platform: process.platform,
+  isNative: true,
   
-  // Future implementation for Multi-Monitor detachment
-  openDetachedChart: (symbol) => {
-    console.log(`Command: Detaching chart for ${symbol}`);
-    // Logic to communicate with main.js to create a new window
+  // Command: Detach chart to a new window
+  detachChart: (symbol) => {
+    ipcRenderer.send('command:detach-chart', symbol);
   },
   
-  // Windows Hello Biometric Handshake
+  // Handshake: Windows Hello Biometric Auth
   requestBiometricAuth: async () => {
-    return new Promise((resolve) => {
-      // Logic for Windows WebAuthn bridge
-      setTimeout(() => resolve({ success: true }), 500);
-    });
+    return ipcRenderer.invoke('auth:request-biometric');
   }
 });

@@ -1,9 +1,6 @@
 
 # Varban Markets — Development TODO & Missing Features Inventory
 
-> [!NOTE]
-> This document tracks all non-working buttons, static components, unconnected backend features, missing pages, and pending functional integrations in the Varban Markets repository.
-
 ---
 
 ## 1. Non-Working / Static Buttons & Functional Triggers
@@ -19,6 +16,7 @@
 - [x] **One-Click Trading Toggle**: Toggle button bypasses the "Risk Pre-Verification" confirmation dialog for fast scalping. Highlighted in blue when active.
 - [x] **Early Option Cashout / Sell Contract Button**: "Cashout 35%" button on active positions closes contract early, credits 35% of stake back to balance, marks position as earlyExit=true.
 - [x] **Terminal Feature Tour**: Spotlight-driven tutorial system for high-speed execution modules.
+- [x] **Native Detachment**: "Detach Chart" button (only visible in Native Windows App) pops chart into a new system window.
 - [ ] **TradingView Technical Indicators Toolbar**: RSI, MACD, Moving Averages, and Bollinger Bands overlay controls are not wired to chart indicator controls.
 - [ ] **Order Cancellation**: In `/orders`, there is no `[ Cancel Order ]` button to revoke active limit/stop orders before execution.
 
@@ -37,48 +35,19 @@
 - [ ] **WebSocket Data Connection**: Price updates currently rely on polling every 3 seconds (`fetchLivePrice`). Need a live WebSocket connection (e.g. Binance / Polygon.io / Finnhub WS) for sub-second chart ticks.
 - [ ] **Real Order Execution Matcher**: Automated option contract settlement is simulated client-side via `setTimeout` after 18 seconds. Needs a server-side Cloud Function / backend cron worker for authoritative price verification and payout settlement.
 
-### B. Automated Financial Gateways & Webhooks
-- [ ] **Paystack Webhook Verification**: Auto-confirm card deposits via server-side HTTP webhooks rather than client callback reliance.
-- [ ] **Blockchain Gateway Webhooks**: Automated crypto deposit confirmations (NOWPayments / CoinPayments / Alchemy API webhooks) to credit user balances upon block confirmations without admin manual check.
-- [ ] **Bank Transfer Routing API**: Instant automated fiat bank payout integration via Paystack Transfers API instead of logging pending tickets.
-
-### C. User Authentication & Multi-Session Management
-- [ ] **Email Verification Enforcement**: Require email link confirmation before enabling live capital deposits or trading.
-- [ ] **Active Session Tracker**: Dynamic session table reading active IP addresses, user-agent strings, and login timestamps from Firebase Auth/Firestore.
-
 ---
 
-## 3. Missing Pages & Routes
+## 3. Windows Native App (Electron) Implementation Roadmap
 
-### A. Client Side Pages
-- [x] **`/news`**: Real-time Market Intelligence Hub with asset-aware headlines.
-- [ ] **`/kyc-submit`**: Dedicated document upload wizard with webcam selfie verification & ID capture.
-- [ ] **`/p2p`**: Peer-to-peer fiat-crypto OTC exchange desk with escrow protection.
-- [ ] **`/copy-trading`**: Strategy provider leaderboard, copy-trade allocation form, and performance analytics.
-- [ ] **`/tournaments`**: Live trading contests, leaderboard standings, prize pools, and registration portal.
-- [x] **`/referral`**: Affiliate link generator, commission dashboard, referral tree tracker, and reward claiming.
-
-### B. Admin Portal Sub-Pages
-- [x] **`/admin/withdrawals`**: Admin queue to review, approve, reject, or batch-process pending crypto and fiat withdrawal requests.
-- [x] **`/admin/deposits`**: Admin panel to inspect submitted TxHashes, verify on-chain balances, and credit user accounts.
-- [x] **`/admin/kyc-approvals`**: Document verification desk to review submitted user passports and utility bills. Approve/reject with automatic Firestore notifications.
-- [x] **`/admin/risk-limits`**: Dynamic control panel for global platform settings (max leverage, option return percentages, payout caps, maintenance modes in `/admin/markets` & `/admin/settings`).
-- [x] **`/admin/audit-logs`**: Immutable security log of all admin actions, balance adjustments, and platform alerts. Searchable, filterable, CSV-exportable.
-
----
-
-## 4. Windows Native App (Electron) Implementation Roadmap
-
-- [ ] **Native Build Pipeline**: Configure `electron-builder` to generate a production-ready `.nsis` installer.
-- [ ] **Environment Isolation**: Ensure `.env` keys are securely passed to the Electron main process without exposure.
-- [ ] **Multi-Monitor Logic**: Implement `BrowserWindow` spawning in `main.js` for detached chart windows.
-- [ ] **Biometric Bridge**: Connect `VarbanNative.requestBiometricAuth` in `preload.js` to Windows WebAuthn APIs.
+- [x] **Native Build Pipeline**: Configured `electron-builder` in `package.json` for production-ready `.nsis` installers.
+- [x] **Multi-Monitor Logic**: Implemented `command:detach-chart` IPC listener and window spawning for external displays.
+- [x] **Biometric Bridge**: Connected `VarbanNative.requestBiometricAuth` to secure IPC handlers in the main process.
 - [ ] **Auto-Update Node**: Setup an AWS S3 or R2 bucket for hosting the `latest.yml` file for background updates.
 - [ ] **Code Signing**: Procure and integrate a Windows SSL Certificate for "Verified Publisher" status.
 
 ---
 
-## 5. Prioritized Implementation Roadmap
+## 4. Prioritized Implementation Roadmap
 
 1. **Phase 1 (Immediate)**: [COMPLETED] Wire `/verification` document upload and `/security` password change triggers.
 2. **Phase 2**: [COMPLETED] Build `/admin/withdrawals` and `/admin/deposits` approval queues to process pending user cashier requests.
@@ -87,4 +56,4 @@
 5. **Phase 5 (Market Intelligence & UX)**: [COMPLETED] Build `/news` hub with server proxy, implement spotlight tutorials for Dashboard/Terminal, and enforce Zero-AI deterministic protocol.
 6. **Phase 6**: Implement server-side Webhooks for Paystack & Crypto gateways.
 7. **Phase 7**: Upgrade Terminal data pipeline to real-time WebSockets and server-side trade settlement workers.
-8. **Phase 8**: Finalize Windows Native Application and distribution node.
+8. **Phase 8**: [IN PROGRESS] Finalize Windows Native Application and distribution node.
