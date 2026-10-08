@@ -3,7 +3,7 @@
 
 /**
  * @fileOverview Refined Payments & Funding Overview.
- * High-fidelity layout focused on capital movement, security, and automated clearing.
+ * Updated with a full-width banner hero spanning left-to-right.
  */
 
 import React from "react";
@@ -12,7 +12,6 @@ import Image from "next/image";
 import { 
   ShieldCheck, 
   Zap, 
-  Clock, 
   Database, 
   Lock, 
   CreditCard, 
@@ -20,10 +19,11 @@ import {
   ArrowRight,
   Wallet,
   Coins,
-  Shield
+  Shield,
+  FileCheck,
+  Activity
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import placeholderImages from "@/app/lib/placeholder-images.json";
 import { cn } from "@/app/lib/utils";
 
 export default function PaymentsPage() {
@@ -47,21 +47,33 @@ export default function PaymentsPage() {
 
   return (
     <div className="bg-[#F7F7F5] min-h-screen text-[#0A0A0A] pb-24">
-      {/* 1. HERO SECTION */}
-      <section className="bg-white border-b border-[#E4E4E4] py-20 lg:py-28 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 text-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* 1. FULL WIDTH BANNER HERO */}
+      <section className="relative h-[450px] md:h-[550px] bg-[#0A0A0A] overflow-hidden flex items-center">
+        <div className="absolute inset-0 z-0">
+          <Image 
+            src="https://picsum.photos/seed/payments_banner/1920/800" 
+            alt="Capital Management" 
+            fill 
+            className="object-cover opacity-60" 
+            priority
+            data-ai-hint="digital vault"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-transparent"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 w-full text-center text-white space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.4em] block">Capital Management</span>
-          <h1 className="text-4xl md:text-7xl font-bold uppercase tracking-tighter leading-tight font-display max-w-4xl mx-auto">
+          <h1 className="text-4xl md:text-7xl font-normal tracking-tighter leading-tight font-display max-w-4xl mx-auto">
             Your money, when <br className="hidden md:block" /> you want it.
           </h1>
-          <p className="text-sm md:text-lg text-[#6B7280] max-w-2xl mx-auto leading-relaxed font-medium uppercase tracking-tight">
+          <p className="text-sm md:text-lg text-white/80 max-w-2xl mx-auto leading-relaxed font-medium uppercase tracking-tight">
             Stay in control with 24/7 access to your funds. Get requests approved automatically using secure local and global payment methods.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center">
-            <Link href="/register" className="btn-institutional-primary bg-[#0055FF] border-[#0055FF] text-white px-12 py-5 shadow-xl">
+            <Link href="/register" className="bg-[#0055FF] hover:bg-[#0044cc] text-white px-12 py-5 text-[10px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl min-w-[200px]">
               Start Funding
             </Link>
-            <Link href="/about/contact" className="btn-institutional-secondary px-12 py-5">
+            <Link href="/about/contact" className="bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm px-12 py-5 text-[10px] font-bold uppercase tracking-[0.2em] transition-all min-w-[200px]">
               Speak with Support
             </Link>
           </div>
@@ -131,7 +143,7 @@ export default function PaymentsPage() {
             ].map((pillar, i) => (
               <Card key={i} className="p-8 bg-white border-[#E4E4E4] space-y-4 shadow-sm hover:border-[#0055FF] transition-all group">
                 <div className="w-10 h-10 bg-[#F7F7F5] flex items-center justify-center text-[#0055FF] group-hover:bg-[#0055FF] group-hover:text-white transition-colors">
-                  <pillar.icon className="w-5 h-5" />
+                  < pillar.icon className="w-5 h-5" />
                 </div>
                 <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#0A0A0A]">{pillar.title}</h3>
                 <p className="text-[10px] text-[#6B7280] leading-relaxed uppercase font-bold opacity-70">{pillar.desc}</p>
@@ -187,16 +199,16 @@ export default function PaymentsPage() {
                 data-ai-hint="trading mobile app"
               />
               <div className="absolute inset-0 flex items-center justify-center p-12">
-                <div className="bg-white/95 backdrop-blur-md p-10 border border-[#E4E4E4] shadow-2xl space-y-6 max-w-md w-full">
-                  <div className="flex items-center gap-3 text-[#0055FF]">
+                <div className="bg-white/95 backdrop-blur-md p-10 border border-[#E4E4E4] shadow-2xl space-y-6 max-w-md w-full text-center">
+                  <div className="flex justify-center gap-3 text-[#0055FF] mx-auto">
                     <Wallet className="w-8 h-8" />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.3em]">Capital Hub</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] flex items-center">Capital Hub</span>
                   </div>
                   <h4 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A]">Provision your balance</h4>
                   <p className="text-xs text-[#6B7280] font-bold uppercase leading-relaxed">
                     Access our unified wallet to manage deposits, withdrawals, and internal vault transfers with zero latency.
                   </p>
-                  <Link href="/login" className="w-full btn-institutional-primary py-4">Sign in to personal area</Link>
+                  <Link href="/login" className="w-full btn-institutional-primary py-4 block">Sign in to personal area</Link>
                 </div>
               </div>
             </div>

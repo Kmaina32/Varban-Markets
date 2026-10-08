@@ -3,7 +3,7 @@
 
 /**
  * @fileOverview Refined Client Protection & Account Security Page.
- * Detailed roadmap of platform infrastructure, payment security, and trading safeguards.
+ * Updated with a full-width banner hero spanning left-to-right.
  */
 
 import React from "react";
@@ -12,18 +12,12 @@ import Image from "next/image";
 import { 
   ShieldCheck, 
   Lock, 
-  Globe, 
   Database, 
   FileCheck, 
   ShieldAlert, 
   Activity, 
   Server, 
-  Eye, 
-  LifeBuoy,
-  CheckCircle2,
-  AlertTriangle,
-  MessageSquare,
-  ArrowRight
+  LifeBuoy
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/app/lib/utils";
@@ -82,42 +76,34 @@ export default function ClientProtectionPage() {
 
   return (
     <div className="bg-[#F7F7F5] min-h-screen text-[#0A0A0A] pb-24">
-      {/* 1. HERO SECTION */}
-      <section className="bg-white border-b border-[#E4E4E4] py-20 lg:py-28 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-700">
+      {/* 1. FULL WIDTH BANNER HERO */}
+      <section className="relative h-[450px] md:h-[550px] bg-[#0A0A0A] overflow-hidden flex items-center">
+        <div className="absolute inset-0 z-0">
+          <Image 
+            src="https://picsum.photos/seed/protection_banner/1920/800" 
+            alt="Security Architecture" 
+            fill 
+            className="object-cover opacity-60 grayscale" 
+            priority
+            data-ai-hint="network security center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 w-full text-white">
+          <div className="max-w-3xl space-y-8 animate-in fade-in slide-in-from-left-4 duration-700">
             <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.4em] block">Security Architecture</span>
-            <h1 className="text-4xl md:text-7xl font-bold uppercase tracking-tighter leading-tight font-display">
-              Account security & <br /> client protection.
-            </h1>
-            <p className="text-sm md:text-lg text-[#6B7280] max-w-xl leading-relaxed font-medium uppercase tracking-tight">
+            <h1 className="text-4xl md:text-7xl font-normal tracking-tight font-display leading-[1.1]">Account security & <br /> client protection.</h1>
+            <p className="text-sm md:text-lg text-white/80 max-w-xl leading-relaxed font-medium uppercase tracking-tight">
               We are committed to providing a secure trading environment, with enhanced account safety, fund protection and 24/7 technical support.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Link href="/register" className="btn-institutional-primary bg-[#0055FF] border-[#0055FF] text-white px-12 py-5 shadow-xl">
+              <Link href="/register" className="bg-[#0055FF] hover:bg-[#0044cc] text-white px-12 py-5 text-[10px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl text-center min-w-[220px]">
                 Open Secure Account
               </Link>
-              <Link href="/about/contact" className="btn-institutional-secondary px-12 py-5">
+              <Link href="/about/contact" className="bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm px-12 py-5 text-[10px] font-bold uppercase tracking-[0.2em] transition-all text-center min-w-[220px]">
                 Speak with Support
               </Link>
-            </div>
-          </div>
-          <div className="relative">
-            <div className="relative aspect-[4/3] bg-[#F7F7F5] border border-[#E4E4E4] shadow-2xl overflow-hidden group">
-              <Image 
-                src="https://picsum.photos/seed/varban_protect/1000/750" 
-                alt="Institutional Protection" 
-                fill 
-                className="object-cover opacity-90 transition-transform duration-[2000ms] group-hover:scale-105" 
-                data-ai-hint="security vault"
-              />
-              <div className="absolute inset-0 bg-gradient-to-tr from-[#0A0A0A]/40 to-transparent"></div>
-              <div className="absolute bottom-8 left-8 bg-white/90 backdrop-blur-md border border-[#E4E4E4] px-6 py-4 shadow-xl">
-                 <div className="flex items-center gap-3 text-[#16835B]">
-                    <ShieldCheck className="w-6 h-6" />
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-[#0A0A0A]">ISO 27001 Certified Domain</span>
-                 </div>
-              </div>
             </div>
           </div>
         </div>

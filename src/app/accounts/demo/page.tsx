@@ -3,7 +3,7 @@
 
 /**
  * @fileOverview Refined Demo Account Page.
- * Features a structured breakdown of risk-free practice benefits and onboarding steps.
+ * Updated with a full-width banner hero spanning left-to-right.
  */
 
 import React from "react";
@@ -11,7 +11,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { 
   Shield, 
-  TrendingUp, 
   Cpu, 
   Target, 
   Layers, 
@@ -19,7 +18,6 @@ import {
   Monitor, 
   CheckCircle2, 
   ArrowRight,
-  Zap,
   Globe
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -74,41 +72,34 @@ export default function DemoAccountPage() {
 
   return (
     <div className="bg-[#F7F7F5] min-h-screen text-[#0A0A0A] pb-24">
-      {/* 1. HERO SECTION */}
-      <section className="bg-white border-b border-[#E4E4E4] py-20 lg:py-32 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-700 text-center lg:text-left">
+      {/* 1. FULL WIDTH BANNER HERO */}
+      <section className="relative h-[450px] md:h-[550px] bg-[#0A0A0A] overflow-hidden flex items-center">
+        <div className="absolute inset-0 z-0">
+          <Image 
+            src="https://picsum.photos/seed/demo_banner/1920/800" 
+            alt="Demo Trading" 
+            fill 
+            className="object-cover opacity-50" 
+            priority
+            data-ai-hint="trading room"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 w-full text-white text-center lg:text-left">
+          <div className="max-w-3xl space-y-8 animate-in fade-in slide-in-from-left-4 duration-700">
             <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.4em] block">Training Infrastructure</span>
-            <h1 className="text-4xl md:text-7xl font-bold uppercase tracking-tighter leading-tight font-display">
-              Demo trading <br /> account.
-            </h1>
-            <p className="text-sm md:text-lg text-[#6B7280] max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium uppercase tracking-tight">
-              The Varban Markets risk-free demo trading account offers you the benefit of sharpening your skills and strategies without financial risk.
+            <h1 className="text-4xl md:text-7xl font-normal tracking-tight font-display leading-[1.1]">Demo trading <br /> account.</h1>
+            <p className="text-sm md:text-lg text-white/80 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium uppercase tracking-tight">
+              The Varban Markets risk-free demo account offers you the benefit of sharpening your skills without financial risk.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start">
-              <Link href="/register" className="btn-institutional-primary bg-[#0055FF] border-[#0055FF] text-white px-12 py-5 shadow-xl">
+              <Link href="/register" className="bg-[#0055FF] hover:bg-[#0044cc] text-white px-12 py-5 text-[10px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl text-center min-w-[200px]">
                 Try Free Demo
               </Link>
-              <Link href="/login" className="btn-institutional-secondary px-12 py-5">
+              <Link href="/login" className="bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm px-12 py-5 text-[10px] font-bold uppercase tracking-[0.2em] transition-all text-center min-w-[200px]">
                 Trader Sign In
               </Link>
-            </div>
-          </div>
-          <div className="relative group">
-            <div className="relative aspect-video bg-[#F7F7F5] border border-[#E4E4E4] shadow-2xl overflow-hidden group-hover:scale-[1.01] transition-transform duration-700">
-              <Image 
-                src={placeholderImages.terminal_showcase.url} 
-                alt="Varban Terminal Demo" 
-                fill 
-                className="object-cover" 
-                priority 
-                data-ai-hint="trading laptop"
-              />
-              <div className="absolute inset-0 bg-black/5"></div>
-              <div className="absolute bottom-6 left-6 bg-white border border-[#E4E4E4] px-4 py-2 shadow-lg">
-                <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest">Virtual Balance</span>
-                <p className="text-xl font-mono font-bold text-[#0A0A0A]">$10,000.00</p>
-              </div>
             </div>
           </div>
         </div>
@@ -281,4 +272,3 @@ export default function DemoAccountPage() {
     </div>
   );
 }
-

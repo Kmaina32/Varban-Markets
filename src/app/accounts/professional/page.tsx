@@ -1,5 +1,6 @@
 
 import Link from "next/link";
+import Image from "next/image";
 import { Check, ShieldCheck, Zap, BarChart3, Sliders, Table as TableIcon, Clock, Info } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import {
@@ -13,7 +14,7 @@ import {
 
 /**
  * @fileOverview Professional Account Specification Page.
- * High-performance tier comparison for experienced, day-traders and algotraders.
+ * Updated with a full-width banner hero spanning left-to-right.
  */
 
 export default function ProfessionalAccountsPage() {
@@ -73,22 +74,41 @@ export default function ProfessionalAccountsPage() {
   ];
 
   return (
-    <div className="bg-[#F7F7F5] min-h-screen py-20 text-[#0A0A0A]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Header Section */}
-        <div className="border-b border-[#E4E4E4] pb-12 mb-16 text-center lg:text-left">
-          <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.4em] block mb-4">Institutional Series</span>
-          <h1 className="text-4xl md:text-6xl font-bold uppercase tracking-tighter leading-tight">Professional Accounts</h1>
-          <p className="text-sm md:text-base text-[#6B7280] mt-6 max-w-3xl leading-relaxed uppercase font-bold tracking-tight">
-            Accounts that meet the needs of the most experienced traders. Highlights include low spread or spread-free accounts with execution to suit scalpers, day-traders and algotraders.
-          </p>
-          <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-            <Link href="/register" className="btn-institutional-primary bg-[#0055FF] border-[#0055FF] text-white px-16">Open Pro Account</Link>
-            <Link href="/accounts/demo" className="btn-institutional-secondary px-16">Try Sandbox</Link>
-          </div>
+    <div className="bg-[#F7F7F5] min-h-screen text-[#0A0A0A] pb-24">
+      {/* 1. FULL WIDTH BANNER HERO */}
+      <section className="relative h-[450px] md:h-[550px] bg-[#0A1921] overflow-hidden flex items-center">
+        <div className="absolute inset-0 z-0">
+          <Image 
+            src="https://picsum.photos/seed/pro_banner/1920/800" 
+            alt="Professional Accounts" 
+            fill 
+            className="object-cover opacity-60" 
+            priority
+            data-ai-hint="financial district"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0A1921] via-[#0A1921]/60 to-transparent"></div>
         </div>
 
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 w-full text-white">
+          <div className="max-w-3xl space-y-8 animate-in fade-in slide-in-from-left-4 duration-700">
+            <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.4em] block">Institutional Series</span>
+            <h1 className="text-4xl md:text-7xl font-normal tracking-tight font-display leading-[1.1]">Professional <br /> accounts.</h1>
+            <p className="text-sm md:text-lg text-white/80 max-w-xl leading-relaxed font-medium uppercase tracking-tight">
+              Accounts that meet the needs of the most experienced traders. Low spread or spread-free accounts with execution to suit day-traders and algotraders.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Link href="/register" className="bg-[#FFDE00] hover:bg-[#E5C700] text-[#0A0A0A] px-12 py-5 text-[10px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl text-center">
+                Open Pro Account
+              </Link>
+              <Link href="/accounts/demo" className="bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm px-12 py-5 text-[10px] font-bold uppercase tracking-[0.2em] transition-all text-center">
+                Try Sandbox
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-24">
         {/* Feature Cards Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-20">
           {accountTiers.map((tier, i) => (
@@ -125,10 +145,10 @@ export default function ProfessionalAccountsPage() {
             <Table>
               <TableHeader className="bg-[#F7F7F5]">
                 <TableRow>
-                  <TableHead className="w-1/4">Parameters</TableHead>
-                  <TableHead className="text-center">Pro</TableHead>
-                  <TableHead className="text-center">Zero</TableHead>
-                  <TableHead className="text-center">Raw Spread</TableHead>
+                  <TableHead className="w-1/4 text-[10px] font-bold uppercase tracking-widest">Parameters</TableHead>
+                  <TableHead className="text-center text-[10px] font-bold uppercase tracking-widest">Pro</TableHead>
+                  <TableHead className="text-center text-[10px] font-bold uppercase tracking-widest">Zero</TableHead>
+                  <TableHead className="text-center text-[10px] font-bold uppercase tracking-widest">Raw Spread</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -182,13 +202,12 @@ export default function ProfessionalAccountsPage() {
               All professional accounts feature Negative Balance Protection, ensuring you can never lose more than your initial deposit. Algotraders enjoy unrestricted API access and zero execution requotes on all market-execution tiers.
             </p>
             <div className="pt-4">
-               <Link href="/contact" className="text-[10px] font-bold uppercase tracking-widest text-[#0055FF] flex items-center gap-2">
+               <Link href="/about/contact" className="text-[10px] font-bold uppercase tracking-widest text-[#0055FF] flex items-center gap-2">
                  Speak with an Institutional Account Manager <Zap className="w-3.5 h-3.5" />
                </Link>
             </div>
           </Card>
         </div>
-
       </div>
     </div>
   );
