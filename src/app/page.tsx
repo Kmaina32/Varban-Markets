@@ -62,7 +62,7 @@ export default function HomePage() {
       </div>
 
       {/* MAIN HERO SECTION - Slideshow Architecture */}
-      <section className="relative bg-white overflow-hidden pt-20 lg:pt-32 pb-24 lg:pb-16 min-h-[650px] flex items-center">
+      <section className="relative bg-[#0A0A0A] overflow-hidden pt-20 lg:pt-32 pb-24 lg:pb-16 min-h-[650px] flex items-center">
         {/* Background Slideshow Layer */}
         <div className="absolute inset-0 z-0 pointer-events-none">
           {heroImages.map((src, idx) => (
@@ -83,15 +83,17 @@ export default function HomePage() {
               />
             </div>
           ))}
+          {/* Subtle Dark Overlay for White Text Readability */}
+          <div className="absolute inset-0 bg-black/40 z-[5]"></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-3xl space-y-8 animate-in fade-in slide-in-from-left-4 duration-1000 text-center lg:text-left">
-            <h1 className="text-4xl sm:text-5xl md:text-[64px] font-bold tracking-tight text-[#0A0A0A] font-display leading-[1.1]">
+            <h1 className="text-4xl sm:text-5xl md:text-[64px] font-normal tracking-tight text-white font-display leading-[1.1]">
               Trade online <br className="hidden md:block" /> with a leading broker
             </h1>
             
-            <p className="text-sm md:text-base text-[#6B7280] max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
+            <p className="text-sm md:text-base text-white/80 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
               Trade with a reliable licensed broker. Experience Varban&apos;s leading online trading platform with tight spreads and fast execution.
             </p>
 
@@ -104,7 +106,7 @@ export default function HomePage() {
               </Link>
               <Link 
                 href="/accounts/demo" 
-                className="flex-1 sm:flex-none bg-[#F2F2F2] hover:bg-[#EAEAEA] text-[#0A0A0A] px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all sm:min-w-[180px] text-center"
+                className="flex-1 sm:flex-none bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm border border-white/20 px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all sm:min-w-[180px] text-center"
               >
                 Try free demo
               </Link>
