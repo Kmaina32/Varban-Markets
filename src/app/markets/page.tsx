@@ -3,11 +3,13 @@
 /**
  * @fileOverview Institutional Market Registry.
  * Shared page that renders within the authenticated workspace context for auth persistence.
+ * Updated with a full-width banner hero spanning left-to-right.
  */
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Search, Sliders, Star } from "lucide-react";
+import Image from "next/image";
+import { Search, Sliders, Star, Globe, ArrowRight } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
 import { Button } from "@/components/ui/button";
@@ -32,7 +34,7 @@ export default function MarketsPage() {
   const db = useFirestore();
   const { t, formatNumber } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>("" );
   const [marketPrices, setMarketPrices] = useState<Record<string, { price: number; percent: number; status: string }>>({});
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
 
@@ -103,117 +105,152 @@ export default function MarketsPage() {
   });
 
   return (
-    <AuthedLayout title={t('nav.markets')} subtitle="Market Registry & List">
-      <div className="space-y-8">
-        {errorStatus && (
-          <div className="p-3 bg-[#FCF1F1] border border-[#C43D3D] text-[10px] uppercase font-bold text-[#C43D3D]">
-            {errorStatus}
+    <div className="bg-[#F7F7F5] min-h-screen text-[#0A0A0A] pb-24">
+      {/* 1. FULL WIDTH BANNER HERO */}
+      <section className="relative h-[400px] md:h-[500px] bg-[#0A0A0A] overflow-hidden flex items-center">
+        <div className="absolute inset-0 z-0">
+          <Image 
+            src="https://picsum.photos/seed/markets_hub/1920/800" 
+            alt="Global Markets Hub" 
+            fill 
+            className="object-cover opacity-50 grayscale" 
+            priority
+            data-ai-hint="stock market board"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 w-full text-white">
+          <div className="max-w-3xl space-y-8 animate-in fade-in slide-in-from-left-4 duration-700">
+            <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.4em] block">Market Domain</span>
+            <h1 className="text-4xl md:text-7xl font-normal tracking-tight font-display leading-[1.1]">The global market <br /> registry.</h1>
+            <p className="text-sm md:text-lg text-white/80 max-w-xl leading-relaxed font-medium uppercase tracking-tight">
+              Access over 150 financial instruments across Forex, Equities, Commodities and Digital Assets with deterministic execution.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Link href="/register" className="bg-[#0055FF] hover:bg-[#0044cc] text-white px-12 py-5 text-[10px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl text-center">
+                Open Account
+              </Link>
+              <Link href="/accounts/demo" className="bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm px-12 py-5 text-[10px] font-bold uppercase tracking-[0.2em] transition-all text-center">
+                Try Demo
+              </Link>
+            </div>
           </div>
-        )}
+        </div>
+      </section>
 
-        <Card className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-[#E4E4E4] rounded-none bg-white shadow-sm">
-          <div className="flex flex-wrap gap-2">
-            {categories.map((cat) => (
-              <Button
-                key={cat}
-                variant={selectedCategory === cat ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(cat)}
-                className="text-[9px] px-4"
-              >
-                {cat}
-              </Button>
-            ))}
-          </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+        <div className="space-y-8">
+          {errorStatus && (
+            <div className="p-3 bg-[#FCF1F1] border border-[#C43D3D] text-[10px] uppercase font-bold text-[#C43D3D]">
+              {errorStatus}
+            </div>
+          )}
 
-          <div className="relative max-w-xs w-full">
-            <Search className="absolute inset-y-0 left-3 flex items-center pointer-events-none w-3.5 h-3.5 text-[#6B7280]" />
-            <input
-              type="text"
-              placeholder="Filter registry..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full text-xs pl-9 pr-3 py-2 bg-[#F7F7F5] border border-[#E4E4E4] rounded-none focus:outline-none focus:border-[#0A0A0A]"
-            />
-          </div>
-        </Card>
+          <Card className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-[#E4E4E4] rounded-none bg-white shadow-sm">
+            <div className="flex flex-wrap gap-2">
+              {categories.map((cat) => (
+                <Button
+                  key={cat}
+                  variant={selectedCategory === cat ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory(cat)}
+                  className="text-[9px] px-4"
+                >
+                  {cat}
+                </Button>
+              ))}
+            </div>
 
-        <Card className="border-[#E4E4E4] overflow-hidden rounded-none shadow-sm">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-[#F7F7F5]">
-                <TableRow>
-                  <TableHead className="w-12 text-center">Fav</TableHead>
-                  <TableHead className="text-[10px] font-bold uppercase tracking-wider">Instrument</TableHead>
-                  <TableHead className="text-[10px] font-bold uppercase tracking-wider">Sector</TableHead>
-                  <TableHead className="text-right text-[10px] font-bold uppercase tracking-wider">Live Price</TableHead>
-                  <TableHead className="text-right text-[10px] font-bold uppercase tracking-wider">24h Change</TableHead>
-                  <TableHead className="text-center text-[10px] font-bold uppercase tracking-wider">Node Status</TableHead>
-                  <TableHead className="text-center text-[10px] font-bold uppercase tracking-wider">Execution</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody className="bg-white">
-                {filteredInstruments.map((inst) => {
-                  const live = marketPrices[inst.symbol];
-                  const price = live?.price;
-                  const percent = live?.percent;
-                  const status = live ? live.status : inst.status;
-                  const isPositive = percent !== undefined ? percent >= 0 : true;
-                  const starred = isInWatchlist(inst.symbol);
+            <div className="relative max-w-xs w-full">
+              <Search className="absolute inset-y-0 left-3 flex items-center pointer-events-none w-3.5 h-3.5 text-[#6B7280]" />
+              <input
+                type="text"
+                placeholder="Filter registry..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full text-xs pl-9 pr-3 py-2.5 bg-[#F7F7F5] border border-[#E4E4E4] rounded-none focus:outline-none focus:border-[#0A0A0A]"
+              />
+            </div>
+          </Card>
 
-                  return (
-                    <TableRow key={inst.symbol} className="hover:bg-[#F7F7F5] transition-colors group">
-                      <TableCell className="text-center">
-                        <button 
-                          onClick={() => toggleWatchlist(inst)}
-                          disabled={!user}
-                          className={`transition-all transform active:scale-90 ${!user ? 'opacity-20' : starred ? 'text-[#0055FF]' : 'text-[#E4E4E4] hover:text-[#0055FF]'}`}
-                        >
-                          <Star className={`w-4 h-4 ${starred ? 'fill-[#0055FF]' : ''}`} />
-                        </button>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-4">
-                          <MarketIcon symbol={inst.symbol} size="md" />
-                          <div className="flex flex-col">
-                            <span className="font-mono font-bold text-xs text-[#0A0A0A]">{inst.symbol}</span>
-                            <span className="text-[9px] text-[#6B7280] uppercase tracking-tighter font-bold">{inst.name}</span>
+          <Card className="border-[#E4E4E4] overflow-hidden rounded-none shadow-sm">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-[#F7F7F5]">
+                  <TableRow>
+                    <TableHead className="w-12 text-center">Fav</TableHead>
+                    <TableHead className="text-[10px] font-bold uppercase tracking-wider">Instrument</TableHead>
+                    <TableHead className="text-[10px] font-bold uppercase tracking-wider">Sector</TableHead>
+                    <TableHead className="text-right text-[10px] font-bold uppercase tracking-wider">Live Price</TableHead>
+                    <TableHead className="text-right text-[10px] font-bold uppercase tracking-wider">24h Change</TableHead>
+                    <TableHead className="text-center text-[10px] font-bold uppercase tracking-wider">Node Status</TableHead>
+                    <TableHead className="text-center text-[10px] font-bold uppercase tracking-wider">Execution</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="bg-white">
+                  {filteredInstruments.map((inst) => {
+                    const live = marketPrices[inst.symbol];
+                    const price = live?.price;
+                    const percent = live?.percent;
+                    const status = live ? live.status : inst.status;
+                    const isPositive = percent !== undefined ? percent >= 0 : true;
+                    const starred = isInWatchlist(inst.symbol);
+
+                    return (
+                      <TableRow key={inst.symbol} className="hover:bg-[#F7F7F5] transition-colors group">
+                        <TableCell className="text-center">
+                          <button 
+                            onClick={() => toggleWatchlist(inst)}
+                            disabled={!user}
+                            className={`transition-all transform active:scale-90 ${!user ? 'opacity-20' : starred ? 'text-[#0055FF]' : 'text-[#E4E4E4] hover:text-[#0055FF]'}`}
+                          >
+                            <Star className={`w-4 h-4 ${starred ? 'fill-[#0055FF]' : ''}`} />
+                          </button>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-4">
+                            <MarketIcon symbol={inst.symbol} size="md" />
+                            <div className="flex flex-col">
+                              <span className="font-mono font-bold text-xs text-[#0A0A0A]">{inst.symbol}</span>
+                              <span className="text-[9px] text-[#6B7280] uppercase tracking-tighter font-bold">{inst.name}</span>
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-[#6B7280] text-[9px] font-bold uppercase tracking-[0.1em]">
-                        {inst.category}
-                      </TableCell>
-                      <TableCell className="text-right font-mono font-bold text-sm text-[#0A0A0A]">
-                        {price !== undefined ? formatNumber(price, { minimumFractionDigits: 2, maximumFractionDigits: 5 }) : "---"}
-                      </TableCell>
-                      <TableCell className={`text-right font-mono font-bold text-xs ${isPositive ? "text-[#16835B]" : "text-[#C43D3D]"}`}>
-                        {percent !== undefined ? (isPositive ? "+" : "") + formatNumber(percent, { minimumFractionDigits: 2 }) + "%" : "---"}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <span className={cn(
-                          "text-[8px] font-bold uppercase px-2 py-0.5 border",
-                          status === 'Open' ? "border-[#16835B] text-[#16835B] bg-[#16835B]/5" : "border-[#6B7280] text-[#6B7280] bg-[#F7F7F5]"
-                        )}>
-                          {status}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Button asChild size="sm" variant="brand" className="h-8 px-5 rounded-none">
-                          <Link href={user ? `/terminal?symbol=${inst.symbol}` : '/login'}>
-                            <span className="text-[9px] font-bold uppercase tracking-widest">Trade Terminal</span>
-                            <Sliders className="ml-2 w-3 h-3" />
-                          </Link>
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        </Card>
+                        </TableCell>
+                        <TableCell className="text-[#6B7280] text-[9px] font-bold uppercase tracking-[0.1em]">
+                          {inst.category}
+                        </TableCell>
+                        <TableCell className="text-right font-mono font-bold text-sm text-[#0A0A0A]">
+                          {price !== undefined ? formatNumber(price, { minimumFractionDigits: 2, maximumFractionDigits: 5 }) : "---"}
+                        </TableCell>
+                        <TableCell className={`text-right font-mono font-bold text-xs ${isPositive ? "text-[#16835B]" : "text-[#C43D3D]"}`}>
+                          {percent !== undefined ? (isPositive ? "+" : "") + formatNumber(percent, { minimumFractionDigits: 2 }) + "%" : "---"}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <span className={cn(
+                            "text-[8px] font-bold uppercase px-2 py-0.5 border",
+                            status === 'Open' ? "border-[#16835B] text-[#16835B] bg-[#16835B]/5" : "border-[#6B7280] text-[#6B7280] bg-[#F7F7F5]"
+                          )}>
+                            {status}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Button asChild size="sm" variant="brand" className="h-8 px-5 rounded-none">
+                            <Link href={user ? `/terminal?symbol=${inst.symbol}` : '/login'}>
+                              <span className="text-[9px] font-bold uppercase tracking-widest">Trade Terminal</span>
+                              <Sliders className="ml-2 w-3 h-3" />
+                            </Link>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </Card>
+        </div>
       </div>
-    </AuthedLayout>
+    </div>
   );
 }
