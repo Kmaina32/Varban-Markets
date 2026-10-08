@@ -46,17 +46,6 @@ export const AVAILABLE_INSTRUMENTS: Instrument[] = [
     durationOptions: ["1m", "5m", "15m", "1h"],
     settlementMethod: "Index Liquidity Weighting"
   },
-  {
-    symbol: "XRP/USD",
-    name: "Ripple / US Dollar",
-    category: "Crypto",
-    status: "Open",
-    marketType: "Digital Derivative",
-    minStake: 10,
-    maxStake: 10000,
-    durationOptions: ["5m", "15m", "1h"],
-    settlementMethod: "Index Liquidity Weighting"
-  },
 
   // FOREX
   {
@@ -117,17 +106,6 @@ export const AVAILABLE_INSTRUMENTS: Instrument[] = [
     settlementMethod: "EOD Fixation"
   },
   {
-    symbol: "XAG/USD",
-    name: "Silver Spot / US Dollar",
-    category: "Commodities",
-    status: "Open",
-    marketType: "Spot Derivative",
-    minStake: 15,
-    maxStake: 50000,
-    durationOptions: ["5m", "15m", "1h", "1D"],
-    settlementMethod: "EOD Fixation"
-  },
-  {
     symbol: "WTI/USD",
     name: "Crude Oil WTI Spot",
     category: "Commodities",
@@ -136,17 +114,6 @@ export const AVAILABLE_INSTRUMENTS: Instrument[] = [
     minStake: 20,
     maxStake: 50000,
     durationOptions: ["5m", "15m", "1h", "4h"],
-    settlementMethod: "Mid-Market Aggregation"
-  },
-  {
-    symbol: "HG1",
-    name: "Copper Spot",
-    category: "Commodities",
-    status: "Open",
-    marketType: "Industrial Metal",
-    minStake: 10,
-    maxStake: 25000,
-    durationOptions: ["15m", "1h", "4h"],
     settlementMethod: "Mid-Market Aggregation"
   },
 
@@ -183,40 +150,5 @@ export const AVAILABLE_INSTRUMENTS: Instrument[] = [
     maxStake: 100000,
     durationOptions: ["1m", "5m", "15m", "1h", "1D"],
     settlementMethod: "Real-Time Exchange Feed"
-  },
-  {
-    symbol: "SPY",
-    name: "SPDR S&P 500 ETF Trust",
-    category: "Equities",
-    status: "Open",
-    marketType: "ETF",
-    minStake: 25,
-    maxStake: 250000,
-    durationOptions: ["5m", "15m", "1h", "1D"],
-    settlementMethod: "Index Liquidity Weighting"
-  },
-  {
-    symbol: "QQQ",
-    name: "Invesco QQQ Trust (Nasdaq 100)",
-    category: "Equities",
-    status: "Open",
-    marketType: "ETF",
-    minStake: 25,
-    maxStake: 250000,
-    durationOptions: ["5m", "15m", "1h", "1D"],
-    settlementMethod: "Index Liquidity Weighting"
-  },
-
-  // FIXED INCOME / BONDS
-  {
-    symbol: "US2Y",
-    name: "US Treasury Yield 2 Years",
-    category: "Equities",
-    status: "Open",
-    marketType: "Bond Derivative",
-    minStake: 50,
-    maxStake: 1000000,
-    durationOptions: ["1h", "4h", "1D", "1W"],
-    settlementMethod: "Real-Time Yield Feed"
   }
 ];
