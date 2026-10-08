@@ -186,8 +186,8 @@ export default function TerminalWorkspace() {
           </div>
         )}
 
-        {/* Institutional Ticker Tape */}
-        <div className="shrink-0 border-b border-[#E4E4E4] bg-white">
+        {/* Institutional Ticker Tape - HIDDEN ON MOBILE */}
+        <div className="hidden lg:block shrink-0 border-b border-[#E4E4E4] bg-white">
           <TickerTape />
         </div>
 
