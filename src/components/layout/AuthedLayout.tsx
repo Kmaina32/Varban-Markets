@@ -59,8 +59,13 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
     if (savedDemo) setDemoBalance(parseFloat(savedDemo));
   }, []);
 
-  const isStrict = STRICT_PATHS.some(path => pathname === path || pathname?.startsWith(path + '/'));
-  const isAdminPath = pathname?.startsWith('/admin');
+  const isStrict = useMemo(() => {
+    return STRICT_PATHS.some(path => pathname === path || pathname?.startsWith(path + '/'));
+  }, [pathname]);
+
+  const isAdminPath = useMemo(() => {
+    return pathname?.startsWith('/admin');
+  }, [pathname]);
   
   const isAdmin = useMemo(() => {
     if (!user?.email) return false;
@@ -69,23 +74,37 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
     return isSuper || hasAdminRole;
   }, [user, profile]);
 
+  // REDIRECTION LOGIC: Core Security Protocol
   useEffect(() => {
-    if (!loading && !profileLoading) {
+    if (!loading) {
+      // 1. Unauthenticated users trying to access strict paths
       if (!user && isStrict) {
-        router.push('/login');
+        router.replace('/login');
         return;
       }
-      if (user && isAdminPath && !isAdmin) {
-        router.push('/dashboard');
+      
+      // 2. Authenticated users trying to access admin paths without authority
+      if (user && isAdminPath && !isAdmin && !profileLoading) {
+        router.replace('/dashboard');
+        return;
       }
     }
   }, [user, loading, profileLoading, isStrict, isAdminPath, isAdmin, router]);
 
-  // If not a strict path, return children directly (this allows the page to be public)
-  if (isTerminal || !isStrict) return <>{children}</>;
+  // If not a strict path and not logged in, render as public page (no sidebar/header)
+  if (!isStrict && !user) return <>{children}</>;
   
-  if (loading || profileLoading) return <LoadingOverlay />;
-  if (!user) return null;
+  // Terminal is a specialized workspace, handle its own layout internally but still guard it
+  if (isTerminal && !user && !loading) {
+    router.replace('/login');
+    return null;
+  }
+  if (isTerminal) return <>{children}</>;
+
+  // Loading state
+  if (loading || (isStrict && !user)) {
+    return <LoadingOverlay />;
+  }
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
@@ -93,7 +112,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
     <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
       <header className="relative h-16 border-b border-[#E4E4E4] bg-white flex items-center justify-between px-3 md:px-6 shrink-0 z-[150] shadow-sm">
         <div className="flex items-center space-x-2 md:space-x-4">
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-1.5 lg:hidden"><Menu className="w-5 h-5" /></button>
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-1.5 lg:hidden text-[#0A0A0A]"><Menu className="w-5 h-5" /></button>
           <Link href="/dashboard" className="flex items-center"><Image src="/assets/logo2.png" alt="Varban" width={95} height={22} className="w-auto object-contain" priority /></Link>
           <div className="h-6 w-px bg-[#E4E4E4] hidden lg:block"></div>
           <div className="hidden lg:block">
@@ -132,7 +151,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
             }} 
             onSignOut={async () => {
               await signOut();
-              router.push('/');
+              router.replace('/');
             }}
           />
         </div>
