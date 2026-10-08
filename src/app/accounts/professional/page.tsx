@@ -1,6 +1,11 @@
 
 import Link from "next/link";
-import { Award, Zap, BarChart3, Database } from "lucide-react";
+import { Zap, BarChart3, Database, ShieldCheck } from "lucide-react";
+
+/**
+ * @fileOverview Professional Account Specification Page.
+ * Institutional-tier account details with high-contrast design.
+ */
 
 export default function ProfessionalAccountsPage() {
   return (
@@ -11,7 +16,7 @@ export default function ProfessionalAccountsPage() {
           <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.3em] block">Institutional Series</span>
           <h1 className="text-4xl md:text-7xl font-bold uppercase tracking-tighter leading-tight">Professional Accounts</h1>
           <p className="text-sm md:text-lg text-[#6B7280] max-w-2xl mx-auto leading-relaxed">
-            Engineered for high-volume traders and quantitative entities. Experience our tightest spreads and raw institutional liquidity.
+            Engineered for high-volume traders and quantitative entities. Experience our tightest spreads and raw institutional liquidity across all major market domains.
           </p>
           <div className="pt-6">
             <Link href="/register" className="btn-institutional-primary bg-[#0A0A0A] text-white px-16 py-5 rounded-none shadow-xl">Get Started</Link>
@@ -24,7 +29,7 @@ export default function ProfessionalAccountsPage() {
             { icon: BarChart3, title: "Zero Requotes", text: "100% automated matching engine execution with no human intervention." },
             { icon: Database, title: "API Trading", text: "Connect your algorithms directly via FIX or REST protocol nodes." }
           ].map((item, i) => (
-            <div key={i} className="p-10 border border-[#E4E4E4] bg-[#F7F7F5] space-y-4 hover:border-[#0055FF] transition-all">
+            <div key={i} className="p-10 border border-[#E4E4E4] bg-[#F7F7F5] space-y-4 hover:border-[#0055FF] transition-all group">
               <item.icon className="w-8 h-8 text-[#0055FF]" />
               <h3 className="text-sm font-bold uppercase tracking-widest">{item.title}</h3>
               <p className="text-xs text-[#6B7280] leading-relaxed font-medium uppercase tracking-tight">{item.text}</p>
@@ -38,11 +43,11 @@ export default function ProfessionalAccountsPage() {
             <div className="space-y-10">
               <div className="border-l-4 border-[#0055FF] pl-8 space-y-2">
                 <h4 className="text-sm font-bold uppercase">Dynamic Margin Control</h4>
-                <p className="text-xs text-[#94A3B8] leading-relaxed">Automated margin requirements that adapt to your trade size and market volatility in real-time.</p>
+                <p className="text-xs text-[#94A3B8] leading-relaxed">Automated margin requirements that adapt to your trade size and market volatility in real-time for maximum efficiency.</p>
               </div>
               <div className="border-l-4 border-[#16835B] pl-8 space-y-2">
                 <h4 className="text-sm font-bold uppercase">Priority Settlement</h4>
-                <p className="text-xs text-[#94A3B8] leading-relaxed">High-volume orders are prioritized on our core matching nodes for ultra-fast fills.</p>
+                <p className="text-xs text-[#94A3B8] leading-relaxed">High-volume orders are prioritized on our core matching nodes for ultra-fast fills and total price integrity.</p>
               </div>
             </div>
             <div className="mt-16">

@@ -1,4 +1,11 @@
+
 import Link from "next/link";
+import { DollarSign, ShieldCheck } from "lucide-react";
+
+/**
+ * @fileOverview Fees & Charges Policy Page.
+ * Transparent cost ledger with institutional design.
+ */
 
 export default function FeesPage() {
   const navTabs = [
@@ -26,14 +33,14 @@ export default function FeesPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="border-b border-[#E4E4E4] pb-8 mb-8">
-          <div className="text-[10px] font-bold text-[#16835B] uppercase tracking-widest mb-2">
+          <div className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-2">
             Legal Suite &mdash; Page 6 of 8
           </div>
           <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-tight text-[#0A0A0A]">
             Fees & Charges
           </h1>
           <p className="text-xs text-[#6B7280] mt-3 leading-relaxed max-w-3xl">
-            This page lists all costs for trading and moving money on the Varban platform.
+            This page lists all costs for trading and moving money on the Varban platform. We prioritize total cost transparency for all traders.
           </p>
         </div>
 
@@ -60,7 +67,7 @@ export default function FeesPage() {
               <div key={idx} className="border-t border-[#E4E4E4] pt-4 space-y-1">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280] block">{item.title}</span>
                 <span className="text-lg font-mono font-bold text-[#0A0A0A] block">{item.value}</span>
-                <p className="text-[10px] text-[#6B7280]">{item.desc}</p>
+                <p className="text-[10px] text-[#6B7280] uppercase font-bold">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -70,16 +77,16 @@ export default function FeesPage() {
               Currency Conversion
             </h2>
             <p>
-              If you deposit money in a currency different from your account's base currency, a conversion fee of up to 1.5% will be applied based on current market rates.
+              If you deposit money in a currency different from your account's base currency, a conversion fee of up to 1.5% will be applied based on current market rates at the time of clearing.
             </p>
           </section>
 
           <section className="space-y-4">
             <h2 className="text-sm font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">
-              Bonus Rules
+              Promotion & Bonus Turnover
             </h2>
             <p>
-              If you receive a bonus or promotion, you must trade 30 times the bonus amount before you can withdraw those funds. For example, a $100 bonus requires $3,000 in total trades.
+              Promotional credits or deposit match bonuses provided by Varban Markets are subject to a minimum trading turnover volume requirement of 30x the bonus amount before bonus funds become eligible for withdrawal.
             </p>
           </section>
 

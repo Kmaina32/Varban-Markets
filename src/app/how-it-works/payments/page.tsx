@@ -2,6 +2,11 @@
 import Link from "next/link";
 import { ArrowDownCircle, ArrowUpCircle, Clock, Globe, ShieldCheck, Zap } from "lucide-react";
 
+/**
+ * @fileOverview Funding & Settlement Overview Page.
+ * Detailed method grid for deposits and withdrawals.
+ */
+
 export default function PaymentsPage() {
   return (
     <div className="bg-[#F7F7F5] min-h-screen py-20 text-[#0A0A0A]">
@@ -29,7 +34,7 @@ export default function PaymentsPage() {
                 { method: "Mobile Money (MPesa/MoMo)", speed: "Instant", fee: "0%", min: "$5" },
                 { method: "Bank Wire Transfer", speed: "1-3 Days", fee: "0%", min: "$100" }
               ].map((item, i) => (
-                <div key={i} className="bg-white border border-[#E4E4E4] p-5 flex justify-between items-center shadow-sm">
+                <div key={i} className="bg-white border border-[#E4E4E4] p-5 flex justify-between items-center shadow-sm hover:border-[#0055FF] transition-all">
                   <div>
                     <span className="text-[10px] font-bold text-[#0A0A0A] block uppercase">{item.method}</span>
                     <span className="text-[9px] text-[#16835B] font-bold uppercase flex items-center gap-1 mt-1">
@@ -58,7 +63,7 @@ export default function PaymentsPage() {
                 { method: "Mobile Money", speed: "Instant", fee: "0%", limit: "$2,000" },
                 { method: "Domestic Bank Transfer", speed: "24 Hours", fee: "1.5%", limit: "Unlimited" }
               ].map((item, i) => (
-                <div key={i} className="bg-white border border-[#E4E4E4] p-5 flex justify-between items-center shadow-sm">
+                <div key={i} className="bg-white border border-[#E4E4E4] p-5 flex justify-between items-center shadow-sm hover:border-[#0055FF] transition-all">
                   <div>
                     <span className="text-[10px] font-bold text-[#0A0A0A] block uppercase">{item.method}</span>
                     <span className="text-[9px] text-[#0055FF] font-bold uppercase flex items-center gap-1 mt-1">
@@ -77,13 +82,13 @@ export default function PaymentsPage() {
 
         <div className="bg-[#0A0A0A] text-white p-12 md:p-20 flex flex-col md:flex-row justify-between items-center gap-12 shadow-2xl">
           <div className="space-y-4 text-center md:text-left">
-            <ShieldCheck className="w-10 h-10 text-[#0055FF] mx-auto md:mx-0" />
+            <ShieldCheck className="w-10 h-10 text-[#0055FF]" />
             <h3 className="text-xl font-bold uppercase tracking-tight">PCI-DSS Level 1 Secure</h3>
             <p className="text-xs text-[#94A3B8] leading-relaxed max-w-md uppercase tracking-tight font-bold">
               All financial transmissions are protected by high-precision encryption and subject to rigorous international compliance auditing.
             </p>
           </div>
-          <Link href="/register" className="btn-institutional-primary bg-white text-[#0A0A0A] border-white px-12 py-5 whitespace-nowrap">Fund Your Account</Link>
+          <Link href="/register" className="btn-institutional-primary bg-[#0055FF] border-[#0055FF] text-white px-12 py-5 whitespace-nowrap">Fund Your Account</Link>
         </div>
 
       </div>

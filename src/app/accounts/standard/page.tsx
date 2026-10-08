@@ -2,6 +2,11 @@
 import Link from "next/link";
 import { Check, ShieldCheck, Zap, Globe } from "lucide-react";
 
+/**
+ * @fileOverview Standard Account Specification Page.
+ * Professional retail account details with institutional design.
+ */
+
 export default function StandardAccountsPage() {
   const features = [
     { title: "Minimum Deposit", value: "$10 USD", desc: "Start trading with accessible capital." },
@@ -18,10 +23,10 @@ export default function StandardAccountsPage() {
           <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.3em] block mb-4">Trading Accounts</span>
           <h1 className="text-4xl md:text-6xl font-bold uppercase tracking-tight leading-tight">Standard Account</h1>
           <p className="text-sm md:text-base text-[#6B7280] mt-6 max-w-2xl leading-relaxed">
-            Designed for all types of traders, our Standard account offers a stable, balanced environment with zero commission and competitive spreads.
+            Designed for all types of traders, our Standard account offers a stable, balanced environment with zero commission and competitive spreads across all asset domains.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-            <Link href="/register" className="btn-institutional-primary bg-[#FFDE00] border-[#FFDE00] text-[#0A0A0A] px-12">Open Account</Link>
+            <Link href="/register" className="btn-institutional-primary bg-[#0055FF] border-[#0055FF] text-white px-12">Open Account</Link>
             <Link href="/accounts/demo" className="btn-institutional-secondary px-12">Try Demo</Link>
           </div>
         </div>
@@ -41,7 +46,7 @@ export default function StandardAccountsPage() {
             <div className="space-y-6">
               <h2 className="text-2xl font-bold uppercase tracking-tight">The Retail Standard</h2>
               <p className="text-sm text-[#6B7280] leading-relaxed">
-                Our Standard account is our most popular choice, providing access to our entire registry of 150+ instruments including Forex, Crypto, and Commodities.
+                Our Standard account is our most popular choice, providing access to our entire registry of 150+ instruments including Forex, Crypto, and Commodities with zero asymmetric slippage.
               </p>
               <ul className="space-y-4">
                 {[
@@ -60,7 +65,7 @@ export default function StandardAccountsPage() {
             <div className="bg-[#F7F7F5] p-10 border border-[#E4E4E4] flex flex-col items-center text-center space-y-6">
               <ShieldCheck className="w-12 h-12 text-[#0055FF]" />
               <h3 className="text-lg font-bold uppercase">Ready to trade?</h3>
-              <p className="text-xs text-[#6B7280] leading-relaxed">Join over 450,000 active traders using the Varban standard.</p>
+              <p className="text-xs text-[#6B7280] leading-relaxed">Join over 450,000 active traders using the Varban standard for reliable execution.</p>
               <Link href="/register" className="w-full btn-institutional-primary py-4">Register Now</Link>
             </div>
           </div>

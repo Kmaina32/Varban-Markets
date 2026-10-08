@@ -1,6 +1,11 @@
 
 import Link from "next/link";
-import { ShieldCheck, Lock, Globe, Database, FileCheck, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, Lock, Globe, Database, FileCheck } from "lucide-react";
+
+/**
+ * @fileOverview Client Protection & Capital Integrity Page.
+ * Detailed pillars of security and regulation.
+ */
 
 export default function ClientProtectionPage() {
   return (
@@ -61,13 +66,13 @@ export default function ClientProtectionPage() {
           </div>
         </div>
 
-        <div className="p-12 md:p-20 bg-[#F7F7F5] border-t-4 border-[#0055FF] text-center space-y-8">
+        <div className="p-12 md:p-20 bg-[#F7F7F5] border-t-4 border-[#0055FF] text-center space-y-8 shadow-sm">
            <h4 className="text-2xl font-bold uppercase tracking-tight">Professional Standards.</h4>
            <p className="text-sm text-[#6B7280] max-w-2xl mx-auto leading-relaxed">
-             Join the thousands of institutional and retail traders who trust Varban Markets for their derivative execution.
+             Join the thousands of institutional and retail traders who trust Varban Markets for their derivative execution and capital management.
            </p>
            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-             <Link href="/register" className="btn-institutional-primary px-16">Open Secure Account</Link>
+             <Link href="/register" className="btn-institutional-primary bg-[#0055FF] border-[#0055FF] text-white px-16">Open Secure Account</Link>
              <Link href="/about" className="btn-institutional-secondary px-16">About the Company</Link>
            </div>
         </div>
