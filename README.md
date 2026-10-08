@@ -12,27 +12,25 @@ Varban Markets is a professional electronic trading protocol engineered for adva
 *   **Profiles & Identity**: Real-time synchronization of trader metadata using Supabase Auth and PostgreSQL triggers.
 *   **Financial Ledger**: Immutable transactional records for deposits, withdrawals, and trade settlements.
 *   **Watchlist Persistence**: Cloud-synced asset tracking across all device nodes.
-*   **Database Setup**: Run `SUPABASE_SETUP.sql` in your Supabase SQL Editor to initialize the ledger and RLS policies.
+*   **Database Setup**: 
+    1. Open your Supabase Dashboard.
+    2. Go to the **SQL Editor**.
+    3. Copy the entire content of `SUPABASE_SETUP.sql` (found in the root directory).
+    4. Click **Run** to provision the schema and RLS policies.
+    5. This resolves the "column not found" errors by adding Investor Profile fields.
 
 ### B. ADVANCED CHARTING (TRADINGVIEW)
 *   **Pro Widget**: Integration of the TradingView Advanced Charting Widget for institutional analysis.
 *   **Tools & Indicators**: Full support for RSI, EMA, Bollinger Bands, and professional drawing tools.
-*   **Deterministic Sync**: Branded terminal headers with real-time connectivity status and source verification.
 
 ### C. MULTI-SOURCE MARKET DATA FAILOVER
 *   **Primary Feed**: Twelve Data (Institutional API).
 *   **Tier-1 Nodes**: Coinbase CDP Integration for high-precision major assets (BTC, ETH, SOL).
 *   **Fail-Safe Chain**: Alpha Vantage (Forex/Stocks) and Finnhub (Global Equities).
-*   **Zero-Config Fallback**: Binance Public API for uninterrupted crypto signals.
 
-### D. INTELLIGENCE & NEWS HUB
-*   **Protocol**: Server-side secure proxy with caching to prevent key leakage and CORS issues.
-*   **Internal Reader**: Contextual headlines refined for high-volatility drivers (Digital Assets, Forex, Global Politics) with in-app analysis reports.
-
-### E. RESPONSIVE WORKSPACE
-*   **Desktop Pro**: Resizable terminal panels for customized chart/ledger balance.
-*   **Mobile Drawers**: Side-opening architecture for Registry, Insights, and Positions to maximize chart visibility on small screens.
-*   **Profile Enforcement**: Mandatory completion of physical address and investor profile (KYC) before accessing trading or deposit nodes.
+### D. PROFILE ENFORCEMENT
+*   **KYC Protocol**: Access to the Trading Terminal and Wallet is strictly restricted until the Physical Address and Investor Profile (Net Worth, Income, Source of Wealth) are completed.
+*   **Regulatory Alignment**: Ensures compliance with Saint Lucia jurisdiction standards for electronic financial brokers.
 
 ---
 
@@ -40,7 +38,6 @@ Varban Markets is a professional electronic trading protocol engineered for adva
 The following keys must be populated in `.env` to enable full platform functionality:
 
 - **Supabase**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
-- **Genkit AI**: `GOOGLE_GENAI_API_KEY`.
 - **Market Data**: `FINNHUB_API_KEY`, `ALPHA_VANTAGE_API_KEY`, `TWELVE_DATA_API_KEY`, `POLYGON_API_KEY`.
 - **Storage**: `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`.
 
@@ -51,8 +48,7 @@ The following keys must be populated in `.env` to enable full platform functiona
 - [x] **Advanced Charting**: Full TradingView terminal integration.
 - [x] **Profile Enforcement**: Physical address and regulatory data required for terminal/wallet access.
 - [x] **Supabase Migration**: Core identity and financial ledger synchronized with idempotent RLS scripts.
-- [x] **Mobile Drawer Architecture**: Specialized sliding panels for high-performance mobile trading.
-- [x] **Admin Oversight Desk**: Dedicated nodes for KYC review, deposit verification, and withdrawal dispatch.
+- [x] **Idempotent Database Setup**: Root script `SUPABASE_SETUP.sql` handles initial provisioning and schema patches.
 
 ---
 *Operational Ledger Status: Finalized, Synchronized & Build Optimized.*
