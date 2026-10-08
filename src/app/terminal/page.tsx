@@ -32,7 +32,7 @@ import TechnicalAnalysis from "@/components/tradingview/TechnicalAnalysis";
 interface Position {
   id: string;
   instrument: string;
-  vector: "CALL" | "PUT";
+  vector: "BUY" | "SELL";
   entryPrice: number;
   stake: number;
   duration: string;
@@ -101,7 +101,7 @@ export default function TerminalWorkspace() {
     return () => clearInterval(timer);
   }, []);
 
-  const handleExecute = (overrideDirection: "CALL" | "PUT") => {
+  const handleExecute = (overrideDirection: "BUY" | "SELL") => {
     if (livePrice === null || !user) return;
 
     const newPos: Position = {
@@ -220,7 +220,7 @@ export default function TerminalWorkspace() {
                     <tr key={pos.id} className="hover:bg-[#F7F7F5] transition-colors">
                       <td className="p-3 font-mono text-[#6B7280]">{pos.id.slice(0, 10)}</td>
                       <td className="p-3 font-mono font-bold">{pos.instrument}</td>
-                      <td className="p-3"><span className={cn("px-2 py-0.5 border text-[9px] font-bold", pos.vector === 'CALL' ? 'border-[#16835B] text-[#16835B] bg-[#16835B]/5' : 'border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5')}>{pos.vector}</span></td>
+                      <td className="p-3"><span className={cn("px-2 py-0.5 border text-[9px] font-bold", pos.vector === 'BUY' ? 'border-[#16835B] text-[#16835B] bg-[#16835B]/5' : 'border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5')}>{pos.vector}</span></td>
                       <td className="p-3 text-right font-mono font-bold">${pos.stake.toFixed(2)}</td>
                       <td className="p-3 text-right font-mono hidden sm:table-cell">${pos.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                       <td className="p-3 text-center"><span className="text-[9px] font-bold uppercase text-[#0055FF] animate-pulse bg-[#0055FF]/5 px-2 py-0.5 border border-[#0055FF]/20">ACTIVE</span></td>
@@ -265,13 +265,13 @@ export default function TerminalWorkspace() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
-                    <button onClick={() => handleExecute('CALL')} className="py-5 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-widest flex flex-col items-center gap-1 shadow-md hover:opacity-90 active:scale-[0.98] transition-all">
+                    <button onClick={() => handleExecute('BUY')} className="py-5 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-widest flex flex-col items-center gap-1 shadow-md hover:opacity-90 active:scale-[0.98] transition-all">
                       <TrendingUp className="w-5 h-5" />
-                      <span>Higher</span>
+                      <span>Buy</span>
                     </button>
-                    <button onClick={() => handleExecute('PUT')} className="py-5 bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest flex flex-col items-center gap-1 shadow-md hover:opacity-90 active:scale-[0.98] transition-all">
+                    <button onClick={() => handleExecute('SELL')} className="py-5 bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest flex flex-col items-center gap-1 shadow-md hover:opacity-90 active:scale-[0.98] transition-all">
                       <TrendingDown className="w-5 h-5" />
-                      <span>Lower</span>
+                      <span>Sell</span>
                     </button>
                   </div>
 

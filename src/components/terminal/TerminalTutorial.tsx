@@ -37,7 +37,7 @@ export default function TerminalTutorial() {
     {
       selector: "#tour-settings",
       title: "Set Your Trade",
-      description: "Choose your amount and direction. We calculate your potential profit before you trade."
+      description: "Choose your amount and direction (Buy or Sell). We calculate your potential profit before you trade."
     },
     {
       selector: "#tour-mode",

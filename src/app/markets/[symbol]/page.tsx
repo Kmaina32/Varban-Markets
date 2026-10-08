@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, use, useEffect } from "react";
@@ -23,7 +22,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
 
   const { user } = useUser();
   const { t } = useTranslation();
-  const [direction, setDirection] = useState<"CALL" | "PUT" | null>(null);
+  const [direction, setDirection] = useState<"BUY" | "SELL" | null>(null);
   const [stake, setStake] = useState<number>(inst.minStake);
   const [duration, setDuration] = useState<string>(inst.durationOptions[0]);
   const [isReviewing, setIsReviewing] = useState<boolean>(false);
@@ -179,25 +178,25 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
-                      onClick={() => setDirection("CALL")}
+                      onClick={() => setDirection("BUY")}
                       className={`text-xs font-bold uppercase py-2.5 border tracking-wider transition-colors ${
-                        direction === "CALL"
+                        direction === "BUY"
                           ? "bg-[#16835B] text-white border-[#16835B]"
                           : "bg-white text-[#16835B] border-[#E4E4E4] hover:bg-[#F7F7F5]"
                       }`}
                     >
-                      CALL
+                      BUY
                     </button>
                     <button
                       type="button"
-                      onClick={() => setDirection("PUT")}
+                      onClick={() => setDirection("SELL")}
                       className={`text-xs font-bold uppercase py-2.5 border tracking-wider transition-colors ${
-                        direction === "PUT"
+                        direction === "SELL"
                           ? "bg-[#C43D3D] text-white border-[#C43D3D]"
                           : "bg-white text-[#C43D3D] border-[#E4E4E4] hover:bg-[#F7F7F5]"
                       }`}
                     >
-                      PUT
+                      SELL
                     </button>
                   </div>
                 </div>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import AuthedLayout from "@/components/layout/AuthedLayout";
@@ -25,10 +24,10 @@ export default function TerminalDocPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="p-6 bg-white border-[#E4E4E4] space-y-3 border-t-4 border-t-[#0055FF]">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">CALL/PUT Vector Logic</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">BUY/SELL Logic</h3>
             <p className="text-[11px] text-[#6B7280] leading-relaxed">
-              <strong>CALL (Higher):</strong> Profit is realized if the market price at expiration is strictly higher than the entry price.<br />
-              <strong>PUT (Lower):</strong> Profit is realized if the market price at expiration is strictly lower than the entry price.
+              <strong>BUY (Higher):</strong> Profit is realized if the market price at expiration is strictly higher than the entry price.<br />
+              <strong>SELL (Lower):</strong> Profit is realized if the market price at expiration is strictly lower than the entry price.
             </p>
           </Card>
 
