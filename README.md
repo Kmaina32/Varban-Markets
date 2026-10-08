@@ -1,4 +1,3 @@
-
 # VARBAN MARKETS — INSTITUTIONAL SYSTEM DOCUMENTATION
 
 ## PLATFORM OVERVIEW
@@ -16,8 +15,8 @@ Varban Markets is a professional electronic trading protocol engineered for adva
     1. Open your Supabase Dashboard.
     2. Go to the **SQL Editor**.
     3. Copy the entire content of `SUPABASE_SETUP.sql` (found in the root directory).
-    4. Click **Run** to provision the schema and RLS policies.
-    5. This resolves the "column not found" errors by adding Investor Profile fields.
+    4. Click **Run** to provision the schema and resolve 500 Error (RLS recursion).
+    5. This resolves the "column not found" and "Internal Server Error" issues by hardening the security model.
 
 ### B. ADVANCED CHARTING (TRADINGVIEW)
 *   **Pro Widget**: Integration of the TradingView Advanced Charting Widget for institutional analysis.
@@ -48,7 +47,7 @@ The following keys must be populated in `.env` to enable full platform functiona
 - [x] **Advanced Charting**: Full TradingView terminal integration.
 - [x] **Profile Enforcement**: Physical address and regulatory data required for terminal/wallet access.
 - [x] **Supabase Migration**: Core identity and financial ledger synchronized with idempotent RLS scripts.
-- [x] **Idempotent Database Setup**: Root script `SUPABASE_SETUP.sql` handles initial provisioning and schema patches.
+- [x] **Idempotent Database Setup**: Root script `SUPABASE_SETUP.sql` handles initial provisioning and recursion fixes.
 
 ---
 *Operational Ledger Status: Finalized, Synchronized & Build Optimized.*
