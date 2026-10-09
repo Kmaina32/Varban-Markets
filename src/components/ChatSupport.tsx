@@ -4,9 +4,12 @@
  * @fileOverview Varban Assistant Chatbot.
  * Redesigned to match high-precision institutional standards with robot avatars, 
  * character counters, and brand-blue accents.
+ * 
+ * Update: Component now hides itself on the Terminal page to maintain a clear workspace.
  */
 
 import React, { useState, useRef, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { X, Send, Loader2, ThumbsUp, ChevronDown, MessageSquare } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import { supportChat } from '@/ai/flows/support-chat-flow';
@@ -17,6 +20,7 @@ interface Message {
 }
 
 export default function ChatSupport() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { role: 'model', content: 'Hi there 👋 I\'m the Varban AI Assistant. You can log in [https://varbanmarkets.com/login] for tailored support, or just ask me a question to get started.' }
@@ -25,6 +29,9 @@ export default function ChatSupport() {
   const [isLoading, setIsLoading] = useState(false);
   const [startTime, setStartTime] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // SUPPRESSION LOGIC: Hide on Terminal
+  const isTerminal = pathname === '/terminal';
 
   useEffect(() => {
     const now = new Date();
@@ -74,6 +81,9 @@ export default function ChatSupport() {
       setIsLoading(false);
     }
   };
+
+  // Do not render if on the terminal page
+  if (isTerminal) return null;
 
   return (
     <>
