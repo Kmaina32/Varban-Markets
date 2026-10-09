@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import AuthedLayout from '@/components/layout/AuthedLayout';
 import { Card } from '@/components/ui/card';
 import { 
