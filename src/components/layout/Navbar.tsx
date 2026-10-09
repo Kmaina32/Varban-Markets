@@ -19,7 +19,7 @@ const STRICT_PATHS = [
   '/orders', '/history', '/watchlist', '/wallet', 
   '/deposit', '/withdraw', '/transactions', '/account', 
   '/verification', '/security', '/notifications', '/preferences',
-  '/referral', '/admin', '/news'
+  '/referral', '/admin', '/news', '/bots'
 ];
 
 const AUTH_PATHS = ['/login', '/register', '/forgot-password'];
