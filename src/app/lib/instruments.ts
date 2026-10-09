@@ -1,8 +1,7 @@
-
 export interface Instrument {
   symbol: string;
   name: string;
-  category: 'Synthetic Indices' | 'Forex' | 'Equities' | 'Crypto' | 'Commodities';
+  category: 'Synthetic Indices' | 'Forex' | 'Equities' | 'Crypto' | 'Commodities' | 'Indices';
   status: 'Open' | 'Closed' | 'Unavailable';
   marketType: string;
   minStake: number;
@@ -81,16 +80,29 @@ export const AVAILABLE_INSTRUMENTS: Instrument[] = [
     durationOptions: ["1m", "5m", "30m", "1h"],
     settlementMethod: "Mid-Market Feed Splicing"
   },
+
+  // INDICES
   {
-    symbol: "AUD/USD",
-    name: "Australian Dollar / US Dollar",
-    category: "Forex",
+    symbol: "US30",
+    name: "Dow Jones Industrial Average",
+    category: "Indices",
     status: "Open",
-    marketType: "Foreign Exchange",
+    marketType: "Index Derivative",
     minStake: 10,
-    maxStake: 100000,
-    durationOptions: ["5m", "15m", "1h"],
-    settlementMethod: "Mid-Market Feed Splicing"
+    maxStake: 1000000,
+    durationOptions: ["1m", "5m", "15m", "1h", "1D"],
+    settlementMethod: "Real-Time Exchange Feed"
+  },
+  {
+    symbol: "NAS100",
+    name: "Nasdaq 100",
+    category: "Indices",
+    status: "Open",
+    marketType: "Index Derivative",
+    minStake: 10,
+    maxStake: 1000000,
+    durationOptions: ["1m", "5m", "15m", "1h", "1D"],
+    settlementMethod: "Real-Time Exchange Feed"
   },
 
   // COMMODITIES
