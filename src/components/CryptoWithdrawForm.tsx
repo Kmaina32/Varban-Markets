@@ -1,8 +1,8 @@
-
 'use client';
 
 /**
- * @fileOverview Client Crypto Remittance / Withdrawal Gateway with fee calculation, address validation, balance deduct, and transaction logging.
+ * @fileOverview Client Crypto Remittance / Withdrawal Gateway.
+ * Updated: Replaced black container background with Institutional White.
  */
 
 import { useState } from "react";
@@ -11,14 +11,11 @@ import {
   ArrowUpCircle, 
   Check, 
   ShieldAlert, 
-  Bitcoin, 
   Lock, 
-  AlertCircle,
-  HelpCircle,
   CheckCircle2
 } from "lucide-react";
 import { useUser, useFirestore, useDoc } from "@/firebase";
-import { collection, addDoc, serverTimestamp, doc, updateDoc, increment, setDoc } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, increment, setDoc } from "firebase/firestore";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -134,7 +131,6 @@ export default function CryptoWithdrawForm() {
     setIsProcessing(true);
     const refKey = `CRYPTO-WTH-${Math.random().toString(36).substring(7).toUpperCase()}`;
 
-    // 1. Deduct Real Account Balance using setDoc merge for safety
     setDoc(doc(db, "users", user.uid), {
       balance: increment(-numAmount),
       equity: increment(-numAmount)
@@ -146,7 +142,6 @@ export default function CryptoWithdrawForm() {
       errorEmitter.emit('permission-error', permissionError);
     });
 
-    // 2. Add Transaction Record in Firestore
     addDoc(collection(db, `users/${user.uid}/transactions`), {
       type: "Crypto Withdrawal",
       asset: `${selectedNetwork.symbol} (${selectedNetwork.network})`,
@@ -161,7 +156,6 @@ export default function CryptoWithdrawForm() {
       provider: "Blockchain Transfer Gateway"
     }).catch(() => {});
 
-    // 3. System Notification
     addDoc(collection(db, `users/${user.uid}/notifications`), {
       title: "Crypto Withdrawal Requested",
       body: `Withdrawal request of $${numAmount} USD (${cryptoOutput} ${selectedNetwork.symbol}) on ${selectedNetwork.network} to ${walletAddress.slice(0, 10)}... has been scheduled for clearing. Token: ${refKey}`,
@@ -177,12 +171,14 @@ export default function CryptoWithdrawForm() {
   return (
     <div className="space-y-6">
       {token && (
-        <div className="bg-[#0A0A0A] border border-[#0055FF] p-4 flex items-start space-x-3 text-white">
-          <CheckCircle2 className="w-5 h-5 text-[#16835B] shrink-0 mt-0.5" />
+        <div className="bg-white border-2 border-[#0055FF] p-6 flex items-start space-x-4 shadow-xl animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="w-10 h-10 rounded-full bg-[#16835B]/10 flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-6 h-6 text-[#16835B]" />
+          </div>
           <div className="text-xs font-mono">
-            <span className="font-bold uppercase block text-[#16835B] mb-1">Withdrawal Instruction Queued</span>
-            <p className="text-[#9CA3AF] text-[11px]">
-              Reference Token: <strong className="text-white">{token}</strong>. Automated risk controllers are reviewing destination address protocol. Funds will dispatch upon network verification.
+            <span className="font-bold uppercase block text-[#0A0A0A] mb-1 text-[12px] tracking-tight">Withdrawal Instruction Queued</span>
+            <p className="text-[#6B7280] text-[11px] leading-relaxed uppercase font-bold tracking-tight">
+              Reference Token: <strong className="text-[#0055FF]">{token}</strong>. Automated risk controllers are reviewing destination address protocol. Funds will dispatch upon network verification.
             </p>
           </div>
         </div>
@@ -268,7 +264,6 @@ export default function CryptoWithdrawForm() {
             </div>
           </div>
 
-          {/* Real Balance Info */}
           <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest px-1 py-2 bg-[#F7F7F5] border border-[#E4E4E4]">
             <span className="text-[#6B7280]">Liquid Account Domain Equity:</span>
             <span className="text-[#16835B] font-mono font-bold text-xs">
@@ -276,7 +271,6 @@ export default function CryptoWithdrawForm() {
             </span>
           </div>
 
-          {/* Breakdown Card */}
           <div className="bg-[#F7F7F5] border border-[#E4E4E4] p-4 space-y-2 text-[10px]">
             <div className="flex justify-between">
               <span className="text-[#6B7280] uppercase font-bold">Gross Remittance Amount:</span>
@@ -292,7 +286,6 @@ export default function CryptoWithdrawForm() {
             </div>
           </div>
 
-          {/* PIN / Security code verification */}
           <div>
             <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block mb-2 flex items-center gap-1">
               <Lock className="w-3.5 h-3.5 text-[#0055FF]" /> Account Security PIN / 2FA Code (Optional)

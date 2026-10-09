@@ -3,6 +3,7 @@
 /**
  * @fileOverview Institutional Bot Marketplace Registry.
  * High-performance discovery hub for automated execution modules.
+ * Updated: Replaced black container background with Institutional White.
  */
 
 import React, { useState, useMemo } from 'react';
@@ -11,14 +12,11 @@ import AuthedLayout from '@/components/layout/AuthedLayout';
 import { Card } from '@/components/ui/card';
 import { 
   Search, 
-  Filter, 
   Cpu, 
   Activity, 
-  Zap, 
   TrendingUp, 
   ShieldCheck, 
   ChevronRight,
-  Info,
   Layers,
   ArrowRight
 } from 'lucide-react';
@@ -109,23 +107,23 @@ export default function BotMarketplacePage() {
     >
       <div className="space-y-8 max-w-6xl mx-auto pb-20">
         
-        {/* Marketplace Banner */}
-        <Card className="bg-[#0A0A0A] text-white p-8 md:p-12 relative overflow-hidden shadow-2xl border-none">
+        {/* Marketplace Banner - Updated to Institutional White */}
+        <Card className="bg-white border-[#E4E4E4] p-8 md:p-12 relative overflow-hidden shadow-sm border-b-4 border-b-[#0055FF]">
           <div className="relative z-10 max-w-2xl space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0055FF]/20 border border-[#0055FF]/40">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0055FF]/5 border border-[#0055FF]/20">
               <Cpu className="w-4 h-4 text-[#0055FF]" />
               <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.2em]">Institutional Algotrading</span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-bold uppercase tracking-tight leading-tight">
+            <h1 className="text-3xl md:text-5xl font-bold uppercase tracking-tight leading-tight text-[#0A0A0A]">
               Execute with <br /> mathematical precision.
             </h1>
-            <p className="text-sm text-[#94A3B8] leading-relaxed">
+            <p className="text-sm text-[#6B7280] leading-relaxed font-medium uppercase tracking-tight">
               Deploy pre-verified algorithmic modules to your trading domain. Each bot is engineered for deterministic execution on the Varban matching engine.
             </p>
           </div>
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#0055FF]/10 rounded-full -mr-32 -mt-32"></div>
-          <div className="absolute bottom-12 right-12 hidden lg:block">
-             <Activity className="w-24 h-24 text-white/5" />
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#0055FF]/5 rounded-full -mr-32 -mt-32"></div>
+          <div className="absolute bottom-12 right-12 hidden lg:block opacity-5">
+             <Activity className="w-24 h-24 text-[#0055FF]" />
           </div>
         </Card>
 
