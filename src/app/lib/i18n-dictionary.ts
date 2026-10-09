@@ -18,6 +18,7 @@ export const DICTIONARY = {
     nav: {
       dashboard: 'Dashboard',
       terminal: 'Trade',
+      bots: 'Bot Marketplace',
       markets: 'Market List',
       news: 'News Intelligence',
       portfolio: 'My Portfolio',
@@ -169,6 +170,7 @@ export const DICTIONARY = {
     nav: {
       dashboard: 'Tableau de bord',
       terminal: 'Trader',
+      bots: 'Marché des Bots',
       markets: 'Liste des marchés',
       news: 'Intelligence Marché',
       portfolio: 'Portefeuille',

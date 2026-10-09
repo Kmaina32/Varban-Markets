@@ -27,7 +27,7 @@ const STRICT_PATHS = [
   '/orders', '/history', '/watchlist', '/wallet', 
   '/deposit', '/withdraw', '/transactions', '/account', 
   '/verification', '/security', '/notifications', '/preferences',
-  '/referral', '/admin', '/news'
+  '/referral', '/admin', '/news', '/bots'
 ];
 
 const SUPER_ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
@@ -101,7 +101,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
 
   const enforcementRequired = useMemo(() => {
     // Only enforce on terminal and wallet (trading and money)
-    return isProfileIncomplete && (pathname?.startsWith('/terminal') || pathname?.startsWith('/wallet'));
+    return isProfileIncomplete && (pathname?.startsWith('/terminal') || pathname?.startsWith('/wallet') || pathname?.startsWith('/bots'));
   }, [isProfileIncomplete, pathname]);
 
   // REDIRECTION LOGIC: Core Security Protocol

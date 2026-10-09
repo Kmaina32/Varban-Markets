@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { 
   LayoutDashboard, Monitor, Globe, Briefcase, Target, 
   FileText, Clock, Star, Wallet, User, Bell, ShieldAlert,
-  Share2, Newspaper, HelpCircle, Mail, LogOut
+  Share2, Newspaper, HelpCircle, Mail, LogOut, Cpu
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -54,6 +54,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
       title: "TRADE",
       items: [
         { label: t('nav.terminal'), href: "/terminal", icon: Monitor },
+        { label: t('nav.bots'), href: "/bots", icon: Cpu },
         { label: t('nav.markets'), href: "/markets", icon: Globe },
         { label: t('nav.portfolio'), href: "/portfolio", icon: Briefcase },
         { label: t('nav.positions'), href: "/positions", icon: Target },
