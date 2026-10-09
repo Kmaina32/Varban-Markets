@@ -3,25 +3,20 @@
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
  * 4-Panel Grid Architecture with resizable portfolio manager.
+ * Updated: Mobile profile dropdown fix and Trade settings drawer.
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { 
-  Activity, 
   Menu, 
-  Bell, 
-  Settings2, 
-  LayoutDashboard,
-  Wallet,
-  ArrowDownLeft,
-  ArrowUpRight,
-  GripHorizontal
+  X,
+  ChevronUp
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
-import { useUser, useFirestore } from "@/firebase";
+import { useUser } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { createClient } from "@/app/lib/supabase/client";
 import { cn } from "@/app/lib/utils";
@@ -57,6 +52,7 @@ export default function TerminalWorkspace() {
   const [profile, setProfile] = useState<any>(null);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isTradeDrawerOpen, setIsTradeDrawerOpen] = useState(false);
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
 
@@ -132,6 +128,7 @@ export default function TerminalWorkspace() {
     };
 
     setPositions(prev => [newPos, ...prev]);
+    setIsTradeDrawerOpen(false);
   };
 
   // RESIZE LOGIC
@@ -161,8 +158,8 @@ export default function TerminalWorkspace() {
       <TerminalTutorial />
 
       {/* TOP HEADER BLOCK */}
-      <header className="h-14 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-50 px-2 lg:px-4">
-        <div className="flex items-center space-x-4">
+      <header className="h-14 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[100] px-2 lg:px-4">
+        <div className="flex items-center space-x-2 lg:space-x-4">
           <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 lg:hidden text-[#0A0A0A]"><Menu className="w-5 h-5" /></button>
           <Link href="/dashboard" className="hidden lg:block shrink-0"><Image src="/assets/logo2.png" alt="Varban" width={80} height={20} className="w-auto object-contain" priority /></Link>
           <div className="h-6 w-px bg-[#E4E4E4] hidden lg:block"></div>
@@ -182,43 +179,45 @@ export default function TerminalWorkspace() {
               <span className="text-[8px] font-bold uppercase text-[#6B7280]">24h Low</span>
               <span className="text-[11px] font-mono font-bold text-[#0A0A0A]">{(marketData[activeInst.symbol]?.price * 0.98).toLocaleString()}</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-[8px] font-bold uppercase text-[#6B7280]">24h Volume</span>
-              <span className="text-[11px] font-mono font-bold text-[#16835B]">1.42B</span>
-            </div>
           </div>
         </div>
 
-        <div className="flex items-center space-x-4 lg:space-x-8">
-          <div className="flex items-center space-x-4">
-            <div className="hidden md:flex flex-col text-right">
-              <span className="text-[8px] font-bold uppercase text-[#6B7280]">{accountMode} EQUITY</span>
-              <span className={cn("text-xs font-mono font-bold", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>
-                ${formatNumber(activeBalance, { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-            <div className="h-8 w-px bg-[#E4E4E4] hidden md:block"></div>
+        <div className="flex items-center space-x-3 lg:space-x-8">
+          <div className="flex flex-col text-right">
+            <span className="text-[7px] lg:text-[8px] font-bold uppercase text-[#6B7280]">{accountMode} BALANCE</span>
+            <span className={cn("text-[10px] lg:text-xs font-mono font-bold", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>
+              ${formatNumber(activeBalance, { minimumFractionDigits: 2 })}
+            </span>
+          </div>
+          
+          <div className="relative">
             <button 
               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
               className="w-8 h-8 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs shadow-sm hover:ring-2 ring-[#0055FF]/20"
             >
               {profile?.photo_url ? <img src={profile.photo_url} className="w-full h-full object-cover rounded-full" /> : user?.email?.substring(0,2).toUpperCase()}
             </button>
+            
+            {/* Desktop & Mobile Integrated Dropdown */}
+            {isProfileDropdownOpen && (
+              <div className="absolute right-0 top-full pt-2">
+                <ProfileDropdown 
+                  user={user} 
+                  profile={profile} 
+                  accountMode={accountMode} 
+                  demoBalance={demoBalance} 
+                  isOpen={isProfileDropdownOpen} 
+                  onClose={() => setIsProfileDropdownOpen(false)} 
+                  onSelectMode={m => { setAccountMode(m); localStorage.setItem('varban_account_mode', m); }}
+                />
+              </div>
+            )}
           </div>
-          <ProfileDropdown 
-            user={user} 
-            profile={profile} 
-            accountMode={accountMode} 
-            demoBalance={demoBalance} 
-            isOpen={isProfileDropdownOpen} 
-            onClose={() => setIsProfileDropdownOpen(false)} 
-            onSelectMode={m => { setAccountMode(m); localStorage.setItem('varban_account_mode', m); }}
-          />
         </div>
       </header>
 
       {/* MAIN TERMINAL GRID */}
-      <div className="flex-grow flex overflow-hidden">
+      <div className="flex-grow flex overflow-hidden relative">
         <AuthedSidebar className="hidden lg:flex" />
 
         <main className="flex-grow flex lg:ml-16 overflow-hidden">
@@ -228,7 +227,7 @@ export default function TerminalWorkspace() {
               <TradingViewChart symbol={activeInst.symbol} />
             </div>
 
-            {/* BOTTOM: PORTFOLIO (Resizable on Desktop) */}
+            {/* BOTTOM: PORTFOLIO */}
             <div 
               style={{ height: `${bottomPanelHeight}px` }}
               className="hidden lg:flex flex-col shrink-0 relative"
@@ -243,9 +242,18 @@ export default function TerminalWorkspace() {
                 history={positions.filter(p => p.status === 'Closed')}
               />
             </div>
+            
+            {/* Mobile Portfolio (Static small height) */}
+            <div className="lg:hidden h-24 shrink-0 bg-white border-t border-[#E4E4E4] overflow-hidden">
+              <PortfolioManager 
+                positions={positions.filter(p => p.status === 'Open')}
+                orders={[]}
+                history={positions.filter(p => p.status === 'Closed')}
+              />
+            </div>
           </div>
 
-          {/* RIGHT: EXECUTION TICKET */}
+          {/* RIGHT: EXECUTION TICKET (Desktop Only) */}
           <div className="hidden lg:flex w-[340px] border-l border-[#E4E4E4] shrink-0 bg-white shadow-xl relative z-40">
             <ExecutionTicket 
               instrument={activeInst} 
@@ -259,18 +267,44 @@ export default function TerminalWorkspace() {
       </div>
 
       {/* MOBILE EXECUTION BAR */}
-      <div className="lg:hidden h-16 border-t border-[#E4E4E4] bg-white flex items-center px-4 gap-3 shrink-0">
+      <div className="lg:hidden h-16 border-t border-[#E4E4E4] bg-white flex items-center px-4 gap-3 shrink-0 z-[110]">
         <div className="flex-grow flex flex-col">
-           <span className="text-[10px] font-mono font-bold text-[#0A0A0A]">{activeInst.symbol}</span>
-           <span className={cn("text-[9px] font-bold", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
-              {marketData[activeInst.symbol]?.price?.toLocaleString() || "---"}
+           <span className="text-[10px] font-mono font-bold text-[#6B7280]">{activeInst.symbol}</span>
+           <span className={cn("text-xs font-mono font-bold", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
+              {marketData[activeInst.symbol]?.price?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "---"}
            </span>
         </div>
-        <button className="flex-1 py-3 bg-[#16835B] text-white text-[9px] font-bold uppercase tracking-widest shadow-md">Buy</button>
-        <button className="flex-1 py-3 bg-[#C43D3D] text-white text-[9px] font-bold uppercase tracking-widest shadow-md">Sell</button>
+        <button 
+          onClick={() => setIsTradeDrawerOpen(true)}
+          className="px-8 py-3 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"
+        >
+          Open Trade <ChevronUp className="w-3.5 h-3.5" />
+        </button>
       </div>
 
-      {/* MOBILE DRAWER (SIDEBAR) */}
+      {/* MOBILE TRADE DRAWER */}
+      {isTradeDrawerOpen && (
+        <div className="fixed inset-0 z-[500] lg:hidden">
+          <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsTradeDrawerOpen(false)}></div>
+          <div className="absolute bottom-0 left-0 right-0 bg-white animate-in slide-in-from-bottom duration-300 rounded-t-xl overflow-hidden max-h-[90vh] flex flex-col shadow-2xl">
+            <div className="p-4 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5]">
+               <span className="text-[10px] font-bold uppercase tracking-widest">Execute: {activeInst.symbol}</span>
+               <button onClick={() => setIsTradeDrawerOpen(false)} className="p-1"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="flex-grow overflow-y-auto">
+              <ExecutionTicket 
+                instrument={activeInst} 
+                livePrice={marketData[activeInst.symbol]?.price}
+                balance={activeBalance}
+                accountMode={accountMode}
+                onExecute={handleExecution}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MOBILE MENU DRAWER */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[400] lg:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
