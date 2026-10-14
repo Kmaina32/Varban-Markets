@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from "react";
@@ -15,46 +14,46 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/app/lib/utils";
 
 export default function HelpPage() {
-  const { user, loading } = useUser();
+  const { user } = useUser();
   const { t } = useTranslation();
   const [activeFaq, setActiveActiveFaq] = useState<number | null>(null);
 
   const WORKSPACE_GUIDES = [
     { 
-      title: "Trading Guide", 
+      title: t('help.tradingGuide'), 
       color: "border-[#0055FF]",
       slug: "terminal",
-      desc: "Learn how to use the trading system. Understand market directions, amounts, and how to check your trade details."
+      desc: t('help.tradingGuideDesc')
     },
     { 
-      title: "Add & Withdraw Money", 
+      title: t('help.fundsGuide'), 
       color: "border-[#16835B]",
       slug: "vaults",
-      desc: "Manage your funds. Learn about using bank cards or crypto wallets to move money in and out of your account."
+      desc: t('help.fundsGuideDesc')
     },
     { 
-      title: "Identity Verification", 
+      title: t('help.kycGuide'), 
       color: "border-[#C9A227]",
       slug: "kyc",
-      desc: "Getting your account verified. Learn about the documents needed and how long the review process takes."
+      desc: t('help.kycGuideDesc')
     },
     { 
-      title: "Account Security", 
+      title: t('help.securityGuide'), 
       color: "border-[#C43D3D]",
       slug: "security",
-      desc: "Keep your account safe. Set up two-factor login, check your active sessions, and protect your data."
+      desc: t('help.securityGuideDesc')
     },
     { 
-      title: "Market List", 
+      title: t('help.marketsGuide'), 
       color: "border-[#0A0A0A]",
       slug: "markets",
-      desc: "Explore what you can trade. Information on our market indices, currency pairs, and how pricing works."
+      desc: t('help.marketsGuideDesc')
     },
     { 
-      title: "Invite Friends", 
+      title: t('help.referralGuide'), 
       color: "border-[#0055FF]",
       slug: "referral",
-      desc: "Our referral program. How to share your link and earn rewards for bringing new traders to the platform."
+      desc: t('help.referralGuideDesc')
     }
   ];
 
@@ -91,17 +90,17 @@ export default function HelpPage() {
               {user ? "User Help" : "Public Help Center"}
             </span>
             <h1 className="text-3xl font-bold uppercase tracking-tight text-[#0A0A0A] leading-tight">
-              How can we help you?
+              {t('help.title')}
             </h1>
             <p className="text-xs text-[#6B7280] mt-3 leading-relaxed">
-              Find answers about trading, adding money, and keeping your account secure. Use the sections below to find the guides you need.
+              {t('help.subtitle')}
             </p>
           </div>
           <div className="relative w-full md:w-80">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]" />
             <input
               type="text"
-              placeholder="Search help guides..."
+              placeholder={t('common.search')}
               className="w-full text-xs pl-10 pr-4 py-3 bg-white border border-[#E4E4E4] text-[#0A0A0A] shadow-sm focus:outline-none focus:border-[#0055FF] rounded-none"
             />
           </div>
@@ -117,7 +116,7 @@ export default function HelpPage() {
                   {guide.desc}
                 </p>
                 <div className="mt-4 flex items-center text-[9px] font-bold uppercase tracking-widest text-[#0055FF]">
-                  <span>Read the guide</span>
+                  <span>{t('help.readGuide')}</span>
                   <ArrowRight className="ml-1.5 w-3 h-3" />
                 </div>
               </Card>
@@ -129,7 +128,7 @@ export default function HelpPage() {
         <div className="bg-white border border-[#E4E4E4] shadow-sm">
           <div className="p-6 border-b border-[#E4E4E4] bg-[#F7F7F5]">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">
-              Frequently Asked Questions
+              {t('help.faqTitle')}
             </h3>
           </div>
           <div className="divide-y divide-[#E4E4E4]">
@@ -159,14 +158,14 @@ export default function HelpPage() {
         {/* Specialized Authority Section */}
         <div className="bg-white border border-[#E4E4E4] p-8 md:p-12 flex flex-col md:flex-row justify-between items-center gap-8 shadow-sm">
           <div className="text-center md:text-left space-y-2">
-            <h3 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A]">Still need help?</h3>
+            <h3 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A]">{t('help.stillNeedHelp')}</h3>
             <p className="text-xs text-[#6B7280] max-w-md">
-              If you have a problem with a specific trade or withdrawal, please send a message to our support team.
+              {t('help.supportDesc')}
             </p>
           </div>
           <div className="flex gap-4">
             <Link href="/contact" className="btn-institutional-primary bg-[#0055FF] border-[#0055FF] hover:bg-[#0A0A0A] hover:text-white">
-              <span>Contact Support</span>
+              <span>{t('nav.contact')}</span>
             </Link>
           </div>
         </div>

@@ -3,7 +3,7 @@
 /**
  * @fileOverview Bot Marketplace Registry.
  * High-performance hub for automated trading tools.
- * Updated: Natural English, reduced icons, and feature details modal.
+ * Fully localized for international markets.
  */
 
 import React, { useState, useMemo } from 'react';
@@ -38,14 +38,6 @@ interface Bot {
   minStake: number;
   features: string[];
 }
-
-const BOT_CATEGORIES = [
-  { id: 'all', label: 'All Bots' },
-  { id: 'scalping', label: 'Fast Response' },
-  { id: 'trend', label: 'Market Trends' },
-  { id: 'arbitrage', label: 'Low Risk' },
-  { id: 'grid', label: 'Balanced' }
-];
 
 const BOTS_REGISTRY: Bot[] = [
   {
@@ -132,6 +124,14 @@ export default function BotMarketplacePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBot, setSelectedBot] = useState<Bot | null>(null);
 
+  const BOT_CATEGORIES = [
+    { id: 'all', label: t('common.all') },
+    { id: 'scalping', label: 'Fast Response' },
+    { id: 'trend', label: 'Market Trends' },
+    { id: 'arbitrage', label: 'Low Risk' },
+    { id: 'grid', label: 'Balanced' }
+  ];
+
   const filteredBots = useMemo(() => {
     return BOTS_REGISTRY.filter(bot => {
       const matchesCat = activeCategory === 'all' || bot.category === activeCategory;
@@ -143,8 +143,8 @@ export default function BotMarketplacePage() {
 
   return (
     <AuthedLayout 
-      title="Bot Marketplace" 
-      subtitle="Find and use automated trading tools"
+      title={t('bots.marketplaceTitle')} 
+      subtitle={t('bots.marketplaceSubtitle')}
     >
       <div className="space-y-8 max-w-6xl mx-auto pb-20">
         
@@ -156,10 +156,10 @@ export default function BotMarketplacePage() {
               <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.2em]">Automated Trading Tools</span>
             </div>
             <h1 className="text-3xl md:text-5xl font-bold uppercase tracking-tight leading-tight text-[#0A0A0A]">
-              Automate your <br /> trading strategy.
+              {t('bots.bannerTitle')}
             </h1>
             <p className="text-sm text-[#6B7280] leading-relaxed font-medium uppercase tracking-tight">
-              Start using our pre-verified bots to manage your trades automatically. Each bot is tested and ready to use in your trading area.
+              {t('bots.bannerDesc')}
             </p>
           </div>
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#0055FF]/5 rounded-full -mr-32 -mt-32"></div>
@@ -189,7 +189,7 @@ export default function BotMarketplacePage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]" />
               <input
                 type="text"
-                placeholder="Search bots..."
+                placeholder={t('common.search')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#E4E4E4] text-xs focus:outline-none focus:border-[#0055FF] shadow-sm"
@@ -206,7 +206,7 @@ export default function BotMarketplacePage() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest">{bot.version}</span>
-                        <span className="px-1.5 py-0.5 bg-[#F7F7F5] border border-[#E4E4E4] text-[8px] font-bold uppercase text-[#6B7280]">Live Node</span>
+                        <span className="px-1.5 py-0.5 bg-[#F7F7F5] border border-[#E4E4E4] text-[8px] font-bold uppercase text-[#6B7280]">{t('common.active')} Node</span>
                       </div>
                       <h3 className="text-lg font-bold uppercase tracking-tight text-[#0A0A0A] group-hover:text-[#0055FF] transition-colors">{bot.name}</h3>
                     </div>
@@ -214,7 +214,7 @@ export default function BotMarketplacePage() {
                       onClick={() => setSelectedBot(bot)}
                       className="text-[9px] font-bold text-[#0055FF] uppercase tracking-widest hover:underline flex items-center gap-1.5"
                     >
-                      <Info className="w-3 h-3" /> See features
+                      <Info className="w-3 h-3" /> {t('help.readGuide')}
                     </button>
                   </div>
 
@@ -224,15 +224,15 @@ export default function BotMarketplacePage() {
 
                   <div className="grid grid-cols-3 gap-4 pt-4 border-t border-[#F7F7F5]">
                     <div>
-                      <span className="text-[8px] font-bold text-[#6B7280] uppercase block mb-1">Success rate</span>
+                      <span className="text-[8px] font-bold text-[#6B7280] uppercase block mb-1">{t('bots.successRate')}</span>
                       <span className="text-xs font-mono font-bold text-[#16835B]">{bot.winRate}</span>
                     </div>
                     <div>
-                      <span className="text-[8px] font-bold text-[#6B7280] uppercase block mb-1">Typical risk</span>
+                      <span className="text-[8px] font-bold text-[#6B7280] uppercase block mb-1">{t('bots.typicalRisk')}</span>
                       <span className="text-xs font-mono font-bold text-[#C43D3D]">{bot.drawdown}</span>
                     </div>
                     <div>
-                      <span className="text-[8px] font-bold text-[#6B7280] uppercase block mb-1">Growth history</span>
+                      <span className="text-[8px] font-bold text-[#6B7280] uppercase block mb-1">{t('bots.growthHistory')}</span>
                       <span className="text-xs font-mono font-bold text-[#0A0A0A]">{bot.pnl}</span>
                     </div>
                   </div>
@@ -241,7 +241,7 @@ export default function BotMarketplacePage() {
                 <div className="px-6 py-4 bg-[#F7F7F5] border-t border-[#E4E4E4] flex justify-between items-center">
                   <div className="flex items-center gap-4">
                      <div className="flex flex-col">
-                        <span className="text-[8px] font-bold text-[#6B7280] uppercase">Minimum amount</span>
+                        <span className="text-[8px] font-bold text-[#6B7280] uppercase">{t('bots.minimumAmount')}</span>
                         <span className="text-[10px] font-mono font-bold">${bot.minStake} USD</span>
                      </div>
                      <div className="flex flex-col">
@@ -254,7 +254,7 @@ export default function BotMarketplacePage() {
                      </div>
                   </div>
                   <button className="flex items-center gap-2 text-[10px] font-bold text-[#0055FF] uppercase tracking-widest hover:underline">
-                    Start using bot <ArrowRight className="w-3.5 h-3.5" />
+                    {t('bots.startUsing')} <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </Card>
@@ -265,8 +265,8 @@ export default function BotMarketplacePage() {
             <div className="py-24 text-center space-y-4 border-2 border-dashed border-[#E4E4E4] bg-white">
               <Layers className="w-12 h-12 text-[#E4E4E4] mx-auto" />
               <div>
-                <h3 className="text-sm font-bold uppercase text-[#0A0A0A]">No Bots Found</h3>
-                <p className="text-[10px] text-[#6B7280] uppercase font-bold mt-1 tracking-widest">Adjust your search to find other bots.</p>
+                <h3 className="text-sm font-bold uppercase text-[#0A0A0A]">{t('bots.noBotsFound')}</h3>
+                <p className="text-[10px] text-[#6B7280] uppercase font-bold mt-1 tracking-widest">{t('bots.adjustSearch')}</p>
               </div>
             </div>
           )}
@@ -277,14 +277,14 @@ export default function BotMarketplacePage() {
            <div className="flex items-start gap-4">
               <ShieldCheck className="w-6 h-6 text-[#0055FF] shrink-0 mt-0.5" />
               <div>
-                 <h4 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Tested for Reliability</h4>
+                 <h4 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">{t('bots.policyTitle')}</h4>
                  <p className="text-[10px] text-[#6B7280] leading-relaxed font-bold uppercase mt-1">
-                    Every bot on this page has been tested. Past results show how the bot performed, but results can change depending on the market.
+                    {t('bots.policyDesc')}
                  </p>
               </div>
            </div>
            <Link href="/help" className="text-[9px] font-bold text-[#0055FF] uppercase tracking-widest underline decoration-2 underline-offset-4 whitespace-nowrap">
-              Review Trading Policy
+              {t('bots.reviewPolicy')}
            </Link>
         </div>
 
@@ -319,7 +319,7 @@ export default function BotMarketplacePage() {
                   onClick={() => setSelectedBot(null)}
                   className="w-full btn-institutional-primary py-4"
                 >
-                  Back to Marketplace
+                  {t('common.dismiss')}
                 </button>
               </div>
             </div>

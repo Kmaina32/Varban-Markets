@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -31,9 +30,9 @@ export default function HomePage() {
   ];
 
   const trustIndicators = [
-    { icon: ShieldCheck, text: "FAST WITHDRAWALS" },
+    { icon: ShieldCheck, text: t('landing.instantWithdrawals').toUpperCase() },
     { icon: FileText, text: "Authorized by FSA in Saint Lucia" },
-    { icon: Headset, text: "24/7 customer support" },
+    { icon: Headset, text: t('chat.started') + " 24/7" },
     { icon: Lock, text: "PCI DSS certified" }
   ];
 
@@ -70,9 +69,9 @@ export default function HomePage() {
       {/* Top Risk Disclaimer */}
       <div className="bg-[#0A0A0A] text-white py-2.5 px-4 text-center z-[100] relative">
         <p className="text-[10px] md:text-[11px] leading-relaxed max-w-7xl mx-auto opacity-90 uppercase tracking-widest font-bold">
-          Online Forex/CFDs are complex instruments and come with a high risk of losing money rapidly due to leverage. 
+          {t('landing.footer.riskWarning')}: Online Forex/CFDs are complex instruments. 
           <span className="text-[#FFDE00]"> 82.18% of retail investor accounts lose money </span> 
-          when trading online Forex/CFDs with this provider. You should consider whether you understand how CFDs work and whether you can afford to take the high risk of losing your money. 
+          when trading online Forex/CFDs with this provider. 
           <Link href="/terms/risk-disclosure" className="text-[#FFDE00] underline ml-1">Learn more.</Link>
         </p>
       </div>
@@ -188,13 +187,13 @@ export default function HomePage() {
               <div className="space-y-3">
                 <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">{t('landing.instantWithdrawals')}</h3>
                 <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:ml-auto">
-                  Withdraw and deposit funds within seconds using popular payment options.
+                  {t('landing.instantWithdrawalsDesc')}
                 </p>
               </div>
               <div className="space-y-3">
                 <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">{t('landing.unmatchedPricing')}</h3>
                 <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:ml-auto">
-                  Trade with tightest spreads in the industry, powered by our multi-source liquidity.
+                  {t('landing.unmatchedPricingDesc')}
                 </p>
               </div>
             </div>
@@ -216,13 +215,13 @@ export default function HomePage() {
               <div className="space-y-3">
                 <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">{t('landing.ultraFastExecution')}</h3>
                 <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:mr-auto">
-                  Execute trades in milliseconds, no matter the size, for precise market entries.
+                  {t('landing.ultraFastExecutionDesc')}
                 </p>
               </div>
               <div className="space-y-3">
                 <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">{t('landing.swapFree')}</h3>
                 <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:mr-auto">
-                  Hold positions overnight without incurring interest charges on major instruments.
+                  {t('landing.swapFreeDesc')}
                 </p>
               </div>
             </div>
@@ -268,7 +267,7 @@ export default function HomePage() {
                           <MarketIcon symbol={ticker.symbol} size="md" />
                           <div>
                             <span className="text-xs font-bold text-[#0A0A0A] block uppercase font-mono">{ticker.symbol}</span>
-                            <span className="text-[10px] text-[#6B7280] uppercase font-bold tracking-tight">{ticker.name}</span>
+                            <span className="text-[9px] text-[#6B7280] uppercase font-bold tracking-tight">{ticker.name}</span>
                           </div>
                         </div>
                       </td>
@@ -285,7 +284,7 @@ export default function HomePage() {
                           href={`/terminal?symbol=${ticker.symbol}`}
                           className="inline-flex items-center px-6 py-2 bg-[#0055FF] hover:bg-[#0044cc] text-white text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm"
                         >
-                          {t('landing.viewAllSymbols').split(' ')[0]}
+                          {t('landing.nav.trading')}
                         </Link>
                       </td>
                     </tr>
@@ -303,7 +302,7 @@ export default function HomePage() {
           <div className="text-center mb-16 space-y-4">
             <h2 className="text-3xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">{t('landing.marketIntelligence')}</h2>
             <p className="text-sm text-[#6B7280] max-w-xl mx-auto leading-relaxed">
-              Stay ahead with real-time headlines from our institutional data nodes.
+              {t('landing.marketIntelligenceDesc')}
             </p>
           </div>
 
@@ -323,7 +322,7 @@ export default function HomePage() {
                     {item.title}
                   </h4>
                   <div className="flex items-center text-[9px] font-bold text-[#6B7280] uppercase tracking-widest pt-2 border-t border-[#F7F7F5]">
-                    Read Report <ChevronRight className="w-3 h-3 ml-1" />
+                    {t('help.readGuide')} <ChevronRight className="w-3 h-3 ml-1" />
                   </div>
                 </div>
               </Link>

@@ -49,10 +49,10 @@ export default function ReferralPortal() {
   };
 
   const metrics = [
-    { label: "Total Network", value: referredUsers?.length || 0, icon: Users, color: "text-[#0055FF]" },
-    { label: "Active Traders", value: referredUsers?.filter(u => (u.balance || 0) > 1000).length || 0, icon: TrendingUp, color: "text-[#16835B]" },
-    { label: "Pending Payout", value: "$0.00", icon: DollarSign, color: "text-[#6B7280]" },
-    { label: "Partner Level", value: "Standard", icon: Trophy, color: "text-[#C9A227]" }
+    { label: t('referral.totalNetwork'), value: referredUsers?.length || 0, icon: Users, color: "text-[#0055FF]" },
+    { label: t('referral.activeTraders'), value: referredUsers?.filter(u => (u.balance || 0) > 1000).length || 0, icon: TrendingUp, color: "text-[#16835B]" },
+    { label: t('referral.pendingPayout'), value: "$0.00", icon: DollarSign, color: "text-[#6B7280]" },
+    { label: t('referral.partnerLevel'), value: "Standard", icon: Trophy, color: "text-[#C9A227]" }
   ];
 
   const tutorialSteps: TutorialStep[] = [
@@ -75,8 +75,8 @@ export default function ReferralPortal() {
 
   return (
     <AuthedLayout 
-      title="Referral Program" 
-      subtitle="Expand your network and earn institutional rewards"
+      title={t('referral.portalTitle')} 
+      subtitle={t('referral.portalSubtitle')}
     >
       <PageTutorial steps={tutorialSteps} storageKey="varban_referral_tutorial" />
 
@@ -89,10 +89,10 @@ export default function ReferralPortal() {
               <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Institutional Growth</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-tight mb-4 text-[#0A0A0A]">
-              Build Your Trading Community.
+              {t('referral.bannerTitle')}
             </h1>
             <p className="text-sm text-[#6B7280] leading-relaxed mb-8">
-              Invite other sophisticated traders to the Varban Markets ecosystem. Every successful onboarding through your unique conduit contributes to your network growth metrics and upcoming partner rewards.
+              {t('referral.bannerDesc')}
             </p>
             
             <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -174,7 +174,7 @@ export default function ReferralPortal() {
                             "px-2 py-0.5 border text-[9px] font-bold uppercase",
                             ref.verificationStatus === 'Verified' ? "border-[#16835B] text-[#16835B]" : "border-[#C9A227] text-[#C9A227]"
                           )}>
-                            {ref.verificationStatus || "Pending"}
+                            {ref.verificationStatus || t('common.pending')}
                           </span>
                         </td>
                       </tr>
@@ -188,13 +188,13 @@ export default function ReferralPortal() {
           <div className="space-y-6">
             <Card className="bg-white border-[#E4E4E4] p-6 shadow-sm">
               <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2 mb-4">
-                How it Works
+                {t('referral.howItWorks')}
               </h3>
               <div className="space-y-6">
                 {[
-                  { step: "01", title: "Share Your Link", text: "Distribute your unique invitation token to your professional network." },
-                  { step: "02", title: "Network Enrollment", text: "New traders register using your conduit and enter our secure ecosystem." },
-                  { step: "03", title: "Scale Rewards", text: "Monitor your network growth and unlock advanced institutional partner tiers." }
+                  { step: "01", title: t('referral.step1Title'), text: t('referral.step1Desc') },
+                  { step: "02", title: t('referral.step2Title'), text: t('referral.step2Desc') },
+                  { step: "03", title: t('referral.step3Title'), text: t('referral.step3Desc') }
                 ].map((s, idx) => (
                   <div key={idx} className="flex gap-4">
                     <span className="text-xs font-mono font-bold text-[#0055FF]">{s.step}</span>
@@ -209,9 +209,9 @@ export default function ReferralPortal() {
 
             <Card className="bg-[#F7F7F5] border-[#E4E4E4] p-6 text-center">
               <Gift className="w-8 h-8 text-[#0055FF] mx-auto mb-3 opacity-20" />
-              <h4 className="text-xs font-bold uppercase text-[#0A0A0A] mb-2">Rewards Active</h4>
+              <h4 className="text-xs font-bold uppercase text-[#0A0A0A] mb-2">{t('referral.rewardsActive')}</h4>
               <p className="text-[10px] text-[#6B7280] leading-relaxed">
-                Platform partner rewards are calculated based on monthly active volume within your direct network domain.
+                {t('referral.rewardsPolicy')}
               </p>
               <Link href="/help" className="inline-flex items-center text-[9px] font-bold text-[#0055FF] uppercase tracking-widest mt-4 hover:underline">
                 View Policy Details <ArrowRight className="w-3 h-3 ml-1" />
