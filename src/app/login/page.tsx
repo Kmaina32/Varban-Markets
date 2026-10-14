@@ -3,6 +3,7 @@
 /**
  * @fileOverview Login Workspace.
  * Integrated with Supabase Auth with refined institutional error handling.
+ * Features a centered successful sign-in reveal.
  */
 
 import { useState } from "react";
@@ -11,7 +12,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/client";
 import placeholderImages from "@/app/lib/placeholder-images.json";
-import { Eye, EyeOff, Loader2, ArrowLeft, Mail, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, Loader2, ArrowLeft, Mail, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/app/lib/utils";
 
 export default function LoginPage() {
@@ -22,6 +24,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -48,16 +51,40 @@ export default function LoginPage() {
         throw authError;
       }
       
-      router.push("/dashboard");
+      // Success Protocol
+      setSuccess(true);
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1800);
+
     } catch (err: any) {
       setError(err.message || "A secure connection to the identity node could not be established.");
-    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-[#F7F7F5] min-h-[calc(100vh-64px)] flex items-center justify-center py-16 px-4">
+    <div className="bg-[#F7F7F5] min-h-[calc(100vh-64px)] flex items-center justify-center py-16 px-4 relative">
+      {/* Successful Login Overlay */}
+      {success && (
+        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#F7F7F5]/80 backdrop-blur-sm animate-in fade-in duration-500">
+          <Card className="bg-white border-[#E4E4E4] w-full max-w-sm shadow-2xl p-10 md:p-12 text-center space-y-6 animate-in zoom-in-95 duration-300 rounded-none border-b-4 border-b-[#16835B]">
+            <div className="w-16 h-16 bg-[#16835B]/10 border border-[#16835B] rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-8 h-8 text-[#16835B]" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Sign in successful</h2>
+              <p className="text-[10px] text-[#6B7280] leading-relaxed uppercase tracking-[0.2em] font-bold">
+                Identity verified. Establishing secure workspace link...
+              </p>
+            </div>
+            <div className="flex justify-center pt-4">
+              <Loader2 className="w-5 h-5 text-[#0055FF] animate-spin" />
+            </div>
+          </Card>
+        </div>
+      )}
+
       <div className="bg-white border border-[#E4E4E4] max-w-4xl w-full shadow-lg flex overflow-hidden min-h-[600px] relative">
         <Link 
           href="/" 
@@ -143,7 +170,7 @@ export default function LoginPage() {
                 className="w-full btn-institutional-primary py-4 shadow-sm bg-[#0055FF] border-[#0055FF] text-white hover:bg-[#0044cc]"
               >
                 {loading ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span>Synchronizing Session...</span>
                   </div>
