@@ -1,10 +1,5 @@
-"use client";
 
-/**
- * @fileOverview Login Workspace.
- * Integrated with Supabase Auth with refined institutional error handling.
- * Features a centered successful sign-in reveal.
- */
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -12,12 +7,18 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/client";
 import placeholderImages from "@/app/lib/placeholder-images.json";
-import { Eye, EyeOff, Loader2, ArrowLeft, Mail, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, ArrowLeft, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/app/lib/utils";
+import { useTranslation } from "@/app/lib/i18n-context";
+
+/**
+ * @fileOverview Login Workspace.
+ * Refined for multi-language support.
+ */
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const supabase = createClient();
   
   const [email, setEmail] = useState("");
@@ -39,33 +40,22 @@ export default function LoginPage() {
       });
 
       if (authError) {
-        // Institutional Error Mapping
-        const msg = authError.message.toLowerCase();
-        if (msg.includes('invalid login credentials')) {
-          throw new Error("The credentials provided do not match our records. Please verify your email and password.");
-        } else if (msg.includes('email not confirmed')) {
-          throw new Error("Your email address is not yet verified. Please check your inbox for the confirmation link.");
-        } else if (msg.includes('too many requests')) {
-          throw new Error("Security Lock: Too many failed attempts. Please wait a moment before trying again.");
-        }
         throw authError;
       }
       
-      // Success Protocol
       setSuccess(true);
       setTimeout(() => {
         router.push("/dashboard");
       }, 1800);
 
     } catch (err: any) {
-      setError(err.message || "A secure connection to the identity node could not be established.");
+      setError(err.message || "Sign in failure.");
       setLoading(false);
     }
   };
 
   return (
     <div className="bg-[#F7F7F5] min-h-[calc(100vh-64px)] flex items-center justify-center py-16 px-4 relative">
-      {/* Successful Login Overlay */}
       {success && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#F7F7F5]/80 backdrop-blur-sm animate-in fade-in duration-500">
           <Card className="bg-white border-[#E4E4E4] w-full max-w-sm shadow-2xl p-10 md:p-12 text-center space-y-6 animate-in zoom-in-95 duration-300 rounded-none border-b-4 border-b-[#16835B]">
@@ -73,9 +63,9 @@ export default function LoginPage() {
               <CheckCircle2 className="w-8 h-8 text-[#16835B]" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Sign in successful</h2>
+              <h2 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">{t('auth.loginSuccess')}</h2>
               <p className="text-[10px] text-[#6B7280] leading-relaxed uppercase tracking-[0.2em] font-bold">
-                Identity verified. Establishing secure workspace link...
+                {t('auth.verifying')}
               </p>
             </div>
             <div className="flex justify-center pt-4">
@@ -91,37 +81,27 @@ export default function LoginPage() {
           className="absolute top-6 left-6 z-20 flex items-center space-x-2 text-[10px] font-bold uppercase tracking-widest text-[#6B7280] hover:text-[#0A0A0A] transition-colors lg:text-white lg:hover:text-[#0055FF]"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Home</span>
+          <span>{t('auth.backToHome')}</span>
         </Link>
 
         <div className="hidden lg:block w-1/2 relative">
           <Image
             src={placeholderImages.auth.url}
-            alt="Varban Markets Login"
+            alt="Auth"
             fill
             className="object-cover"
             priority
-            sizes="50vw"
-            data-ai-hint={placeholderImages.auth.hint}
           />
           <div className="absolute inset-0 bg-black/30"></div>
-          <div className="absolute bottom-12 left-12 right-12 z-10">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF] block mb-2">Welcome Back</span>
-            <h2 className="text-2xl font-bold uppercase text-white tracking-tight leading-tight">
-              Sign in to your trading account.
-            </h2>
-            <div className="w-12 h-1 bg-[#0055FF] mt-4"></div>
-          </div>
         </div>
 
         <div className="w-full lg:w-1/2 p-8 sm:p-12 flex flex-col justify-center bg-white">
           <div className="border-b border-[#E4E4E4] pb-6 mb-8 mt-4 lg:mt-0">
-            <h1 className="text-2xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Sign In</h1>
-            <p className="text-xs text-[#6B7280] mt-1 uppercase tracking-widest font-bold">Access your trading dashboard.</p>
+            <h1 className="text-2xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">{t('auth.signIn')}</h1>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide flex items-start gap-3 animate-in fade-in slide-in-from-top-1 duration-300">
+            <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide flex items-start gap-3">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
@@ -129,21 +109,20 @@ export default function LoginPage() {
 
           <form onSubmit={handleSignIn} className="space-y-6">
             <div>
-              <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">Email Address</label>
+              <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] block mb-1.5">{t('auth.email')}</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none focus:outline-none focus:border-[#0A0A0A] bg-white text-[#0A0A0A] placeholder:text-[#6B7280]/30"
-                placeholder="trader@varbanmarkets.com"
+                className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none focus:outline-none focus:border-[#0A0A0A] bg-white text-[#0A0A0A]"
               />
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-1.5">
-                <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">Password</label>
-                <Link href="/forgot-password" title="Forgot Password" className="text-[9px] text-[#6B7280] uppercase underline font-bold">Forgot Password?</Link>
+                <label className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">{t('auth.password')}</label>
+                <Link href="/forgot-password" title="Forgot Password" className="text-[9px] text-[#6B7280] uppercase underline font-bold">{t('auth.forgot')}</Link>
               </div>
               <div className="relative">
                 <input
@@ -156,32 +135,25 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#0A0A0A]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280]"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            <div className="space-y-3">
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full btn-institutional-primary py-4 shadow-sm bg-[#0055FF] border-[#0055FF] text-white hover:bg-[#0044cc]"
-              >
-                {loading ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Synchronizing Session...</span>
-                  </div>
-                ) : "Log in to Account"}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full btn-institutional-primary py-4 shadow-sm bg-[#0055FF] border-[#0055FF] text-white hover:bg-[#0044cc]"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : t('auth.signIn')}
+            </button>
           </form>
 
           <div className="mt-10 pt-6 border-t border-[#E4E4E4] text-center">
-            <span className="text-[11px] text-[#6B7280] uppercase tracking-wide">New to the platform? </span>
-            <Link href="/register" className="text-[11px] font-bold text-[#0A0A0A] uppercase tracking-widest underline decoration-[#0055FF] decoration-2 underline-offset-4 ml-1">Create Account</Link>
+            <span className="text-[11px] text-[#6B7280] uppercase tracking-wide">{t('auth.newToPlatform')} </span>
+            <Link href="/register" className="text-[11px] font-bold text-[#0A0A0A] uppercase tracking-widest underline decoration-[#0055FF] decoration-2 underline-offset-4 ml-1">{t('auth.createAccount')}</Link>
           </div>
         </div>
       </div>

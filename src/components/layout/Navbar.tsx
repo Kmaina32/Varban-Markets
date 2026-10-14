@@ -7,11 +7,11 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, ArrowUpRight, ChevronDown } from "lucide-react";
 import { cn } from "@/app/lib/utils";
+import { useTranslation } from "@/app/lib/i18n-context";
 
 /**
  * @fileOverview Public Landing Page Navigation.
- * Features institutional mega-menus and responsive mobile drawer.
- * Hidden on strict authenticated paths.
+ * Updated to support 5 international languages via i18n context.
  */
 
 const STRICT_PATHS = [
@@ -26,6 +26,7 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password'];
 
 export default function Navbar() {
   const pathname = usePathname();
+  const { t } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   
@@ -159,7 +160,7 @@ export default function Navbar() {
         ]
       }
     },
-    { label: "Partners", href: "/referral", isExternal: true }
+    { label: t('nav.partners'), href: "/referral", isExternal: true }
   ];
 
   return (
@@ -235,13 +236,13 @@ export default function Navbar() {
               href="/register" 
               className="bg-[#0055FF] hover:bg-[#0044cc] text-white text-[11px] font-bold uppercase tracking-widest px-8 py-3 transition-colors duration-200"
             >
-              Register
+              {t('auth.register')}
             </Link>
             <Link 
               href="/login" 
               className="bg-[#F2F2F2] hover:bg-[#EAEAEA] text-[#0A0A0A] text-[11px] font-bold uppercase tracking-widest px-8 py-3 transition-colors"
             >
-              Sign in
+              {t('auth.signIn')}
             </Link>
           </div>
 
@@ -324,14 +325,14 @@ export default function Navbar() {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="w-full py-4 text-center text-xs font-bold uppercase tracking-widest bg-[#0055FF] text-white"
                 >
-                  Register
+                  {t('auth.register')}
                 </Link>
                 <Link 
                   href="/login" 
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="w-full py-4 text-center text-xs font-bold uppercase tracking-widest bg-[#F2F2F2] text-[#0A0A0A]"
                 >
-                  Sign in
+                  {t('auth.signIn')}
                 </Link>
               </div>
             </div>

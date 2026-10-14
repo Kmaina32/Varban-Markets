@@ -15,10 +15,11 @@ import {
 import { MarketIcon } from "@/components/MarketIcon";
 import { fetchMarketNews, NewsItem } from "@/app/lib/news-service";
 import placeholderImages from "@/app/lib/placeholder-images.json";
-import { detectLocation } from "@/app/lib/geolocation-service";
+import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 
 export default function HomePage() {
+  const { t } = useTranslation();
   const [trendingNews, setTrendingNews] = useState<NewsItem[]>([]);
   const [newsLoading, setNewsLoading] = useState(true);
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
@@ -76,9 +77,8 @@ export default function HomePage() {
         </p>
       </div>
 
-      {/* MAIN HERO SECTION - Slideshow Architecture */}
+      {/* MAIN HERO SECTION */}
       <section className="relative bg-[#0A0A0A] overflow-hidden pt-20 lg:pt-32 pb-24 lg:pb-16 min-h-[650px] flex items-center">
-        {/* Background Slideshow Layer */}
         <div className="absolute inset-0 z-0 pointer-events-none">
           {heroImages.map((src, idx) => (
             <div 
@@ -99,18 +99,17 @@ export default function HomePage() {
               />
             </div>
           ))}
-          {/* Subtle Dark Overlay for White Text Readability */}
           <div className="absolute inset-0 bg-black/40 z-[5]"></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-3xl space-y-8 animate-in fade-in slide-in-from-left-4 duration-1000 text-center lg:text-left">
             <h1 className="text-4xl sm:text-5xl md:text-[64px] font-normal tracking-tight text-white font-display leading-[1.1]">
-              Trade online <br className="hidden md:block" /> with a leading broker
+              {t('landing.heroTitle')}
             </h1>
             
             <p className="text-sm md:text-base text-white/80 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
-              Trade with a reliable licensed broker. Experience Varban&apos;s leading online trading platform with tight spreads and fast execution.
+              {t('landing.heroSubtitle')}
             </p>
 
             <div className="flex flex-row items-center justify-center lg:justify-start gap-2 sm:gap-4 pt-4">
@@ -118,47 +117,43 @@ export default function HomePage() {
                 href="/register" 
                 className="flex-1 sm:flex-none bg-[#0055FF] hover:bg-[#0044cc] text-white px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all shadow-md sm:min-w-[180px] text-center"
               >
-                Register
+                {t('auth.register')}
               </Link>
               <Link 
                 href="/accounts/demo" 
                 className="flex-1 sm:flex-none bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm border border-white/20 px-4 sm:px-12 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all sm:min-w-[180px] text-center"
               >
-                Try free demo
+                {t('landing.demoBtn')}
               </Link>
             </div>
           </div>
         </div>
 
-        {/* Mobile App Icons - Adaptive Position */}
         <div className="absolute bottom-8 left-0 right-0 lg:left-auto lg:bottom-12 lg:right-12 flex justify-center lg:justify-end items-center space-x-4 z-20 px-4">
           <Link href="#" className="opacity-90 hover:opacity-100 transition-opacity">
             <Image 
               src={placeholderImages.app_store.url} 
-              alt="Download on App Store" 
+              alt="App Store" 
               width={placeholderImages.app_store.width} 
               height={placeholderImages.app_store.height} 
               className="h-9 md:h-10 w-auto"
-              data-ai-hint={placeholderImages.app_store.hint}
             />
           </Link>
           <Link href="#" className="opacity-90 hover:opacity-100 transition-opacity">
             <Image 
               src={placeholderImages.google_play.url} 
-              alt="Get it on Google Play" 
+              alt="Google Play" 
               width={placeholderImages.google_play.width} 
               height={placeholderImages.google_play.height} 
               className="h-9 md:h-10 w-auto"
-              data-ai-hint={placeholderImages.google_play.hint}
             />
           </Link>
         </div>
       </section>
 
-      {/* Trust Indicators Bar - ADAPTIVE SLIDESHOW */}
+      {/* Trust Indicators Bar */}
       <div className="relative z-10 border-y border-[#E4E4E4] bg-white">
         <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Desktop View: Static Row */}
           <div className="hidden md:flex items-center justify-between gap-8">
             {trustIndicators.map((item, idx) => (
               <div key={idx} className="flex items-center gap-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">
@@ -168,7 +163,6 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* Mobile View: Automated Slideshow */}
           <div className="md:hidden flex justify-center items-center h-4 overflow-hidden relative">
             {trustIndicators.map((item, idx) => (
               <div 
@@ -186,51 +180,47 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Mobile App Showcase Section (Image Below Hero) */}
+      {/* Mobile App Showcase */}
       <section className="bg-[#010813] pt-10 pb-32 px-4 border-t border-white/5 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-12 lg:gap-0">
-            {/* Left Features */}
             <div className="lg:col-span-4 space-y-12 sm:space-y-24 order-2 lg:order-1 text-center lg:text-right">
               <div className="space-y-3">
-                <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">Instant withdrawals</h3>
+                <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">{t('landing.instantWithdrawals')}</h3>
                 <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:ml-auto">
                   Withdraw and deposit funds within seconds using popular payment options.
                 </p>
               </div>
               <div className="space-y-3">
-                <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">Unmatched pricing</h3>
+                <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">{t('landing.unmatchedPricing')}</h3>
                 <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:ml-auto">
                   Trade with tightest spreads in the industry, powered by our multi-source liquidity.
                 </p>
               </div>
             </div>
 
-            {/* Mobile Image (mobile.jpg) */}
             <div className="lg:col-span-4 flex justify-center order-1 lg:order-2">
               <div className="relative w-[280px] h-[560px] sm:w-[350px] sm:h-[700px] transition-transform duration-1000 hover:scale-105">
                 <Image 
                   src={placeholderImages.mobile_showcase.url} 
-                  alt="Varban Mobile App Showcase" 
+                  alt="Varban Mobile" 
                   fill 
                   className="object-contain" 
                   priority
                   sizes="(max-width: 768px) 280px, 350px"
-                  data-ai-hint={placeholderImages.mobile_showcase.hint}
                 />
               </div>
             </div>
 
-            {/* Right Features */}
             <div className="lg:col-span-4 space-y-12 sm:space-y-24 order-3 lg:order-3 text-center lg:text-left">
               <div className="space-y-3">
-                <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">Ultra-fast execution</h3>
+                <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">{t('landing.ultraFastExecution')}</h3>
                 <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:mr-auto">
                   Execute trades in milliseconds, no matter the size, for precise market entries.
                 </p>
               </div>
               <div className="space-y-3">
-                <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">Swap-free trading</h3>
+                <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">{t('landing.swapFree')}</h3>
                 <p className="text-sm text-[#94A3B8] leading-relaxed max-w-sm mx-auto lg:mr-auto">
                   Hold positions overnight without incurring interest charges on major instruments.
                 </p>
@@ -240,16 +230,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Active Markets Section - Clean Table Design */}
+      {/* Active Markets */}
       <section className="py-24 bg-white border-t border-[#E4E4E4]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
             <div className="space-y-2">
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">Global Market Registry</span>
-              <h2 className="text-3xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Active Instruments</h2>
+              <h2 className="text-3xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">{t('landing.activeInstruments')}</h2>
             </div>
             <Link href="/markets" className="text-[11px] font-bold uppercase tracking-widest text-[#0055FF] flex items-center gap-1.5 hover:underline">
-              View All 150+ Symbols <ArrowRight className="w-4 h-4" />
+              {t('landing.viewAllSymbols')} <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
@@ -295,7 +285,7 @@ export default function HomePage() {
                           href={`/terminal?symbol=${ticker.symbol}`}
                           className="inline-flex items-center px-6 py-2 bg-[#0055FF] hover:bg-[#0044cc] text-white text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm"
                         >
-                          Trade
+                          {t('landing.viewAllSymbols').split(' ')[0]}
                         </Link>
                       </td>
                     </tr>
@@ -311,7 +301,7 @@ export default function HomePage() {
       <section className="py-24 bg-[#F9F9F9]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 space-y-4">
-            <h2 className="text-3xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Market Intelligence</h2>
+            <h2 className="text-3xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">{t('landing.marketIntelligence')}</h2>
             <p className="text-sm text-[#6B7280] max-w-xl mx-auto leading-relaxed">
               Stay ahead with real-time headlines from our institutional data nodes.
             </p>
@@ -342,18 +332,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Spreads Section */}
+      {/* Footer Banner */}
       <section className="relative w-full bg-white pt-12 pb-32">
         <div className="max-w-[1440px] mx-auto px-0 md:px-4">
           <div className="relative w-full aspect-[21/9] md:aspect-[32/9] overflow-hidden bg-[#F7F7F5]">
             <Image 
               src={placeholderImages.footer_banner.url} 
-              alt="Institutional Banner"
+              alt="Banner"
               fill
               className="object-cover"
               priority
               sizes="100vw"
-              data-ai-hint={placeholderImages.footer_banner.hint}
             />
           </div>
           
@@ -361,10 +350,10 @@ export default function HomePage() {
             <div className="bg-[#010813] text-white p-8 md:p-12 shadow-2xl flex flex-col md:flex-row justify-between items-center gap-8 border border-white/5">
               <div className="space-y-4 max-w-xl">
                 <h2 className="text-2xl md:text-4xl font-bold uppercase tracking-tight leading-tight">
-                  The lowest forex spreads on the market
+                  {t('landing.lowestSpreads')}
                 </h2>
                 <p className="text-xs md:text-sm text-[#94A3B8] leading-relaxed">
-                  Cut your trading costs in half on 28 FX majors and minors with 50% lower spreads than the industry average.²
+                  {t('landing.lowestSpreadsDesc')}
                 </p>
               </div>
               
@@ -373,13 +362,13 @@ export default function HomePage() {
                   href="/register" 
                   className="flex-1 md:flex-none bg-[#0055FF] hover:bg-[#0044cc] text-white px-8 py-3.5 text-[10px] font-bold uppercase tracking-widest transition-all text-center"
                 >
-                  Register
+                  {t('auth.register')}
                 </Link>
                 <Link 
                   href="/accounts/demo" 
                   className="flex-1 md:flex-none bg-[#1A2333] border border-white/10 hover:bg-[#252E3F] text-white px-8 py-3.5 text-[10px] font-bold uppercase tracking-widest transition-all text-center"
                 >
-                  Try free demo
+                  {t('landing.demoBtn')}
                 </Link>
               </div>
             </div>
