@@ -3,7 +3,7 @@
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
  * 4-Panel Grid Architecture with resizable portfolio manager.
- * Updated: Real-time clock, timezone, and language selectors added to header.
+ * Updated: Refined Utility Cluster container for real-time clock and selectors.
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
@@ -13,7 +13,8 @@ import {
   Menu, 
   X,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  Clock as ClockIcon
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
@@ -58,7 +59,6 @@ export default function TerminalWorkspace() {
   const supabase = createClient();
   const { formatNumber, locale, setLocale } = useTranslation();
 
-  // IDENTITY & UI STATE
   const [profile, setProfile] = useState<any>(null);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -66,20 +66,16 @@ export default function TerminalWorkspace() {
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
 
-  // Time & Timezone State
   const [currentTime, setCurrentTime] = useState("");
   const [activeTimezone, setActiveTimezone] = useState("UTC+0");
 
-  // TRADING CONTEXT
   const [activeInst, setActiveInst] = useState<Instrument>(AVAILABLE_INSTRUMENTS[0]);
   const [marketData, setMarketData] = useState<Record<string, { price: number; percent: number }>>({});
   const [positions, setPositions] = useState<Position[]>([]);
   
-  // LAYOUT STATE
   const [bottomPanelHeight, setBottomPanelHeight] = useState(250);
   const [isResizing, setIsResizing] = useState(false);
 
-  // DATA HANDSHAKE
   useEffect(() => {
     const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
     if (savedMode) setAccountMode(savedMode);
@@ -95,7 +91,6 @@ export default function TerminalWorkspace() {
     init();
   }, [user?.uid, supabase]);
 
-  // Real-time clock logic
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -123,7 +118,6 @@ export default function TerminalWorkspace() {
     }
   };
 
-  // PRICE FEED SYNC
   useEffect(() => {
     let active = true;
     const poll = async () => {
@@ -141,7 +135,6 @@ export default function TerminalWorkspace() {
     return () => { active = false; clearInterval(interval); };
   }, [activeInst.symbol]);
 
-  // POSITION SETTLEMENT (SIMULATED FOR PROTOTYPE)
   useEffect(() => {
     const timer = setInterval(() => {
       const now = Date.now();
@@ -176,7 +169,6 @@ export default function TerminalWorkspace() {
     setIsTradeDrawerOpen(false);
   };
 
-  // RESIZE LOGIC
   const startResizing = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     setIsResizing(true);
@@ -202,7 +194,6 @@ export default function TerminalWorkspace() {
     <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
       <TerminalTutorial />
 
-      {/* TOP HEADER BLOCK */}
       <header className="h-14 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[100] px-2 lg:px-4">
         <div className="flex items-center space-x-2 lg:space-x-4">
           <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 lg:hidden text-[#0A0A0A]"><Menu className="w-5 h-5" /></button>
@@ -228,38 +219,38 @@ export default function TerminalWorkspace() {
         </div>
 
         <div className="flex items-center space-x-3 lg:space-x-8">
-          {/* Settings & Time Module */}
-          <div className="hidden lg:flex items-center space-x-4 border-r border-[#E4E4E4] pr-6">
-            <div className="flex flex-col items-end">
-              <span className="text-sm font-mono font-bold text-[#0A0A0A] tracking-tighter">{currentTime}</span>
-              <div className="flex items-center space-x-3">
-                {/* Language Selector */}
-                <div className="relative flex items-center group">
-                  <select 
-                    value={locale}
-                    onChange={(e) => setLocale(e.target.value as LocaleCode)}
-                    className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#0055FF] outline-none cursor-pointer pr-3"
-                  >
-                    {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
-                      <option key={code} value={code}>{label}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#0055FF] pointer-events-none" />
-                </div>
-                
-                <span className="text-[#E4E4E4] text-[8px]">|</span>
+          {/* REFINED SYSTEM UTILITY NODE */}
+          <div className="hidden lg:flex items-center bg-[#F7F7F5] border border-[#E4E4E4] p-1.5 pr-4 space-x-4">
+            <div className="flex items-center bg-white border border-[#E4E4E4] px-3 py-1 shadow-sm">
+               <ClockIcon className="w-3 h-3 text-[#0055FF] mr-2" />
+               <span className="text-sm font-mono font-bold text-[#0A0A0A] tracking-tighter">{currentTime}</span>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <div className="relative flex items-center group">
+                <select 
+                  value={locale}
+                  onChange={(e) => setLocale(e.target.value as LocaleCode)}
+                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#0055FF] outline-none cursor-pointer pr-3 z-10"
+                >
+                  {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
+                    <option key={code} value={code} className="bg-white text-[#0A0A0A]">{label}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#0055FF] pointer-events-none" />
+              </div>
+              
+              <div className="w-px h-3 bg-[#E4E4E4]"></div>
 
-                {/* Timezone Selector */}
-                <div className="relative flex items-center group">
-                  <select 
-                    value={activeTimezone}
-                    onChange={(e) => handleTimezoneChange(e.target.value)}
-                    className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none cursor-pointer pr-3"
-                  >
-                    {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
-                  </select>
-                  <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
-                </div>
+              <div className="relative flex items-center group">
+                <select 
+                  value={activeTimezone}
+                  onChange={(e) => handleTimezoneChange(e.target.value)}
+                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none cursor-pointer pr-3 z-10"
+                >
+                  {TIMEZONES.map(tz => <option key={tz.value} value={tz.value} className="bg-white text-[#0A0A0A]">{tz.label}</option>)}
+                </select>
+                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
               </div>
             </div>
           </div>
@@ -274,12 +265,11 @@ export default function TerminalWorkspace() {
           <div className="relative">
             <button 
               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-              className="w-8 h-8 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs shadow-sm hover:ring-2 ring-[#0055FF]/20"
+              className="w-8 h-8 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs shadow-sm hover:ring-2 ring-[#0055FF]/20 overflow-hidden"
             >
-              {profile?.photo_url ? <img src={profile.photo_url} className="w-full h-full object-cover rounded-full" /> : user?.email?.substring(0,2).toUpperCase()}
+              {profile?.photo_url ? <img src={profile.photo_url} className="w-full h-full object-cover" /> : user?.email?.substring(0,2).toUpperCase()}
             </button>
             
-            {/* Desktop & Mobile Integrated Dropdown */}
             {isProfileDropdownOpen && (
               <div className="absolute right-0 top-full pt-2">
                 <ProfileDropdown 
@@ -297,18 +287,15 @@ export default function TerminalWorkspace() {
         </div>
       </header>
 
-      {/* MAIN TERMINAL GRID */}
       <div className="flex-grow flex overflow-hidden relative">
         <AuthedSidebar className="hidden lg:flex" />
 
         <main className="flex-grow flex lg:ml-16 overflow-hidden">
-          {/* LEFT: CHART & PORTFOLIO */}
           <div className="flex-grow flex flex-col overflow-hidden">
             <div className="flex-grow min-h-0 bg-[#F7F7F5] relative">
               <TradingViewChart symbol={activeInst.symbol} />
             </div>
 
-            {/* BOTTOM: PORTFOLIO */}
             <div 
               style={{ height: `${bottomPanelHeight}px` }}
               className="hidden lg:flex flex-col shrink-0 relative"
@@ -324,7 +311,6 @@ export default function TerminalWorkspace() {
               />
             </div>
             
-            {/* Mobile Portfolio (Static small height) */}
             <div className="lg:hidden h-24 shrink-0 bg-white border-t border-[#E4E4E4] overflow-hidden">
               <PortfolioManager 
                 positions={positions.filter(p => p.status === 'Open')}
@@ -334,7 +320,6 @@ export default function TerminalWorkspace() {
             </div>
           </div>
 
-          {/* RIGHT: EXECUTION TICKET (Desktop Only) */}
           <div className="hidden lg:flex w-[340px] border-l border-[#E4E4E4] shrink-0 bg-white shadow-xl relative z-40">
             <ExecutionTicket 
               instrument={activeInst} 
@@ -347,7 +332,6 @@ export default function TerminalWorkspace() {
         </main>
       </div>
 
-      {/* MOBILE EXECUTION BAR */}
       <div className="lg:hidden h-16 border-t border-[#E4E4E4] bg-white flex items-center px-4 gap-3 shrink-0 z-[110]">
         <div className="flex-grow flex flex-col">
            <span className="text-[10px] font-mono font-bold text-[#6B7280]">{activeInst.symbol}</span>
@@ -363,7 +347,6 @@ export default function TerminalWorkspace() {
         </button>
       </div>
 
-      {/* MOBILE TRADE DRAWER */}
       {isTradeDrawerOpen && (
         <div className="fixed inset-0 z-[500] lg:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsTradeDrawerOpen(false)}></div>
@@ -385,7 +368,6 @@ export default function TerminalWorkspace() {
         </div>
       )}
 
-      {/* MOBILE MENU DRAWER */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[400] lg:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>

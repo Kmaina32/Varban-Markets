@@ -4,7 +4,7 @@ import AuthedSidebar from "./AuthedSidebar";
 import AdminSidebar from "./AdminSidebar";
 import ProfileDropdown from "./ProfileDropdown";
 import LoadingOverlay from "@/components/shared/LoadingOverlay";
-import { Menu, Info, ShieldAlert, ChevronDown, Globe } from "lucide-react";
+import { Menu, Info, ShieldAlert, ChevronDown, Globe, Clock as ClockIcon } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useUser } from "@/firebase";
@@ -15,12 +15,6 @@ import { cn } from "@/app/lib/utils";
 import { useSupabaseAuth } from "@/app/lib/supabase/auth-context";
 import { createClient } from "@/app/lib/supabase/client";
 import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
-
-/**
- * @fileOverview Authenticated Workspace Layout.
- * Manages the trader and admin sidebar/header context.
- * Features a real-time clock, timezone selector, and language selector.
- */
 
 const STRICT_PATHS = [
   '/terminal', '/dashboard', '/portfolio', '/positions', 
@@ -63,7 +57,6 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
 
-  // Time & Timezone State
   const [currentTime, setCurrentTime] = useState("");
   const [activeTimezone, setActiveTimezone] = useState("UTC+0");
 
@@ -93,7 +86,6 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
     loadProfile();
   }, [user?.uid, supabase]);
 
-  // Real-time clock logic
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -160,18 +152,11 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
       router.replace('/account?tab=profile');
       return;
     }
-    if (isTerminal && !user) {
-      router.replace('/login');
-      return;
-    }
-  }, [user, loading, profileLoading, isStrict, isAdminPath, isAdmin, enforcementRequired, isTerminal, router]);
+  }, [user, loading, profileLoading, isStrict, isAdminPath, isAdmin, enforcementRequired, router]);
 
   if (loading || (isStrict && !user) || (enforcementRequired)) {
     return <LoadingOverlay />;
   }
-
-  if (!isStrict && !user) return <>{children}</>;
-  if (isTerminal) return <>{children}</>;
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
@@ -189,50 +174,43 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
         </div>
 
         <div className="flex items-center space-x-2 md:space-x-6">
-          {/* Settings & Time Module */}
-          <div className="hidden lg:flex items-center space-x-4 border-r border-[#E4E4E4] pr-6">
-            <div className="flex flex-col items-end">
-              <span className="text-sm font-mono font-bold text-[#0A0A0A] tracking-tighter">{currentTime}</span>
-              <div className="flex items-center space-x-3">
-                {/* Language Selector */}
-                <div className="relative flex items-center group">
-                  <select 
-                    value={locale}
-                    onChange={(e) => setLocale(e.target.value as LocaleCode)}
-                    className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#0055FF] outline-none cursor-pointer pr-3"
-                  >
-                    {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
-                      <option key={code} value={code}>{label}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#0055FF] pointer-events-none" />
-                </div>
-                
-                <span className="text-[#E4E4E4] text-[8px]">|</span>
+          {/* SYSTEM UTILITY NODE */}
+          <div className="hidden lg:flex items-center bg-[#F7F7F5] border border-[#E4E4E4] p-1.5 pr-4 space-x-4">
+            <div className="flex items-center bg-white border border-[#E4E4E4] px-3 py-1.5 shadow-sm">
+               <ClockIcon className="w-3 h-3 text-[#0055FF] mr-2" />
+               <span className="text-sm font-mono font-bold text-[#0A0A0A] tracking-tighter">{currentTime}</span>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <div className="relative flex items-center group">
+                <select 
+                  value={locale}
+                  onChange={(e) => setLocale(e.target.value as LocaleCode)}
+                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#0055FF] outline-none cursor-pointer pr-3 z-10"
+                >
+                  {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
+                    <option key={code} value={code} className="bg-white text-[#0A0A0A]">{label}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#0055FF] pointer-events-none" />
+              </div>
+              
+              <div className="w-px h-3 bg-[#E4E4E4]"></div>
 
-                {/* Timezone Selector */}
-                <div className="relative flex items-center group">
-                  <select 
-                    value={activeTimezone}
-                    onChange={(e) => handleTimezoneChange(e.target.value)}
-                    className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none cursor-pointer pr-3"
-                  >
-                    {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
-                  </select>
-                  <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
-                </div>
+              <div className="relative flex items-center group">
+                <select 
+                  value={activeTimezone}
+                  onChange={(e) => handleTimezoneChange(e.target.value)}
+                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none cursor-pointer pr-3 z-10"
+                >
+                  {TIMEZONES.map(tz => <option key={tz.value} value={tz.value} className="bg-white text-[#0A0A0A]">{tz.label}</option>)}
+                </select>
+                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
               </div>
             </div>
           </div>
 
-          {isProfileIncomplete && pathname !== '/account' && (
-             <Link href="/account?tab=profile" className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[#C43D3D] text-[9px] font-bold uppercase animate-pulse">
-                <ShieldAlert className="w-3.5 h-3.5" />
-                Finish Registration
-             </Link>
-          )}
-
-          <div className="hidden md:flex items-center space-x-2 border border-[#E4E4E4] px-3 py-1 bg-white">
+          <div className="hidden md:flex items-center space-x-2 border border-[#E4E4E4] px-3 py-1 bg-white shadow-sm">
             <div className="text-right">
               <span className="text-[7px] text-[#6B7280] uppercase font-bold block">{accountMode}</span>
               <span className={cn("text-[9px] font-mono font-bold block", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>${formatNumber(activeBalance, { minimumFractionDigits: 2 })}</span>
@@ -284,20 +262,6 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
         {isAdminPath ? <AdminSidebar className="hidden lg:flex" /> : <AuthedSidebar className="hidden lg:flex" />}
         <main className="flex-grow overflow-y-auto bg-[#F7F7F5] p-4 md:p-8 lg:ml-16 no-scrollbar">
           <div className="max-w-7xl mx-auto">
-             {isProfileIncomplete && pathname === '/account' && (
-               <div className="mb-6 p-6 bg-[#0055FF] text-white shadow-lg flex items-center justify-between gap-6 border-b-4 border-[#0A0A0A]">
-                  <div className="flex items-center gap-4">
-                     <div className="w-12 h-12 bg-white/10 flex items-center justify-center">
-                        <Info className="w-6 h-6 text-white" />
-                     </div>
-                     <div>
-                        <h2 className="text-sm font-bold uppercase tracking-widest">Complete Your Investor Profile</h2>
-                        <p className="text-[10px] text-white/80 uppercase font-bold mt-1">Required for trading terminal and vault access.</p>
-                     </div>
-                  </div>
-                  <span className="hidden md:block text-[9px] font-mono font-bold text-white/50 uppercase tracking-[0.2em]">Compliance Step 1 of 2</span>
-               </div>
-             )}
              {children}
           </div>
         </main>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -13,7 +12,7 @@ import { useTranslation } from "@/app/lib/i18n-context";
 
 /**
  * @fileOverview Login Workspace.
- * Refined for multi-language support and institutional blue success states.
+ * Refined for multi-language support and institutional blue success reveal.
  */
 
 export default function LoginPage() {
@@ -59,8 +58,8 @@ export default function LoginPage() {
       {success && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#F7F7F5]/80 backdrop-blur-sm animate-in fade-in duration-500">
           <Card className="bg-white border-[#E4E4E4] w-full max-w-sm shadow-2xl p-10 md:p-12 text-center space-y-6 animate-in zoom-in-95 duration-300 rounded-none border-b-4 border-b-[#0055FF]">
-            <div className="w-16 h-16 bg-[#0055FF]/10 border border-[#0055FF] rounded-full flex items-center justify-center mx-auto">
-              <Check className="w-8 h-8 text-[#0055FF]" />
+            <div className="flex justify-center">
+              <Check className="w-12 h-12 text-[#0055FF] stroke-[3px]" />
             </div>
             <div className="space-y-2">
               <h2 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">{t('auth.loginSuccess')}</h2>
