@@ -89,7 +89,17 @@ export const DICTIONARY = {
         privacy: 'Privacy Policy',
         terms: 'Terms of Service',
         aml: 'Identity Rules',
-        data: 'Market Data'
+        data: 'Market Data',
+        disclosures: {
+          companyInfo: 'Varban Markets Ltd is registered in Saint Lucia with registration number 2024-00142 and is regulated by the Financial Services Authority (FSA) in Saint Lucia as an International Financial Broker under license number FSA-REG-892410-VM. The registered office of Varban Markets Ltd is at the Rodney Bayside Building, Rodney Bay, Gros Islet, Saint Lucia.',
+          authNotice: 'The entity above is duly authorized to operate under the Varban Markets brand and trademarks.',
+          riskWarningFull: 'Risk Warning: Online derivatives and synthetic contracts are complex instruments and come with a high risk of losing money rapidly due to leverage. 84.12% of retail investor accounts lose money when trading these instruments with this provider. You should consider whether you understand how these contracts work and whether you can afford to take the high risk of losing your money.',
+          liabilityNotice: 'Under no circumstances shall Varban Markets have any liability to any person or entity for any loss or damage in whole or part caused by, resulting from, or relating to any financial activity.',
+          restrictedRegions: 'The entity above does not offer services to residents of certain jurisdictions including the USA, Canada, Iran, North Korea, Europe, the United Kingdom and others.',
+          noAdvice: 'The information on this website does not constitute investment advice or a recommendation or a solicitation to engage in any investment activity.',
+          copyrightNotice: 'The information on this website may only be copied with the express written permission of Varban Markets.',
+          pciNotice: 'Varban Markets complies with the Payment Card Industry Data Security Standard (PCI DSS) to ensure your security and privacy. We conduct regular vulnerability scans and penetration tests in accordance with the PCI DSS requirements for our business model.'
+        }
       },
       heroTitle: 'Trade online with a leading broker',
       heroSubtitle: 'Trade with a reliable licensed broker. Experience Varban\'s leading online trading platform with tight spreads and fast execution.',
@@ -345,10 +355,20 @@ export const DICTIONARY = {
         privacy: 'Politique de confidentialité',
         terms: 'Conditions d\'utilisation',
         aml: 'Règles d\'identité',
-        data: 'Données de marché'
+        data: 'Données de marché',
+        disclosures: {
+          companyInfo: 'Varban Markets Ltd est enregistrée à Sainte-Lucie sous le numéro d\'enregistrement 2024-00142 et est réglementée par la Financial Services Authority (FSA) de Sainte-Lucie en tant que courtier financier international sous le numéro de licence FSA-REG-892410-VM. Le siège social de Varban Markets Ltd est situé au Rodney Bayside Building, Rodney Bay, Gros Islet, Sainte-Lucie.',
+          authNotice: 'L\'entité ci-dessus est dûment autorisée à opérer sous la marque et les marques déposées Varban Markets.',
+          riskWarningFull: 'Avertissement sur les risques : Les dérivés en ligne et les contrats synthétiques sont des instruments complexes et comportent un risque élevé de perdre de l\'argent rapidement en raison de l\'effet de levier. 84,12 % des comptes d\'investisseurs particuliers perdent de l\'argent lorsqu\'ils négocient ces instruments avec ce fournisseur. Vous devez vous demander si vous comprenez comment ces contrats fonctionnent et si vous pouvez vous permettre de prendre le risque élevé de perdre votre argent.',
+          liabilityNotice: 'En aucun cas Varban Markets ne pourra être tenu responsable envers une personne ou une entité pour toute perte ou dommage, en tout ou en partie, causé par, résultant de ou lié à une activité financière.',
+          restrictedRegions: 'L\'entité ci-dessus n\'offre pas de services aux résidents de certaines juridictions, notamment les États-Unis, le Canada, l\'Iran, la Corée du Nord, l\'Europe, le Royaume-Uni et d\'autres.',
+          noAdvice: 'Les informations contenues sur ce site Web ne constituent pas un conseil en investissement, une recommandation ou une sollicitation à s\'engager dans une activité d\'investissement.',
+          copyrightNotice: 'Les informations contenues sur ce site Web ne peuvent être copiées qu\'avec l\'autorisation écrite expresse de Varban Markets.',
+          pciNotice: 'Varban Markets est conforme à la norme de sécurité des données de l\'industrie des cartes de paiement (PCI DSS) pour garantir votre sécurité et votre confidentialité. Nous effectuons régulièrement des analyses de vulnérabilité et des tests d\'intrusion conformément aux exigences PCI DSS pour notre modèle économique.'
+        }
       },
       heroTitle: 'Tradez en ligne avec un courtier leader',
-      heroSubtitle: 'Tradez avec un courtier fiable et agréé. Découvrez la plateforme de trading leader de Varban avec des spreads serrés et une exécution rapide.',
+      heroSubtitle: 'Trade avec un courtier fiable et agréé. Découvrez la plateforme de trading leader de Varban avec des spreads serrés et une exécution rapide.',
       demoBtn: 'Essayer la démo gratuite',
       activeInstruments: 'Instruments Actifs',
       viewAllSymbols: 'Voir les 150+ symboles',
@@ -575,7 +595,7 @@ export const DICTIONARY = {
         forex: 'Forex',
         crypto: 'Activos digitales',
         indices: 'Índices',
-        commodities: '大宗商品',
+        commodities: 'Materias primas',
         terminals: 'Terminales de trading',
         web: 'Terminal Varban (Web)',
         desktop: 'Varban para Desktop',
@@ -601,7 +621,17 @@ export const DICTIONARY = {
         privacy: 'Privacidad',
         terms: 'Términos de servicio',
         aml: 'Reglas de identidad',
-        data: 'Datos de mercado'
+        data: 'Datos de mercado',
+        disclosures: {
+          companyInfo: 'Varban Markets Ltd está registrada en Santa Lucía con el número de registro 2024-00142 y está regulada por la Autoridad de Servicios Financieros (FSA) en Santa Lucía como Corredor Financiero Internacional bajo el número de licencia FSA-REG-892410-VM. El domicilio social de Varban Markets Ltd se encuentra en Rodney Bayside Building, Rodney Bay, Gros Islet, Santa Lucía.',
+          authNotice: 'La entidad anterior está debidamente autorizada para operar bajo la marca y marcas comerciales de Varban Markets.',
+          riskWarningFull: 'Advertencia de riesgo: Los derivados en línea y los contratos sintéticos son instrumentos complejos y conllevan un alto riesgo de perder dinero rápidamente debido al apalancamiento. El 84,12% de las cuentas de inversores minoristas pierden dinero cuando operan con estos instrumentos con este proveedor. Debe considerar si comprende cómo funcionan estos contratos y si puede permitirse asumir el alto riesgo de perder su dinero.',
+          liabilityNotice: 'Bajo ninguna circunstancia Varban Markets tendrá responsabilidad alguna ante ninguna persona o entidad por cualquier pérdida o daño total o parcial causado por, resultante de o relacionado con cualquier actividad financiera.',
+          restrictedRegions: 'La entidad anterior no ofrece servicios a residentes de ciertas jurisdicciones, incluidos EE. UU., Canadá, Irán, Corea del Norte, Europa, el Reino Unido y otros.',
+          noAdvice: 'La información de este sitio web no constituye asesoramiento de inversión ni una recomendación o solicitud para participar en ninguna actividad de inversión.',
+          copyrightNotice: 'La información de este sitio web solo puede copiarse con el permiso expreso por escrito de Varban Markets.',
+          pciNotice: 'Varban Markets cumple con el Estándar de Seguridad de Datos de la Industria de Tarjetas de Pago (PCI DSS) para garantizar su seguridad y privacidad. Realizamos escaneos regulares de vulnerabilidades y pruebas de penetración de acuerdo con los requisitos de PCI DSS para nuestro modelo de negocio.'
+        }
       },
       heroTitle: 'Opere en línea con un bróker líder',
       heroSubtitle: 'Opere con un bróker fiable y con licencia. Experimente la plataforma de Varban con spreads ajustados y ejecución rápida.',
@@ -797,7 +827,7 @@ export const DICTIONARY = {
       wallet: 'Carteira',
       deposit: 'Adicionar Dinheiro',
       withdraw: 'Retirar',
-      transactions: 'Atividade',
+      transactions: 'Actividade',
       account: 'Centro de Conta',
       verification: 'Verificação KYC',
       security: 'Segurança',
@@ -857,7 +887,17 @@ export const DICTIONARY = {
         privacy: 'Privacidade',
         terms: 'Termos de serviço',
         aml: 'Regras de identidade',
-        data: 'Market Data'
+        data: 'Market Data',
+        disclosures: {
+          companyInfo: 'A Varban Markets Ltd está registada em Santa Lúcia com o número de registo 2024-00142 e é regulada pela Autoridade de Serviços Financeiros (FSA) em Santa Lúcia como Corretora Financeira Internacional sob o número de licença FSA-REG-892410-VM. A sede social da Varban Markets Ltd situa-se em Rodney Bayside Building, Rodney Bay, Gros Islet, Santa Lúcia.',
+          authNotice: 'A entidade acima está devidamente autorizada a operar sob a marca e marcas registadas da Varban Markets.',
+          riskWarningFull: 'Aviso de Risco: Derivados online e contratos sintéticos são instrumentos complexos e acarretam um elevado risco de perder dinheiro rapidamente devido à alavancagem. 84,12% das contas de investidores de retalho perdem dinheiro ao negociar estes instrumentos com este fornecedor. Deve considerar se compreende como estes contratos funcionam e se pode permitir-se correr o elevado risco de perder o seu dinheiro.',
+          liabilityNotice: 'Em nenhuma circunstância a Varban Markets terá qualquer responsabilidade perante qualquer pessoa ou entidade por qualquer perda ou dano total ou parcial causado por, resultante de ou relacionado com qualquer atividade financeira.',
+          restrictedRegions: 'A entidade acima não oferece serviços a residentes de certas jurisdições, incluindo os EUA, Canadá, Irão, Coreia do Norte, Europa, Reino Unido e outros.',
+          noAdvice: 'As informações contidas neste website não constituem aconselhamento de investimento, recomendação ou solicitação para participar em qualquer atividade de investimento.',
+          copyrightNotice: 'As informações contidas neste website só podem ser copiadas com a permissão expressa por escrito da Varban Markets.',
+          pciNotice: 'A Varban Markets cumpre o Padrão de Segurança de Dados da Indústria de Cartões de Pagamento (PCI DSS) para garantir a sua segurança e privacidade. Realizamos verificações regulares de vulnerabilidade e testes de penetração de acordo com os requisitos do PCI DSS para o nosso modelo de negócio.'
+        }
       },
       heroTitle: 'Negocie online com uma corretora líder',
       heroSubtitle: 'Negocie com uma corretora licenciada e confiável. Experimente spreads baixos e execução rápida.',
@@ -931,7 +971,7 @@ export const DICTIONARY = {
       totalEquity: 'Patrimônio Total',
       marketRisk: 'Risco de Mercado',
       blockchainNetwork: 'Rede Blockchain',
-      cardBankTransfer: 'Cartão / Transferência Bancária',
+      cardBankTransfer: 'Cartão / Transferência Bancaria',
       instructionQueued: 'Instrução de Levantamento em Fila',
       transparencyNotice: 'Varban Markets opera com total transparência.'
     },
@@ -990,7 +1030,7 @@ export const DICTIONARY = {
     referral: {
       portalTitle: 'Programa de Indicação',
       portalSubtitle: 'Expanda sua rede e ganhe recompensas institucionais',
-      bannerTitle: 'Construa sua Comunidade de Negociação.',
+      bannerTitle: 'Construua sua Comunidade de Negociação.',
       bannerDesc: 'Convide outros negociadores sofisticados para o ecossistema Varban Markets. Cada integração bem-sucedida através de seu condutor exclusivo contribui para as métricas de crescimento de sua rede.',
       totalNetwork: 'Rede Total',
       activeTraders: 'Negociadores Ativos',
@@ -1113,7 +1153,17 @@ export const DICTIONARY = {
         privacy: '隐私政策',
         terms: '服务条款',
         aml: '身份规则',
-        data: '市场数据'
+        data: '市场数据',
+        disclosures: {
+          companyInfo: 'Varban Markets Ltd 在圣卢西亚注册，注册号为 2024-00142，并受圣卢西亚金融服务管理局 (FSA) 监管，作为国际金融经纪人，执照号为 FSA-REG-892410-VM。Varban Markets Ltd 的注册办事处位于 Rodney Bayside Building, Rodney Bay, Gros Islet, Saint Lucia。',
+          authNotice: '上述实体已获得正式授权，以 Varban Markets 品牌和商标进行运营。',
+          riskWarningFull: '风险提示：在线衍生品和合成合约是复杂的工具，由于杠杆作用，存在快速亏损的高风险。 84.12% 的零售投资者账户在使用该提供商交易这些工具时亏损。您应该考虑是否了解这些合约的运作方式，以及您是否能够承担丢失金钱的高风险。',
+          liabilityNotice: '在任何情况下，Varban Markets 对任何个人或实体因任何金融活动引起、导致或与之相关的全部或部分损失或损害均不承担任何责任。',
+          restrictedRegions: '上述实体不向某些司法管辖区的居民提供服务，包括美国、加拿大、伊朗、朝鲜、欧洲、英国等。',
+          noAdvice: '本网站上的信息不构成投资建议、建议或从事任何投资活动的招揽。',
+          copyrightNotice: '未经 Varban Markets 明确书面许可，不得复制本网站上的信息。',
+          pciNotice: 'Varban Markets 符合支付卡行业数据安全标准 (PCI DSS)，以确保您的安全和隐私。我们根据 PCI DSS 要求，对我们的业务模式进行定期的漏洞扫描和渗透测试。'
+        }
       },
       heroTitle: '在全球领先的经纪商进行在线交易',
       heroSubtitle: '与可靠的持牌经纪商交易。体验Varban领先的在线交易平台，享受极低点差和快速执行。',

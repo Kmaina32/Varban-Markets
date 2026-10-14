@@ -45,7 +45,7 @@ export default function Footer() {
             </div>
             <p className="text-[10px] text-[#6B7280] uppercase tracking-widest font-bold leading-relaxed max-w-xs">
               Varban Markets Ltd. <br />
-              Institutional derivatives and synthetic market infrastructure.
+              {t('landing.footer.disclosures.authNotice')}
             </p>
           </div>
           
@@ -84,31 +84,31 @@ export default function Footer() {
 
         <div className="pt-10 border-t border-[#E4E4E4] space-y-6 text-[10px] text-[#6B7280] leading-relaxed max-w-5xl text-justify">
           <p>
-            Varban Markets Ltd is registered in Saint Lucia with registration number 2024-00142 and is regulated by the Financial Services Authority (FSA) in Saint Lucia as an International Financial Broker under license number FSA-REG-892410-VM. The registered office of Varban Markets Ltd is at the Rodney Bayside Building, Rodney Bay, Gros Islet, Saint Lucia. This website is operated by Varban Markets Ltd.
+            {t('landing.footer.disclosures.companyInfo')}
           </p>
           
           <p>
-            The entity above is duly authorized to operate under the Varban Markets brand and trademarks.
+            {t('landing.footer.disclosures.authNotice')}
           </p>
           
           <p>
-            Risk Warning: Online derivatives and synthetic contracts are complex instruments and come with a high risk of losing money rapidly due to leverage. <span className="text-[#FFDE00]">84.12% of retail investor accounts lose money</span> when trading these instruments with this provider. You should consider whether you understand how these contracts work and whether you can afford to take the high risk of losing your money. Under no circumstances shall Varban Markets have any liability to any person or entity for any loss or damage in whole or part caused by, resulting from, or relating to any financial activity. <Link href="/terms/risk-disclosure" className="text-[#FFDE00] underline font-bold uppercase ml-1">Learn more.</Link>
+            <span className="text-[#0A0A0A] font-bold">{t('landing.footer.riskWarning')}:</span> {t('landing.footer.disclosures.riskWarningFull')} <Link href="/terms/risk-disclosure" className="text-[#FFDE00] underline font-bold uppercase ml-1">Learn more.</Link>
           </p>
           
           <p>
-            The entity above does not offer services to residents of certain jurisdictions including the USA, Canada, Iran, North Korea, Europe, the United Kingdom and others.
+            {t('landing.footer.disclosures.restrictedRegions')}
           </p>
           
           <p>
-            The information on this website does not constitute investment advice or a recommendation or a solicitation to engage in any investment activity.
+            {t('landing.footer.disclosures.noAdvice')}
           </p>
           
           <p>
-            The information on this website may only be copied with the express written permission of Varban Markets.
+            {t('landing.footer.disclosures.copyrightNotice')}
           </p>
           
           <p>
-            Varban Markets complies with the Payment Card Industry Data Security Standard (PCI DSS) to ensure your security and privacy. We conduct regular vulnerability scans and penetration tests in accordance with the PCI DSS requirements for our business model.
+            {t('landing.footer.disclosures.pciNotice')}
           </p>
         </div>
 

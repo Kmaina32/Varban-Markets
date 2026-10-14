@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * @fileOverview Institutional Landing Page.
+ * Fully localized for global financial markets.
+ */
+
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -32,7 +37,7 @@ export default function HomePage() {
   const trustIndicators = [
     { icon: ShieldCheck, text: t('landing.instantWithdrawals').toUpperCase() },
     { icon: FileText, text: "Authorized by FSA in Saint Lucia" },
-    { icon: Headset, text: t('chat.started') + " 24/7" },
+    { icon: Headset, text: "Technical Desk 24/7" },
     { icon: Lock, text: "PCI DSS certified" }
   ];
 
