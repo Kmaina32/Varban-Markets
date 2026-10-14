@@ -191,7 +191,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
           {/* Time & Timezone Module */}
           <div className="hidden lg:flex items-center space-x-4 border-r border-[#E4E4E4] pr-6">
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-mono font-bold text-[#0A0A0A] tracking-tighter">{currentTime}</span>
+              <span className="text-sm font-mono font-bold text-[#0A0A0A] tracking-tighter">{currentTime}</span>
               <div className="relative flex items-center group">
                 <select 
                   value={activeTimezone}
