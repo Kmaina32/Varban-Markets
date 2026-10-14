@@ -3,7 +3,7 @@
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
  * 4-Panel Grid Architecture with resizable portfolio manager.
- * Updated: Mobile profile dropdown fix and Trade settings drawer.
+ * Updated: Real-time clock and timezone selector added to terminal header.
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
@@ -12,7 +12,8 @@ import Link from "next/link";
 import { 
   Menu, 
   X,
-  ChevronUp
+  ChevronUp,
+  ChevronDown
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
@@ -43,6 +44,14 @@ interface Position {
   mode: 'SPOT' | 'DURATION';
 }
 
+const TIMEZONES = [
+  { label: "UTC +00:00 (GMT)", value: "UTC+0" },
+  { label: "UTC -08:00 (PT)", value: "UTC-8" },
+  { label: "UTC -05:00 (ET)", value: "UTC-5" },
+  { label: "UTC +01:00 (CET)", value: "UTC+1" },
+  { label: "UTC +08:00 (HKT)", value: "UTC+8" }
+];
+
 export default function TerminalWorkspace() {
   const { user } = useUser();
   const supabase = createClient();
@@ -55,6 +64,10 @@ export default function TerminalWorkspace() {
   const [isTradeDrawerOpen, setIsTradeDrawerOpen] = useState(false);
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
+
+  // Time & Timezone State
+  const [currentTime, setCurrentTime] = useState("");
+  const [activeTimezone, setActiveTimezone] = useState("UTC+0");
 
   // TRADING CONTEXT
   const [activeInst, setActiveInst] = useState<Instrument>(AVAILABLE_INSTRUMENTS[0]);
@@ -73,10 +86,41 @@ export default function TerminalWorkspace() {
     async function init() {
       if (!user?.uid) return;
       const { data } = await supabase.from('profiles').select('*').eq('id', user.uid).single();
-      if (data) setProfile(data);
+      if (data) {
+        setProfile(data);
+        if (data.timezone) setActiveTimezone(data.timezone);
+      }
     }
     init();
   }, [user?.uid, supabase]);
+
+  // Real-time clock logic
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      let offset = 0;
+      if (activeTimezone === "UTC-8") offset = -8;
+      else if (activeTimezone === "UTC-5") offset = -5;
+      else if (activeTimezone === "UTC+1") offset = 1;
+      else if (activeTimezone === "UTC+8") offset = 8;
+      
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const nd = new Date(utc + (3600000 * offset));
+      
+      setCurrentTime(nd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }));
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, [activeTimezone]);
+
+  const handleTimezoneChange = async (val: string) => {
+    setActiveTimezone(val);
+    if (user?.uid) {
+      await supabase.from('profiles').update({ timezone: val }).eq('id', user.uid);
+    }
+  };
 
   // PRICE FEED SYNC
   useEffect(() => {
@@ -183,6 +227,23 @@ export default function TerminalWorkspace() {
         </div>
 
         <div className="flex items-center space-x-3 lg:space-x-8">
+          {/* Time & Timezone Module */}
+          <div className="hidden lg:flex items-center space-x-4 border-r border-[#E4E4E4] pr-6">
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] font-mono font-bold text-[#0A0A0A] tracking-tighter">{currentTime}</span>
+              <div className="relative flex items-center">
+                <select 
+                  value={activeTimezone}
+                  onChange={(e) => handleTimezoneChange(e.target.value)}
+                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none cursor-pointer pr-3"
+                >
+                  {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
+                </select>
+                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-col text-right">
             <span className="text-[7px] lg:text-[8px] font-bold uppercase text-[#6B7280]">{accountMode} BALANCE</span>
             <span className={cn("text-[10px] lg:text-xs font-mono font-bold", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>

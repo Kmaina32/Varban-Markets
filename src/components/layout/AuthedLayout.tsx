@@ -4,7 +4,7 @@ import AuthedSidebar from "./AuthedSidebar";
 import AdminSidebar from "./AdminSidebar";
 import ProfileDropdown from "./ProfileDropdown";
 import LoadingOverlay from "@/components/shared/LoadingOverlay";
-import { Menu, Info, ShieldAlert } from "lucide-react";
+import { Menu, Info, ShieldAlert, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useUser } from "@/firebase";
@@ -18,8 +18,7 @@ import { createClient } from "@/app/lib/supabase/client";
 /**
  * @fileOverview Authenticated Workspace Layout.
  * Manages the trader and admin sidebar/header context.
- * Strict paths force redirection to login if no session is detected.
- * Added: Profile completion enforcement for trading and deposits.
+ * Features a real-time clock and timezone selector synchronized with Supabase.
  */
 
 const STRICT_PATHS = [
@@ -31,6 +30,14 @@ const STRICT_PATHS = [
 ];
 
 const SUPER_ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
+
+const TIMEZONES = [
+  { label: "UTC +00:00 (GMT)", value: "UTC+0" },
+  { label: "UTC -08:00 (PT)", value: "UTC-8" },
+  { label: "UTC -05:00 (ET)", value: "UTC-5" },
+  { label: "UTC +01:00 (CET)", value: "UTC+1" },
+  { label: "UTC +08:00 (HKT)", value: "UTC+8" }
+];
 
 interface AuthedLayoutProps {
   children: React.ReactNode;
@@ -55,6 +62,10 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
 
+  // Time & Timezone State
+  const [currentTime, setCurrentTime] = useState("");
+  const [activeTimezone, setActiveTimezone] = useState("UTC+0");
+
   useEffect(() => {
     const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
     if (savedMode) setAccountMode(savedMode);
@@ -68,7 +79,10 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
       }
       try {
         const { data } = await supabase.from('profiles').select('*').eq('id', user.uid).maybeSingle();
-        if (data) setProfile(data);
+        if (data) {
+          setProfile(data);
+          if (data.timezone) setActiveTimezone(data.timezone);
+        }
       } catch (err) {
         console.error("Profile load failure");
       } finally {
@@ -77,6 +91,34 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
     }
     loadProfile();
   }, [user?.uid, supabase]);
+
+  // Real-time clock logic
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      let offset = 0;
+      if (activeTimezone === "UTC-8") offset = -8;
+      else if (activeTimezone === "UTC-5") offset = -5;
+      else if (activeTimezone === "UTC+1") offset = 1;
+      else if (activeTimezone === "UTC+8") offset = 8;
+      
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const nd = new Date(utc + (3600000 * offset));
+      
+      setCurrentTime(nd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }));
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, [activeTimezone]);
+
+  const handleTimezoneChange = async (val: string) => {
+    setActiveTimezone(val);
+    if (user?.uid) {
+      await supabase.from('profiles').update({ timezone: val }).eq('id', user.uid);
+    }
+  };
 
   const isStrict = useMemo(() => {
     return STRICT_PATHS.some(path => pathname === path || pathname?.startsWith(path + '/'));
@@ -100,48 +142,34 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   }, [profile, profileLoading, user]);
 
   const enforcementRequired = useMemo(() => {
-    // Only enforce on terminal and wallet (trading and money)
     return isProfileIncomplete && (pathname?.startsWith('/terminal') || pathname?.startsWith('/wallet') || pathname?.startsWith('/bots'));
   }, [isProfileIncomplete, pathname]);
 
-  // REDIRECTION LOGIC: Core Security Protocol
   useEffect(() => {
     if (loading) return;
-
-    // 1. Unauthenticated users trying to access strict paths
     if (!user && isStrict) {
       router.replace('/login');
       return;
     }
-    
-    // 2. Authenticated users trying to access admin paths without authority
     if (user && isAdminPath && !isAdmin && !profileLoading) {
       router.replace('/dashboard');
       return;
     }
-
-    // 3. Profile Completion Enforcement
     if (enforcementRequired) {
       router.replace('/account?tab=profile');
       return;
     }
-
-    // 4. Dedicated Terminal Guard
     if (isTerminal && !user) {
       router.replace('/login');
       return;
     }
   }, [user, loading, profileLoading, isStrict, isAdminPath, isAdmin, enforcementRequired, isTerminal, router]);
 
-  // If loading or redirection is pending, show high-fidelity loading reveal
   if (loading || (isStrict && !user) || (enforcementRequired)) {
     return <LoadingOverlay />;
   }
 
-  // If not a strict path and not logged in, render as public page (no sidebar/header)
   if (!isStrict && !user) return <>{children}</>;
-  
-  // Terminal workspace handling (no standard layout wrappers)
   if (isTerminal) return <>{children}</>;
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
@@ -158,19 +186,39 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
             {subtitle && <p className="text-[9px] text-[#6B7280] uppercase tracking-wider mt-0.5">{subtitle}</p>}
           </div>
         </div>
+
         <div className="flex items-center space-x-2 md:space-x-6">
+          {/* Time & Timezone Module */}
+          <div className="hidden lg:flex items-center space-x-4 border-r border-[#E4E4E4] pr-6">
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] font-mono font-bold text-[#0A0A0A] tracking-tighter">{currentTime}</span>
+              <div className="relative flex items-center group">
+                <select 
+                  value={activeTimezone}
+                  onChange={(e) => handleTimezoneChange(e.target.value)}
+                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none cursor-pointer pr-3"
+                >
+                  {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
+                </select>
+                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
+              </div>
+            </div>
+          </div>
+
           {isProfileIncomplete && pathname !== '/account' && (
              <Link href="/account?tab=profile" className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[#C43D3D] text-[9px] font-bold uppercase animate-pulse">
                 <ShieldAlert className="w-3.5 h-3.5" />
                 Finish Registration
              </Link>
           )}
+
           <div className="hidden md:flex items-center space-x-2 border border-[#E4E4E4] px-3 py-1 bg-white">
             <div className="text-right">
               <span className="text-[7px] text-[#6B7280] uppercase font-bold block">{accountMode}</span>
               <span className={cn("text-[9px] font-mono font-bold block", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>${formatNumber(activeBalance, { minimumFractionDigits: 2 })}</span>
             </div>
           </div>
+
           <button 
             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)} 
             className="w-8 h-8 rounded-full border border-[#E4E4E4] overflow-hidden bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs shadow-sm hover:border-[#0055FF] transition-all"
