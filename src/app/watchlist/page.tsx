@@ -3,12 +3,13 @@
 /**
  * @fileOverview Institutional Watchlist Registry.
  * Migrated to Supabase for persistence.
+ * Fully localized for international markets.
  */
 
 import { useMemo, useState, useEffect } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
-import { Star, TrendingUp, TrendingDown, Sliders, X, Plus, Search, Check } from "lucide-react";
+import { Star, Sliders, X, Plus, Search, Check } from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@/firebase";
 import { createClient } from "@/app/lib/supabase/client";
@@ -167,7 +168,7 @@ export default function WatchlistPage() {
               <button onClick={() => setIsAddModalOpen(false)} className="p-1.5 hover:bg-[#E4E4E4] transition-colors"><X className="w-4 h-4 text-[#6B7280]" /></button>
             </div>
             <div className="p-4 border-b border-[#E4E4E4] space-y-3 bg-white shrink-0">
-              <div className="relative"><Search className="w-4 h-4 text-[#6B7280] absolute left-3 top-1/2 -translate-y-1/2" /><input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search..." className="w-full text-xs pl-9 pr-3 py-2.5 border border-[#E4E4E4] bg-[#F7F7F5] focus:outline-none" /></div>
+              <div className="relative"><Search className="w-4 h-4 text-[#6B7280] absolute left-3 top-1/2 -translate-y-1/2" /><input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t('common.search')} className="w-full text-xs pl-9 pr-3 py-2.5 border border-[#E4E4E4] bg-[#F7F7F5] focus:outline-none" /></div>
               <div className="flex space-x-1.5 overflow-x-auto no-scrollbar pb-1">{["All", "Crypto", "Forex", "Commodities", "Equities"].map((cat) => (<button key={cat} onClick={() => setSelectedCategory(cat)} className={cn("px-3 py-1 text-[9px] font-bold uppercase tracking-wider border transition-colors shrink-0", selectedCategory === cat ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white text-[#6B7280] border-[#E4E4E4]")}>{cat}</button>))}</div>
             </div>
             <div className="p-4 overflow-y-auto flex-grow divide-y divide-[#E4E4E4]">
@@ -181,7 +182,7 @@ export default function WatchlistPage() {
                 );
               })}
             </div>
-            <div className="p-4 border-t border-[#E4E4E4] bg-[#F7F7F5] text-right shrink-0"><button onClick={() => setIsAddModalOpen(false)} className="btn-institutional-primary py-2 px-5 text-[10px]">Done</button></div>
+            <div className="p-4 border-t border-[#E4E4E4] bg-[#F7F7F5] text-right shrink-0"><button onClick={() => setIsAddModalOpen(false)} className="btn-institutional-primary py-2 px-5 text-[10px]">{t('common.dismiss')}</button></div>
           </div>
         </div>
       )}

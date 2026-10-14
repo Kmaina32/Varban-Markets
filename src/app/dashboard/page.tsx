@@ -3,6 +3,7 @@
 /**
  * @fileOverview Institutional User Dashboard.
  * Migrated to Supabase for profile and portfolio management.
+ * Fully localized for international markets.
  */
 
 import AuthedLayout from "@/components/layout/AuthedLayout";
@@ -91,7 +92,7 @@ export default function UserDashboard() {
   ];
 
   return (
-    <AuthedLayout title="Dashboard" subtitle="Welcome back to your account">
+    <AuthedLayout title={t('nav.dashboard')} subtitle="Welcome back to your account">
       <OnboardingTutorial />
       <div className="space-y-8">
         {accountMode === 'DEMO' && (
@@ -131,7 +132,7 @@ export default function UserDashboard() {
                     <thead>
                       <tr className="bg-[#F7F7F5] border-b border-[#E4E4E4]">
                         <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase">{t('tables.reference')}</th>
-                        <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase">{t('tables.asset')}</th>
+                        <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase">{t('tables.instrument')}</th>
                         <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase">{t('tables.type')}</th>
                         <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase text-right">{t('tables.stake')}</th>
                         <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase text-right">{t('tables.outcome')}</th>

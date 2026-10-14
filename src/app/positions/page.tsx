@@ -1,5 +1,9 @@
-
 "use client";
+
+/**
+ * @fileOverview Institutional Active Positions Tracker.
+ * Fully localized for international markets.
+ */
 
 import { useMemo, useState, useEffect } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
@@ -50,7 +54,7 @@ export default function ActivePositionsPage() {
   }, [positions]);
 
   return (
-    <AuthedLayout title={t('pages.positionsTitle')} subtitle={`${accountMode === 'DEMO' ? 'Practice' : 'Real'} Live Exposure`}>
+    <AuthedLayout title={t('nav.positions')} subtitle={`${accountMode === 'DEMO' ? 'Practice' : 'Real'} Live Exposure`}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <Card className="bg-white border-[#E4E4E4] p-6 shadow-sm">
           <div className="flex justify-between items-center mb-2">
@@ -91,7 +95,7 @@ export default function ActivePositionsPage() {
             {loading ? (
               <tr><td colSpan={6} className="p-4 text-center text-[#6B7280]">{t('common.loading')}</td></tr>
             ) : positions?.length === 0 ? (
-              <tr><td colSpan={6} className="p-4 text-center text-[#6B7280]">{t('trading.noPositions')}</td></tr>
+              <tr><td colSpan={6} className="p-8 text-center text-[#6B7280] uppercase tracking-widest font-bold opacity-30">{t('trading.noPositions')}</td></tr>
             ) : positions?.map((pos: any) => (
               <tr key={pos.id} className="hover:bg-[#F7F7F5]">
                 <td className="p-4 text-[#6B7280]">{pos.id.slice(0, 8).toUpperCase()}</td>

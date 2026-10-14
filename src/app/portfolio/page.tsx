@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * @fileOverview Institutional Portfolio Overview.
+ * Fully localized for international markets.
+ */
+
 import { useMemo } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";

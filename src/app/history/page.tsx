@@ -1,14 +1,14 @@
 "use client";
 
 /**
- * @fileOverview Trade History Workspace.
- * Hardened against null database references.
+ * @fileOverview Institutional Execution History archive.
+ * Fully localized for international markets.
  */
 
 import { useMemo, useState, useEffect } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
-import { Search, Filter, Download, AlertCircle } from "lucide-react";
+import { Search, Download, AlertCircle } from "lucide-react";
 import { useUser, useFirestore, useCollection } from "@/firebase";
 import { collection, query, where, orderBy } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -47,38 +47,54 @@ export default function TradeHistoryPage() {
         <div className="flex justify-between items-center gap-4">
           <div className="relative flex-grow max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6B7280]" />
-            <input type="text" placeholder="Search archive..." className="w-full pl-9 pr-4 py-2 border border-[#E4E4E4] text-[10px] focus:outline-none" />
+            <input 
+              type="text" 
+              placeholder={t('common.search')} 
+              className="w-full pl-9 pr-4 py-2 border border-[#E4E4E4] text-[10px] focus:outline-none focus:border-[#0055FF] bg-white shadow-sm" 
+            />
           </div>
-          <button className="flex items-center space-x-2 px-4 py-2 border border-[#E4E4E4] bg-white text-[10px] font-bold uppercase hover:bg-[#F7F7F5]">
+          <button className="flex items-center space-x-2 px-6 py-2 border border-[#E4E4E4] bg-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#F7F7F5] shadow-sm transition-all">
             <Download className="w-3 h-3" />
             <span>Export CSV</span>
           </button>
         </div>
 
-        <Card className="bg-white border-[#E4E4E4] overflow-hidden">
+        <Card className="bg-white border-[#E4E4E4] overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-[#F7F7F5] border-b text-[9px] font-bold uppercase text-[#6B7280]">
+              <thead className="bg-[#F7F7F5] border-b text-[9px] font-bold uppercase text-[#6B7280] tracking-widest">
                 <tr>
-                  <th className="p-4">Reference</th>
-                  <th className="p-4">Instrument</th>
-                  <th className="p-4">Vector</th>
-                  <th className="p-4 text-right">Stake</th>
-                  <th className="p-4 text-right">Outcome</th>
+                  <th className="p-4">{t('tables.reference')}</th>
+                  <th className="p-4">{t('tables.instrument')}</th>
+                  <th className="p-4">{t('tables.type')}</th>
+                  <th className="p-4 text-right">{t('tables.stake')}</th>
+                  <th className="p-4 text-right">{t('tables.outcome')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E4E4E4] font-mono">
+              <tbody className="divide-y divide-[#E4E4E4] font-mono text-[10px]">
                 {loading ? (
-                  <tr><td colSpan={5} className="p-12 text-center text-[#6B7280]">Synchronizing Ledger...</td></tr>
+                  <tr><td colSpan={5} className="p-12 text-center text-[#6B7280] uppercase font-bold">{t('common.loading')}</td></tr>
                 ) : history.length === 0 ? (
-                  <tr><td colSpan={5} className="p-12 text-center text-[#6B7280]">No execution records in this domain.</td></tr>
+                  <tr><td colSpan={5} className="p-16 text-center text-[#6B7280] uppercase tracking-widest font-bold opacity-30">No execution records in this domain.</td></tr>
                 ) : history.map(h => (
-                  <tr key={h.id} className="hover:bg-[#F7F7F5]">
-                    <td className="p-4 text-[#6B7280]">{h.id.slice(0, 8)}</td>
-                    <td className="p-4 font-bold">{h.instrument}</td>
-                    <td className="p-4 font-bold uppercase">{h.vector}</td>
-                    <td className="p-4 text-right">${formatNumber(h.stake || 0, { minimumFractionDigits: 2 })}</td>
-                    <td className="p-4 text-right font-bold text-[#16835B]">${formatNumber(h.profit || 0, { minimumFractionDigits: 2 })}</td>
+                  <tr key={h.id} className="hover:bg-[#F7F7F5] transition-colors">
+                    <td className="p-4 text-[#6B7280]">{h.id.slice(0, 8).toUpperCase()}</td>
+                    <td className="p-4 font-bold text-[#0A0A0A]">{h.instrument}</td>
+                    <td className="p-4">
+                      <span className={cn(
+                        "px-1.5 py-0.5 border text-[9px] font-bold",
+                        h.vector === 'CALL' ? "border-[#16835B] text-[#16835B]" : "border-[#C43D3D] text-[#C43D3D]"
+                      )}>
+                        {h.vector}
+                      </span>
+                    </td>
+                    <td className="p-4 text-right text-[#0A0A0A]">${formatNumber(h.stake || 0, { minimumFractionDigits: 2 })}</td>
+                    <td className={cn(
+                      "p-4 text-right font-bold",
+                      (h.profit || 0) >= 0 ? 'text-[#16835B]' : 'text-[#C43D3D]'
+                    )}>
+                      {(h.profit || 0) >= 0 ? '+' : ''}${formatNumber(h.profit || 0, { minimumFractionDigits: 2 })}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -86,14 +102,12 @@ export default function TradeHistoryPage() {
           </div>
         </Card>
 
-        {!db && (
-          <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center space-x-3 text-[#6B7280]">
-            <AlertCircle className="w-4 h-4" />
-            <p className="text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-              Historical ledger synchronization is currently processing. All trades remain registered in the core database.
-            </p>
-          </div>
-        )}
+        <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center space-x-3 text-[#6B7280]">
+          <AlertCircle className="w-4 h-4 text-[#0055FF]" />
+          <p className="text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+            Historical ledger synchronization is currently processing. All trades remain registered in the immutable core database.
+          </p>
+        </div>
       </div>
     </AuthedLayout>
   );

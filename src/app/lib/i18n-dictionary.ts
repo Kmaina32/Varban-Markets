@@ -81,7 +81,12 @@ export const DICTIONARY = {
       cancel: 'Cancel',
       openPositions: 'Open Trades',
       marketDetails: 'Market Details',
-      orderConfirmed: 'Order Confirmed'
+      orderConfirmed: 'Order Confirmed',
+      confirmedRef: 'Order registered successfully.',
+      specs: 'Market Specifications',
+      entryLive: 'Entry Price',
+      review: 'Review Trade',
+      riskPreVerify: 'Risk Pre-Verification'
     },
     wallet: {
       balance: 'Available Balance',
@@ -91,6 +96,37 @@ export const DICTIONARY = {
       withdraw: 'Withdraw',
       activity: 'Recent Activity'
     },
+    dashboard: {
+      recentTrades: 'Recent Activity',
+      viewHistory: 'Full History',
+      watchlist: 'My Watchlist',
+      manageWatchlist: 'Manage',
+      emptyWatchlist: 'Watchlist empty',
+      viewTerminal: 'Trade',
+      balance: 'Available Balance',
+      equity: 'Account Equity',
+      openRisk: 'Active Risk',
+      dailyPL: 'Today\'s Results'
+    },
+    pages: {
+      historyTitle: 'Execution History',
+      ordersTitle: 'Active Orders',
+      portfolioTitle: 'Portfolio Allocation',
+      watchlistSubtitle: 'Prioritized Market Instruments',
+      totalStake: 'Total Stake',
+      riskLimit: 'Risk Status',
+      definedRisk: 'Defined-Risk',
+      assetAllocation: 'Asset Allocation',
+      performanceCurve: 'Performance Curve'
+    },
+    tables: {
+      reference: 'Ref Token',
+      instrument: 'Instrument',
+      type: 'Side',
+      stake: 'Stake',
+      outcome: 'Outcome',
+      asset: 'Asset'
+    },
     common: {
       loading: 'Loading...',
       save: 'Save Changes',
@@ -99,7 +135,9 @@ export const DICTIONARY = {
       search: 'Search...',
       verified: 'Verified',
       pending: 'Pending',
-      status: 'Status'
+      status: 'Status',
+      active: 'Active',
+      stable: 'Stable'
     }
   },
   fr: {
@@ -169,7 +207,12 @@ export const DICTIONARY = {
       cancel: 'Annuler',
       openPositions: 'Positions ouvertes',
       marketDetails: 'Détails du marché',
-      orderConfirmed: 'Ordre confirmé'
+      orderConfirmed: 'Ordre confirmé',
+      confirmedRef: 'Ordre enregistré avec succès.',
+      specs: 'Spécifications du Marché',
+      entryLive: 'Prix d\'Entrée',
+      review: 'Réviser le Trade',
+      riskPreVerify: 'Pré-vérification des Risques'
     },
     wallet: {
       balance: 'Solde disponible',
@@ -179,6 +222,37 @@ export const DICTIONARY = {
       withdraw: 'Retirer',
       activity: 'Activité récente'
     },
+    dashboard: {
+      recentTrades: 'Activité Récente',
+      viewHistory: 'Historique Complet',
+      watchlist: 'Ma Liste de Suivi',
+      manageWatchlist: 'Gérer',
+      emptyWatchlist: 'Liste vide',
+      viewTerminal: 'Trader',
+      balance: 'Solde Disponible',
+      equity: 'Valeur du Compte',
+      openRisk: 'Risque Actif',
+      dailyPL: 'Résultats du Jour'
+    },
+    pages: {
+      historyTitle: 'Historique d\'Exécution',
+      ordersTitle: 'Ordres Actifs',
+      portfolioTitle: 'Allocation du Portefeuille',
+      watchlistSubtitle: 'Instruments de Marché Prioritaires',
+      totalStake: 'Enjeu Total',
+      riskLimit: 'Statut du Risque',
+      definedRisk: 'Risque Défini',
+      assetAllocation: 'Allocation d\'Actifs',
+      performanceCurve: 'Courbe de Performance'
+    },
+    tables: {
+      reference: 'Réf Jeton',
+      instrument: 'Instrument',
+      type: 'Côté',
+      stake: 'Enjeu',
+      outcome: 'Résultat',
+      asset: 'Actif'
+    },
     common: {
       loading: 'Chargement...',
       save: 'Enregistrer',
@@ -187,7 +261,9 @@ export const DICTIONARY = {
       search: 'Chercher...',
       verified: 'Vérifié',
       pending: 'En attente',
-      status: 'Statut'
+      status: 'Statut',
+      active: 'Actif',
+      stable: 'Stable'
     }
   },
   es: {
@@ -257,7 +333,12 @@ export const DICTIONARY = {
       cancel: 'Cancelar',
       openPositions: 'Operaciones Abiertas',
       marketDetails: 'Detalles del Mercado',
-      orderConfirmed: 'Orden Confirmada'
+      orderConfirmed: 'Orden Confirmada',
+      confirmedRef: 'Orden registrada con éxito.',
+      specs: 'Especificaciones del Mercado',
+      entryLive: 'Precio de Entrada',
+      review: 'Revisar Operación',
+      riskPreVerify: 'Pre-verificación de Riesgo'
     },
     wallet: {
       balance: 'Saldo Disponible',
@@ -267,6 +348,37 @@ export const DICTIONARY = {
       withdraw: 'Retirar',
       activity: 'Actividad Reciente'
     },
+    dashboard: {
+      recentTrades: 'Actividad Reciente',
+      viewHistory: 'Historial Completo',
+      watchlist: 'Mi Lista de Seguimiento',
+      manageWatchlist: 'Gestionar',
+      emptyWatchlist: 'Lista vacía',
+      viewTerminal: 'Operar',
+      balance: 'Saldo Disponible',
+      equity: 'Valor de la Cuenta',
+      openRisk: 'Riesgo Activo',
+      dailyPL: 'Resultados de Hoy'
+    },
+    pages: {
+      historyTitle: 'Historial de Ejecución',
+      ordersTitle: 'Órdenes Activas',
+      portfolioTitle: 'Asignación de Cartera',
+      watchlistSubtitle: 'Instrumentos de Mercado Prioritarios',
+      totalStake: 'Inversión Total',
+      riskLimit: 'Estado de Riesgo',
+      definedRisk: 'Riesgo Definido',
+      assetAllocation: 'Asignación de Activos',
+      performanceCurve: 'Curva de Rendimiento'
+    },
+    tables: {
+      reference: 'Ref Token',
+      instrument: 'Instrumento',
+      type: 'Lado',
+      stake: 'Cantidad',
+      outcome: 'Resultado',
+      asset: 'Activo'
+    },
     common: {
       loading: 'Cargando...',
       save: 'Guardar Cambios',
@@ -275,7 +387,9 @@ export const DICTIONARY = {
       search: 'Buscar...',
       verified: 'Verificado',
       pending: 'Pendiente',
-      status: 'Estado'
+      status: 'Estado',
+      active: 'Activo',
+      stable: 'Estable'
     }
   },
   pt: {
@@ -303,7 +417,7 @@ export const DICTIONARY = {
       contact: 'Suporte',
       exit: 'Sair',
       admin: 'Administração',
-      partners: 'Parceiros'
+      partners: 'Partenaires'
     },
     auth: {
       signIn: 'Entrar',
@@ -324,7 +438,7 @@ export const DICTIONARY = {
       heroTitle: 'Negocie online com uma corretora líder',
       heroSubtitle: 'Negocie com uma corretora licenciada e confiável. Experimente spreads baixos e execução rápida.',
       demoBtn: 'Testar demonstração',
-      activeInstruments: 'Instrumentos Ativos',
+      activeInstruments: 'Instrumentos Activos',
       viewAllSymbols: 'Ver todos os 150+ símbolos',
       marketIntelligence: 'Inteligência de Mercado',
       lowestSpreads: 'Os spreads mais baixos do mercado',
@@ -345,15 +459,51 @@ export const DICTIONARY = {
       cancel: 'Cancelar',
       openPositions: 'Posições Abertas',
       marketDetails: 'Detalhes do Mercado',
-      orderConfirmed: 'Ordem Confirmada'
+      orderConfirmed: 'Ordem Confirmada',
+      confirmedRef: 'Ordem registada com sucesso.',
+      specs: 'Especificações do Mercado',
+      entryLive: 'Preço de Entrada',
+      review: 'Rever Negociação',
+      riskPreVerify: 'Pré-verificação de Risco'
     },
     wallet: {
       balance: 'Saldo Disponível',
       equity: 'Valor Total',
-      risk: 'Dinheiro em Risco',
+      risk: 'Dinero en Risco',
       deposit: 'Adicionar Fundos',
       withdraw: 'Retirar',
       activity: 'Atividade Recente'
+    },
+    dashboard: {
+      recentTrades: 'Atividade Recente',
+      viewHistory: 'Histórico Completo',
+      watchlist: 'Minha Lista de Observação',
+      manageWatchlist: 'Gerenciar',
+      emptyWatchlist: 'Lista vazia',
+      viewTerminal: 'Negociar',
+      balance: 'Saldo Disponível',
+      equity: 'Valor da Conta',
+      openRisk: 'Risco Ativo',
+      dailyPL: 'Resultados de Hoje'
+    },
+    pages: {
+      historyTitle: 'Histórico de Execução',
+      ordersTitle: 'Ordens Ativas',
+      portfolioTitle: 'Alocação de Carteira',
+      watchlistSubtitle: 'Instrumentos de Mercado Prioritários',
+      totalStake: 'Investimento Total',
+      riskLimit: 'Status de Risco',
+      definedRisk: 'Risco Definido',
+      assetAllocation: 'Alocação de Ativos',
+      performanceCurve: 'Curva de Desempenho'
+    },
+    tables: {
+      reference: 'Ref Token',
+      instrument: 'Instrumento',
+      type: 'Lado',
+      stake: 'Valor',
+      outcome: 'Resultado',
+      asset: 'Ativo'
     },
     common: {
       loading: 'Carregando...',
@@ -363,7 +513,9 @@ export const DICTIONARY = {
       search: 'Pesquisar...',
       verified: 'Verificado',
       pending: 'Pendente',
-      status: 'Status'
+      status: 'Status',
+      active: 'Ativo',
+      stable: 'Estável'
     }
   },
   'zh-CN': {
@@ -433,7 +585,12 @@ export const DICTIONARY = {
       cancel: '取消',
       openPositions: '当前持仓',
       marketDetails: '市场详情',
-      orderConfirmed: '订单已确认'
+      orderConfirmed: '订单已确认',
+      confirmedRef: '订单已成功登记。',
+      specs: '市场规格',
+      entryLive: '入场价格',
+      review: '查看交易',
+      riskPreVerify: '风险预审'
     },
     wallet: {
       balance: '可用余额',
@@ -443,6 +600,37 @@ export const DICTIONARY = {
       withdraw: '提现',
       activity: '近期活动'
     },
+    dashboard: {
+      recentTrades: '近期活动',
+      viewHistory: '完整历史',
+      watchlist: '自选列表',
+      manageWatchlist: '管理',
+      emptyWatchlist: '列表为空',
+      viewTerminal: '交易',
+      balance: '可用余额',
+      equity: '账户净值',
+      openRisk: '活动风险',
+      dailyPL: '今日盈亏'
+    },
+    pages: {
+      historyTitle: '执行历史',
+      ordersTitle: '活动订单',
+      portfolioTitle: '投资组合分配',
+      watchlistSubtitle: '优先市场品种',
+      totalStake: '总投入',
+      riskLimit: '风险状态',
+      definedRisk: '风险已定义',
+      assetAllocation: '资产分配',
+      performanceCurve: '表现曲线'
+    },
+    tables: {
+      reference: '引用令牌',
+      instrument: '品种',
+      type: '方向',
+      stake: '投入',
+      outcome: '结果',
+      asset: '资产'
+    },
     common: {
       loading: '加载中...',
       save: '保存更改',
@@ -451,7 +639,9 @@ export const DICTIONARY = {
       search: '搜索...',
       verified: '已验证',
       pending: '待处理',
-      status: '状态'
+      status: '状态',
+      active: '活跃',
+      stable: '稳定'
     }
   }
 } as const;

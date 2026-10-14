@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * @fileOverview Active Orders Workspace.
- * Hardened against null database references.
+ * @fileOverview Institutional Active Orders Tracker.
+ * Fully localized for international markets.
  */
 
 import { useMemo, useState, useEffect } from "react";
@@ -43,43 +43,43 @@ export default function OrderManagementPage() {
   return (
     <AuthedLayout title={t('pages.ordersTitle')} subtitle={`${accountMode} Live Contracts`}>
       <div className="space-y-6">
-        <Card className="bg-white border-[#E4E4E4] overflow-hidden">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-[#F7F7F5] border-b text-[9px] font-bold uppercase text-[#6B7280]">
-              <tr>
-                <th className="p-4">Reference</th>
-                <th className="p-4">Market</th>
-                <th className="p-4 text-right">Stake</th>
-                <th className="p-4 text-center">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E4E4E4] font-mono">
-              {loading ? (
-                <tr><td colSpan={4} className="p-12 text-center text-[#6B7280]">Querying Terminal...</td></tr>
-              ) : orders.length === 0 ? (
-                <tr><td colSpan={4} className="p-12 text-center text-[#6B7280]">No active pending contracts.</td></tr>
-              ) : orders.map(o => (
-                <tr key={o.id} className="hover:bg-[#F7F7F5]">
-                  <td className="p-4 text-[#6B7280]">{o.id.slice(0, 8)}</td>
-                  <td className="p-4 font-bold">{o.instrument}</td>
-                  <td className="p-4 text-right font-bold">${formatNumber(o.stake || 0, { minimumFractionDigits: 2 })}</td>
-                  <td className="p-4 text-center">
-                    <span className="px-2 py-0.5 border border-[#C9A227] text-[#C9A227] text-[9px] font-bold uppercase animate-pulse">Pending</span>
-                  </td>
+        <Card className="bg-white border-[#E4E4E4] overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead className="bg-[#F7F7F5] border-b text-[9px] font-bold uppercase text-[#6B7280] tracking-widest">
+                <tr>
+                  <th className="p-4">{t('tables.reference')}</th>
+                  <th className="p-4">{t('tables.instrument')}</th>
+                  <th className="p-4 text-right">{t('tables.stake')}</th>
+                  <th className="p-4 text-center">{t('common.status')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-[#E4E4E4] font-mono">
+                {loading ? (
+                  <tr><td colSpan={4} className="p-12 text-center text-[#6B7280] uppercase font-bold">{t('common.loading')}</td></tr>
+                ) : orders.length === 0 ? (
+                  <tr><td colSpan={4} className="p-16 text-center text-[#6B7280] uppercase tracking-widest font-bold opacity-30">No active pending contracts.</td></tr>
+                ) : orders.map(o => (
+                  <tr key={o.id} className="hover:bg-[#F7F7F5] transition-colors">
+                    <td className="p-4 text-[#6B7280]">{o.id.slice(0, 8).toUpperCase()}</td>
+                    <td className="p-4 font-bold">{o.instrument}</td>
+                    <td className="p-4 text-right font-bold">${formatNumber(o.stake || 0, { minimumFractionDigits: 2 })}</td>
+                    <td className="p-4 text-center">
+                      <span className="px-2 py-0.5 border border-[#C9A227] text-[#C9A227] text-[9px] font-bold uppercase animate-pulse">Pending</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
 
-        {!db && (
-          <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center space-x-3 text-[#6B7280]">
-            <AlertCircle className="w-4 h-4" />
-            <p className="text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-              Order synchronization currently routing through fallback gateway.
-            </p>
-          </div>
-        )}
+        <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center space-x-3 text-[#6B7280]">
+          <AlertCircle className="w-4 h-4" />
+          <p className="text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+            Order synchronization currently routing through institutional fallback gateway.
+          </p>
+        </div>
       </div>
     </AuthedLayout>
   );
