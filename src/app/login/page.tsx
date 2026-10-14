@@ -11,7 +11,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/client";
 import placeholderImages from "@/app/lib/placeholder-images.json";
-import { Eye, EyeOff, Fingerprint, Loader2, ArrowLeft, Mail } from "lucide-react";
+import { Eye, EyeOff, Loader2, ArrowLeft, Mail } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 
 export default function LoginPage() {
@@ -22,7 +22,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -42,25 +41,6 @@ export default function LoginPage() {
       setError(err.message || "The email or password you entered is incorrect.");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    setGoogleLoading(true);
-    setError(null);
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
-      if (error) throw error;
-    } catch (err: any) {
-      setError("Google authentication failed. Please try again.");
-      setGoogleLoading(false);
     }
   };
 
@@ -146,28 +126,11 @@ export default function LoginPage() {
             <div className="space-y-3">
               <button
                 type="submit"
-                disabled={loading || googleLoading}
+                disabled={loading}
                 className="w-full btn-institutional-primary py-4 shadow-sm bg-[#0055FF] border-[#0055FF] text-white hover:bg-[#0044cc]"
               >
                 {loading ? "Logging in..." : "Log in to Account"}
               </button>
-
-              <div className="relative py-2 flex items-center justify-center">
-                <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-[#E4E4E4]"></span></div>
-                <span className="relative bg-white px-3 text-[8px] font-bold uppercase text-[#6B7280] tracking-[0.2em]">Other ways to sign in</span>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3">
-                <button
-                  type="button"
-                  onClick={handleGoogleSignIn}
-                  disabled={loading || googleLoading}
-                  className="py-3.5 border border-[#E4E4E4] text-[#0A0A0A] text-[10px] font-bold uppercase tracking-widest flex items-center justify-center space-x-2 hover:bg-[#F7F7F5] transition-colors"
-                >
-                  {googleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-4 h-4" alt="Google" />}
-                  <span>Sign in with Google</span>
-                </button>
-              </div>
             </div>
           </form>
 
