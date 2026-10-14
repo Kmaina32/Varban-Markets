@@ -3,7 +3,7 @@
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
  * 4-Panel Grid Architecture with resizable portfolio manager.
- * Updated: Real-time clock and timezone selector added to terminal header.
+ * Updated: Real-time clock, timezone, and language selectors added to header.
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
@@ -21,6 +21,7 @@ import { useUser } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { createClient } from "@/app/lib/supabase/client";
 import { cn } from "@/app/lib/utils";
+import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
 
 // Terminal Components
 import AuthedSidebar from "@/components/layout/AuthedSidebar";
@@ -55,7 +56,7 @@ const TIMEZONES = [
 export default function TerminalWorkspace() {
   const { user } = useUser();
   const supabase = createClient();
-  const { formatNumber } = useTranslation();
+  const { formatNumber, locale, setLocale } = useTranslation();
 
   // IDENTITY & UI STATE
   const [profile, setProfile] = useState<any>(null);
@@ -227,19 +228,38 @@ export default function TerminalWorkspace() {
         </div>
 
         <div className="flex items-center space-x-3 lg:space-x-8">
-          {/* Time & Timezone Module */}
+          {/* Settings & Time Module */}
           <div className="hidden lg:flex items-center space-x-4 border-r border-[#E4E4E4] pr-6">
             <div className="flex flex-col items-end">
               <span className="text-sm font-mono font-bold text-[#0A0A0A] tracking-tighter">{currentTime}</span>
-              <div className="relative flex items-center">
-                <select 
-                  value={activeTimezone}
-                  onChange={(e) => handleTimezoneChange(e.target.value)}
-                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none cursor-pointer pr-3"
-                >
-                  {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
-                </select>
-                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
+              <div className="flex items-center space-x-3">
+                {/* Language Selector */}
+                <div className="relative flex items-center group">
+                  <select 
+                    value={locale}
+                    onChange={(e) => setLocale(e.target.value as LocaleCode)}
+                    className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#0055FF] outline-none cursor-pointer pr-3"
+                  >
+                    {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
+                      <option key={code} value={code}>{label}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#0055FF] pointer-events-none" />
+                </div>
+                
+                <span className="text-[#E4E4E4] text-[8px]">|</span>
+
+                {/* Timezone Selector */}
+                <div className="relative flex items-center group">
+                  <select 
+                    value={activeTimezone}
+                    onChange={(e) => handleTimezoneChange(e.target.value)}
+                    className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none cursor-pointer pr-3"
+                  >
+                    {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
+                  </select>
+                  <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
+                </div>
               </div>
             </div>
           </div>

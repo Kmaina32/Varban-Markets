@@ -4,7 +4,7 @@ import AuthedSidebar from "./AuthedSidebar";
 import AdminSidebar from "./AdminSidebar";
 import ProfileDropdown from "./ProfileDropdown";
 import LoadingOverlay from "@/components/shared/LoadingOverlay";
-import { Menu, Info, ShieldAlert, ChevronDown } from "lucide-react";
+import { Menu, Info, ShieldAlert, ChevronDown, Globe } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useUser } from "@/firebase";
@@ -14,11 +14,12 @@ import { useEffect, useState, useMemo } from "react";
 import { cn } from "@/app/lib/utils";
 import { useSupabaseAuth } from "@/app/lib/supabase/auth-context";
 import { createClient } from "@/app/lib/supabase/client";
+import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
 
 /**
  * @fileOverview Authenticated Workspace Layout.
  * Manages the trader and admin sidebar/header context.
- * Features a real-time clock and timezone selector synchronized with Supabase.
+ * Features a real-time clock, timezone selector, and language selector.
  */
 
 const STRICT_PATHS = [
@@ -50,7 +51,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   const { user, loading } = useUser();
   const { signOut } = useSupabaseAuth();
   const supabase = createClient();
-  const { formatNumber, t } = useTranslation();
+  const { formatNumber, t, locale, setLocale } = useTranslation();
   const pathname = usePathname();
   const router = useRouter();
   
@@ -188,19 +189,38 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
         </div>
 
         <div className="flex items-center space-x-2 md:space-x-6">
-          {/* Time & Timezone Module */}
+          {/* Settings & Time Module */}
           <div className="hidden lg:flex items-center space-x-4 border-r border-[#E4E4E4] pr-6">
             <div className="flex flex-col items-end">
               <span className="text-sm font-mono font-bold text-[#0A0A0A] tracking-tighter">{currentTime}</span>
-              <div className="relative flex items-center group">
-                <select 
-                  value={activeTimezone}
-                  onChange={(e) => handleTimezoneChange(e.target.value)}
-                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none cursor-pointer pr-3"
-                >
-                  {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
-                </select>
-                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
+              <div className="flex items-center space-x-3">
+                {/* Language Selector */}
+                <div className="relative flex items-center group">
+                  <select 
+                    value={locale}
+                    onChange={(e) => setLocale(e.target.value as LocaleCode)}
+                    className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#0055FF] outline-none cursor-pointer pr-3"
+                  >
+                    {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
+                      <option key={code} value={code}>{label}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#0055FF] pointer-events-none" />
+                </div>
+                
+                <span className="text-[#E4E4E4] text-[8px]">|</span>
+
+                {/* Timezone Selector */}
+                <div className="relative flex items-center group">
+                  <select 
+                    value={activeTimezone}
+                    onChange={(e) => handleTimezoneChange(e.target.value)}
+                    className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none cursor-pointer pr-3"
+                  >
+                    {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
+                  </select>
+                  <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
+                </div>
               </div>
             </div>
           </div>
