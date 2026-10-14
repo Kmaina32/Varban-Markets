@@ -1,15 +1,14 @@
-
 "use client";
 
 /**
  * @fileOverview Institutional Regulatory Footer.
- * Redesigned to match high-precision brokerage standards (e.g. Exness / Deriv).
- * Hidden on strict authenticated paths to prioritize terminal workspace area.
+ * Fully Localized for Multilingual Support.
  */
 
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useTranslation } from "@/app/lib/i18n-context";
 
 const STRICT_PATHS = [
   '/terminal', '/dashboard', '/portfolio', '/positions', 
@@ -22,6 +21,7 @@ const STRICT_PATHS = [
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const pathname = usePathname();
+  const { t } = useTranslation();
   
   const isStrict = STRICT_PATHS.some(path => pathname === path || pathname?.startsWith(path + '/'));
 
@@ -51,33 +51,33 @@ export default function Footer() {
           
           <div className="grid grid-cols-2 gap-8 md:grid-cols-2 md:col-span-2">
             <div>
-              <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Trading Tools</h4>
+              <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">{t('landing.footer.tools')}</h4>
               <ul className="space-y-3 text-xs text-[#6B7280]">
-                <li><Link href="/markets" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Market List</Link></li>
+                <li><Link href="/markets" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">{t('nav.markets')}</Link></li>
                 <li><Link href="/how-it-works" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">How to Trade</Link></li>
                 <li><Link href="/terms/trading-rules" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Trading Rules</Link></li>
-                <li><Link href="/terms/market-data" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Market Data</Link></li>
+                <li><Link href="/terms/market-data" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">{t('landing.footer.data')}</Link></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Legal & Rules</h4>
+              <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">{t('landing.footer.legal')}</h4>
               <ul className="space-y-3 text-xs text-[#6B7280]">
-                <li><Link href="/terms" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Terms of Service</Link></li>
-                <li><Link href="/terms/risk-disclosure" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Risk Warning</Link></li>
-                <li><Link href="/terms/aml-kyc" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Identity Rules</Link></li>
-                <li><Link href="/terms/privacy" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">{t('landing.footer.terms')}</Link></li>
+                <li><Link href="/terms/risk-disclosure" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">{t('landing.footer.riskWarning')}</Link></li>
+                <li><Link href="/terms/aml-kyc" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">{t('landing.footer.aml')}</Link></li>
+                <li><Link href="/terms/privacy" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">{t('landing.footer.privacy')}</Link></li>
               </ul>
             </div>
           </div>
 
           <div>
-            <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">Support</h4>
+            <h4 className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest mb-4">{t('landing.footer.support')}</h4>
             <ul className="space-y-3 text-xs text-[#6B7280]">
               <li><Link href="/terms/fees" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Fees & Charges</Link></li>
               <li><Link href="/terms/complaints" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Complaints</Link></li>
-              <li><Link href="/help" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Help Center</Link></li>
-              <li><Link href="/contact" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Contact Support</Link></li>
+              <li><Link href="/help" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">{t('nav.help')}</Link></li>
+              <li><Link href="/contact" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">{t('nav.contact')}</Link></li>
             </ul>
           </div>
         </div>

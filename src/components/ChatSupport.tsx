@@ -2,10 +2,8 @@
 
 /**
  * @fileOverview Varban Assistant Chatbot.
- * Redesigned to match high-precision institutional standards with robot avatars, 
- * character counters, and brand-blue accents.
- * 
- * Update: Component now hides itself on the Terminal page to maintain a clear workspace.
+ * Redesigned to match high-precision institutional standards.
+ * Updated for Multilingual Support.
  */
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -13,6 +11,7 @@ import { usePathname } from 'next/navigation';
 import { X, Send, Loader2, ThumbsUp, ChevronDown, MessageSquare } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import { supportChat } from '@/ai/flows/support-chat-flow';
+import { useTranslation } from '@/app/lib/i18n-context';
 
 interface Message {
   role: 'user' | 'model';
@@ -21,16 +20,21 @@ interface Message {
 
 export default function ChatSupport() {
   const pathname = usePathname();
+  const { t, locale } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', content: 'Hi there 👋 I\'m the Varban AI Assistant. You can log in [https://varbanmarkets.com/login] for tailored support, or just ask me a question to get started.' }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [startTime, setStartTime] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // SUPPRESSION LOGIC: Hide on Terminal
+  // Initialize with localized starter message
+  useEffect(() => {
+    setMessages([
+      { role: 'model', content: t('chat.starter') }
+    ]);
+  }, [locale]);
+
   const isTerminal = pathname === '/terminal';
 
   useEffect(() => {
@@ -64,56 +68,50 @@ export default function ChatSupport() {
       
       const response = await supportChat({
         message: currentInput,
+        locale,
         history
       });
 
       setMessages(prev => [...prev, { 
         role: 'model', 
-        content: response || "I am currently processing high-volume requests. Please try again shortly." 
+        content: response || "Processing error." 
       }]);
     } catch (error) {
       console.error("Assistant Error:", error);
       setMessages(prev => [...prev, { 
         role: 'model', 
-        content: "I encountered a synchronization error. Please refer to our Help Center." 
+        content: t('chat.error')
       }]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Do not render if on the terminal page
   if (isTerminal) return null;
 
   return (
     <>
-      {/* Institutional FAB */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-6 right-6 w-14 h-14 bg-[#0055FF] text-white flex items-center justify-center shadow-xl hover:scale-105 transition-all z-[120] rounded-full"
-        aria-label="Toggle Assistant"
       >
         {isOpen ? <ChevronDown className="w-7 h-7" /> : <MessageSquare className="w-6 h-6" />}
       </button>
 
-      {/* Assistant Window */}
       {isOpen && (
         <div className="fixed bottom-24 right-6 w-80 sm:w-[380px] h-[520px] bg-white border border-[#E4E4E4] shadow-2xl z-[130] flex flex-col animate-in slide-in-from-bottom-4 duration-300 rounded-sm overflow-hidden">
-          {/* Header */}
           <div className="p-4 border-b border-[#F7F7F5] bg-white flex justify-between items-center shrink-0">
-            <h3 className="text-sm font-bold text-[#0A0A0A] uppercase tracking-tight">Varban Assistant</h3>
+            <h3 className="text-sm font-bold text-[#0A0A0A] uppercase tracking-tight">{t('chat.title')}</h3>
             <div className="flex items-center space-x-3 text-[#6B7280]">
-              <button className="hover:text-[#0A0A0A] transition-colors"><ThumbsUp className="w-4 h-4" /></button>
               <button onClick={() => setIsOpen(false)} className="hover:text-[#0A0A0A] transition-colors"><X className="w-5 h-5" /></button>
             </div>
           </div>
 
-          {/* Messages Area */}
           <div className="flex-grow overflow-y-auto p-4 space-y-6 no-scrollbar bg-white">
             <div className="flex items-center justify-center">
               <div className="flex items-center w-full">
                 <div className="flex-grow h-px bg-[#E4E4E4]"></div>
-                <span className="px-3 text-[10px] text-[#6B7280] font-medium">Chat started at {startTime}</span>
+                <span className="px-3 text-[10px] text-[#6B7280] font-medium">{t('chat.started')} {startTime}</span>
                 <div className="flex-grow h-px bg-[#E4E4E4]"></div>
               </div>
             </div>
@@ -122,7 +120,7 @@ export default function ChatSupport() {
               <div key={i} className={cn("flex items-start", msg.role === 'user' ? "justify-end" : "justify-start")}>
                 {msg.role === 'model' && (
                   <div className="mr-3 mt-1 shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-[#0055FF] flex items-center justify-center border border-[#E4E4E4] overflow-hidden">
+                    <div className="w-8 h-8 rounded-full bg-[#0055FF] flex items-center justify-center border border-[#E4E4E4] overflow-hidden">
                       <img src="https://picsum.photos/seed/varbanbot/80/80" alt="Bot" className="w-full h-full object-cover" />
                     </div>
                   </div>
@@ -136,40 +134,33 @@ export default function ChatSupport() {
                   )}>
                     {msg.content}
                   </div>
-                  {msg.role === 'model' && (
-                    <span className="text-[9px] text-[#6B7280] mt-1.5 font-medium ml-1">
-                      Bot • Just now
-                    </span>
-                  )}
                 </div>
               </div>
             ))}
             
             {isLoading && (
               <div className="flex justify-start items-center space-x-2">
-                <div className="w-10 h-10 rounded-full bg-[#F3F4F6] border border-[#E4E4E4] flex items-center justify-center shrink-0">
-                  <div className="w-4 h-4 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-8 h-8 rounded-full bg-[#F3F4F6] border border-[#E4E4E4] flex items-center justify-center shrink-0">
+                  <Loader2 className="w-3.5 h-3.5 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin" />
                 </div>
-                <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">Assistant is typing...</span>
+                <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">{t('chat.typing')}</span>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Interface */}
           <div className="p-4 border-t border-[#F7F7F5] bg-white shrink-0">
             <form onSubmit={handleSend} className="relative">
               <input 
                 type="text" 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your message"
+                placeholder={t('chat.placeholder')}
                 disabled={isLoading}
                 maxLength={400}
-                className="w-full border border-[#0A0A0A] p-3.5 pr-20 text-xs focus:outline-none placeholder:text-[#6B7280] bg-white"
+                className="w-full border border-[#0A0A0A] p-3.5 pr-12 text-xs focus:outline-none placeholder:text-[#6B7280] bg-white"
               />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center space-x-2">
-                <span className="text-[9px] font-mono font-bold text-[#6B7280]">{input.length}/400</span>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
                 <button 
                   type="submit" 
                   disabled={!input.trim() || isLoading}

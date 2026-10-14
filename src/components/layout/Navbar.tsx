@@ -1,17 +1,17 @@
-
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, X, ArrowUpRight, ChevronDown } from "lucide-react";
+import { Menu, X, ArrowUpRight, ChevronDown, Globe } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
+import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
 
 /**
  * @fileOverview Public Landing Page Navigation.
- * Updated to support 5 international languages via i18n context.
+ * Updated for full Multilingual Support.
  */
 
 const STRICT_PATHS = [
@@ -26,7 +26,7 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password'];
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { t } = useTranslation();
+  const { t, locale, setLocale } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   
@@ -37,91 +37,91 @@ export default function Navbar() {
 
   const publicLinks = [
     { 
-      label: "Trading", 
+      label: t('landing.nav.trading'), 
       href: "/how-it-works",
       hasDropdown: true,
       dropdownItems: {
         sections: [
           {
-            title: "Accounts",
+            title: t('landing.nav.accounts'),
             items: [
-              { label: "Standard accounts", href: "/accounts/standard" },
-              { label: "Professional accounts", href: "/accounts/professional" },
-              { label: "Demo trading account", href: "/accounts/demo" },
+              { label: t('landing.nav.standard'), href: "/accounts/standard" },
+              { label: t('landing.nav.professional'), href: "/accounts/professional" },
+              { label: t('landing.nav.demo'), href: "/accounts/demo" },
             ]
           },
           {
-            title: "Conditions",
+            title: t('landing.nav.conditions'),
             items: [
-              { label: "Deposits and withdrawals", href: "/how-it-works/payments" },
-              { label: "Fees", href: "/terms/fees" },
-              { label: "Client protection", href: "/protection" },
-              { label: "Order execution", href: "/terms/order-execution" },
+              { label: t('landing.nav.payments'), href: "/how-it-works/payments" },
+              { label: t('landing.nav.fees'), href: "/terms/fees" },
+              { label: t('landing.nav.protection'), href: "/protection" },
+              { label: t('landing.nav.execution'), href: "/terms/order-execution" },
             ]
           }
         ]
       }
     },
     { 
-      label: "Markets", 
+      label: t('landing.nav.markets'), 
       href: "/markets",
       hasDropdown: true,
       dropdownItems: {
         sections: [
           {
-            title: "Asset Classes",
+            title: t('landing.nav.assetClasses'),
             hideTitle: true,
             items: [
-              { label: "All Markets", href: "/markets" },
-              { label: "Forex", href: "/markets?cat=Forex" },
-              { label: "Digital Assets", href: "/markets?cat=Crypto" },
-              { label: "Indices", href: "/markets?cat=Equities" },
-              { label: "Commodities", href: "/markets/commodities" },
+              { label: t('landing.nav.all'), href: "/markets" },
+              { label: t('landing.nav.forex'), href: "/markets?cat=Forex" },
+              { label: t('landing.nav.crypto'), href: "/markets?cat=Crypto" },
+              { label: t('landing.nav.indices'), href: "/markets?cat=Equities" },
+              { label: t('landing.nav.commodities'), href: "/markets/commodities" },
             ]
           }
         ]
       }
     },
     { 
-      label: "Platforms", 
+      label: t('landing.nav.platforms'), 
       href: "/technology",
       hasDropdown: true,
       dropdownItems: {
         sections: [
           {
-            title: "Trading Terminals",
+            title: t('landing.nav.terminals'),
             items: [
-              { label: "Varban Terminal (Web)", href: "/terminal" },
-              { label: "Varban for Desktop", href: "/platforms/desktop" },
+              { label: t('landing.nav.web'), href: "/terminal" },
+              { label: t('landing.nav.desktop'), href: "/platforms/desktop" },
             ]
           },
           {
-            title: "Mobile App",
+            title: t('landing.nav.mobile'),
             items: [
-              { label: "Varban App (iOS/Android)", href: "/platforms/mobile" },
-              { label: "MetaTrader 5 Mobile", href: "/technology" },
+              { label: t('landing.nav.mobile'), href: "/platforms/mobile" },
+              { label: t('landing.nav.mt5'), href: "/technology" },
             ]
           }
         ]
       }
     },
     { 
-      label: "Resources", 
+      label: t('landing.nav.resources'), 
       href: "/help",
       hasDropdown: true,
       dropdownItems: {
         sections: [
           {
-            title: "Analysis",
+            title: t('landing.nav.analysis'),
             items: [
-              { label: "Market Intelligence", href: "/news" },
-              { label: "Economic Calendar", href: "/help/markets" },
+              { label: t('landing.nav.intelligence'), href: "/news" },
+              { label: t('landing.nav.calendar'), href: "/help/markets" },
             ]
           },
           {
-            title: "Support",
+            title: t('nav.help'),
             items: [
-              { label: "Help Center", href: "/help" },
+              { label: t('nav.help'), href: "/help" },
               { label: "FAQ", href: "/help" },
             ]
           }
@@ -129,32 +129,32 @@ export default function Navbar() {
       }
     },
     { 
-      label: "Company", 
+      label: t('landing.nav.company'), 
       href: "/about",
       hasDropdown: true,
       dropdownItems: {
         sections: [
           {
-            title: "About",
+            title: t('landing.nav.about'),
             items: [
-              { label: "About us", href: "/about" },
-              { label: "Why Varban", href: "/technology" },
-              { label: "Contact us", href: "/about/contact" },
-              { label: "Blog", href: "/about/press" },
+              { label: t('landing.nav.about'), href: "/about" },
+              { label: t('landing.nav.why'), href: "/technology" },
+              { label: t('nav.contact'), href: "/about/contact" },
+              { label: t('landing.nav.blog'), href: "/about/press" },
             ]
           },
           {
-            title: "Corporate",
+            title: t('landing.nav.corporate'),
             items: [
-              { label: "Regulation", href: "/about/licenses" },
-              { label: "Legal documents", href: "/terms" },
-              { label: "Compensation fund", href: "/protection" },
+              { label: t('landing.nav.regulation'), href: "/about/licenses" },
+              { label: t('landing.nav.legal'), href: "/terms" },
+              { label: t('landing.nav.protection'), href: "/protection" },
             ]
           },
           {
-            title: "Solutions",
+            title: t('landing.nav.solutions'),
             items: [
-              { label: "Varban Rewards", href: "/referral" },
+              { label: t('landing.nav.rewards'), href: "/referral" },
             ]
           }
         ]
@@ -200,7 +200,6 @@ export default function Navbar() {
                     {link.isExternal && <ArrowUpRight className="w-2.5 h-2.5 opacity-50" />}
                   </Link>
 
-                  {/* Mega Menu Dropdown */}
                   {link.hasDropdown && activeDropdown === link.label && (
                     <div className={cn(
                       "absolute top-full left-0 bg-white border border-[#E4E4E4] shadow-2xl animate-in fade-in slide-in-from-top-1 duration-200 z-[600]",
@@ -208,7 +207,7 @@ export default function Navbar() {
                       link.dropdownItems!.sections.length === 2 ? "w-[550px] p-10 grid-cols-2" : "w-[800px] p-10 grid-cols-3",
                       "grid gap-8"
                     )}>
-                      {link.dropdownItems!.sections.map((section: any, sIdx) => (
+                      {link.dropdownItems!.sections.map((section: any, sIdx: number) => (
                         <div key={sIdx} className="space-y-4">
                           {!section.hideTitle && (
                             <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest block border-b border-[#F7F7F5] pb-3">
@@ -231,26 +230,44 @@ export default function Navbar() {
             </div>
           </div>
 
-          <div className="hidden lg:flex items-center space-x-3">
-            <Link 
-              href="/register" 
-              className="bg-[#0055FF] hover:bg-[#0044cc] text-white text-[11px] font-bold uppercase tracking-widest px-8 py-3 transition-colors duration-200"
-            >
-              {t('auth.register')}
-            </Link>
-            <Link 
-              href="/login" 
-              className="bg-[#F2F2F2] hover:bg-[#EAEAEA] text-[#0A0A0A] text-[11px] font-bold uppercase tracking-widest px-8 py-3 transition-colors"
-            >
-              {t('auth.signIn')}
-            </Link>
+          <div className="hidden lg:flex items-center space-x-6">
+            {/* PUBLIC LANGUAGE SELECTOR */}
+            <div className="flex items-center bg-[#F7F7F5] border border-[#E4E4E4] px-3 py-1.5 space-x-3">
+               <Globe className="w-3.5 h-3.5 text-[#0055FF]" />
+               <div className="relative flex items-center">
+                  <select 
+                    value={locale}
+                    onChange={(e) => setLocale(e.target.value as LocaleCode)}
+                    className="appearance-none bg-transparent text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A] outline-none cursor-pointer pr-4"
+                  >
+                    {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
+                      <option key={code} value={code}>{label}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
+               </div>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <Link 
+                href="/register" 
+                className="bg-[#0055FF] hover:bg-[#0044cc] text-white text-[11px] font-bold uppercase tracking-widest px-8 py-3 transition-colors duration-200"
+              >
+                {t('auth.register')}
+              </Link>
+              <Link 
+                href="/login" 
+                className="bg-[#F2F2F2] hover:bg-[#EAEAEA] text-[#0A0A0A] text-[11px] font-bold uppercase tracking-widest px-8 py-3 transition-colors"
+              >
+                {t('auth.signIn')}
+              </Link>
+            </div>
           </div>
 
           <div className="lg:hidden">
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 text-[#0A0A0A] hover:bg-[#F7F7F5] transition-colors"
-              aria-label="Toggle Menu"
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -277,6 +294,20 @@ export default function Navbar() {
               </button>
             </div>
             <div className="flex-grow overflow-y-auto p-6 space-y-8">
+              {/* Mobile Language Selector */}
+              <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex justify-between items-center">
+                 <span className="text-[10px] font-bold uppercase text-[#6B7280]">Select Language</span>
+                 <select 
+                    value={locale}
+                    onChange={(e) => setLocale(e.target.value as LocaleCode)}
+                    className="bg-transparent text-xs font-bold uppercase text-[#0055FF] outline-none"
+                  >
+                    {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
+                      <option key={code} value={code}>{label}</option>
+                    ))}
+                  </select>
+              </div>
+
               <nav className="flex flex-col space-y-6">
                 {publicLinks.map((link) => (
                   <div key={link.label}>
@@ -293,7 +324,7 @@ export default function Navbar() {
                     </div>
                     {link.hasDropdown && (
                       <div className="mt-4 pl-4 flex flex-col space-y-6 border-l-2 border-[#F7F7F5]">
-                        {link.dropdownItems!.sections.map((section: any, sIdx) => (
+                        {link.dropdownItems!.sections.map((section: any, sIdx: number) => (
                           <div key={sIdx}>
                             {!section.hideTitle && (
                               <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest mb-3 block">
