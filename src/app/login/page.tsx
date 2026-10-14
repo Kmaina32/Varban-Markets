@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Login Workspace.
- * Integrated with Supabase Auth.
+ * Integrated with Supabase Auth with refined institutional error handling.
  */
 
 import { useState } from "react";
@@ -11,7 +11,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/client";
 import placeholderImages from "@/app/lib/placeholder-images.json";
-import { Eye, EyeOff, Loader2, ArrowLeft, Mail } from "lucide-react";
+import { Eye, EyeOff, Loader2, ArrowLeft, Mail, AlertCircle } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 
 export default function LoginPage() {
@@ -30,15 +30,27 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (authError) {
+        // Institutional Error Mapping
+        const msg = authError.message.toLowerCase();
+        if (msg.includes('invalid login credentials')) {
+          throw new Error("The credentials provided do not match our records. Please verify your email and password.");
+        } else if (msg.includes('email not confirmed')) {
+          throw new Error("Your email address is not yet verified. Please check your inbox for the confirmation link.");
+        } else if (msg.includes('too many requests')) {
+          throw new Error("Security Lock: Too many failed attempts. Please wait a moment before trying again.");
+        }
+        throw authError;
+      }
+      
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.message || "The email or password you entered is incorrect.");
+      setError(err.message || "A secure connection to the identity node could not be established.");
     } finally {
       setLoading(false);
     }
@@ -82,8 +94,9 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide">
-              {error}
+            <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide flex items-start gap-3 animate-in fade-in slide-in-from-top-1 duration-300">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{error}</span>
             </div>
           )}
 
@@ -129,7 +142,12 @@ export default function LoginPage() {
                 disabled={loading}
                 className="w-full btn-institutional-primary py-4 shadow-sm bg-[#0055FF] border-[#0055FF] text-white hover:bg-[#0044cc]"
               >
-                {loading ? "Logging in..." : "Log in to Account"}
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Synchronizing Session...</span>
+                  </div>
+                ) : "Log in to Account"}
               </button>
             </div>
           </form>
@@ -139,12 +157,6 @@ export default function LoginPage() {
             <Link href="/register" className="text-[11px] font-bold text-[#0A0A0A] uppercase tracking-widest underline decoration-[#0055FF] decoration-2 underline-offset-4 ml-1">Create Account</Link>
           </div>
         </div>
-      </div>
-      
-      <div className="fixed bottom-6 right-6">
-        <button className="w-14 h-14 bg-[#0055FF] text-white flex items-center justify-center rounded-full shadow-2xl hover:scale-105 transition-all">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/><path d="M7 9h10v2H7zm0-3h10v2H7zm0 6h7v2H7z"/></svg>
-        </button>
       </div>
     </div>
   );

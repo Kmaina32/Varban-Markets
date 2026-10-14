@@ -1,11 +1,16 @@
 "use client";
 
+/**
+ * @fileOverview Forgot Password Workspace.
+ * Refined institutional error handling and branded feedback.
+ */
+
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/app/lib/supabase/client";
 import placeholderImages from "@/app/lib/placeholder-images.json";
-import { ArrowLeft, CheckCircle2, Mail, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Mail, Loader2, AlertCircle } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const supabase = createClient();
@@ -20,14 +25,19 @@ export default function ForgotPasswordPage() {
     setError(null);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/reset-password`,
       });
 
-      if (error) throw error;
+      if (resetError) {
+        if (resetError.message.includes('too many requests')) {
+          throw new Error("Security Lock: Too many reset attempts. Please wait a moment before trying again.");
+        }
+        throw resetError;
+      }
       setSuccess(true);
     } catch (err: any) {
-      setError(err.message || "We could not send a recovery link to that email address.");
+      setError(err.message || "A recovery link could not be generated for this domain.");
     } finally {
       setLoading(false);
     }
@@ -87,8 +97,9 @@ export default function ForgotPasswordPage() {
           ) : (
             <form onSubmit={handleReset} className="space-y-6">
               {error && (
-                <div className="p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide">
-                  {error}
+                <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide flex items-start gap-3 animate-in fade-in slide-in-from-top-1 duration-300">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{error}</span>
                 </div>
               )}
 
@@ -116,7 +127,12 @@ export default function ForgotPasswordPage() {
                 disabled={loading}
                 className="w-full btn-institutional-primary py-4 shadow-sm"
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "Send Recovery Link"}
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Transmitting...</span>
+                  </div>
+                ) : "Send Recovery Link"}
               </button>
             </form>
           )}

@@ -1,10 +1,8 @@
-
 "use client";
 
 /**
  * @fileOverview Finalized Onboarding Client Component.
- * Extracted from the main page to support Suspense wrapping of useSearchParams.
- * Features real-time password validation and regulatory declarations.
+ * Refined institutional error mapping and validation feedback.
  */
 
 import { useState, useEffect } from "react";
@@ -18,7 +16,8 @@ import {
   EyeOff, 
   Globe, 
   Loader2, 
-  Info
+  Info,
+  AlertCircle
 } from "lucide-react";
 import { COUNTRIES } from "@/app/lib/countries";
 import { detectLocation } from "@/app/lib/geolocation-service";
@@ -86,10 +85,19 @@ export default function RegisterClient() {
         }
       });
 
-      if (signUpError) throw signUpError;
+      if (signUpError) {
+        const msg = signUpError.message.toLowerCase();
+        if (msg.includes('user already registered')) {
+          throw new Error("An entity is already registered with this email domain.");
+        } else if (msg.includes('too many requests')) {
+          throw new Error("Protocol Lock: Too many registration attempts. Please try again in a few minutes.");
+        }
+        throw signUpError;
+      }
+      
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Registration failed. Please try again.");
+      setError(err.message || "Registration handshake failure. Please check your data or connectivity.");
     } finally {
       setLoading(false);
     }
@@ -126,8 +134,9 @@ export default function RegisterClient() {
 
           <form onSubmit={handleRegister} className="space-y-6">
             {error && (
-              <div className="p-3 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[11px] font-bold text-[#C43D3D] uppercase text-center">
-                {error}
+              <div className="p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[11px] font-bold text-[#C43D3D] uppercase text-left flex items-start gap-3 animate-in fade-in duration-300">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{error}</span>
               </div>
             )}
 
@@ -280,12 +289,6 @@ export default function RegisterClient() {
           </form>
         </div>
       </main>
-
-      <div className="fixed bottom-6 right-6">
-        <button className="w-14 h-14 bg-[#0055FF] text-white flex items-center justify-center rounded-full shadow-2xl hover:scale-105 transition-all">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/><path d="M7 9h10v2H7zm0-3h10v2H7zm0 6h7v2H7z"/></svg>
-        </button>
-      </div>
     </div>
   );
 }
