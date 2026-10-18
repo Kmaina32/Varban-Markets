@@ -36,9 +36,9 @@ export default function HomePage() {
 
   const trustIndicators = [
     { icon: ShieldCheck, text: t('landing.instantWithdrawals').toUpperCase() },
-    { icon: FileText, text: "Authorized by FSA in Saint Lucia" },
-    { icon: Headset, text: "Technical Desk 24/7" },
-    { icon: Lock, text: "PCI DSS certified" }
+    { icon: FileText, text: t('landing.fsaAuthorized').toUpperCase() },
+    { icon: Headset, text: t('landing.techDesk').toUpperCase() },
+    { icon: Lock, text: t('landing.pciCertified').toUpperCase() }
   ];
 
   useEffect(() => {
@@ -74,10 +74,10 @@ export default function HomePage() {
       {/* Top Risk Disclaimer */}
       <div className="bg-[#0A0A0A] text-white py-2.5 px-4 text-center z-[100] relative">
         <p className="text-[10px] md:text-[11px] leading-relaxed max-w-7xl mx-auto opacity-90 uppercase tracking-widest font-bold">
-          {t('landing.footer.riskWarning')}: Online Forex/CFDs are complex instruments. 
-          <span className="text-[#FFDE00]"> 82.18% of retail investor accounts lose money </span> 
-          when trading online Forex/CFDs with this provider. 
-          <Link href="/terms/risk-disclosure" className="text-[#FFDE00] underline ml-1">Learn more.</Link>
+          {t('landing.footer.riskWarning')}: {t('landing.riskWarningText')} 
+          <span className="text-[#FFDE00]"> {t('landing.lossStat')} </span> 
+          {t('landing.riskContext')}
+          <Link href="/terms/risk-disclosure" className="text-[#FFDE00] underline ml-1">{t('landing.learnMore')}</Link>
         </p>
       </div>
 
@@ -239,7 +239,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
             <div className="space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">Global Market Registry</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF]">{t('landing.marketRegistryTitle')}</span>
               <h2 className="text-3xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">{t('landing.activeInstruments')}</h2>
             </div>
             <Link href="/markets" className="text-[11px] font-bold uppercase tracking-widest text-[#0055FF] flex items-center gap-1.5 hover:underline">
@@ -252,10 +252,10 @@ export default function HomePage() {
               <table className="w-full text-left border-collapse">
                 <thead className="bg-[#F7F7F5] border-b border-[#E4E4E4]">
                   <tr className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">
-                    <th className="p-5">Instrument</th>
-                    <th className="p-5">Last Price</th>
-                    <th className="p-5">24h Change</th>
-                    <th className="p-5 text-right">Action</th>
+                    <th className="p-5">{t('tables.instrument')}</th>
+                    <th className="p-5">{t('landing.lastPrice')}</th>
+                    <th className="p-5">{t('landing.24hChange')}</th>
+                    <th className="p-5 text-right">{t('landing.action')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E4E4E4]">

@@ -117,7 +117,18 @@ export const DICTIONARY = {
       ultraFastExecution: 'Ultra-fast execution',
       ultraFastExecutionDesc: 'Execute trades in milliseconds, no matter the size, for precise market entries.',
       swapFree: 'Swap-free trading',
-      swapFreeDesc: 'Hold positions overnight without incurring interest charges on major instruments.'
+      swapFreeDesc: 'Hold positions overnight without incurring interest charges on major instruments.',
+      riskWarningText: 'Online Forex/CFDs are complex instruments.',
+      lossStat: '82.18% of retail investor accounts lose money',
+      riskContext: 'when trading online Forex/CFDs with this provider.',
+      learnMore: 'Learn more.',
+      fsaAuthorized: 'Authorized by FSA in Saint Lucia',
+      techDesk: 'Technical Desk 24/7',
+      pciCertified: 'PCI DSS certified',
+      marketRegistryTitle: 'Global Market Registry',
+      lastPrice: 'Last Price',
+      '24hChange': '24h Change',
+      action: 'Action'
     },
     auth: {
       signIn: 'Sign In',
@@ -383,7 +394,18 @@ export const DICTIONARY = {
       ultraFastExecution: 'Exécution ultra-rapide',
       ultraFastExecutionDesc: 'Exécutez des transactions en quelques millisecondes, quelle que soit leur taille, pour des entrées précises sur le marché.',
       swapFree: 'Trading sans swap',
-      swapFreeDesc: 'Maintenez vos positions pendant la nuit sans encourir de frais d\'intérêt sur les principaux instruments.'
+      swapFreeDesc: 'Maintenez vos positions pendant la nuit sans encourir de frais d\'intérêt sur les principaux instruments.',
+      riskWarningText: 'Le Forex/CFD en ligne sont des instruments complexes.',
+      lossStat: '82,18 % des comptes d\'investisseurs particuliers perdent de l\'argent',
+      riskContext: 'lorsqu\'ils négocient des Forex/CFD en ligne avec ce fournisseur.',
+      learnMore: 'En savoir plus.',
+      fsaAuthorized: 'Autorisé par la FSA à Sainte-Lucie',
+      techDesk: 'Bureau technique 24/7',
+      pciCertified: 'Certifié PCI DSS',
+      marketRegistryTitle: 'Registre du marché mondial',
+      lastPrice: 'Dernier prix',
+      '24hChange': 'Changement 24h',
+      action: 'Action'
     },
     auth: {
       signIn: 'Se connecter',
@@ -649,7 +671,18 @@ export const DICTIONARY = {
       ultraFastExecution: 'Ejecución ultra rápida',
       ultraFastExecutionDesc: 'Ejecute operaciones en milisegundos, sin importar el tamaño, para entradas precisas en el mercado.',
       swapFree: 'Operaciones sin swap',
-      swapFreeDesc: 'Mantenga posiciones durante la noche sin incurrir en cargos por intereses en los principales instrumentos.'
+      swapFreeDesc: 'Mantenga posiciones durante la noche sin incurrir en cargos por intereses en los principales instrumentos.',
+      riskWarningText: 'El Forex/CFD en línea son instrumentos complejos.',
+      lossStat: 'El 82,18 % de las cuentas de inversores minoristas pierden dinero',
+      riskContext: 'cuando operan con Forex/CFD en línea con este proveedor.',
+      learnMore: 'Más información.',
+      fsaAuthorized: 'Autorizado por la FSA en Santa Lucía',
+      techDesk: 'Mesa técnica 24/7',
+      pciCertified: 'Certificado PCI DSS',
+      marketRegistryTitle: 'Registro del mercado mundial',
+      lastPrice: 'Último precio',
+      '24hChange': 'Cambio 24h',
+      action: 'Acción'
     },
     auth: {
       signIn: 'Iniciar Sesión',
@@ -886,12 +919,12 @@ export const DICTIONARY = {
         riskWarning: 'Aviso de risco',
         privacy: 'Privacidade',
         terms: 'Termos de serviço',
-        aml: 'Regras de identidade',
+        aml: 'Identity Rules',
         data: 'Market Data',
         disclosures: {
           companyInfo: 'A Varban Markets Ltd está registada em Santa Lúcia com o número de registo 2024-00142 e é regulada pela Autoridade de Serviços Financeiros (FSA) em Santa Lúcia como Corretora Financeira Internacional sob o número de licença FSA-REG-892410-VM. A sede social da Varban Markets Ltd situa-se em Rodney Bayside Building, Rodney Bay, Gros Islet, Santa Lúcia.',
           authNotice: 'A entidade acima está devidamente autorizada a operar sob a marca e marcas registadas da Varban Markets.',
-          riskWarningFull: 'Aviso de Risco: Derivados online e contratos sintéticos são instrumentos complexos e acarretam um elevado risco de perder dinheiro rapidamente devido à alavancagem. 84,12% das contas de investidores de retalho perdem dinheiro ao negociar estes instrumentos com este fornecedor. Deve considerar se compreende como estes contratos funcionam e se pode permitir-se correr o elevado risco de perder o seu dinheiro.',
+          riskWarningFull: 'Aviso de Risco: Derivados online e contratos synthéticos são instrumentos complexos e acarretam um elevado risco de perder dinheiro rapidamente devido à alavancagem. 84,12% das contas de investidores de retalho perdem dinheiro ao negociar estes instrumentos com este fornecedor. Deve considerar se compreende como estes contratos funcionam e se pode permitir-se correr o elevado risco de perder o seu dinheiro.',
           liabilityNotice: 'Em nenhuma circunstância a Varban Markets terá qualquer responsabilidade perante qualquer pessoa ou entidade por qualquer perda ou dano total ou parcial causado por, resultante de ou relacionado com qualquer atividade financeira.',
           restrictedRegions: 'A entidade acima não oferece serviços a residentes de certas jurisdições, incluindo os EUA, Canadá, Irão, Coreia do Norte, Europa, Reino Unido e outros.',
           noAdvice: 'As informações contidas neste website não constituem aconselhamento de investimento, recomendação ou solicitação para participar em qualquer atividade de investimento.',
@@ -915,7 +948,18 @@ export const DICTIONARY = {
       ultraFastExecution: 'Execução ultra rápida',
       ultraFastExecutionDesc: 'Execute negociações em milissegundos, independentemente do tamanho, para entradas precisas no mercado.',
       swapFree: 'Negociação sem swap',
-      swapFreeDesc: 'Mantenha posições durante a noite sem incorrer em taxas de juros nos principais instrumentos.'
+      swapFreeDesc: 'Mantenha posições durante a noite sem incorrer em taxas de juros nos principais instrumentos.',
+      riskWarningText: 'Forex/CFDs on-line são instrumentos complexos.',
+      lossStat: '82,18% das contas de investidores de varejo perdem dinheiro',
+      riskContext: 'ao negociar Forex/CFDs on-line com este provedor.',
+      learnMore: 'Saiba mais.',
+      fsaAuthorized: 'Autorizado pela FSA em Santa Lúcia',
+      techDesk: 'Mesa Técnica 24/7',
+      pciCertified: 'Certificado PCI DSS',
+      marketRegistryTitle: 'Registro do Mercado Global',
+      lastPrice: 'Último preço',
+      '24hChange': 'Mudança 24h',
+      action: 'Ação'
     },
     auth: {
       signIn: 'Entrar',
@@ -1043,12 +1087,12 @@ export const DICTIONARY = {
       step2Desc: 'Novos negociadores registram-se usando seu condutor e entram em nosso ecossistema seguro.',
       step3Title: 'Recompensas de escala',
       step3Desc: 'Monitore o crescimento da sua rede e desbloqueie níveis avançados de parceiros institucionais.',
-      rewardsActive: 'Recompensas Ativas',
+      rewardsActive: 'Recompensas Activas',
       rewardsPolicy: 'As recompensas dos parceiros da plataforma são calculadas com base no volume ativo mensal dentro do seu domínio de rede direta.'
     },
     pages: {
       historyTitle: 'Histórico de Execução',
-      ordersTitle: 'Ordens Ativas',
+      ordersTitle: 'Ordres Ativas',
       portfolioTitle: 'Alocação de Carteira',
       watchlistSubtitle: 'Instrumentos de Mercado Prioritários',
       totalStake: 'Investimento Total',
@@ -1155,7 +1199,7 @@ export const DICTIONARY = {
         aml: '身份规则',
         data: '市场数据',
         disclosures: {
-          companyInfo: 'Varban Markets Ltd 在圣卢西亚注册，注册号为 2024-00142，并受圣卢西亚金融服务管理局 (FSA) 监管，作为国际金融经纪人，执照号为 FSA-REG-892410-VM。Varban Markets Ltd 的注册办事处位于 Rodney Bayside Building, Rodney Bay, Gros Islet, Saint Lucia。',
+          companyInfo: 'Varban Markets Ltd 在圣卢西亚注册，注册号为 2024-00142 和受圣卢西亚金融服务管理局 (FSA) 监管，作为国际金融经纪人，执照号为 FSA-REG-892410-VM。Varban Markets Ltd 的注册办事处位于 Rodney Bayside Building, Rodney Bay, Gros Islet, Saint Lucia。',
           authNotice: '上述实体已获得正式授权，以 Varban Markets 品牌和商标进行运营。',
           riskWarningFull: '风险提示：在线衍生品和合成合约是复杂的工具，由于杠杆作用，存在快速亏损的高风险。 84.12% 的零售投资者账户在使用该提供商交易这些工具时亏损。您应该考虑是否了解这些合约的运作方式，以及您是否能够承担丢失金钱的高风险。',
           liabilityNotice: '在任何情况下，Varban Markets 对任何个人或实体因任何金融活动引起、导致或与之相关的全部或部分损失或损害均不承担任何责任。',
@@ -1181,7 +1225,18 @@ export const DICTIONARY = {
       ultraFastExecution: '极速执行',
       ultraFastExecutionDesc: '无论交易规模大小，均可以毫秒级速度执行，确保精确的市场进入。',
       swapFree: '免隔夜利息交易',
-      swapFreeDesc: '主要交易品种支持隔夜持仓，无需支付利息费用。'
+      swapFreeDesc: '主要交易品种支持隔夜持仓，无需支付利息费用。',
+      riskWarningText: '在线外汇/差价合约是复杂的工具。',
+      lossStat: '82.18% 的零售投资者账户亏损',
+      riskContext: '在该提供商处交易在线外汇/差价合约时。',
+      learnMore: '了解更多。',
+      fsaAuthorized: '由圣卢西亚 FSA 授权',
+      techDesk: '24/7 技术服务台',
+      pciCertified: 'PCI DSS 认证',
+      marketRegistryTitle: '全球市场登记处',
+      lastPrice: '最新价格',
+      '24hChange': '24小时涨跌',
+      action: '操作'
     },
     auth: {
       signIn: '登录',
