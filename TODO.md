@@ -6,7 +6,7 @@
 ## 1. Non-Working / Static Buttons & Functional Triggers
 
 ### A. Security & Verification Pages (`/security`, `/verification`, `/account`)
-- [x] **`/verification` Upload Buttons**: wired to trigger "Pending" status update and user notification alerts.
+- [x] **`/verification`   Upload Buttons**: wired to trigger "Pending" status update and user notification alerts.
 - [x] **`/security` "Change Password" Button**: Wired to Firebase Auth `sendPasswordResetEmail` flow.
 - [x] **`/security` "Log Out Everywhere Else" Button**: Wired to force token refresh and remote session revocation UX.
 - [ ] **`/security` 2FA Toggle**: Shows static "ON" badge without a TOTP QR code generator, secret key provisioning, or authenticator app setup workflow.
