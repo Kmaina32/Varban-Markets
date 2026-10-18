@@ -16,7 +16,7 @@ import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 
 export default function ActivePositionsPage() {
-  const { user } = userUser();
+  const { user } = useUser();
   const db = useFirestore();
   const { t, formatNumber } = useTranslation();
 
