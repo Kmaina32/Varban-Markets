@@ -12,6 +12,7 @@ import { Search, Download, AlertCircle } from "lucide-react";
 import { useUser, useFirestore, useCollection } from "@/firebase";
 import { collection, query, where, orderBy } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
+import { cn } from "@/app/lib/utils";
 import PageTutorial, { TutorialStep } from "@/components/shared/PageTutorial";
 
 export default function TradeHistoryPage() {

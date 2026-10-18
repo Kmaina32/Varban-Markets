@@ -13,9 +13,10 @@ import Link from "next/link";
 import { useUser, useFirestore, useCollection } from "@/firebase";
 import { collection, query, where, orderBy } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
+import { cn } from "@/app/lib/utils";
 
 export default function ActivePositionsPage() {
-  const { user } = useUser();
+  const { user } = userUser();
   const db = useFirestore();
   const { t, formatNumber } = useTranslation();
 
@@ -101,7 +102,10 @@ export default function ActivePositionsPage() {
                 <td className="p-4 text-[#6B7280]">{pos.id.slice(0, 8).toUpperCase()}</td>
                 <td className="p-4 font-bold">{pos.instrument}</td>
                 <td className="p-4">
-                  <span className={`px-1.5 py-0.5 border text-[9px] font-bold ${pos.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#0055FF] text-[#0055FF]'}`}>
+                  <span className={cn(
+                    "px-1.5 py-0.5 border text-[9px] font-bold",
+                    pos.vector === 'CALL' ? "border-[#16835B] text-[#16835B]" : "border-[#0055FF] text-[#0055FF]"
+                  )}>
                     {pos.vector}
                   </span>
                 </td>
