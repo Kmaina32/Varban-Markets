@@ -4,10 +4,11 @@ import { cookies } from "next/headers";
 /**
  * @fileOverview Institutional Supabase Server Client.
  * Hardened for Next.js 15 App Router compatibility.
+ * Updated to use standard Anon Key variable naming.
  */
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export const createClient = async () => {
   const cookieStore = await cookies();

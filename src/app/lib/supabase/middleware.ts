@@ -4,10 +4,11 @@ import { type NextRequest, NextResponse } from "next/server";
 /**
  * @fileOverview Next.js 15 Middleware for Supabase Session Refreshing.
  * Standardized cookie-sync pattern to ensure both request and response context.
+ * Updated to use standard Anon Key variable naming.
  */
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export const updateSession = async (request: NextRequest) => {
   // Create an initial response
