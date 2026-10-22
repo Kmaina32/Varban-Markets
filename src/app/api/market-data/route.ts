@@ -2,17 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * @fileOverview Secure Market Data Proxy with Multi-Provider Failover.
- * Hardened with robust null-checks to prevent downstream TypeError crashes.
+ * Normalizes responses from $0 fee sources: Binance, Twelve Data, Alpha Vantage.
  */
 
 const TWELVE_DATA_KEY = process.env.TWELVE_DATA_API_KEY;
-const POLYGON_KEY = process.env.POLYGON_API_KEY;
 const ALPHA_VANTAGE_KEY = process.env.ALPHA_VANTAGE_API_KEY;
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
-const COINBASE_VERSION = "2022-01-06";
-
-const cache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_TTL = 10000;
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -22,184 +17,132 @@ export async function GET(req: NextRequest) {
 
   if (!symbol) return NextResponse.json({ error: 'Symbol required' }, { status: 400 });
 
-  const cacheKey = `${type}-${symbol}-${interval}`;
-  const cached = cache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return NextResponse.json(cached.data);
-  }
-
-  // 1. Try Coinbase CDP (Institutional High Priority)
-  const isMajor = ['BTC', 'ETH', 'SOL', 'EUR', 'GBP'].some(s => symbol.startsWith(s));
-  if (isMajor && type === 'quote') {
-    const cbResult = await fetchCoinbaseData(symbol);
-    if (cbResult) {
-      cache.set(cacheKey, { data: cbResult, timestamp: Date.now() });
-      return NextResponse.json(cbResult);
-    }
-  }
-
-  // 2. Try Twelve Data
-  if (TWELVE_DATA_KEY) {
-    const result = await fetchTwelveData(symbol, type, interval);
-    if (result && !result.error && result.data) {
-      cache.set(cacheKey, { data: result, timestamp: Date.now() });
-      return NextResponse.json(result);
-    }
-  }
-
-  // 3. Try Polygon.io
-  if (POLYGON_KEY) {
-    const polyResult = await fetchPolygonData(symbol, type);
-    if (polyResult && !polyResult.error && polyResult.data) {
-      cache.set(cacheKey, { data: polyResult, timestamp: Date.now() });
-      return NextResponse.json(polyResult);
-    }
-  }
-
-  // 4. Try Binance Fallback
   const isCrypto = symbol.includes('/') || ['BTC', 'ETH', 'SOL', 'XRP'].some(s => symbol.startsWith(s));
+
+  // 1. CRYPTO: Try Binance Public API (Public, No Key)
   if (isCrypto) {
-    const cryptoResult = await fetchBinanceFallback(symbol);
-    if (cryptoResult) {
-      const formatted = { data: cryptoResult };
-      cache.set(cacheKey, { data: formatted, timestamp: Date.now() });
-      return NextResponse.json(formatted);
-    }
+    const binanceData = await fetchBinanceData(symbol, type, interval);
+    if (binanceData) return NextResponse.json(binanceData);
   }
 
-  // 5. Try Currency API (Free, Fast Fallback)
-  if (type === 'quote') {
-    const currencyResult = await fetchCurrencyApiData(symbol);
-    if (currencyResult) {
-      const formatted = { data: currencyResult };
-      cache.set(cacheKey, { data: formatted, timestamp: Date.now() });
-      return NextResponse.json(formatted);
-    }
+  // 2. FOREX/STOCKS: Try Twelve Data (Key required, Free Tier supports FX)
+  if (TWELVE_DATA_KEY && (symbol.includes('/') || symbol.length >= 4)) {
+    const twelveData = await fetchTwelveData(symbol, type, interval);
+    if (twelveData) return NextResponse.json(twelveData);
   }
 
-  // 6. Failover to Finnhub
-  if (FINNHUB_KEY) {
-    const fhResult = await fetchFinnhubData(symbol, type, interval);
-    if (fhResult && !fhResult.error && fhResult.data) {
-      cache.set(cacheKey, { data: fhResult, timestamp: Date.now() });
-      return NextResponse.json(fhResult);
-    }
+  // 3. COMMODITIES/FALLBACK: Try Alpha Vantage
+  if (ALPHA_VANTAGE_KEY) {
+    const alphaData = await fetchAlphaVantageData(symbol, type, interval);
+    if (alphaData) return NextResponse.json(alphaData);
   }
 
   return NextResponse.json({ 
-    error: 'Market data nodes currently unreachable', 
+    error: 'Execution nodes currently restricted or unreachable', 
     status: 503 
   }, { status: 503 });
 }
 
-async function fetchCurrencyApiData(symbol: string) {
+async function fetchBinanceData(symbol: string, type: string, interval: string) {
   try {
-    const parts = symbol.includes('/') ? symbol.split('/') : [symbol.substring(0, 3), symbol.substring(3)];
-    const base = (parts[0] || 'eur').toLowerCase();
-    const target = (parts[1] || 'usd').toLowerCase();
-
-    const urls = [
-      `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${base}.json`,
-      `https://latest.currency-api.pages.dev/v1/currencies/${base}.json`
-    ];
-
-    let data: any = null;
-    for (const url of urls) {
-      try {
-        const res = await fetch(url, { next: { revalidate: 3600 } });
-        if (res.ok) {
-          data = await res.json();
-          break;
-        }
-      } catch (e) { continue; }
-    }
-
-    if (!data || !data[base] || data[base][target] === undefined) return null;
-
-    return {
-      price: data[base][target],
-      change: 0,
-      changePercent: 0,
-      open: data[base][target],
-      high: data[base][target],
-      low: data[base][target],
-      volume: 0,
-      status: 'Open',
-      timestamp: Date.now()
-    };
-  } catch (e) { return null; }
-}
-
-async function fetchPolygonData(symbol: string, type: string) {
-  try {
-    const cleanSymbol = symbol.replace('/', '');
+    const cleanSymbol = symbol.replace('/', '').replace('USD', 'USDT');
+    
     if (type === 'quote') {
-      const url = `https://api.polygon.io/v2/last/crypto/X:${cleanSymbol}?apiKey=${POLYGON_KEY}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if (!data || data.status !== 'OK' || !data.last) return { error: true };
-      return { data: { price: data.last.price, change: 0, changePercent: 0, timestamp: data.last.timestamp, status: 'Open' } };
+      const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${cleanSymbol}`);
+      if (!res.ok) return null;
+      const d = await res.json();
+      return {
+        provider: "Binance Public",
+        data: {
+          price: parseFloat(d.lastPrice),
+          change: parseFloat(d.priceChange),
+          changePercent: parseFloat(d.priceChangePercent),
+          open: parseFloat(d.openPrice),
+          high: parseFloat(d.highPrice),
+          low: parseFloat(d.lowPrice),
+          volume: parseFloat(d.volume),
+          status: 'Open',
+          timestamp: d.closeTime
+        }
+      };
     }
-    return { error: true };
-  } catch (e) { return null; }
-}
 
-async function fetchCoinbaseData(symbol: string) {
-  try {
-    const baseAsset = symbol.split('/')[0] || symbol.substring(0, 3);
-    const url = `https://api.coinbase.com/v2/prices/${baseAsset}-USD/spot`;
-    const res = await fetch(url, { headers: { 'CB-VERSION': COINBASE_VERSION } });
-    const json = await res.json();
-    if (!json || !json.data || !json.data.amount) return null;
-    return { data: { price: parseFloat(json.data.amount), change: 0, changePercent: 0, timestamp: Date.now(), status: 'Open' } };
+    // Historical K-Lines
+    const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${cleanSymbol}&interval=${interval === '1day' ? '1d' : interval}&limit=300`);
+    if (!res.ok) return null;
+    const d = await res.json();
+    return {
+      provider: "Binance Public",
+      data: d.map((k: any) => ({
+        time: k[0] / 1000,
+        open: parseFloat(k[1]),
+        high: parseFloat(k[2]),
+        low: parseFloat(k[3]),
+        close: parseFloat(k[4]),
+        volume: parseFloat(k[5])
+      }))
+    };
   } catch (e) { return null; }
 }
 
 async function fetchTwelveData(symbol: string, type: string, interval: string) {
   try {
-    let providerSymbol = symbol;
-    if (symbol.length === 6 && !symbol.includes('/')) {
-      providerSymbol = `${symbol.substring(0, 3)}/${symbol.substring(3, 6)}`;
-    }
     const endpoint = type === 'quote' ? 'quote' : 'time_series';
-    const url = `https://api.twelvedata.com/${endpoint}?symbol=${providerSymbol}&interval=${interval}&apikey=${TWELVE_DATA_KEY}&order=asc&outputsize=300`;
+    const url = `https://api.twelvedata.com/${endpoint}?symbol=${symbol}&interval=${interval}&apikey=${TWELVE_DATA_KEY}&order=asc&outputsize=300`;
     const res = await fetch(url);
-    const data = await res.json();
-    if (!data || data.status === 'error' || data.code === 429) return { error: true };
+    const d = await res.json();
+    
+    if (d.status === 'error') return null;
+
     if (type === 'quote') {
-      return { data: { price: parseFloat(data.price || data.close || "0"), change: parseFloat(data.change || "0"), changePercent: parseFloat(data.percent_change || "0"), timestamp: Date.now(), status: 'Open' } };
+      return {
+        provider: "Twelve Data",
+        data: {
+          price: parseFloat(d.price || d.close),
+          change: parseFloat(d.change || "0"),
+          changePercent: parseFloat(d.percent_change || "0"),
+          open: parseFloat(d.open),
+          high: parseFloat(d.high),
+          low: parseFloat(d.low),
+          volume: parseFloat(d.volume || "0"),
+          status: 'Open',
+          timestamp: Date.now()
+        }
+      };
     }
-    return { data: (data.values || []).map((v: any) => ({ time: new Date(v.datetime).getTime() / 1000, open: parseFloat(v.open), high: parseFloat(v.high), low: parseFloat(v.low), close: parseFloat(v.close) })) };
+
+    return {
+      provider: "Twelve Data",
+      data: (d.values || []).map((v: any) => ({
+        time: new Date(v.datetime).getTime() / 1000,
+        open: parseFloat(v.open),
+        high: parseFloat(v.high),
+        low: parseFloat(v.low),
+        close: parseFloat(v.close)
+      }))
+    };
   } catch (e) { return null; }
 }
 
-async function fetchBinanceFallback(symbol: string) {
+async function fetchAlphaVantageData(symbol: string, type: string, interval: string) {
+  // Alpha Vantage implementation for commodities like GOLD (XAU)
+  if (!symbol.startsWith('XAU') && !symbol.startsWith('WTI')) return null;
+  
   try {
-    const cleanSymbol = symbol.replace('/', '').replace('USD', 'USDT');
-    const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${cleanSymbol}`);
-    const data = await res.json();
-    if (!data || !data.lastPrice) return null;
-    return { price: parseFloat(data.lastPrice), change: parseFloat(data.priceChange), changePercent: parseFloat(data.priceChangePercent), timestamp: Date.now(), status: 'Open' };
-  } catch (e) { return null; }
-}
+    const func = symbol.startsWith('XAU') ? 'GLOBAL_QUOTE' : 'WTI';
+    const url = `https://www.alphavantage.co/query?function=${func}&symbol=${symbol}&apikey=${ALPHA_VANTAGE_KEY}`;
+    const res = await fetch(url);
+    const d = await res.json();
+    
+    if (d.Note) return null; // Rate limited
 
-async function fetchFinnhubData(symbol: string, type: string, interval: string) {
-  try {
-    let cleanSymbol = symbol.replace('/', '');
-    const baseUrl = "https://finnhub.io/api/v1";
-    if (type === 'quote') {
-      const res = await fetch(`${baseUrl}/quote?symbol=${cleanSymbol}&token=${FINNHUB_KEY}`);
-      const data = await res.json();
-      if (!data || !data.c || data.c === 0) return { error: true };
-      return { data: { price: data.c, change: data.d, changePercent: data.dp, timestamp: (data.t || Date.now() / 1000) * 1000, status: 'Open' } };
-    }
-    const resMapping: Record<string, string> = { '1min': '1', '5min': '5', '15min': '15', '30min': '30', '1h': '60', '1day': 'D' };
-    const resolution = resMapping[interval.replace('m', 'min')] || '5';
-    const to = Math.floor(Date.now() / 1000);
-    const from = to - (300 * 60 * 60);
-    const res = await fetch(`${baseUrl}/stock/candle?symbol=${cleanSymbol}&resolution=${resolution}&from=${from}&to=${to}&token=${FINNHUB_KEY}`);
-    const data = await res.json();
-    if (!data || data.s !== 'ok' || !data.t) return { error: true };
-    return { data: data.t.map((time: number, i: number) => ({ time, open: data.o[i], high: data.h[i], low: data.l[i], close: data.c[i] })) };
+    return {
+      provider: "Alpha Vantage",
+      data: {
+        price: parseFloat(d['Global Quote']?.['05. price'] || "0"),
+        status: 'Open',
+        timestamp: Date.now()
+      }
+    };
   } catch (e) { return null; }
 }

@@ -1,6 +1,7 @@
 /**
- * @fileOverview Institutional Market Data Abstraction Layer.
- * Unified interface for Multi-Provider Price Aggregation with Simulated Fallback.
+ * @fileOverview Institutional Market Data Abstraction Layer (V2).
+ * Unified interface for Multi-Provider Price Aggregation.
+ * Strictly adheres to $0 fee strategy using public feeds.
  */
 
 export interface PriceSnapshot {
@@ -13,6 +14,8 @@ export interface PriceSnapshot {
   volume: number;
   status: 'Open' | 'Closed' | 'Unavailable';
   timestamp: number;
+  provider: string;
+  delay: number; // in seconds
 }
 
 export interface HistoricalBar {
@@ -27,81 +30,73 @@ export interface HistoricalBar {
 const PROXY_URL = "/api/market-data";
 
 /**
- * Generates a realistic set of simulated historical bars based on a random walk.
- */
-function generateSimulatedHistory(symbol: string, count: number = 300): HistoricalBar[] {
-  const bars: HistoricalBar[] = [];
-  let lastPrice = symbol.includes('BTC') ? 65000 : symbol.includes('ETH') ? 3500 : 1.1234;
-  const now = Math.floor(Date.now() / 1000);
-  const interval = 60; // 1 min
-
-  for (let i = count; i > 0; i--) {
-    const volatility = lastPrice * 0.002;
-    const open = lastPrice;
-    const close = open + (Math.random() - 0.5) * volatility;
-    const high = Math.max(open, close) + Math.random() * (volatility * 0.5);
-    const low = Math.min(open, close) - Math.random() * (volatility * 0.5);
-    
-    bars.push({
-      time: now - (i * interval),
-      open,
-      high,
-      low,
-      close
-    });
-    lastPrice = close;
-  }
-  return bars;
-}
-
-async function safeFetchJson(url: string) {
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const text = await res.text();
-    if (!text || text.trim() === "" || text.trim() === "null") return null;
-    return JSON.parse(text);
-  } catch (e) {
-    return null;
-  }
-}
-
-/**
- * Fetches real-time market results with multi-provider failover and simulated fallback.
+ * Normalizes different API responses into the Varban Institutional Format.
  */
 export const fetchLivePrice = async (symbol: string): Promise<PriceSnapshot> => {
   try {
-    const json = await safeFetchJson(`${PROXY_URL}?type=quote&symbol=${symbol}`);
-    if (json && json.data) return json.data;
-    throw new Error("Node unreachable");
-  } catch (error) {
-    // Return a simulated tick if API fails
-    const lastBar = generateSimulatedHistory(symbol, 1)[0];
+    const res = await fetch(`${PROXY_URL}?type=quote&symbol=${symbol}`);
+    if (!res.ok) throw new Error(`HTTP_${res.status}`);
+    
+    const json = await res.json();
+    if (!json || json.error) throw new Error(json.error || "Data node mismatch");
+
     return {
-      price: lastBar.close,
-      change: lastBar.close - lastBar.open,
-      changePercent: ((lastBar.close - lastBar.open) / lastBar.open) * 100,
-      open: lastBar.open,
-      high: lastBar.high,
-      low: lastBar.low,
-      volume: 1000,
-      status: 'Open',
-      timestamp: Date.now()
+      ...json.data,
+      provider: json.provider || "Aggregated Feed",
+      delay: json.delay || 0
+    };
+  } catch (error: any) {
+    console.warn(`[MarketData] Connection failure for ${symbol}:`, error.message);
+    return {
+      price: 0,
+      change: 0,
+      changePercent: 0,
+      open: 0,
+      high: 0,
+      low: 0,
+      volume: 0,
+      status: 'Unavailable',
+      timestamp: Date.now(),
+      provider: "None",
+      delay: 0
     };
   }
 };
 
 /**
- * Fetches historical OHLC data bars for charting with simulated fallback.
+ * Fetches historical OHLC data bars for charting using Twelve Data or Alpha Vantage.
  */
 export const fetchHistoricalData = async (symbol: string, interval: string = "1min"): Promise<HistoricalBar[]> => {
   try {
     const mappedInterval = interval === '1D' ? '1day' : interval.replace('m', 'min');
-    const json = await safeFetchJson(`${PROXY_URL}?type=time_series&symbol=${symbol}&interval=${mappedInterval}&outputsize=300`);
-    if (json && json.data && json.data.length > 0) return json.data;
-    throw new Error("Empty history");
+    const res = await fetch(`${PROXY_URL}?type=time_series&symbol=${symbol}&interval=${mappedInterval}&outputsize=300`);
+    
+    if (!res.ok) return [];
+    
+    const json = await res.json();
+    if (json && Array.isArray(json.data)) {
+      return json.data;
+    }
+    
+    return [];
   } catch (e) {
-    // Fallback to simulated data to prevent empty charts
-    return generateSimulatedHistory(symbol);
+    console.error("[MarketData] History sync failure:", e);
+    return [];
   }
 };
+
+/**
+ * Normalizes symbols for specific providers.
+ */
+export function getProviderSymbol(symbol: string, provider: 'binance' | 'twelve' | 'alphavantage'): string {
+  const clean = symbol.replace('/', '');
+  switch (provider) {
+    case 'binance':
+      // Map USD to USDT for Binance public feeds
+      return clean.replace('USD', 'USDT');
+    case 'twelve':
+      return symbol.includes('/') ? symbol : `${symbol.substring(0, 3)}/${symbol.substring(3)}`;
+    default:
+      return clean;
+  }
+}
