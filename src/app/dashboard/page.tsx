@@ -10,6 +10,7 @@ import { useState, useEffect, useMemo } from "react";
 import { collection, query, where, orderBy, limit } from "firebase/firestore";
 import OnboardingTutorial from "@/components/dashboard/OnboardingTutorial";
 import MarketNewsFeed from "@/components/dashboard/MarketNewsFeed";
+import { cn } from "@/app/lib/utils";
 
 /**
  * @fileOverview User Dashboard (Firebase Reverted).
