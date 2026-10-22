@@ -3,6 +3,7 @@
 /**
  * @fileOverview Institutional Regulatory Footer.
  * Fully Localized for Multilingual Support.
+ * Optimized to prevent overlap with institutional workspace.
  */
 
 import Link from "next/link";
@@ -10,20 +11,15 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "@/app/lib/i18n-context";
 
-const STRICT_PATHS = [
-  '/terminal', '/dashboard', '/portfolio', '/positions', 
-  '/orders', '/history', '/watchlist', '/wallet', 
-  '/deposit', '/withdraw', '/transactions', '/account', 
-  '/verification', '/security', '/notifications', '/preferences',
-  '/referral', '/admin', '/news', '/bots'
-];
-
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const pathname = usePathname();
   const { t } = useTranslation();
   
-  const isStrict = STRICT_PATHS.some(path => pathname === path || pathname?.startsWith(path + '/'));
+  // STRICT: Hide on any authenticated workspace path or auth funnel
+  const isStrict = pathname?.startsWith('/client') || 
+                   pathname?.startsWith('/admin') ||
+                   ['/login', '/register', '/forgot-password'].includes(pathname);
 
   if (isStrict) return null;
 

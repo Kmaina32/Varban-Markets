@@ -11,7 +11,7 @@ import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
 
 /**
  * @fileOverview Public Landing Page Navigation.
- * Updated for full Multilingual Support and new /client routing.
+ * Updated to prevent overlap with institutional workspace headers.
  */
 
 const AUTH_PATHS = ['/login', '/register', '/forgot-password'];
@@ -22,6 +22,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   
+  // STRICT: Hide on any authenticated workspace path or auth funnel
   const isStrict = pathname?.startsWith('/client') || pathname?.startsWith('/admin');
   const isAuthPage = AUTH_PATHS.some(path => pathname === path);
 

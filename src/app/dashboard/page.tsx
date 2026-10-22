@@ -1,192 +1,22 @@
 'use client';
 
-import AuthedLayout from "@/components/layout/AuthedLayout";
-import { Card } from "@/components/ui/card";
-import { Shield, TrendingUp, DollarSign, Activity, ArrowRight, Star } from "lucide-react";
-import Link from "next/link";
-import { useUser, useDoc, useFirestore, useCollection } from "@/firebase";
-import { useTranslation } from "@/app/lib/i18n-context";
-import { useState, useEffect, useMemo } from "react";
-import { collection, query, where, orderBy, limit } from "firebase/firestore";
-import OnboardingTutorial from "@/components/dashboard/OnboardingTutorial";
-import MarketNewsFeed from "@/components/dashboard/MarketNewsFeed";
-import { cn } from "@/app/lib/utils";
-
 /**
- * @fileOverview User Dashboard (Firebase Reverted).
+ * @fileOverview Redirect gateway for consolidated institutional workspace.
  */
 
-export default function UserDashboard() {
-  const { user } = useUser();
-  const db = useFirestore();
-  const { t, formatNumber } = useTranslation();
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-  const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
-  
-  const tradesQuery = useMemo(() => {
-    if (!db || !user) return null;
-    return query(collection(db, `users/${user.uid}/positions`), orderBy("timestamp", "desc"), limit(5));
-  }, [db, user]);
-
-  const watchlistQuery = useMemo(() => {
-    if (!db || !user) return null;
-    return query(collection(db, `users/${user.uid}/watchlist`), limit(6));
-  }, [db, user]);
-
-  const { data: recentTrades, loading: tradesLoading } = useCollection<any>(tradesQuery);
-  const { data: watchlist, loading: watchlistLoading } = useCollection<any>(watchlistQuery);
-  
-  const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
-  const [demoBalance, setDemoBalance] = useState<number>(10000);
+export default function DashboardRedirect() {
+  const router = useRouter();
 
   useEffect(() => {
-    const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
-    if (savedMode) setAccountMode(savedMode);
-    
-    const savedDemo = localStorage.getItem('varban_demo_balance');
-    if (savedDemo) setDemoBalance(parseFloat(savedDemo));
-  }, []);
-
-  useEffect(() => {
-    const handleGlobalChange = () => {
-      const mode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
-      if (mode) setAccountMode(mode);
-      const savedDemo = localStorage.getItem('varban_demo_balance');
-      if (savedDemo) setDemoBalance(parseFloat(savedDemo));
-    };
-    window.addEventListener('varban_account_mode_changed', handleGlobalChange);
-    return () => window.removeEventListener('varban_account_mode_changed', handleGlobalChange);
-  }, []);
-
-  const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
-  const activeEquity = accountMode === 'REAL' ? (profile?.equity || profile?.balance || 0) : demoBalance;
-
-  const metrics = [
-    { title: accountMode === 'REAL' ? t('dashboard.balance') : t('wallet.practiceAllocation'), value: activeBalance, icon: DollarSign, color: accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]" },
-    { title: accountMode === 'REAL' ? t('dashboard.equity') : t('wallet.practiceAllocation'), value: activeEquity, icon: TrendingUp, color: "text-[#0A0A0A]" },
-    { title: t('dashboard.openRisk'), value: 0, icon: Shield, color: "text-[#C43D3D]" },
-    { title: t('dashboard.dailyPL'), value: 0, icon: Activity, color: "text-[#16835B]" }
-  ];
+    router.replace('/client/dashboard');
+  }, [router]);
 
   return (
-    <AuthedLayout title={t('nav.dashboard')} subtitle={profile?.profile?.fullName ? `Welcome back, ${profile.profile.fullName}` : "Welcome back to your account"}>
-      <OnboardingTutorial />
-      <div className="space-y-8">
-        {accountMode === 'DEMO' && (
-          <div className="bg-[#0055FF]/10 border border-[#0055FF] p-3 text-[10px] font-bold uppercase tracking-wider text-[#0055FF]">
-            {t('dashboard.practiceNotice')}
-          </div>
-        )}
-
-        <div id="tour-metrics" className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {metrics.map((m, idx) => (
-            <Card key={idx} className="bg-white border-[#E4E4E4] p-4 flex flex-col justify-between shadow-sm">
-              <div className="flex flex-row items-center justify-between mb-2">
-                <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest font-bold">{m.title}</span>
-                <m.icon className="w-3.5 h-3.5 text-[#6B7280]" />
-              </div>
-              <div>
-                <span className={`text-xl font-mono font-bold ${m.color}`}>
-                  {profileLoading ? "..." : `$${formatNumber(m.value || 0, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                </span>
-              </div>
-            </Card>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-8 space-y-8">
-            <div id="tour-trades" className="space-y-4">
-              <div className="flex justify-between items-center px-1">
-                <h3 className="text-xs font-bold uppercase tracking-wider">{t('dashboard.recentTrades')}</h3>
-                <Link href="/history" className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest flex items-center">
-                  {t('dashboard.viewHistory')} <ArrowRight className="ml-1 w-3 h-3" />
-                </Link>
-              </div>
-              <Card className="bg-white border-[#E4E4E4] shadow-sm">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-[#F7F7F5] border-b border-[#E4E4E4]">
-                        <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase">{t('tables.reference')}</th>
-                        <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase">{t('tables.instrument')}</th>
-                        <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase">{t('tables.type')}</th>
-                        <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase text-right">{t('tables.stake')}</th>
-                        <th className="p-3 text-[9px] font-bold text-[#6B7280] uppercase text-right">{t('tables.outcome')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#E4E4E4] text-xs font-mono">
-                      {tradesLoading ? (
-                        <tr><td colSpan={5} className="p-4 text-center text-[#6B7280]">{t('common.loading')}</td></tr>
-                      ) : recentTrades.length === 0 ? (
-                        <tr><td colSpan={5} className="p-8 text-center text-[#6B7280] uppercase tracking-widest font-bold opacity-30">{t('trading.noPositions')}</td></tr>
-                      ) : recentTrades.map((trade: any) => (
-                        <tr key={trade.id} className="hover:bg-[#F7F7F5]">
-                          <td className="p-3 text-[#6B7280]">{trade.id.slice(0, 8).toUpperCase()}</td>
-                          <td className="p-3 font-bold">{trade.instrument}</td>
-                          <td className="p-3">
-                            <span className={cn("px-1 py-0.5 border text-[9px] font-bold", trade.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#C43D3D] text-[#C43D3D]')}>
-                              {trade.vector}
-                            </span>
-                          </td>
-                          <td className="p-3 text-right">${formatNumber(trade.stake || 0, { minimumFractionDigits: 2 })}</td>
-                          <td className={`p-3 text-right font-bold ${trade.profit >= 0 ? 'text-[#16835B]' : 'text-[#C43D3D]'}`}>
-                            {trade.profit >= 0 ? '+' : ''}${formatNumber(trade.profit || 0, { minimumFractionDigits: 2 })}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
-            </div>
-
-            <div id="tour-watchlist" className="space-y-4">
-              <div className="flex justify-between items-center px-1">
-                <h3 className="text-xs font-bold uppercase tracking-wider">{t('dashboard.watchlist')}</h3>
-                <Link href="/watchlist" className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest flex items-center">
-                  {t('dashboard.manageWatchlist')} <Star className="ml-1 w-3 h-3" />
-                </Link>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {watchlistLoading ? (
-                  <p className="text-xs text-[#6B7280] text-center p-4 col-span-full">{t('common.loading')}</p>
-                ) : watchlist.length === 0 ? (
-                  <p className="text-xs text-[#6B7280] text-center p-8 border border-dashed border-[#E4E4E4] col-span-full uppercase font-bold tracking-widest opacity-30">{t('dashboard.emptyWatchlist')}</p>
-                ) : watchlist.map((item: any) => (
-                  <Link href={`/terminal?symbol=${item.symbol}`} key={item.symbol} className="bg-white border border-[#E4E4E4] p-4 flex justify-between items-center shadow-sm hover:border-[#0055FF] transition-colors cursor-pointer group">
-                    <div>
-                      <span className="text-[11px] font-mono font-bold block group-hover:text-[#0055FF] transition-colors">{item.symbol}</span>
-                      <span className="text-[9px] text-[#6B7280] uppercase tracking-tighter">{t('common.active')}</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[10px] font-mono font-bold block text-[#16835B]">ONLINE</span>
-                      <span className="text-[8px] font-bold uppercase tracking-widest text-[#0055FF]">{t('dashboard.viewTerminal')} &rarr;</span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-4 space-y-6">
-            <MarketNewsFeed />
-            <Card className="bg-white text-[#0A0A0A] p-6 shadow-sm border border-[#E4E4E4] border-b-4 border-b-[#0055FF]">
-              <div className="flex items-center space-x-2 text-[#0055FF] mb-4">
-                <Shield className="w-5 h-5" />
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">{t('dashboard.integrityTitle')}</h3>
-              </div>
-              <p className="text-[11px] text-[#6B7280] leading-relaxed">
-                {t('dashboard.integrityDesc')}
-              </p>
-              <div className="mt-4 pt-4 border-t border-[#F7F7F5] flex justify-between items-center">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280]">{t('common.status')}:</span>
-                <span className="text-[10px] font-mono font-bold text-[#16835B]">OPERATIONAL</span>
-              </div>
-            </Card>
-          </div>
-        </div>
-      </div>
-    </AuthedLayout>
+    <div className="min-h-screen bg-[#F7F7F5] flex items-center justify-center">
+      <div className="w-5 h-5 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin"></div>
+    </div>
   );
 }

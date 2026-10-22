@@ -144,7 +144,7 @@ export default function LoginPage() {
       
       {success && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#F7F7F5]/80 backdrop-blur-sm animate-in fade-in duration-500">
-          <Card className="bg-white border-[#E4E4E4] w-full max-sm shadow-2xl p-10 md:p-12 text-center space-y-6 animate-in zoom-in-95 duration-300 rounded-none border-b-4 border-b-[#0055FF]">
+          <Card className="bg-white border-[#E4E4E4] w-full max-w-md shadow-2xl p-10 md:p-12 text-center space-y-6 animate-in zoom-in-95 duration-300 rounded-none border-b-4 border-b-[#0055FF]">
             <div className="flex justify-center">
               <Check className="w-12 h-12 text-[#0055FF] stroke-[3px]" />
             </div>
