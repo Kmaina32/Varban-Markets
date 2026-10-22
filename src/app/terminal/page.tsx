@@ -191,8 +191,8 @@ export default function TerminalWorkspace() {
       <header className="h-14 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[100] px-2 lg:px-4">
         <div className="flex items-center space-x-2 lg:space-x-4">
           <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 lg:hidden text-[#0A0A0A]"><Menu className="w-5 h-5" /></button>
-          <Link href="/dashboard" className="hidden lg:block shrink-0"><Image src="/assets/logo2.png" alt="Varban" width={80} height={20} className="w-auto object-contain" priority /></Link>
-          <div className="h-6 w-px bg-[#E4E4E4] hidden lg:block"></div>
+          <Link href="/dashboard" className="hidden sm:block shrink-0"><Image src="/assets/logo2.png" alt="Varban" width={80} height={20} className="w-auto object-contain" priority /></Link>
+          <div className="h-6 w-px bg-[#E4E4E4] hidden sm:block"></div>
           
           <div id="tour-market-select">
             <MarketSelector 
@@ -205,11 +205,11 @@ export default function TerminalWorkspace() {
           <div className="hidden lg:flex items-center space-x-8 px-6">
             <div className="flex flex-col">
               <span className="text-[8px] font-bold uppercase text-[#6B7280]">24h High</span>
-              <span className="text-[11px] font-mono font-bold text-[#0A0A0A]">{(marketData[activeInst.symbol]?.price * 1.02).toLocaleString()}</span>
+              <span className="text-sm font-mono font-bold text-[#0A0A0A]">{(marketData[activeInst.symbol]?.price * 1.02).toLocaleString()}</span>
             </div>
             <div className="flex flex-col">
               <span className="text-[8px] font-bold uppercase text-[#6B7280]">24h Low</span>
-              <span className="text-[11px] font-mono font-bold text-[#0A0A0A]">{(marketData[activeInst.symbol]?.price * 0.98).toLocaleString()}</span>
+              <span className="text-sm font-mono font-bold text-[#0A0A0A]">{(marketData[activeInst.symbol]?.price * 0.98).toLocaleString()}</span>
             </div>
           </div>
         </div>
