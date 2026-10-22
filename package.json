@@ -32,7 +32,8 @@
     "@aws-sdk/client-s3": "^3.712.0",
     "@aws-sdk/s3-request-presigner": "^3.712.0",
     "@supabase/supabase-js": "^2.48.1",
-    "@supabase/ssr": "^0.5.2"
+    "@supabase/ssr": "^0.5.2",
+    "@base-ui/react": "^1.0.0-alpha.1"
   },
   "overrides": {
     "react-paystack": {

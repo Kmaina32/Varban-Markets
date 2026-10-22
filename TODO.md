@@ -1,4 +1,3 @@
-
 # Varban Markets — Development TODO & Missing Features Inventory
 
 ---
@@ -24,7 +23,7 @@
 - [x] **Watchlist `Add Asset` Button**: Dynamic search modal to add new currency pairs/crypto to user's custom watchlist.
 - [x] **Watchlist `Remove Asset` Button**: Delete trigger to remove tracked instrument from the persistent registry.
 - [x] **Export Trade History**: `[ Export CSV ]` helper and download trigger on `/history` page.
-- [x] **Portfolio Visualization**: Real-time asset allocation and performance curve placeholders.
+- [x] **Portfolio Visualization**: Real-time asset allocation and performance curve visualization.
 
 ---
 
@@ -43,6 +42,7 @@
 
 ### C. UI Component Library
 - [x] **ShadCN Alert System**: Manually installed and themed for institutional use.
+- [x] **ShadCN Alert Dialog System**: Manually installed via @base-ui/react.
 
 ---
 
