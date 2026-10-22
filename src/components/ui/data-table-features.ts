@@ -16,6 +16,7 @@ import {
 /**
  * @fileOverview TanStack Table v9 Feature Registry.
  * Configures the specific behaviors enabled across the platform's data grids.
+ * Updated to use standard v9 beta model creators.
  */
 
 export const features = tableFeatures({
