@@ -1,20 +1,20 @@
 'use client';
 
 /**
- * @fileOverview Firebase Core Decommissioning Module.
- * Firestore has been disabled to resolve internal assertion failures.
- * Migration to Supabase is in progress.
+ * @fileOverview Firebase Core Initialization.
+ * Firestore has been re-enabled for real-time ledger management.
  */
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
 import { firebaseConfig } from './config';
 
-export function initializeFirebase(): { app: FirebaseApp; auth: Auth; db: null } {
+export function initializeFirebase(): { app: FirebaseApp; auth: Auth; db: Firestore } {
   const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  // Firestore (db) is disabled to prevent INTERNAL ASSERTION FAILED crashes
-  return { app, auth, db: null };
+  const db = getFirestore(app);
+  return { app, auth, db };
 }
 
 export * from './provider';

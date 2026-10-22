@@ -7,14 +7,13 @@ import LoadingOverlay from "@/components/shared/LoadingOverlay";
 import { Menu, Info, ShieldAlert, ChevronDown, Globe, Clock as ClockIcon } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useUser } from "@/firebase";
+import { useUser, useDoc, useFirestore, initializeFirebase } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import { cn } from "@/app/lib/utils";
-import { useSupabaseAuth } from "@/app/lib/supabase/auth-context";
-import { createClient } from "@/app/lib/supabase/client";
 import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
+import { doc, updateDoc } from "firebase/firestore";
 
 const STRICT_PATHS = [
   '/terminal', '/dashboard', '/portfolio', '/positions', 
@@ -43,14 +42,13 @@ interface AuthedLayoutProps {
 
 export default function AuthedLayout({ children, title, subtitle, isTerminal = false }: AuthedLayoutProps) {
   const { user, loading } = useUser();
-  const { signOut } = useSupabaseAuth();
-  const supabase = createClient();
+  const db = useFirestore();
+  const { auth } = initializeFirebase();
   const { formatNumber, t, locale, setLocale } = useTranslation();
   const pathname = usePathname();
   const router = useRouter();
   
-  const [profile, setProfile] = useState<any>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
+  const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   
@@ -58,33 +56,14 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   const [demoBalance, setDemoBalance] = useState<number>(10000);
 
   const [currentTime, setCurrentTime] = useState("");
-  const [activeTimezone, setActiveTimezone] = useState("UTC+0");
+  const activeTimezone = profile?.preferences?.timezone || "UTC+0";
 
   useEffect(() => {
     const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
     if (savedMode) setAccountMode(savedMode);
     const savedDemo = localStorage.getItem('varban_demo_balance');
     if (savedDemo) setDemoBalance(parseFloat(savedDemo));
-
-    async function loadProfile() {
-      if (!user?.uid) {
-        setProfileLoading(false);
-        return;
-      }
-      try {
-        const { data } = await supabase.from('profiles').select('*').eq('id', user.uid).maybeSingle();
-        if (data) {
-          setProfile(data);
-          if (data.timezone) setActiveTimezone(data.timezone);
-        }
-      } catch (err) {
-        console.error("Profile load failure");
-      } finally {
-        setProfileLoading(false);
-      }
-    }
-    loadProfile();
-  }, [user?.uid, supabase]);
+  }, []);
 
   useEffect(() => {
     const updateTime = () => {
@@ -107,9 +86,8 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   }, [activeTimezone]);
 
   const handleTimezoneChange = async (val: string) => {
-    setActiveTimezone(val);
-    if (user?.uid) {
-      await supabase.from('profiles').update({ timezone: val }).eq('id', user.uid);
+    if (user && db) {
+      await updateDoc(doc(db, "users", user.uid), { "preferences.timezone": val });
     }
   };
 
@@ -124,37 +102,21 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   const isAdmin = useMemo(() => {
     if (!user?.email) return false;
     const isSuper = SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase());
-    const hasAdminRole = profile?.role === 'Admin';
+    const hasAdminRole = profile?.status?.role === 'Admin';
     return isSuper || hasAdminRole;
   }, [user, profile]);
-
-  const isProfileIncomplete = useMemo(() => {
-    if (profileLoading) return false;
-    if (!user) return false;
-    return profile?.profile_completed === false;
-  }, [profile, profileLoading, user]);
-
-  const enforcementRequired = useMemo(() => {
-    return isProfileIncomplete && (pathname?.startsWith('/terminal') || pathname?.startsWith('/wallet') || pathname?.startsWith('/bots'));
-  }, [isProfileIncomplete, pathname]);
 
   useEffect(() => {
     if (loading) return;
     if (!user && isStrict) {
       router.replace('/login');
-      return;
     }
     if (user && isAdminPath && !isAdmin && !profileLoading) {
       router.replace('/dashboard');
-      return;
     }
-    if (enforcementRequired) {
-      router.replace('/account?tab=profile');
-      return;
-    }
-  }, [user, loading, profileLoading, isStrict, isAdminPath, isAdmin, enforcementRequired, router]);
+  }, [user, loading, profileLoading, isStrict, isAdminPath, isAdmin, router]);
 
-  if (loading || (isStrict && !user) || (enforcementRequired)) {
+  if (loading || (isStrict && !user)) {
     return <LoadingOverlay />;
   }
 
@@ -174,7 +136,6 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
         </div>
 
         <div className="flex items-center space-x-2 md:space-x-6">
-          {/* SYSTEM UTILITY NODE */}
           <div className="hidden lg:flex items-center bg-[#F7F7F5] border border-[#E4E4E4] p-1.5 pr-4 space-x-4">
             <div className="flex items-center bg-white border border-[#E4E4E4] px-3 py-1.5 shadow-sm">
                <ClockIcon className="w-3 h-3 text-[#0055FF] mr-2" />
@@ -240,7 +201,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
               window.dispatchEvent(new Event('varban_account_mode_changed')); 
             }} 
             onSignOut={async () => {
-              await signOut();
+              await auth.signOut();
               router.replace('/');
             }}
           />

@@ -1,16 +1,11 @@
 "use client";
 
-/**
- * @fileOverview Finalized Onboarding Client Component.
- * Refined institutional error mapping and validation feedback.
- * Specifically hardened for Supabase 500 (Database Trigger) failures.
- * Protected by Google reCAPTCHA Enterprise.
- */
-
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/app/lib/supabase/client";
+import { initializeFirebase } from "@/firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { 
   Check, 
   ChevronDown, 
@@ -25,10 +20,15 @@ import { COUNTRIES } from "@/app/lib/countries";
 import { detectLocation } from "@/app/lib/geolocation-service";
 import { cn } from "@/app/lib/utils";
 
+/**
+ * @fileOverview Onboarding Workspace (Firebase Reverted).
+ * Protected by Google reCAPTCHA Enterprise.
+ */
+
 export default function RegisterClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const supabase = createClient();
+  const { auth, db } = initializeFirebase();
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
   
   const [loading, setLoading] = useState(false);
@@ -64,10 +64,7 @@ export default function RegisterClient() {
   ];
 
   const isPasswordValid = passwordValidators.every(v => v.test(formData.password));
-  
-  const isNameMissing = !formData.firstName.trim() || !formData.lastName.trim();
-  const isEmailMissing = !formData.email.trim();
-  const canSubmit = isPasswordValid && formData.isNotUSCitizen && !loading && !isEmailMissing && !isNameMissing;
+  const canSubmit = isPasswordValid && formData.isNotUSCitizen && !loading && formData.firstName && formData.lastName && formData.email;
 
   const executeRecaptcha = async (action: string) => {
     return new Promise<string>((resolve) => {
@@ -90,73 +87,55 @@ export default function RegisterClient() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
-    if (isNameMissing) {
+
+    if (!formData.firstName.trim() || !formData.lastName.trim()) {
       setError("Identity Required: Both first and last names are mandatory.");
       return;
     }
-    
-    if (isEmailMissing) {
-      setError("Contact Required: Please provide a valid email address.");
-      return;
-    }
 
-    if (!isPasswordValid) {
-      setError("Security Threshold: Password does not meet institutional requirements.");
-      return;
-    }
-
-    if (!formData.isNotUSCitizen) {
-      setError("Regulatory Compliance: You must confirm your residency status.");
-      return;
-    }
-    
     setLoading(true);
 
     try {
       const recaptchaToken = await executeRecaptcha('REGISTER');
-      if (!recaptchaToken && siteKey) {
-        console.warn("reCAPTCHA bypassed: key missing or load failure.");
-      }
       
-      const { error: signUpError } = await supabase.auth.signUp({
-        email: formData.email.toLowerCase().trim(),
-        password: formData.password,
-        options: {
-          data: {
-            first_name: formData.firstName.trim(),
-            last_name: formData.lastName.trim(),
-            full_name: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
-            country: formData.country,
-            partner_code: formData.partnerCode.trim()
-          }
+      const { user } = await createUserWithEmailAndPassword(auth, formData.email.trim(), formData.password);
+
+      // Initialize Profile Document
+      await setDoc(doc(db, "users", user.uid), {
+        balance: 0,
+        equity: 0,
+        currency: "USD",
+        profile: {
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          fullName: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
+          email: formData.email.trim(),
+          country: formData.country,
+          createdAt: new Date().toISOString()
+        },
+        status: {
+          verificationStatus: "Not Verified",
+          role: "Trader",
+          createdAt: new Date().toISOString()
+        },
+        referral: {
+          code: `VRB-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+          referredBy: formData.partnerCode.trim() || null
+        },
+        preferences: {
+          language: "ENGLISH",
+          timezone: "UTC+0",
+          mfaEnabled: false
         }
       });
-
-      if (signUpError) {
-        const msg = signUpError.message.toLowerCase();
-        
-        // Handle Supabase 500 / Database Trigger Errors
-        if (msg.includes('database error') || msg.includes('internal error')) {
-          throw new Error("System Handshake Failure (500): The user profile node could not be initialized. Please ensure the database schema has been provisioned via the SQL Editor using the SUPABASE_SETUP script.");
-        }
-        
-        if (msg.includes('user already registered') || msg.includes('already exists')) {
-          throw new Error("Registration Failed: This email domain is already in the ledger.");
-        } else if (msg.includes('too many requests')) {
-          throw new Error("Security Lock: Too many attempts detected. Access restricted.");
-        }
-        
-        throw signUpError;
-      }
       
       router.push("/dashboard");
     } catch (err: any) {
-      const errorMessage = typeof err === 'string' 
-        ? err 
-        : err?.message || "Registration failed: Could not synchronize with identity nodes.";
-      setError(errorMessage);
-    } finally {
+      let msg = err?.message || "Registration failed.";
+      if (msg.includes('auth/email-already-in-use')) {
+        msg = "Registration Failed: This email domain is already in the ledger.";
+      }
+      setError(msg);
       setLoading(false);
     }
   };
@@ -239,11 +218,9 @@ export default function RegisterClient() {
             </div>
 
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wider flex items-center gap-1.5">
-                  Choose a password <Info className="w-3.5 h-3.5 text-[#D1D5DB]" />
-                </label>
-              </div>
+              <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wider flex items-center gap-1.5">
+                Choose a password <Info className="w-3.5 h-3.5 text-[#D1D5DB]" />
+              </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -266,16 +243,9 @@ export default function RegisterClient() {
                 {passwordValidators.map((v, i) => {
                   const isValid = v.test(formData.password);
                   return (
-                    <div key={i} className="flex items-center justify-between text-[11px] transition-colors">
-                      <div className="flex items-center gap-2">
-                        <div className={cn(
-                          "w-1.5 h-1.5 rounded-full shrink-0",
-                          isValid ? "bg-[#16835B]" : "bg-[#D1D5DB]"
-                        )} />
-                        <span className={cn(isValid ? "text-[#16835B] font-bold" : "text-[#6B7280]")}>
-                          {v.label}
-                        </span>
-                      </div>
+                    <div key={i} className="flex items-center gap-2 text-[11px]">
+                      <div className={cn("w-1.5 h-1.5 rounded-full", isValid ? "bg-[#16835B]" : "bg-[#D1D5DB]")} />
+                      <span className={cn(isValid ? "text-[#16835B] font-bold" : "text-[#6B7280]")}>{v.label}</span>
                     </div>
                   );
                 })}
@@ -315,7 +285,7 @@ export default function RegisterClient() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={!canSubmit}
               className={cn(
                 "w-full py-4 text-xs font-bold uppercase tracking-[0.2em] transition-all duration-300 shadow-lg",
                 canSubmit 

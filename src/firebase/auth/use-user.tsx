@@ -1,27 +1,27 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { initializeFirebase } from '../index';
+
 /**
- * @fileOverview Refined useUser hook.
- * Now consumes Supabase Auth context to provide a unified user state
- * across all existing components during migration.
+ * @fileOverview Reverted useUser Hook.
+ * Now consumes Firebase Authentication state for unified session management.
  */
 
-import { useSupabaseAuth } from '@/app/lib/supabase/auth-context';
-
 export function useUser() {
-  const { user, loading } = useSupabaseAuth();
-  
-  // Map Supabase User to a Firebase-like shape for compatibility with existing UI
-  const mappedUser = user ? {
-    uid: user.id,
-    email: user.email,
-    displayName: user.user_metadata?.full_name || user.email?.split('@')[0],
-    photoURL: user.user_metadata?.avatar_url,
-    ...user
-  } : null;
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  return { 
-    user: mappedUser as any, 
-    loading 
-  };
+  useEffect(() => {
+    const { auth } = initializeFirebase();
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  return { user, loading };
 }

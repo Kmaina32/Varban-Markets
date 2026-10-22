@@ -4,15 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/app/lib/supabase/client";
+import { initializeFirebase } from "@/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { Eye, EyeOff, Loader2, ArrowLeft, AlertCircle, Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useTranslation } from "@/app/lib/i18n-context";
 
 /**
- * @fileOverview Login Workspace.
- * Refined for multi-language support and institutional blue success reveal.
+ * @fileOverview Login Workspace (Firebase Reverted).
  * Protected by Google reCAPTCHA Enterprise.
  */
 
@@ -25,7 +25,7 @@ declare global {
 export default function LoginPage() {
   const router = useRouter();
   const { t } = useTranslation();
-  const supabase = createClient();
+  const { auth } = initializeFirebase();
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
   
   const [email, setEmail] = useState("");
@@ -64,22 +64,7 @@ export default function LoginPage() {
         throw new Error("Security Handshake Interrupted: Unable to verify session integrity.");
       }
       
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
-
-      if (authError) {
-        const msg = authError.message.toLowerCase();
-        if (msg.includes('invalid login credentials')) {
-          throw new Error("Sign in failed: The email or password provided is incorrect.");
-        } else if (msg.includes('email not confirmed')) {
-          throw new Error("Sign in failed: Please verify your email address before attempting to access the workspace.");
-        } else if (msg.includes('too many requests')) {
-          throw new Error("Security Lock: Too many failed attempts. Access is temporarily restricted.");
-        }
-        throw authError;
-      }
+      await signInWithEmailAndPassword(auth, email.trim(), password);
       
       setSuccess(true);
       setTimeout(() => {
@@ -87,9 +72,13 @@ export default function LoginPage() {
       }, 1800);
 
     } catch (err: any) {
-      // Ensure error is strictly handled as a string for React rendering
-      const errorMessage = err?.message || (typeof err === 'string' ? err : "Authentication failed: Could not establish a link with the identity provider.");
-      setError(errorMessage);
+      let msg = err?.message || "Authentication failed.";
+      if (msg.includes('auth/invalid-credential') || msg.includes('auth/user-not-found')) {
+        msg = "Sign in failed: The email or password provided is incorrect.";
+      } else if (msg.includes('auth/too-many-requests')) {
+        msg = "Security Lock: Too many failed attempts. Access is temporarily restricted.";
+      }
+      setError(msg);
       setLoading(false);
     }
   };

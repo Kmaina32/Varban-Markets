@@ -1,31 +1,39 @@
 'use client';
 
-/**
- * @fileOverview Institutional User Dashboard.
- * Migrated to Supabase for profile and portfolio management.
- * Fully localized for international markets.
- */
-
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { Shield, TrendingUp, DollarSign, Activity, ArrowRight, Star } from "lucide-react";
 import Link from "next/link";
-import { useUser } from "@/firebase";
+import { useUser, useDoc, useFirestore, useCollection } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { useState, useEffect, useMemo } from "react";
-import { createClient } from "@/app/lib/supabase/client";
+import { collection, query, where, orderBy, limit } from "firebase/firestore";
 import OnboardingTutorial from "@/components/dashboard/OnboardingTutorial";
 import MarketNewsFeed from "@/components/dashboard/MarketNewsFeed";
 
+/**
+ * @fileOverview User Dashboard (Firebase Reverted).
+ */
+
 export default function UserDashboard() {
   const { user } = useUser();
-  const supabase = createClient();
+  const db = useFirestore();
   const { t, formatNumber } = useTranslation();
 
-  const [profile, setProfile] = useState<any>(null);
-  const [recentTrades, setRecentTrades] = useState<any[]>([]);
-  const [watchlist, setWatchlist] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
+  
+  const tradesQuery = useMemo(() => {
+    if (!db || !user) return null;
+    return query(collection(db, `users/${user.uid}/positions`), orderBy("timestamp", "desc"), limit(5));
+  }, [db, user]);
+
+  const watchlistQuery = useMemo(() => {
+    if (!db || !user) return null;
+    return query(collection(db, `users/${user.uid}/watchlist`), limit(6));
+  }, [db, user]);
+
+  const { data: recentTrades, loading: tradesLoading } = useCollection<any>(tradesQuery);
+  const { data: watchlist, loading: watchlistLoading } = useCollection<any>(watchlistQuery);
   
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
@@ -36,39 +44,7 @@ export default function UserDashboard() {
     
     const savedDemo = localStorage.getItem('varban_demo_balance');
     if (savedDemo) setDemoBalance(parseFloat(savedDemo));
-
-    async function loadData() {
-      if (!user?.uid) return;
-      
-      try {
-        // Fetch Profile
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.uid)
-          .single();
-        
-        if (profileData) setProfile(profileData);
-
-        // Fetch Recent Trades (Mocking for now until table finalized)
-        setRecentTrades([]);
-
-        // Fetch Watchlist
-        const { data: wlData } = await supabase
-          .from('watchlist')
-          .select('*')
-          .eq('user_id', user.uid);
-        
-        if (wlData) setWatchlist(wlData);
-      } catch (e) {
-        console.error("Supabase Load Error:", e);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadData();
-  }, [user?.uid, supabase]);
+  }, []);
 
   useEffect(() => {
     const handleGlobalChange = () => {
@@ -92,7 +68,7 @@ export default function UserDashboard() {
   ];
 
   return (
-    <AuthedLayout title={t('nav.dashboard')} subtitle={profile?.full_name ? `Welcome back, ${profile.full_name}` : "Welcome back to your account"}>
+    <AuthedLayout title={t('nav.dashboard')} subtitle={profile?.profile?.fullName ? `Welcome back, ${profile.profile.fullName}` : "Welcome back to your account"}>
       <OnboardingTutorial />
       <div className="space-y-8">
         {accountMode === 'DEMO' && (
@@ -110,7 +86,7 @@ export default function UserDashboard() {
               </div>
               <div>
                 <span className={`text-xl font-mono font-bold ${m.color}`}>
-                  {loading ? "..." : `$${formatNumber(m.value || 0, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  {profileLoading ? "..." : `$${formatNumber(m.value || 0, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                 </span>
               </div>
             </Card>
@@ -139,7 +115,7 @@ export default function UserDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E4E4E4] text-xs font-mono">
-                      {loading ? (
+                      {tradesLoading ? (
                         <tr><td colSpan={5} className="p-4 text-center text-[#6B7280]">{t('common.loading')}</td></tr>
                       ) : recentTrades.length === 0 ? (
                         <tr><td colSpan={5} className="p-8 text-center text-[#6B7280] uppercase tracking-widest font-bold opacity-30">{t('trading.noPositions')}</td></tr>
@@ -148,7 +124,7 @@ export default function UserDashboard() {
                           <td className="p-3 text-[#6B7280]">{trade.id.slice(0, 8).toUpperCase()}</td>
                           <td className="p-3 font-bold">{trade.instrument}</td>
                           <td className="p-3">
-                            <span className={`px-1 py-0.5 border text-[9px] font-bold ${trade.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#C43D3D] text-[#C43D3D]'}`}>
+                            <span className={cn("px-1 py-0.5 border text-[9px] font-bold", trade.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#C43D3D] text-[#C43D3D]')}>
                               {trade.vector}
                             </span>
                           </td>
@@ -172,7 +148,7 @@ export default function UserDashboard() {
                 </Link>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {loading ? (
+                {watchlistLoading ? (
                   <p className="text-xs text-[#6B7280] text-center p-4 col-span-full">{t('common.loading')}</p>
                 ) : watchlist.length === 0 ? (
                   <p className="text-xs text-[#6B7280] text-center p-8 border border-dashed border-[#E4E4E4] col-span-full uppercase font-bold tracking-widest opacity-30">{t('dashboard.emptyWatchlist')}</p>
