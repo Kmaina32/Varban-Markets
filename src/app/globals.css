@@ -47,19 +47,23 @@
     --input: 0 0% 14.9%;
     --ring: 0 0% 14.9%;
   }
-}
 
-@layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
     font-style: normal !important;
   }
+
   body {
-    @apply bg-background text-foreground antialiased select-none;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    user-select: none;
     font-family: 'Inter', sans-serif;
   }
+
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display;
+    font-family: 'IBM Plex Sans', sans-serif;
   }
 }
 
@@ -90,10 +94,56 @@
 
 @layer components {
   .btn-institutional-primary {
-    @apply inline-flex items-center justify-center bg-[#0A0A0A] text-white font-bold text-[10px] tracking-widest uppercase px-6 py-3.5 hover:bg-[#141414] transition-colors duration-150 disabled:opacity-40 border border-[#0A0A0A];
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #0A0A0A;
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.875rem 1.5rem;
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+    border: 1px solid #0A0A0A;
+    border-radius: 0;
+  }
+  
+  .btn-institutional-primary:hover {
+    background-color: #141414;
+  }
+
+  .btn-institutional-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
   
   .btn-institutional-secondary {
-    @apply inline-flex items-center justify-center bg-white text-[#0A0A0A] font-bold text-[10px] tracking-widest uppercase px-6 py-3.5 border border-[#E4E4E4] hover:bg-[#F7F7F5] transition-colors duration-150 disabled:opacity-40;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #FFFFFF;
+    color: #0A0A0A;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.875rem 1.5rem;
+    border: 1px solid #E4E4E4;
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+    border-radius: 0;
+  }
+
+  .btn-institutional-secondary:hover {
+    background-color: #F7F7F5;
+  }
+
+  .btn-institutional-secondary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 }
