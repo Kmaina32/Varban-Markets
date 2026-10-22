@@ -286,15 +286,6 @@ export default function TerminalWorkspace() {
         <AuthedSidebar className="hidden lg:flex" />
 
         <main className="flex-grow flex lg:ml-16 overflow-hidden">
-          {/* Drawing Tools Sidebar Mock */}
-          <aside className="w-10 border-r border-[#E4E4E4] bg-white hidden lg:flex flex-col items-center py-4 space-y-4 shrink-0">
-             <button className="p-2 text-[#0055FF] hover:bg-[#F7F7F5] transition-colors"><MousePointer2 className="w-4 h-4" /></button>
-             <button className="p-2 text-[#6B7280] hover:bg-[#F7F7F5] transition-colors"><TrendingUp className="w-4 h-4" /></button>
-             <button className="p-2 text-[#6B7280] hover:bg-[#F7F7F5] transition-colors"><Search className="w-4 h-4" /></button>
-             <div className="w-6 h-px bg-[#F7F7F5]"></div>
-             <button className="p-2 text-[#6B7280] hover:bg-[#F7F7F5] transition-colors"><Globe className="w-4 h-4" /></button>
-          </aside>
-
           <div className="flex-grow flex flex-col overflow-hidden">
             <div id="tour-chart" className="flex-grow min-h-0 bg-[#F7F7F5] relative">
               <TradingViewChart symbol={activeInst.symbol} />
