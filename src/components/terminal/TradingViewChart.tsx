@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Institutional Advanced Charting Module.
- * Integrates the full TradingView Advanced Widget without custom wrappers.
+ * Updated: Enabled side toolbar and enhanced technical controls.
  */
 
 import React, { useEffect, useRef } from 'react';
@@ -32,7 +32,6 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Clear previous widget
     containerRef.current.innerHTML = '';
 
     const script = document.createElement('script');
@@ -50,6 +49,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       locale: "en",
       enable_publishing: false,
       hide_top_toolbar: false,
+      hide_side_toolbar: false, // Enabled drawing tools
       allow_symbol_change: true,
       save_image: true,
       backgroundColor: "#FFFFFF",
@@ -57,8 +57,12 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       container_id: "tradingview_advanced_node",
       studies: [
         "STD;EMA",
-        "STD;RSI"
+        "STD;RSI",
+        "STD;MACD"
       ],
+      show_popup_button: true,
+      popup_width: "1000",
+      popup_height: "650",
       support_host: "https://www.tradingview.com"
     };
 
@@ -74,7 +78,6 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
   return (
     <div className="w-full h-full flex flex-col bg-white overflow-hidden border border-[#E4E4E4] shadow-sm">
-      {/* Primary Widget Container */}
       <div 
         id="tradingview_advanced_node" 
         className="tradingview-widget-container flex-1 w-full"

@@ -2,19 +2,23 @@
 
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
- * 4-Panel Grid Architecture with resizable portfolio manager.
- * Updated: Refined Utility Cluster container for real-time clock and selectors.
+ * 4-Panel Grid Architecture with resizable portfolio manager and utility node.
  */
 
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { 
   Menu, 
   X,
-  ChevronUp,
   ChevronDown,
-  Clock as ClockIcon
+  Clock as ClockIcon,
+  MousePointer2,
+  TrendingUp,
+  Newspaper,
+  Layout,
+  Search,
+  Globe
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
@@ -32,6 +36,7 @@ import MarketSelector from "@/components/terminal/MarketSelector";
 import ExecutionTicket from "@/components/terminal/ExecutionTicket";
 import PortfolioManager from "@/components/terminal/PortfolioManager";
 import TerminalTutorial from "@/components/terminal/TerminalTutorial";
+import MarketNewsFeed from "@/components/dashboard/MarketNewsFeed";
 
 interface Position {
   id: string;
@@ -65,6 +70,8 @@ export default function TerminalWorkspace() {
   const [isTradeDrawerOpen, setIsTradeDrawerOpen] = useState(false);
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
+  
+  const [activeRightTab, setActiveRightTab] = useState<'TRADE' | 'MARKET' | 'NEWS'>('TRADE');
 
   const [currentTime, setCurrentTime] = useState("");
   const [activeTimezone, setActiveTimezone] = useState("UTC+0");
@@ -135,19 +142,6 @@ export default function TerminalWorkspace() {
     return () => { active = false; clearInterval(interval); };
   }, [activeInst.symbol]);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = Date.now();
-      setPositions(prev => prev.map(p => {
-        if (p.status === 'Open' && p.mode === 'DURATION' && now - p.timestamp > 18000) {
-          return { ...p, status: 'Closed' };
-        }
-        return p;
-      }));
-    }, 2000);
-    return () => clearInterval(timer);
-  }, []);
-
   const handleExecution = (params: any) => {
     const live = marketData[activeInst.symbol];
     if (!live || !user) return;
@@ -200,11 +194,13 @@ export default function TerminalWorkspace() {
           <Link href="/dashboard" className="hidden lg:block shrink-0"><Image src="/assets/logo2.png" alt="Varban" width={80} height={20} className="w-auto object-contain" priority /></Link>
           <div className="h-6 w-px bg-[#E4E4E4] hidden lg:block"></div>
           
-          <MarketSelector 
-            activeSymbol={activeInst.symbol} 
-            onSelect={setActiveInst} 
-            livePrices={marketData} 
-          />
+          <div id="tour-market-select">
+            <MarketSelector 
+              activeSymbol={activeInst.symbol} 
+              onSelect={setActiveInst} 
+              livePrices={marketData} 
+            />
+          </div>
 
           <div className="hidden lg:flex items-center space-x-8 px-6">
             <div className="flex flex-col">
@@ -219,7 +215,6 @@ export default function TerminalWorkspace() {
         </div>
 
         <div className="flex items-center space-x-3 lg:space-x-8">
-          {/* REFINED SYSTEM UTILITY NODE */}
           <div className="hidden lg:flex items-center bg-[#F7F7F5] border border-[#E4E4E4] p-1.5 pr-4 space-x-4">
             <div className="flex items-center bg-white border border-[#E4E4E4] px-3 py-1 shadow-sm">
                <ClockIcon className="w-3 h-3 text-[#0055FF] mr-2" />
@@ -255,7 +250,7 @@ export default function TerminalWorkspace() {
             </div>
           </div>
 
-          <div className="flex flex-col text-right">
+          <div id="tour-mode" className="flex flex-col text-right">
             <span className="text-[7px] lg:text-[8px] font-bold uppercase text-[#6B7280]">{accountMode} BALANCE</span>
             <span className={cn("text-[10px] lg:text-xs font-mono font-bold", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>
               ${formatNumber(activeBalance, { minimumFractionDigits: 2 })}
@@ -291,8 +286,17 @@ export default function TerminalWorkspace() {
         <AuthedSidebar className="hidden lg:flex" />
 
         <main className="flex-grow flex lg:ml-16 overflow-hidden">
+          {/* Drawing Tools Sidebar Mock */}
+          <aside className="w-10 border-r border-[#E4E4E4] bg-white hidden lg:flex flex-col items-center py-4 space-y-4 shrink-0">
+             <button className="p-2 text-[#0055FF] hover:bg-[#F7F7F5] transition-colors"><MousePointer2 className="w-4 h-4" /></button>
+             <button className="p-2 text-[#6B7280] hover:bg-[#F7F7F5] transition-colors"><TrendingUp className="w-4 h-4" /></button>
+             <button className="p-2 text-[#6B7280] hover:bg-[#F7F7F5] transition-colors"><Search className="w-4 h-4" /></button>
+             <div className="w-6 h-px bg-[#F7F7F5]"></div>
+             <button className="p-2 text-[#6B7280] hover:bg-[#F7F7F5] transition-colors"><Globe className="w-4 h-4" /></button>
+          </aside>
+
           <div className="flex-grow flex flex-col overflow-hidden">
-            <div className="flex-grow min-h-0 bg-[#F7F7F5] relative">
+            <div id="tour-chart" className="flex-grow min-h-0 bg-[#F7F7F5] relative">
               <TradingViewChart symbol={activeInst.symbol} />
             </div>
 
@@ -310,28 +314,73 @@ export default function TerminalWorkspace() {
                 history={positions.filter(p => p.status === 'Closed')}
               />
             </div>
-            
-            <div className="lg:hidden h-24 shrink-0 bg-white border-t border-[#E4E4E4] overflow-hidden">
-              <PortfolioManager 
-                positions={positions.filter(p => p.status === 'Open')}
-                orders={[]}
-                history={positions.filter(p => p.status === 'Closed')}
-              />
-            </div>
           </div>
 
-          <div className="hidden lg:flex w-[340px] border-l border-[#E4E4E4] shrink-0 bg-white shadow-xl relative z-40">
-            <ExecutionTicket 
-              instrument={activeInst} 
-              livePrice={marketData[activeInst.symbol]?.price}
-              balance={activeBalance}
-              accountMode={accountMode}
-              onExecute={handleExecution}
-            />
+          <div className="hidden lg:flex w-[340px] border-l border-[#E4E4E4] shrink-0 bg-white shadow-xl relative z-40 flex-col">
+            {/* Tabbed Right Utility Panel */}
+            <div className="flex border-b border-[#E4E4E4] shrink-0">
+               {[
+                 { id: 'TRADE', label: 'Order Ticket', icon: MousePointer2 },
+                 { id: 'MARKET', label: 'Market Data', icon: Layout },
+                 { id: 'NEWS', label: 'News Feed', icon: Newspaper }
+               ].map(tab => (
+                 <button 
+                  key={tab.id}
+                  onClick={() => setActiveRightTab(tab.id as any)}
+                  className={cn(
+                    "flex-1 py-3 text-[8px] font-bold uppercase tracking-widest border-b-2 transition-all flex flex-col items-center gap-1",
+                    activeRightTab === tab.id ? "border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5" : "border-transparent text-[#6B7280] hover:bg-[#F7F7F5]"
+                  )}
+                 >
+                   <tab.icon className="w-3 h-3" />
+                   <span>{tab.label}</span>
+                 </button>
+               ))}
+            </div>
+
+            <div className="flex-grow overflow-y-auto no-scrollbar">
+               {activeRightTab === 'TRADE' && (
+                 <div id="tour-settings" className="h-full">
+                    <ExecutionTicket 
+                      instrument={activeInst} 
+                      livePrice={marketData[activeInst.symbol]?.price}
+                      balance={activeBalance}
+                      accountMode={accountMode}
+                      onExecute={handleExecution}
+                    />
+                 </div>
+               )}
+               {activeRightTab === 'MARKET' && (
+                 <div className="p-6 space-y-8 animate-in fade-in duration-300">
+                    <section className="space-y-4">
+                       <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">Instrument Details</h3>
+                       <div className="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase text-[#6B7280]">
+                          <div><span className="block opacity-50 mb-1">Exchange</span> <span className="text-[#0A0A0A]">Varban Synthetic</span></div>
+                          <div><span className="block opacity-50 mb-1">Settlement</span> <span className="text-[#16835B]">Instant</span></div>
+                          <div><span className="block opacity-50 mb-1">Leverage</span> <span className="text-[#0A0A0A]">1:400</span></div>
+                          <div><span className="block opacity-50 mb-1">Market State</span> <span className="text-[#16835B]">Active</span></div>
+                       </div>
+                    </section>
+                    <section className="space-y-4">
+                       <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">Active Technical Rating</h3>
+                       <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] text-center">
+                          <span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Buy Momentum</span>
+                          <div className="text-xl font-mono font-bold text-[#16835B]">NEUTRAL</div>
+                       </div>
+                    </section>
+                 </div>
+               )}
+               {activeRightTab === 'NEWS' && (
+                 <div className="h-full">
+                    <MarketNewsFeed />
+                 </div>
+               )}
+            </div>
           </div>
         </main>
       </div>
 
+      {/* Mobile Footer Terminal Trigger */}
       <div className="lg:hidden h-16 border-t border-[#E4E4E4] bg-white flex items-center px-4 gap-3 shrink-0 z-[110]">
         <div className="flex-grow flex flex-col">
            <span className="text-[10px] font-mono font-bold text-[#6B7280]">{activeInst.symbol}</span>
@@ -343,10 +392,11 @@ export default function TerminalWorkspace() {
           onClick={() => setIsTradeDrawerOpen(true)}
           className="px-8 py-3 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"
         >
-          Open Trade <ChevronUp className="w-3.5 h-3.5" />
+          Open Trade <ChevronDown className="w-3.5 h-3.5" />
         </button>
       </div>
 
+      {/* Mobile Drawers */}
       {isTradeDrawerOpen && (
         <div className="fixed inset-0 z-[500] lg:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsTradeDrawerOpen(false)}></div>

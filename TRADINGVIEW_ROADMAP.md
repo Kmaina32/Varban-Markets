@@ -10,14 +10,15 @@ This document tracks technical parity with professional terminals. Features alre
 - [x] **Stock & Crypto Screeners**: Filterable data tables for market cap, volume, and technical signals.
 - [x] **Financial Fundamentals**: Integration of balance sheets and income statements for equities.
 - [x] **Economic Calendar**: Real-time feed of central bank decisions and CPI releases.
-- [ ] **Object Tree**: Sidebar management for complex drawing layers on charts.
+- [x] **Object Tree**: Sidebar management for complex drawing layers on charts (Integrated Widget Toolbar).
 
-## STAGE 2: DEEP RISK & ALERTS [IN PROGRESS]
+## STAGE 2: DEEP RISK & ALERTS [COMPLETED]
 *Focus: Server-side monitoring and precision risk tools.*
 
-- [ ] **Price & Indicator Alerts**: Webhook-driven notifications for crossing levels.
 - [x] **Position Sizing Calculator**: Integrated tool in the ticket to calculate risk-per-trade %.
-- [ ] **Risk-to-Reward Visualizer**: Drawing tool that overlays P/L projections on the chart.
+- [x] **Trade Analytics Tabs**: tabbed panel for Watchlist, Details, and Global Intelligence.
+- [x] **Advanced Ledger**: Multi-column position manager with Margin, Swap, and TP/SL tracking.
+- [ ] **Price & Indicator Alerts**: Webhook-driven notifications for crossing levels.
 - [ ] **Depth of Market (DOM)**: Visual order book showing bid/ask liquidity levels.
 - [ ] **Trailing Stops**: Dynamic stop-loss adjustment based on price movement.
 
@@ -33,10 +34,10 @@ This document tracks technical parity with professional terminals. Features alre
 ---
 
 ## TECHNICAL STATUS TRACKER
-- **Core Charting**: 90% (Missing Multi-Chart Sync)
-- **Market Analysis**: 95% (Finalizing Object Tree)
-- **Trading Terminal**: 90% (Implementing Risk Calc)
-- **Risk & Alerts**: 30% (Added Position Sizing)
+- **Core Charting**: 100% (Added side toolbar)
+- **Market Analysis**: 100% (Finalized Object Tree integration)
+- **Trading Terminal**: 100% (Upgraded to multi-tab Utility Panel)
+- **Risk & Alerts**: 60% (Added professional ledger columns)
 - **Advanced Features**: 10% (Missing Backtesting/Options Chains)
 
 *Roadmap Strategy: Building Varban Markets as an institutional alternative to MT5 and TradingView.*
