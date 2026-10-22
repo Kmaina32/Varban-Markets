@@ -1,25 +1,39 @@
 'use client';
 
-import { useMemo, useState, useEffect } from "react";
+/**
+ * @fileOverview User Directory (TanStack v9 Overhaul).
+ * Regulatory oversight and entity management.
+ */
+
+import * as React from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
-import { Card } from "@/components/ui/card";
-import { Search, Loader2, UserCog, ShieldCheck, AlertTriangle } from "lucide-react";
+import { UserCog, AlertTriangle, ShieldCheck } from "lucide-react";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { createClient } from "@/app/lib/supabase/client";
+import { DataTable } from "@/components/ui/data-table";
+import { createColumnHelper } from "@tanstack/react-table";
+import { type DataTableFeatures } from "@/components/ui/data-table-features";
 import { cn } from "@/app/lib/utils";
 import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
+
+type UserProfile = {
+  id: string;
+  full_name: string;
+  email: string;
+  verification_status: string;
+  role: string;
+  balance: number;
+};
 
 export default function UserManagement() {
   const { formatNumber } = useTranslation();
   const supabase = createClient();
   
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isProcessing, setIsProcessing] = useState<string | null>(null);
-  const [recursionError, setRecursionError] = useState(false);
+  const [data, setData] = React.useState<UserProfile[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [isProcessing, setIsProcessing] = React.useState<string | null>(null);
   
-  const [dialog, setDialog] = useState<{ status: DialogStatus; title: string; message: string }>({
+  const [dialog, setDialog] = React.useState<{ status: DialogStatus; title: string; message: string }>({
     status: null,
     title: '',
     message: ''
@@ -27,38 +41,24 @@ export default function UserManagement() {
 
   const loadUsers = async () => {
     setLoading(true);
-    setRecursionError(false);
-    
-    const { data, error } = await supabase
+    const { data: users, error } = await supabase
       .from('profiles')
       .select('*')
       .order('id', { ascending: false });
     
-    if (error) {
-      console.error("Error fetching users:", error);
-      if (error.code === '42P17') setRecursionError(true);
-      setUsers([]);
-    } else {
-      setUsers(data || []);
-    }
+    if (users) setData(users as any);
     setLoading(false);
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     loadUsers();
   }, []);
 
   const handleVerify = async (userId: string, currentStatus: string) => {
     setIsProcessing(userId);
     const nextStatus = currentStatus === 'Verified' ? 'Not Verified' : 'Verified';
-    
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ verification_status: nextStatus })
-        .eq('id', userId);
-      
-      if (error) throw error;
+      await supabase.from('profiles').update({ verification_status: nextStatus }).eq('id', userId);
       await loadUsers();
     } catch (e) {
       setDialog({ status: 'error', title: 'Update Failed', message: 'Failed to modify verification state.' });
@@ -71,14 +71,8 @@ export default function UserManagement() {
     if (!window.confirm(`Modify authority to ${currentRole === 'Admin' ? 'Trader' : 'Admin'}?`)) return;
     setIsProcessing(userId);
     const nextRole = currentRole === 'Admin' ? 'Trader' : 'Admin';
-    
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: nextRole })
-        .eq('id', userId);
-      
-      if (error) throw error;
+      await supabase.from('profiles').update({ role: nextRole }).eq('id', userId);
       await loadUsers();
     } catch (e) {
       setDialog({ status: 'error', title: 'Update Failed', message: 'Failed to modify role authority.' });
@@ -87,15 +81,70 @@ export default function UserManagement() {
     }
   };
 
-  const filteredUsers = useMemo(() => {
-    if (!users) return [];
-    const q = searchQuery.toLowerCase();
-    return users.filter(u => {
-      const name = (u.full_name || "").toLowerCase();
-      const email = (u.email || "").toLowerCase();
-      return name.includes(q) || email.includes(q);
-    });
-  }, [users, searchQuery]);
+  const columnHelper = createColumnHelper<DataTableFeatures, UserProfile>();
+
+  const columns = columnHelper.columns([
+    columnHelper.accessor("full_name", {
+      header: "Entity Profile",
+      cell: info => (
+        <div className="flex flex-col">
+          <span className="font-bold">{info.getValue() || "Unnamed Entity"}</span>
+          <span className="text-[9px] text-[#6B7280] font-mono">{info.row.original.id.slice(0, 12).toUpperCase()}</span>
+        </div>
+      ),
+    }),
+    columnHelper.accessor("email", {
+      header: "Contact Domain",
+      cell: info => <span className="font-mono text-[#6B7280]">{info.getValue()}</span>,
+    }),
+    columnHelper.accessor("verification_status", {
+      header: "KYC Status",
+      cell: info => {
+        const v = info.getValue();
+        return (
+          <div className="text-center">
+            <span className={cn(
+              "px-2 py-0.5 border text-[9px] font-bold uppercase tracking-wider",
+              v === 'Verified' ? "border-[#16835B] text-[#16835B] bg-[#16835B]/5" : "border-[#C9A227] text-[#C9A227] bg-[#C9A227]/5"
+            )}>
+              {v || "Not Verified"}
+            </span>
+          </div>
+        )
+      },
+    }),
+    columnHelper.accessor("role", {
+      header: "Authority",
+      cell: info => (
+        <button 
+          onClick={() => handleToggleRole(info.row.original.id, info.getValue())}
+          className={cn(
+            "px-3 py-1 border text-[9px] font-bold uppercase transition-all flex items-center gap-1.5 mx-auto shadow-sm",
+            info.getValue() === 'Admin' ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white text-[#6B7280] border-[#E4E4E4] hover:bg-[#F7F7F5]"
+          )}
+        >
+          <UserCog className="w-3 h-3" />
+          <span>{info.getValue() || "Trader"}</span>
+        </button>
+      ),
+    }),
+    columnHelper.accessor("balance", {
+      header: () => <div className="text-right">Balance</div>,
+      cell: info => <div className="text-right font-mono font-bold">${formatNumber(info.getValue(), { minimumFractionDigits: 2 })}</div>,
+    }),
+    columnHelper.display({
+      id: "actions",
+      header: "Decision",
+      cell: info => (
+        <button 
+          onClick={() => handleVerify(info.row.original.id, info.row.original.verification_status)}
+          className="text-[9px] font-bold uppercase tracking-widest text-[#0055FF] underline decoration-2 underline-offset-4 hover:text-[#0A0A0A] transition-colors"
+        >
+          {isProcessing === info.row.original.id ? "Syncing..." : "Toggle Audit"}
+        </button>
+      ),
+    }),
+  ]);
 
   return (
     <AuthedLayout title="User Directory" subtitle="Regulatory oversight and entity management">
@@ -107,99 +156,12 @@ export default function UserManagement() {
           onClose={() => setDialog({ ...dialog, status: null })} 
         />
 
-        {recursionError && (
-          <div className="p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 flex items-start space-x-3 shadow-sm">
-            <AlertTriangle className="w-5 h-5 text-[#C43D3D] shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <p className="text-xs font-bold text-[#C43D3D] uppercase tracking-widest">Infinite Recursion Detected (42P17)</p>
-              <p className="text-[10px] text-[#6B7280] leading-relaxed">
-                Your database security policies are creating a circular check. Please apply the SQL fix provided in the platform overview to resolve this authority loop.
-              </p>
-            </div>
-          </div>
-        )}
-
-        <Card className="p-4 bg-white shadow-sm flex items-center gap-4 border-[#E4E4E4]">
-          <Search className="w-4 h-4 text-[#6B7280]" />
-          <input 
-            value={searchQuery} 
-            onChange={e => setSearchQuery(e.target.value)} 
-            placeholder="Search by name, email or entity ID..." 
-            className="flex-grow text-xs outline-none bg-transparent" 
-          />
-        </Card>
-
-        <Card className="bg-white overflow-hidden shadow-sm border-[#E4E4E4]">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[900px]">
-              <thead className="bg-[#F7F7F5] border-b border-[#E4E4E4] text-[9px] font-bold uppercase text-[#6B7280] tracking-widest">
-                <tr>
-                  <th className="p-4">Entity Profile</th>
-                  <th className="p-4">Contact Domain</th>
-                  <th className="p-4 text-center">KYC Status</th>
-                  <th className="p-4 text-center">Authority</th>
-                  <th className="p-4 text-right">Balance</th>
-                  <th className="p-4 text-center">Decision</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E4E4E4] text-xs">
-                {loading ? (
-                  <tr>
-                    <td colSpan={6} className="p-20 text-center">
-                      <div className="flex flex-col items-center justify-center space-y-4">
-                        <Loader2 className="w-8 h-8 text-[#0055FF] animate-spin" />
-                        <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">Accessing Entity Registry...</span>
-                      </div>
-                    </td>
-                  </tr>
-                ) : filteredUsers.length === 0 ? (
-                  <tr><td colSpan={6} className="p-12 text-center text-[#6B7280] uppercase font-bold tracking-widest">No matching entities found.</td></tr>
-                ) : filteredUsers.map((u: any) => (
-                  <tr key={u.id} className="hover:bg-[#F7F7F5] transition-colors">
-                    <td className="p-4">
-                      <span className="font-bold block text-[#0A0A0A]">{u.full_name || "Unnamed Entity"}</span>
-                      <span className="text-[9px] text-[#6B7280] font-mono">{u.id.slice(0, 12).toUpperCase()}</span>
-                    </td>
-                    <td className="p-4 font-mono text-[#6B7280] lowercase">{u.email}</td>
-                    <td className="p-4 text-center">
-                      <span className={cn(
-                        "px-2 py-0.5 border text-[9px] font-bold uppercase tracking-wider",
-                        u.verification_status === 'Verified' ? "border-[#16835B] text-[#16835B] bg-[#16835B]/5" : "border-[#C9A227] text-[#C9A227] bg-[#C9A227]/5"
-                      )}>
-                        {u.verification_status || "Not Verified"}
-                      </span>
-                    </td>
-                    <td className="p-4 text-center">
-                      <button 
-                        onClick={() => handleToggleRole(u.id, u.role)}
-                        disabled={isProcessing === u.id}
-                        className={cn(
-                          "px-3 py-1 border text-[9px] font-bold uppercase transition-all flex items-center gap-1.5 mx-auto shadow-sm",
-                          u.role === 'Admin' ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white text-[#6B7280] border-[#E4E4E4] hover:bg-[#F7F7F5]"
-                        )}
-                      >
-                        <UserCog className="w-3 h-3" />
-                        <span>{u.role || "Trader"}</span>
-                      </button>
-                    </td>
-                    <td className="p-4 text-right font-mono font-bold text-[#0A0A0A]">
-                      ${formatNumber(u.balance || 0, { minimumFractionDigits: 2 })}
-                    </td>
-                    <td className="p-4 text-center">
-                      <button 
-                        onClick={() => handleVerify(u.id, u.verification_status)}
-                        disabled={isProcessing === u.id}
-                        className="text-[9px] font-bold uppercase tracking-widest text-[#0055FF] underline decoration-2 underline-offset-4 hover:text-[#0A0A0A] transition-colors"
-                      >
-                        {isProcessing === u.id ? "Syncing..." : "Toggle Audit"}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+        <DataTable 
+          columns={columns as any} 
+          data={data} 
+          filterColumn="full_name" 
+          filterPlaceholder="Search entities..." 
+        />
       </div>
     </AuthedLayout>
   );
