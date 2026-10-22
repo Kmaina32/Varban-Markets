@@ -1,4 +1,3 @@
-
 "use client";
 
 /**
@@ -65,7 +64,6 @@ export default function RegisterClient() {
 
   const isPasswordValid = passwordValidators.every(v => v.test(formData.password));
   
-  // Validation checks for friendly errors
   const isNameMissing = !formData.firstName.trim() || !formData.lastName.trim();
   const isEmailMissing = !formData.email.trim();
   const canSubmit = isPasswordValid && formData.isNotUSCitizen && !loading && !isEmailMissing && !isNameMissing;
@@ -92,7 +90,7 @@ export default function RegisterClient() {
     e.preventDefault();
     
     if (isNameMissing) {
-      setError("Sign up failed: Your name is required to initialize the account ledger.");
+      setError("Sign up failed: Your first and last names are required to initialize the account ledger.");
       return;
     }
     
@@ -138,14 +136,14 @@ export default function RegisterClient() {
         } else if (msg.includes('too many requests')) {
           throw new Error("Protocol Lock: Too many registration attempts. Please try again in a few minutes.");
         } else if (msg.includes('weak')) {
-          throw new Error("Sign up failed: The password provided is too weak.");
+          throw new Error("Sign up failed: The password provided is too weak for institutional standards.");
         }
-        throw signUpError;
+        throw new Error(signUpError.message);
       }
       
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Registration handshake failure. Please check your data or connectivity.");
+      setError(typeof err === 'string' ? err : err.message || "Registration handshake failure. Please check your data or connectivity.");
     } finally {
       setLoading(false);
     }
@@ -172,7 +170,7 @@ export default function RegisterClient() {
             {error && (
               <div className="p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[11px] font-bold text-[#C43D3D] uppercase text-left flex items-start gap-3 animate-in fade-in duration-300">
                 <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{error}</span>
+                <span className="leading-relaxed">{error}</span>
               </div>
             )}
 

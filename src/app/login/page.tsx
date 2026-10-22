@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -60,20 +59,21 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      // Execute reCAPTCHA Enterprise handshake
       const recaptchaToken = await executeRecaptcha('LOGIN');
-      if (recaptchaToken) {
-        // Token is obtained; in a full implementation, this is sent to the backend assessment API
-        console.log("Institutional Security Token Obtained");
-      }
-
+      
       const { error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (authError) {
-        throw authError;
+        const msg = authError.message.toLowerCase();
+        if (msg.includes('invalid login credentials')) {
+          throw new Error("Sign in failed: The email or password provided is incorrect.");
+        } else if (msg.includes('email not confirmed')) {
+          throw new Error("Sign in failed: Please verify your email address before logging in.");
+        }
+        throw new Error(authError.message);
       }
       
       setSuccess(true);
@@ -82,7 +82,7 @@ export default function LoginPage() {
       }, 1800);
 
     } catch (err: any) {
-      setError(err.message || "Sign in failure.");
+      setError(typeof err === 'string' ? err : err.message || "Sign in failure. Please check your credentials.");
       setLoading(false);
     }
   };
@@ -134,9 +134,9 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide flex items-start gap-3">
+            <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide flex items-start gap-3 animate-in fade-in duration-300">
               <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{error}</span>
+              <span className="leading-relaxed">{error}</span>
             </div>
           )}
 
