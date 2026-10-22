@@ -7,16 +7,10 @@ Varban Markets is a professional electronic trading protocol engineered for adva
 
 ## 1. CORE ARCHITECTURE MATRIX
 
-### A. DATA INFRASTRUCTURE (SUPABASE)
-*   **Profiles & Identity**: Real-time synchronization of trader metadata using Supabase Auth and PostgreSQL triggers.
-*   **Financial Ledger**: Immutable transactional records for deposits, withdrawals, and trade settlements.
-*   **Watchlist Persistence**: Cloud-synced asset tracking across all device nodes.
-*   **Database Setup**: 
-    1. Open your Supabase Dashboard.
-    2. Go to the **SQL Editor**.
-    3. Copy the entire content of `SUPABASE_SETUP.sql` (found in the root directory).
-    4. Click **Run** to provision the schema and resolve 500 Error (RLS recursion).
-    5. This resolves the "column not found" and "Internal Server Error" issues by hardening the security model.
+### A. IDENTITY & DATA INFRASTRUCTURE (GOOGLE FIREBASE)
+*   **Authentication**: Secure session management using Firebase Auth, featuring Google OAuth 2.0 and reCAPTCHA Enterprise protection.
+*   **Institutional Ledger (Firestore)**: Real-time synchronization of trader metadata, open positions, and financial history using Cloud Firestore.
+*   **Multi-Node Sync**: Real-time listeners ensure sub-second updates across the Trading Terminal and Portfolio Dashboard.
 
 ### B. ADVANCED CHARTING (TRADINGVIEW)
 *   **Pro Widget**: Integration of the TradingView Advanced Charting Widget for institutional analysis.
@@ -27,27 +21,30 @@ Varban Markets is a professional electronic trading protocol engineered for adva
 *   **Tier-1 Nodes**: Coinbase CDP Integration for high-precision major assets (BTC, ETH, SOL).
 *   **Fail-Safe Chain**: Alpha Vantage (Forex/Stocks) and Finnhub (Global Equities).
 
-### D. PROFILE ENFORCEMENT
-*   **KYC Protocol**: Access to the Trading Terminal and Wallet is strictly restricted until the Physical Address and Investor Profile (Net Worth, Income, Source of Wealth) are completed.
-*   **Regulatory Alignment**: Ensures compliance with Saint Lucia jurisdiction standards for electronic financial brokers.
+### D. GLOBAL ACCESSIBILITY (i18n)
+*   **5-Language Protocol**: Full platform localization for English, French, Spanish, Portuguese, and Simplified Chinese (zh-CN).
+*   **Multilingual AI**: Localized AI Assistant capable of responding in the user's active locale.
 
 ---
 
 ## 2. ENVIRONMENT SETUP REQUIRED
 The following keys must be populated in `.env` to enable full platform functionality:
 
-- **Supabase**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+- **Firebase**: `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, etc.
+- **Security**: `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`, `RECAPTCHA_SECRET_KEY`.
 - **Market Data**: `FINNHUB_API_KEY`, `ALPHA_VANTAGE_API_KEY`, `TWELVE_DATA_API_KEY`, `POLYGON_API_KEY`.
 - **Storage**: `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`.
 
 ---
 
 ## 3. PRODUCTION STATUS TRACKER
-- [x] **Institutional White Design System**: High-contrast, minimalist UI with brand-blue and gold accents.
+- [x] **Institutional White Design System**: High-contrast, minimalist UI with brand-blue accents.
+- [x] **Firebase Migration**: Core identity and financial ledger synchronized via Firestore.
+- [x] **Google reCAPTCHA Enterprise**: Bot prevention active on login and registration nodes.
+- [x] **Google OAuth 2.0**: Social sign-in and registration fully integrated.
+- [x] **Universal Localization**: 100% translation coverage for 5 global languages.
+- [x] **Multilingual AI Assistant**: Context-aware chatbot with localized response logic.
 - [x] **Advanced Charting**: Full TradingView terminal integration.
-- [x] **Profile Enforcement**: Physical address and regulatory data required for terminal/wallet access.
-- [x] **Supabase Migration**: Core identity and financial ledger synchronized with idempotent RLS scripts.
-- [x] **Idempotent Database Setup**: Root script `SUPABASE_SETUP.sql` handles initial provisioning and recursion fixes.
 
 ---
 *Operational Ledger Status: Finalized, Synchronized & Build Optimized.*
