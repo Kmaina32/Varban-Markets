@@ -13,6 +13,7 @@ import { useUser, useDoc, useCollection, useFirestore } from "@/firebase";
 import { collection, query, where } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
 import PageTutorial, { TutorialStep } from "@/components/shared/PageTutorial";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PortfolioPage() {
   const { user } = useUser();
@@ -70,7 +71,11 @@ export default function PortfolioPage() {
               <stat.icon className="w-3.5 h-3.5 text-[#0055FF]" />
             </div>
             <div className="text-xl font-mono font-bold">
-              {profileLoading || positionsLoading ? "..." : typeof stat.value === 'number' ? `${stat.prefix}${formatNumber(stat.value, { minimumFractionDigits: 2 })}` : stat.value}
+              {profileLoading || positionsLoading ? (
+                <Skeleton className="h-7 w-28" />
+              ) : (
+                typeof stat.value === 'number' ? `${stat.prefix}${formatNumber(stat.value, { minimumFractionDigits: 2 })}` : stat.value
+              )}
             </div>
           </Card>
         ))}
@@ -80,20 +85,32 @@ export default function PortfolioPage() {
         <Card id="tour-asset-allocation" className="bg-white border-[#E4E4E4] p-6 shadow-sm">
           <h3 className="text-xs font-bold uppercase tracking-wider border-b border-[#E4E4E4] pb-4 mb-4">{t('pages.assetAllocation')}</h3>
           <div className="h-64 flex flex-col items-center justify-center bg-[#F7F7F5] border border-dashed border-[#E4E4E4] text-center p-6">
-            <PieChart className="w-8 h-8 text-[#E4E4E4] mb-3" />
-            <p className="text-[10px] text-[#6B7280] uppercase tracking-widest leading-relaxed">
-              {positions?.length ? t('common.active') : t('trading.noPositions')}
-            </p>
+            {positionsLoading ? (
+              <Skeleton className="w-32 h-32 rounded-full" />
+            ) : (
+              <>
+                <PieChart className="w-8 h-8 text-[#E4E4E4] mb-3" />
+                <p className="text-[10px] text-[#6B7280] uppercase tracking-widest leading-relaxed">
+                  {positions?.length ? t('common.active') : t('trading.noPositions')}
+                </p>
+              </>
+            )}
           </div>
         </Card>
 
         <Card id="tour-performance-curve" className="bg-white border-[#E4E4E4] p-6 shadow-sm">
           <h3 className="text-xs font-bold uppercase tracking-wider border-b border-[#E4E4E4] pb-4 mb-4">{t('pages.performanceCurve')}</h3>
           <div className="h-64 flex flex-col items-center justify-center bg-[#F7F7F5] border border-dashed border-[#E4E4E4] text-center p-6">
-            <TrendingUp className="w-8 h-8 text-[#E4E4E4] mb-3" />
-            <p className="text-[10px] text-[#6B7280] uppercase tracking-widest leading-relaxed">
-              {t('common.stable')}
-            </p>
+            {profileLoading ? (
+              <Skeleton className="w-full h-32" />
+            ) : (
+              <>
+                <TrendingUp className="w-8 h-8 text-[#E4E4E4] mb-3" />
+                <p className="text-[10px] text-[#6B7280] uppercase tracking-widest leading-relaxed">
+                  {t('common.stable')}
+                </p>
+              </>
+            )}
           </div>
         </Card>
       </div>

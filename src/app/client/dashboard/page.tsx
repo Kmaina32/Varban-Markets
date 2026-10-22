@@ -10,6 +10,7 @@ import { useState, useEffect, useMemo } from "react";
 import { collection, query, where, orderBy, limit } from "firebase/firestore";
 import OnboardingTutorial from "@/components/dashboard/OnboardingTutorial";
 import MarketNewsFeed from "@/components/dashboard/MarketNewsFeed";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/app/lib/utils";
 
 /**
@@ -86,9 +87,13 @@ export default function UserDashboard() {
                 <m.icon className="w-3.5 h-3.5 text-[#6B7280]" />
               </div>
               <div>
-                <span className={`text-xl font-mono font-bold ${m.color}`}>
-                  {profileLoading ? "..." : `$${formatNumber(m.value || 0, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                </span>
+                {profileLoading ? (
+                  <Skeleton className="h-7 w-28" />
+                ) : (
+                  <span className={`text-xl font-mono font-bold ${m.color}`}>
+                    ${formatNumber(m.value || 0, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                )}
               </div>
             </Card>
           ))}
@@ -117,7 +122,15 @@ export default function UserDashboard() {
                     </thead>
                     <tbody className="divide-y divide-[#E4E4E4] text-xs font-mono">
                       {tradesLoading ? (
-                        <tr><td colSpan={5} className="p-4 text-center text-[#6B7280]">{t('common.loading')}</td></tr>
+                        [1, 2, 3].map(i => (
+                          <tr key={i}>
+                            <td className="p-3"><Skeleton className="h-4 w-16" /></td>
+                            <td className="p-3"><Skeleton className="h-4 w-20" /></td>
+                            <td className="p-3"><Skeleton className="h-4 w-12" /></td>
+                            <td className="p-3 text-right"><Skeleton className="h-4 w-16 ml-auto" /></td>
+                            <td className="p-3 text-right"><Skeleton className="h-4 w-16 ml-auto" /></td>
+                          </tr>
+                        ))
                       ) : recentTrades.length === 0 ? (
                         <tr><td colSpan={5} className="p-8 text-center text-[#6B7280] uppercase tracking-widest font-bold opacity-30">{t('trading.noPositions')}</td></tr>
                       ) : recentTrades.map((trade: any) => (
@@ -150,7 +163,7 @@ export default function UserDashboard() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {watchlistLoading ? (
-                  <p className="text-xs text-[#6B7280] text-center p-4 col-span-full">{t('common.loading')}</p>
+                  [1, 2, 3, 4].map(i => <Skeleton key={i} className="h-20 w-full" />)
                 ) : watchlist.length === 0 ? (
                   <p className="text-xs text-[#6B7280] text-center p-8 border border-dashed border-[#E4E4E4] col-span-full uppercase font-bold tracking-widest opacity-30">{t('dashboard.emptyWatchlist')}</p>
                 ) : watchlist.map((item: any) => (

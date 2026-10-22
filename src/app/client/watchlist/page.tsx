@@ -18,6 +18,7 @@ import { useTranslation } from "@/app/lib/i18n-context";
 import { AVAILABLE_INSTRUMENTS } from "@/app/lib/instruments";
 import { cn } from "@/app/lib/utils";
 import PageTutorial, { TutorialStep } from "@/components/shared/PageTutorial";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function WatchlistPage() {
   const { user } = useUser();
@@ -123,10 +124,19 @@ export default function WatchlistPage() {
 
         <div id="tour-watchlist-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {loading ? (
-            <div className="col-span-full py-20 text-center">
-              <div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">{t('common.loading')}</p>
-            </div>
+            [1, 2, 3, 4].map(i => (
+              <Card key={i} className="bg-white border-[#E4E4E4] p-5 shadow-sm space-y-4">
+                <div className="flex justify-between">
+                  <Skeleton className="h-5 w-16" />
+                  <Skeleton className="h-4 w-4" />
+                </div>
+                <Skeleton className="h-4 w-24" />
+                <div className="flex justify-between items-end">
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-10 w-10" />
+                </div>
+              </Card>
+            ))
           ) : watchlist.length === 0 ? (
             <Card className="bg-white border-[#E4E4E4] p-12 flex flex-col items-center justify-center text-[#6B7280] col-span-full shadow-sm">
               <Star className="w-10 h-10 mb-4 text-[#E4E4E4]" />

@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Universal Profile Dropdown Component.
- * Updated to handle Supabase SignOut and new /client routing.
+ * Updated to handle Supabase SignOut and features a new Switch for mode selection.
  */
 
 import { useEffect, useRef, useMemo } from "react";
@@ -16,11 +16,13 @@ import {
   Shield, 
   Settings, 
   LogOut, 
-  ChevronRight
+  ChevronRight,
+  Activity
 } from "lucide-react";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 import { useSupabaseAuth } from "@/app/lib/supabase/auth-context";
+import { Switch } from "@/components/ui/switch";
 
 interface ProfileDropdownProps {
   user: any;
@@ -51,6 +53,7 @@ export default function ProfileDropdown({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const realBalance = profile?.balance || 0;
+  const activeBalance = accountMode === 'REAL' ? realBalance : demoBalance;
 
   const isAdmin = useMemo(() => {
     if (!user?.email) return false;
@@ -118,66 +121,34 @@ export default function ProfileDropdown({
       <div className="p-5 bg-white border-b border-[#E4E4E4] space-y-4">
         <div className="flex items-center justify-between">
           <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#6B7280] flex items-center gap-2">
-            <Wallet className="w-3 h-3" /> Account Domain
+            <Activity className="w-3 h-3" /> Account Context
           </span>
         </div>
 
-        <div className="grid grid-cols-1 gap-2">
-          <button
-            onClick={() => {
-              onSelectMode('REAL');
-              onClose();
-            }}
-            className={cn(
-              "w-full p-4 border text-left flex items-center justify-between transition-all group",
-              accountMode === 'REAL' 
-                ? "bg-[#16835B]/5 border-[#16835B] shadow-sm ring-1 ring-[#16835B]/20" 
-                : "bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
-            )}
-          >
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className={cn("w-1.5 h-1.5 rounded-full", accountMode === 'REAL' ? "bg-[#16835B] animate-pulse" : "bg-[#6B7280]")}></span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Real Capital</span>
-              </div>
-              <span className="text-base font-mono font-bold text-[#16835B] block mt-1">
-                ${formatNumber(realBalance, { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-            {accountMode === 'REAL' && (
-              <div className="w-6 h-6 bg-[#16835B] text-white flex items-center justify-center rounded-none shadow-sm">
-                <Check className="w-4 h-4" />
-              </div>
-            )}
-          </button>
+        {/* INSTITUTIONAL MODE SWITCH */}
+        <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-between">
+          <div className="space-y-0.5">
+            <span className={cn(
+              "text-[10px] font-bold uppercase tracking-tight",
+              accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]"
+            )}>
+              {accountMode === 'REAL' ? 'Real Environment' : 'Practice Sandbox'}
+            </span>
+            <p className="text-[8px] text-[#6B7280] uppercase font-bold">
+              Toggle for {accountMode === 'REAL' ? 'Demo' : 'Real'} Mode
+            </p>
+          </div>
+          <Switch 
+            checked={accountMode === 'REAL'} 
+            onCheckedChange={(checked) => onSelectMode(checked ? 'REAL' : 'DEMO')} 
+          />
+        </div>
 
-          <button
-            onClick={() => {
-              onSelectMode('DEMO');
-              onClose();
-            }}
-            className={cn(
-              "w-full p-4 border text-left flex items-center justify-between transition-all group",
-              accountMode === 'DEMO' 
-                ? "bg-[#0055FF]/5 border-[#0055FF] shadow-sm ring-1 ring-[#0055FF]/20" 
-                : "bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
-            )}
-          >
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className={cn("w-1.5 h-1.5 rounded-full", accountMode === 'DEMO' ? "bg-[#0055FF] animate-pulse" : "bg-[#6B7280]")}></span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Practice Sandbox</span>
-              </div>
-              <span className="text-base font-mono font-bold text-[#0055FF] block mt-1">
-                ${formatNumber(demoBalance, { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-            {accountMode === 'DEMO' && (
-              <div className="w-6 h-6 bg-[#0055FF] text-white flex items-center justify-center rounded-none shadow-sm">
-                <Check className="w-4 h-4" />
-              </div>
-            )}
-          </button>
+        <div className="flex justify-between items-center px-1">
+          <span className="text-[9px] font-bold uppercase text-[#6B7280]">Liquid Balance</span>
+          <span className={cn("text-xs font-mono font-bold", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>
+            ${formatNumber(activeBalance, { minimumFractionDigits: 2 })}
+          </span>
         </div>
 
         <div className="grid grid-cols-2 gap-3 pt-2">

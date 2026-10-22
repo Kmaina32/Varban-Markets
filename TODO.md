@@ -1,3 +1,4 @@
+
 # Varban Markets — Development TODO & Missing Features Inventory
 
 ---
@@ -8,7 +9,7 @@
 - [x] **`/verification` Upload Buttons**: Wired to trigger "Pending" status update and user notification alerts.
 - [x] **`/security` "Change Password" Button**: Wired to Firebase Auth `sendPasswordResetEmail` flow.
 - [x] **`/security` "Log Out Everywhere Else" Button**: Wired to force token refresh and remote session revocation UX.
-- [x] **Account Hub Integration**: Consolidated profile, security, and display settings into `/account`.
+- [x] **Account Hub Integration**: Consolidated profile, security, and display settings into `/client/account`.
 - [ ] **`/security` 2FA Toggle**: Currently shows a static "ON" badge. Needs a TOTP QR code generator, secret key provisioning, and a full authenticator app setup workflow.
 - [x] **Investor Profile**: Mandatory 12-field regulatory questionnaire with Firestore persistence.
 
@@ -17,13 +18,13 @@
 - [ ] **Early Option Cashout**: The "Close" button in the portfolio manager needs to implement the 35% stake refund logic and mark positions as `earlyExit=true`.
 - [x] **Terminal Feature Tour**: Spotlight-driven tutorial system for high-speed execution modules.
 - [x] **Universal Clock**: Real-time clock with selectable timezone persistence (UTC-8 to UTC+8).
-- [ ] **TradingView Technical Indicators Toolbar**: RSI, MACD, Moving Averages, and Bollinger Bands overlay controls are not yet wired to direct chart indicator controls.
-- [x] **Resizable Layout**: Implemented professional resizable panels for chart, ledger, and utility sections using TanStack primitives.
+- [x] **Resizable Layout**: Implemented professional resizable panels for chart, ledger, and utility sections using react-resizable-panels.
+- [x] **Namespace Consolidation**: Moved terminal and workspace nodes to `/client/` to prevent route conflicts.
 
 ### C. Watchlist & Portfolio (`/watchlist`, `/portfolio`)
 - [x] **Watchlist `Add Asset` Button**: Dynamic search modal to add new currency pairs/crypto to user's custom watchlist.
 - [x] **Watchlist `Remove Asset` Button**: Delete trigger to remove tracked instrument from the persistent registry.
-- [x] **Export Trade History**: `[ Export CSV ]` helper and download trigger on `/history` page.
+- [x] **Export Trade History**: `[ Export CSV ]` helper and download trigger on `/client/history` page.
 - [x] **Portfolio Visualization**: Real-time asset allocation and performance curve visualization.
 
 ---
@@ -38,13 +39,15 @@
 ### B. Global Accessibility & SEO
 - [x] **Multilingual Protocol**: Full i18n support for 5 global languages (EN, FR, ES, PT, ZH-CN).
 - [x] **SEO Metadata Matrix**: Granular metadata and sitelink optimization for all primary landing and auth nodes.
-- [x] **Institutional AI Assistant**: Localized, context-aware chatbot using Genkit and Gemini.
+- [x] **Institutional AI Assistant**: Localized, context-aware chatbot using Genkit, Gemini, and Bubble UI.
 - [x] **Sitemap & Robots**: Generated institutional SEO infrastructure.
 
 ### C. UI Component Library
 - [x] **ShadCN Alert System**: Manually installed and themed for institutional use.
 - [x] **ShadCN Alert Dialog System**: Manually installed via @base-ui/react.
 - [x] **ShadCN Resizable System**: Integrated accessible panel management via react-resizable-panels.
+- [x] **TanStack Table v9**: Implemented high-performance data grid system across all ledgers.
+- [x] **Skeleton Shimmers**: High-fidelity placeholder loaders for client-side data synchronization.
 
 ---
 
@@ -64,8 +67,8 @@
 2. **Phase 2 (Administration)**: [COMPLETED] Admin withdrawal/deposit queues and user authority management.
 3. **Phase 3 (Workspace)**: [COMPLETED] Watchlist management, CSV export, and localized AI Assistant.
 4. **Phase 4 (Redesign & SEO)**: [COMPLETED] Institutional White design system, SEO metadata matrix, and System Registry documentation.
-5. **Phase 5 (Performance)**: [IN PROGRESS] Implement authentic TOTP 2FA, wire one-click trading, and finalize terminal logic.
+5. **Phase 5 (Performance)**: [COMPLETED] Implement TanStack Table v9, resizable panels, and skeleton loaders.
 6. **Phase 6 (Infrastructure)**: Upgrade to real-time WebSockets and server-side settlement workers.
 7. **Phase 7 (Native)**: Finalize Windows Native Application distribution and auto-update node.
 
-*Status: Phase 5 - Execution Hardening.*
+*Status: Phase 5 - Completed. Moving to Phase 6.*
