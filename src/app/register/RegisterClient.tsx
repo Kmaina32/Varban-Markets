@@ -64,7 +64,11 @@ export default function RegisterClient() {
   ];
 
   const isPasswordValid = passwordValidators.every(v => v.test(formData.password));
-  const canSubmit = isPasswordValid && formData.isNotUSCitizen && !loading && formData.email && formData.firstName;
+  
+  // Validation checks for friendly errors
+  const isNameMissing = !formData.firstName.trim() || !formData.lastName.trim();
+  const isEmailMissing = !formData.email.trim();
+  const canSubmit = isPasswordValid && formData.isNotUSCitizen && !loading && !isEmailMissing && !isNameMissing;
 
   const executeRecaptcha = async (action: string) => {
     return new Promise<string>((resolve) => {
@@ -86,18 +90,33 @@ export default function RegisterClient() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canSubmit) return;
+    
+    if (isNameMissing) {
+      setError("Sign up failed: Your name is required to initialize the account ledger.");
+      return;
+    }
+    
+    if (isEmailMissing) {
+      setError("Sign up failed: A valid email address is required.");
+      return;
+    }
+
+    if (!isPasswordValid) {
+      setError("Sign up failed: Your password does not meet the institutional security requirements.");
+      return;
+    }
+
+    if (!formData.isNotUSCitizen) {
+      setError("Sign up failed: You must accept the residency declaration to proceed.");
+      return;
+    }
     
     setLoading(true);
     setError(null);
 
     try {
-      // Execute reCAPTCHA Enterprise handshake
       const recaptchaToken = await executeRecaptcha('REGISTER');
-      if (recaptchaToken) {
-        console.log("Institutional Security Token Obtained for Onboarding");
-      }
-
+      
       const { error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -114,10 +133,12 @@ export default function RegisterClient() {
 
       if (signUpError) {
         const msg = signUpError.message.toLowerCase();
-        if (msg.includes('user already registered')) {
-          throw new Error("An entity is already registered with this email domain.");
+        if (msg.includes('user already registered') || msg.includes('already exists')) {
+          throw new Error("Sign up failed: This email is already associated with an account.");
         } else if (msg.includes('too many requests')) {
           throw new Error("Protocol Lock: Too many registration attempts. Please try again in a few minutes.");
+        } else if (msg.includes('weak')) {
+          throw new Error("Sign up failed: The password provided is too weak.");
         }
         throw signUpError;
       }
@@ -143,23 +164,11 @@ export default function RegisterClient() {
 
       <main className="flex-grow flex flex-col items-center justify-center p-4 md:py-12">
         <div className="w-full max-w-[480px] space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-          <h1 className="text-xl md:text-2xl font-bold text-[#0A0A0A] text-center tracking-tight">
+          <h1 className="text-xl md:text-2xl font-bold text-[#0A0A0A] text-center tracking-tight uppercase">
             Finish creating your account
           </h1>
 
-          {formData.email && (
-            <div className="bg-[#F3F4F6] p-6 rounded-lg flex items-center gap-4 border border-[#E4E4E4]/50 shadow-sm">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#0055FF] to-[#0044cc] flex items-center justify-center text-white text-xl font-bold">
-                {formData.firstName ? formData.firstName.charAt(0) : "U"}
-              </div>
-              <div className="overflow-hidden">
-                <h3 className="font-bold text-[#0A0A0A] text-sm">{formData.firstName || "New"} {formData.lastName || "Trader"}</h3>
-                <p className="text-xs text-[#6B7280] truncate">{formData.email}</p>
-              </div>
-            </div>
-          )}
-
-          <form onSubmit={handleRegister} className="space-y-6">
+          <form onSubmit={handleRegister} className="space-y-6 bg-white p-8 border border-[#E4E4E4] shadow-sm">
             {error && (
               <div className="p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[11px] font-bold text-[#C43D3D] uppercase text-left flex items-start gap-3 animate-in fade-in duration-300">
                 <AlertCircle className="w-4 h-4 shrink-0" />
@@ -167,43 +176,41 @@ export default function RegisterClient() {
               </div>
             )}
 
-            {!formData.email && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wider block">First Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                    className="w-full p-3.5 bg-white border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A]"
-                    placeholder="First Name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wider block">Last Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                    className="w-full p-3.5 bg-white border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A]"
-                    placeholder="Last Name"
-                  />
-                </div>
-                <div className="col-span-2 space-y-2">
-                  <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wider block">Email Address</label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    className="w-full p-3.5 bg-white border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A]"
-                    placeholder="trader@domain.com"
-                  />
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wider block">First Name</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                  className="w-full p-3.5 bg-[#F7F7F5] border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] transition-all"
+                  placeholder="First Name"
+                />
               </div>
-            )}
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wider block">Last Name</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                  className="w-full p-3.5 bg-[#F7F7F5] border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] transition-all"
+                  placeholder="Last Name"
+                />
+              </div>
+              <div className="col-span-2 space-y-2">
+                <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wider block">Email Address</label>
+                <input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  className="w-full p-3.5 bg-[#F7F7F5] border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] transition-all"
+                  placeholder="trader@domain.com"
+                />
+              </div>
+            </div>
 
             <div className="space-y-2">
               <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wider block">
@@ -278,7 +285,7 @@ export default function RegisterClient() {
                   type="text"
                   value={formData.partnerCode}
                   onChange={(e) => setFormData({...formData, partnerCode: e.target.value})}
-                  className="w-full p-3 bg-white border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] animate-in slide-in-from-top-1 duration-200"
+                  className="w-full p-3 bg-[#F7F7F5] border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] animate-in slide-in-from-top-1 duration-200"
                   placeholder="Enter partner code"
                 />
               )}
@@ -291,18 +298,18 @@ export default function RegisterClient() {
               )}>
                 {formData.isNotUSCitizen && <Check className="w-3.5 h-3.5 text-white" />}
               </div>
-              <p className="text-[11px] text-[#6B7280] leading-snug group-hover:text-[#0A0A0A] transition-colors">
+              <p className="text-[11px] text-[#6B7280] leading-snug group-hover:text-[#0A0A0A] transition-colors uppercase font-bold tracking-tight">
                 I declare and confirm that I am not a citizen or resident of the US for tax purposes.
               </p>
             </div>
 
             <button
               type="submit"
-              disabled={!canSubmit}
+              disabled={loading}
               className={cn(
                 "w-full py-4 text-xs font-bold uppercase tracking-[0.2em] transition-all duration-300 shadow-lg",
                 canSubmit 
-                  ? "bg-[#0055FF] text-white hover:bg-[#0044cc] hover:scale-[1.01]" 
+                  ? "bg-[#0A0A0A] text-white hover:bg-[#0055FF] hover:scale-[1.01]" 
                   : "bg-[#F3F4F6] text-[#D1D5DB] cursor-not-allowed border border-[#E4E4E4]"
               )}
             >
@@ -314,6 +321,12 @@ export default function RegisterClient() {
               ) : "Continue"}
             </button>
           </form>
+          
+          <div className="text-center">
+            <Link href="/login" className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest hover:text-[#0A0A0A] underline decoration-2 underline-offset-4">
+              Already have an account? Sign in
+            </Link>
+          </div>
         </div>
       </main>
     </div>
