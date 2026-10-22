@@ -3,20 +3,25 @@
 /**
  * @fileOverview Institutional Hover Card component.
  * Uses the Base UI PreviewCard primitive as the authoritative hover implementation.
- * Updated to use the Base UI 'render' pattern to avoid hydration errors.
  */
 
 import * as React from "react"
-import { PreviewCard } from "@base-ui/react"
+import { 
+  PreviewCardRoot, 
+  PreviewCardTrigger, 
+  PreviewCardPortal, 
+  PreviewCardPositioner, 
+  PreviewCardPopup 
+} from "@base-ui/react"
 import { cn } from "@/app/lib/utils"
 
-const HoverCardRoot = PreviewCard.Root
+const HoverCard = PreviewCardRoot
 
 const HoverCardTrigger = React.forwardRef<
   HTMLElement,
-  React.ComponentPropsWithoutRef<typeof PreviewCard.Trigger>
+  React.ComponentPropsWithoutRef<typeof PreviewCardTrigger>
 >(({ className, render, ...props }, ref) => (
-  <PreviewCard.Trigger
+  <PreviewCardTrigger
     ref={ref}
     render={render}
     className={cn("outline-none", className)}
@@ -25,15 +30,20 @@ const HoverCardTrigger = React.forwardRef<
 ))
 HoverCardTrigger.displayName = "HoverCardTrigger"
 
-const HoverCardPortal = PreviewCard.Portal
+const HoverCardPortal = PreviewCardPortal
 
 const HoverCardContent = React.forwardRef<
-  React.ElementRef<typeof PreviewCard.Popup>,
-  React.ComponentPropsWithoutRef<typeof PreviewCard.Popup> & { sideOffset?: number }
->(({ className, sideOffset = 12, ...props }, ref) => (
-  <PreviewCard.Portal>
-    <PreviewCard.Positioner side="right" align="center" sideOffset={sideOffset}>
-      <PreviewCard.Popup
+  React.ElementRef<typeof PreviewCardPopup>,
+  React.ComponentPropsWithoutRef<typeof PreviewCardPopup> & {
+    align?: "start" | "center" | "end";
+    side?: "top" | "bottom" | "left" | "right";
+    sideOffset?: number;
+    alignOffset?: number;
+  }
+>(({ className, align = "center", side = "right", sideOffset = 12, alignOffset = 0, ...props }, ref) => (
+  <PreviewCardPortal>
+    <PreviewCardPositioner align={align} side={side} sideOffset={sideOffset} alignOffset={alignOffset}>
+      <PreviewCardPopup
         ref={ref}
         className={cn(
           "z-[700] w-64 overflow-hidden border border-[#E4E4E4] bg-white p-4 text-[#0A0A0A] shadow-2xl outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 rounded-none",
@@ -41,13 +51,13 @@ const HoverCardContent = React.forwardRef<
         )}
         {...props}
       />
-    </PreviewCard.Positioner>
-  </PreviewCard.Portal>
+    </PreviewCardPositioner>
+  </PreviewCardPortal>
 ))
 HoverCardContent.displayName = "HoverCardContent"
 
 export { 
-  HoverCardRoot as HoverCard, 
+  HoverCard, 
   HoverCardTrigger, 
   HoverCardContent, 
   HoverCardPortal 
