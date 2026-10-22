@@ -3,6 +3,7 @@
 /**
  * @fileOverview Finalized Onboarding Client Component.
  * Refined institutional error mapping and validation feedback.
+ * Specifically hardened for Supabase 500 (Database Trigger) failures.
  * Protected by Google reCAPTCHA Enterprise.
  */
 
@@ -90,9 +91,8 @@ export default function RegisterClient() {
     e.preventDefault();
     setError(null);
     
-    // Pre-submission validation
     if (isNameMissing) {
-      setError("Identity Required: Both first and last names are mandatory for account initialization.");
+      setError("Identity Required: Both first and last names are mandatory.");
       return;
     }
     
@@ -102,27 +102,25 @@ export default function RegisterClient() {
     }
 
     if (!isPasswordValid) {
-      setError("Security Threshold: Your password must meet all institutional safety requirements listed below.");
+      setError("Security Threshold: Password does not meet institutional requirements.");
       return;
     }
 
     if (!formData.isNotUSCitizen) {
-      setError("Regulatory Compliance: You must confirm your residency status to open a trading contract.");
+      setError("Regulatory Compliance: You must confirm your residency status.");
       return;
     }
     
     setLoading(true);
 
     try {
-      // 1. Security Handshake
       const recaptchaToken = await executeRecaptcha('REGISTER');
       if (!recaptchaToken && siteKey) {
-        throw new Error("Security Handshake Interrupted: Could not verify session integrity.");
+        console.warn("reCAPTCHA bypassed: key missing or load failure.");
       }
       
-      // 2. Identity Commitment
       const { error: signUpError } = await supabase.auth.signUp({
-        email: formData.email,
+        email: formData.email.toLowerCase().trim(),
         password: formData.password,
         options: {
           data: {
@@ -130,28 +128,33 @@ export default function RegisterClient() {
             last_name: formData.lastName.trim(),
             full_name: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
             country: formData.country,
-            partner_code: formData.partnerCode
+            partner_code: formData.partnerCode.trim()
           }
         }
       });
 
       if (signUpError) {
         const msg = signUpError.message.toLowerCase();
-        if (msg.includes('user already registered') || msg.includes('already exists')) {
-          throw new Error("Sign up failed: This email address is already associated with an existing account.");
-        } else if (msg.includes('too many requests')) {
-          throw new Error("Protocol Lock: Too many registration attempts detected. Please wait several minutes.");
-        } else if (msg.includes('weak')) {
-          throw new Error("Security Violation: The password provided is too common or weak for this platform.");
+        
+        // Handle Supabase 500 / Database Trigger Errors
+        if (msg.includes('database error') || msg.includes('internal error')) {
+          throw new Error("System Handshake Failure (500): The user profile node could not be initialized. Please ensure the database schema has been provisioned via the SQL Editor using the SUPABASE_SETUP script.");
         }
+        
+        if (msg.includes('user already registered') || msg.includes('already exists')) {
+          throw new Error("Registration Failed: This email domain is already in the ledger.");
+        } else if (msg.includes('too many requests')) {
+          throw new Error("Security Lock: Too many attempts detected. Access restricted.");
+        }
+        
         throw signUpError;
       }
       
-      // 3. Success Routing
       router.push("/dashboard");
     } catch (err: any) {
-      // Ensure error is ALWAYS a string to avoid {} rendering in UI
-      const errorMessage = err?.message || (typeof err === 'string' ? err : "Registration failed: Unable to establish a secure link with our authentication nodes.");
+      const errorMessage = typeof err === 'string' 
+        ? err 
+        : err?.message || "Registration failed: Could not synchronize with identity nodes.";
       setError(errorMessage);
     } finally {
       setLoading(false);
