@@ -88,41 +88,47 @@ export default function RegisterClient() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     
+    // Pre-submission validation
     if (isNameMissing) {
-      setError("Sign up failed: Your first and last names are required to initialize the account ledger.");
+      setError("Identity Required: Both first and last names are mandatory for account initialization.");
       return;
     }
     
     if (isEmailMissing) {
-      setError("Sign up failed: A valid email address is required.");
+      setError("Contact Required: Please provide a valid email address.");
       return;
     }
 
     if (!isPasswordValid) {
-      setError("Sign up failed: Your password does not meet the institutional security requirements.");
+      setError("Security Threshold: Your password must meet all institutional safety requirements listed below.");
       return;
     }
 
     if (!formData.isNotUSCitizen) {
-      setError("Sign up failed: You must accept the residency declaration to proceed.");
+      setError("Regulatory Compliance: You must confirm your residency status to open a trading contract.");
       return;
     }
     
     setLoading(true);
-    setError(null);
 
     try {
+      // 1. Security Handshake
       const recaptchaToken = await executeRecaptcha('REGISTER');
+      if (!recaptchaToken && siteKey) {
+        throw new Error("Security Handshake Interrupted: Could not verify session integrity.");
+      }
       
+      // 2. Identity Commitment
       const { error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            full_name: `${formData.firstName} ${formData.lastName}`,
+            first_name: formData.firstName.trim(),
+            last_name: formData.lastName.trim(),
+            full_name: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
             country: formData.country,
             partner_code: formData.partnerCode
           }
@@ -132,18 +138,21 @@ export default function RegisterClient() {
       if (signUpError) {
         const msg = signUpError.message.toLowerCase();
         if (msg.includes('user already registered') || msg.includes('already exists')) {
-          throw new Error("Sign up failed: This email is already associated with an account.");
+          throw new Error("Sign up failed: This email address is already associated with an existing account.");
         } else if (msg.includes('too many requests')) {
-          throw new Error("Protocol Lock: Too many registration attempts. Please try again in a few minutes.");
+          throw new Error("Protocol Lock: Too many registration attempts detected. Please wait several minutes.");
         } else if (msg.includes('weak')) {
-          throw new Error("Sign up failed: The password provided is too weak for institutional standards.");
+          throw new Error("Security Violation: The password provided is too common or weak for this platform.");
         }
-        throw new Error(signUpError.message);
+        throw signUpError;
       }
       
+      // 3. Success Routing
       router.push("/dashboard");
     } catch (err: any) {
-      setError(typeof err === 'string' ? err : err.message || "Registration handshake failure. Please check your data or connectivity.");
+      // Ensure error is ALWAYS a string to avoid {} rendering in UI
+      const errorMessage = err?.message || (typeof err === 'string' ? err : "Registration failed: Unable to establish a secure link with our authentication nodes.");
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -163,13 +172,13 @@ export default function RegisterClient() {
       <main className="flex-grow flex flex-col items-center justify-center p-4 md:py-12">
         <div className="w-full max-w-[480px] space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
           <h1 className="text-xl md:text-2xl font-bold text-[#0A0A0A] text-center tracking-tight uppercase">
-            Finish creating your account
+            Create your trading account
           </h1>
 
           <form onSubmit={handleRegister} className="space-y-6 bg-white p-8 border border-[#E4E4E4] shadow-sm">
             {error && (
               <div className="p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[11px] font-bold text-[#C43D3D] uppercase text-left flex items-start gap-3 animate-in fade-in duration-300">
-                <AlertCircle className="w-4 h-4 shrink-0" />
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span className="leading-relaxed">{error}</span>
               </div>
             )}
@@ -183,7 +192,7 @@ export default function RegisterClient() {
                   value={formData.firstName}
                   onChange={(e) => setFormData({...formData, firstName: e.target.value})}
                   className="w-full p-3.5 bg-[#F7F7F5] border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] transition-all"
-                  placeholder="First Name"
+                  placeholder="e.g. John"
                 />
               </div>
               <div className="space-y-2">
@@ -194,7 +203,7 @@ export default function RegisterClient() {
                   value={formData.lastName}
                   onChange={(e) => setFormData({...formData, lastName: e.target.value})}
                   className="w-full p-3.5 bg-[#F7F7F5] border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] transition-all"
-                  placeholder="Last Name"
+                  placeholder="e.g. Doe"
                 />
               </div>
               <div className="col-span-2 space-y-2">

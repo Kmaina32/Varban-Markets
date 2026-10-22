@@ -55,14 +55,17 @@ export default function LoginPage() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+    setLoading(true);
 
     try {
       const recaptchaToken = await executeRecaptcha('LOGIN');
+      if (!recaptchaToken && siteKey) {
+        throw new Error("Security Handshake Interrupted: Unable to verify session integrity.");
+      }
       
       const { error: authError } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
 
@@ -71,9 +74,11 @@ export default function LoginPage() {
         if (msg.includes('invalid login credentials')) {
           throw new Error("Sign in failed: The email or password provided is incorrect.");
         } else if (msg.includes('email not confirmed')) {
-          throw new Error("Sign in failed: Please verify your email address before logging in.");
+          throw new Error("Sign in failed: Please verify your email address before attempting to access the workspace.");
+        } else if (msg.includes('too many requests')) {
+          throw new Error("Security Lock: Too many failed attempts. Access is temporarily restricted.");
         }
-        throw new Error(authError.message);
+        throw authError;
       }
       
       setSuccess(true);
@@ -82,7 +87,9 @@ export default function LoginPage() {
       }, 1800);
 
     } catch (err: any) {
-      setError(typeof err === 'string' ? err : err.message || "Sign in failure. Please check your credentials.");
+      // Ensure error is strictly handled as a string for React rendering
+      const errorMessage = err?.message || (typeof err === 'string' ? err : "Authentication failed: Could not establish a link with the identity provider.");
+      setError(errorMessage);
       setLoading(false);
     }
   };
@@ -135,7 +142,7 @@ export default function LoginPage() {
 
           {error && (
             <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide flex items-start gap-3 animate-in fade-in duration-300">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span className="leading-relaxed">{error}</span>
             </div>
           )}
