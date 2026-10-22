@@ -5,10 +5,10 @@ These pages are accessible to the public and serve as the primary onboarding fun
 
 - **`/` (Home)**: Primary entry node. [STATUS: 100% TRANSLATED]
 - **`/markets`**: Global instrument registry. [STATUS: 100% TRANSLATED]
-- **`/how-it-works`**: Educational process guide. [STATUS: PENDING CONTENT EXPANSION]
-- **`/technology`**: Infrastructure overview. [STATUS: ENGLISH ONLY]
-- **`/about`**: Corporate profile and mission. [STATUS: ENGLISH ONLY]
-- **`/protection`**: Security and fund safety overview. [STATUS: ENGLISH ONLY]
+- **`/how-it-works`**: Educational process guide. [STATUS: 100% TRANSLATED]
+- **`/technology`**: Infrastructure overview. [STATUS: ENGLISH ONLY - PER INSTRUCTION]
+- **`/about`**: Corporate profile and mission suite. [STATUS: ENGLISH ONLY - PER INSTRUCTION]
+- **`/protection`**: Security and fund safety overview. [STATUS: ENGLISH ONLY - PER INSTRUCTION]
 - **`/contact`**: Public support gateway. [STATUS: 100% TRANSLATED]
 - **`/risk-disclosure`**: Regulatory risk notice. [STATUS: 100% TRANSLATED]
 
@@ -29,9 +29,9 @@ Restricted pages for active traders, synchronized with the Firestore ledger.
 ## 3. ACCOUNT HUB (SETTINGS)
 Identity and workspace personalization modules.
 
-- **`/account?tab=profile`**: Mandatory identity metadata. [STATUS: ENGLISH ONLY]
-- **`/account?tab=verification`**: 3-Slot KYC pipeline. [STATUS: ENGLISH ONLY]
-- **`/account?tab=security`**: Session & MFA management. [STATUS: ENGLISH ONLY]
+- **`/account?tab=profile`**: Mandatory identity metadata. [STATUS: ENGLISH ONLY - PER INSTRUCTION]
+- **`/account?tab=verification`**: 3-Slot KYC pipeline. [STATUS: ENGLISH ONLY - PER INSTRUCTION]
+- **`/account?tab=security`**: Session & MFA management. [STATUS: ENGLISH ONLY - PER INSTRUCTION]
 - **`/account?tab=display`**: Localization & Timezone settings. [STATUS: 100% TRANSLATED]
 
 ## 4. ADMINISTRATIVE OVERSIGHT (ADMIN)
@@ -52,9 +52,9 @@ Restricted to Root Authority entities. All Admin pages are maintained in **Insti
 ## TRANSLATION ANALYSIS SUMMARY
 | Domain | Coverage | Status |
 |--------|----------|--------|
-| Marketing | 85% | Active - Legal pages remain in English for precision. |
-| Workspace | 100% | Finalized - All UI strings wired to i18n dictionary. |
-| Auth | 100% | Finalized - reCAPTCHA and validation fully localized. |
-| Admin | 0% | Suspended - Intentionally maintained in English. |
+| Marketing | 85% | Active - Key landing funnels translated; Detailed technical pages remain in English. |
+| Workspace | 100% | Finalized - All UI strings and feedback loops wired to i18n dictionary. |
+| Auth | 100% | Finalized - Google OAuth, reCAPTCHA, and validation fully localized. |
+| Admin | 0% | Suspended - Intentionally maintained in English for system stability. |
 
 *Operational Ledger Status: Synchronized & Audit-Ready.*
