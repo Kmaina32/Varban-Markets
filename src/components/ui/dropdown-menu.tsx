@@ -6,9 +6,8 @@
  */
 
 import * as React from "react"
-import { Menu } from "@base-ui/react/Menu"
+import { Menu } from "@base-ui/react/menu"
 import { Check, ChevronRight } from "lucide-react"
-import { Slot } from "@radix-ui/react-slot"
 import { cn } from "@/app/lib/utils"
 
 const DropdownMenu = Menu.Root
@@ -19,11 +18,7 @@ const DropdownMenuTrigger = React.forwardRef<
 >(({ className, render, children, ...props }, ref) => {
   if (render) {
     return (
-      <Menu.Trigger {...props} asChild>
-        <Slot ref={ref} className={className}>
-          {render}
-        </Slot>
-      </Menu.Trigger>
+      <Menu.Trigger ref={ref} className={className} render={render} {...props} />
     )
   }
   return (
@@ -42,10 +37,10 @@ const DropdownMenuPortal = Menu.Portal
 
 const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof Menu.Popup>,
-  React.ComponentPropsWithoutRef<typeof Menu.Popup> & { sideOffset?: number }
->(({ className, sideOffset = 4, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof Menu.Popup> & { sideOffset?: number; align?: "start" | "center" | "end"; side?: "top" | "bottom" | "left" | "right" }
+>(({ className, sideOffset = 4, align, side, ...props }, ref) => (
   <Menu.Portal>
-    <Menu.Positioner sideOffset={sideOffset}>
+    <Menu.Positioner sideOffset={sideOffset} align={align} side={side}>
       <Menu.Popup
         ref={ref}
         className={cn(

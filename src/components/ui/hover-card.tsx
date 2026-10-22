@@ -6,7 +6,7 @@
  */
 
 import * as React from "react"
-import { HoverCard as HoverCardPrimitive } from "@base-ui/react/HoverCard"
+import { PreviewCard as HoverCardPrimitive } from "@base-ui/react/preview-card"
 import { cn } from "@/app/lib/utils"
 
 const HoverCard = HoverCardPrimitive.Root

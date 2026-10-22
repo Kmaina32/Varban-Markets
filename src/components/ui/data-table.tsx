@@ -159,7 +159,7 @@ export function DataTable<TData extends RowData>({
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] px-2">
-            Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+            Page {table.store.state.pagination.pageIndex + 1} of {table.getPageCount()}
           </div>
           <Button
             variant="outline"

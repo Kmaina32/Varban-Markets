@@ -6,7 +6,7 @@
  */
 
 import * as React from 'react';
-import { AlertDialog as AlertDialogPrimitive } from '@base-ui/react/AlertDialog';
+import { AlertDialog as AlertDialogPrimitive } from '@base-ui/react/alert-dialog';
 import { cn } from '@/app/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 
