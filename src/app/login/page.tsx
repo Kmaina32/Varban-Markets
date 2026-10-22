@@ -139,6 +139,9 @@ export default function LoginPage() {
 
   return (
     <div className="bg-[#F7F7F5] min-h-[calc(100vh-64px)] flex items-center justify-center py-16 px-4 relative">
+      <title>Sign In | Varban Markets Trading Terminal</title>
+      <meta name="description" content="Secure access to your Varban Markets trading workspace. Enter your credentials to manage your portfolio and execute high-speed derivative trades." />
+      
       {success && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#F7F7F5]/80 backdrop-blur-sm animate-in fade-in duration-500">
           <Card className="bg-white border-[#E4E4E4] w-full max-w-sm shadow-2xl p-10 md:p-12 text-center space-y-6 animate-in zoom-in-95 duration-300 rounded-none border-b-4 border-b-[#0055FF]">

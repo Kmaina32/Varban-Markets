@@ -106,6 +106,9 @@ export default function MarketsPage() {
 
   return (
     <div className="bg-[#F7F7F5] min-h-screen text-[#0A0A0A] pb-24">
+      <title>Market Registry | Live Asset Pricing | Varban Markets</title>
+      <meta name="description" content="Explore the Varban Markets global registry. Real-time pricing for Forex, Crypto, Equities, and Commodities with deep institutional liquidity and millisecond execution." />
+      
       {/* 1. FULL WIDTH BANNER HERO */}
       <section className="relative h-[400px] md:h-[500px] bg-[#0A0A0A] overflow-hidden flex items-center">
         <div className="absolute inset-0 z-0">

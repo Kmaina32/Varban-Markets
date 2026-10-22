@@ -1,4 +1,3 @@
-
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
@@ -11,8 +10,48 @@ import ChatSupport from "@/components/ChatSupport";
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: "Varban Markets | Easy & Secure Global Trading for Everyone",
-  description: "Start your trading journey with Varban Markets. Trade Forex, Stocks, and Crypto on a simple, fast, and safe platform. Perfect for beginners and professional traders alike.",
+  title: {
+    default: "Varban Markets | Institutional Electronic Trading Protocol",
+    template: "%s | Varban Markets"
+  },
+  description: "Professional electronic trading protocol for advanced derivatives and synthetic markets. High-speed execution, deterministic settlement, and institutional capital protection.",
+  keywords: ["Forex Trading", "Crypto Derivatives", "Synthetic Markets", "Institutional Trading", "Varban Markets", "High-Speed Execution"],
+  authors: [{ name: "Varban Markets Ltd" }],
+  creator: "Varban Markets",
+  publisher: "Varban Markets Ltd",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL('https://varbanmarkets.com'),
+  openGraph: {
+    title: "Varban Markets | Institutional Electronic Trading Protocol",
+    description: "Access global derivatives and synthetic markets with millisecond-accurate execution and institutional-grade security.",
+    url: 'https://varbanmarkets.com',
+    siteName: 'Varban Markets',
+    images: [
+      {
+        url: '/assets/hero.png',
+        width: 1200,
+        height: 630,
+        alt: 'Varban Markets Trading Terminal',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({

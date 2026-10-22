@@ -1,6 +1,16 @@
 import Link from "next/link";
 import { Shield, Cpu, Database, Zap, Globe, Users, Target, Award, ArrowRight } from "lucide-react";
 
+/**
+ * @fileOverview Institutional About Suite Overview.
+ * Updated with SEO metadata for search result sitelinks.
+ */
+
+export const metadata = {
+  title: "About Varban Markets | Institutional Profile",
+  description: "Learn about the technology, leadership, and regulatory framework of Varban Markets. Our mission is to democratize high-speed derivative trading through deterministic execution.",
+};
+
 export default function AboutOverviewPage() {
   const navTabs = [
     { label: "Company Overview", href: "/about", active: true },
