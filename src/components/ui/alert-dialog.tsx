@@ -2,11 +2,11 @@
 
 /**
  * @fileOverview Institutional Alert Dialog component.
- * Refined to use lowercase namespaced subpath imports for stable resolution in Base UI 1.0 Beta.
+ * Uses the namespaced AlertDialog object from the root @base-ui/react package.
  */
 
 import * as React from 'react';
-import { AlertDialog } from '@base-ui/react/alert-dialog';
+import { AlertDialog } from '@base-ui/react';
 import { cn } from '@/app/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 

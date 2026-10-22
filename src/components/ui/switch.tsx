@@ -2,11 +2,11 @@
 
 /**
  * @fileOverview Institutional Switch component.
- * Refined to use lowercase namespaced subpath imports for stable resolution in Base UI 1.0 Beta.
+ * Uses the namespaced Switch object from the root @base-ui/react package.
  */
 
 import * as React from "react"
-import { Switch } from "@base-ui/react/switch"
+import { Switch } from "@base-ui/react"
 import { cn } from "@/app/lib/utils"
 
 const SwitchRoot = React.forwardRef<

@@ -2,11 +2,11 @@
 
 /**
  * @fileOverview Institutional Dropdown Menu component.
- * Refined to use lowercase namespaced subpath imports for stable resolution in Base UI 1.0 Beta.
+ * Uses the namespaced Menu object from the root @base-ui/react package.
  */
 
 import * as React from "react"
-import { Menu } from "@base-ui/react/menu"
+import { Menu } from "@base-ui/react"
 import { Check, ChevronRight } from "lucide-react"
 import { Slot } from "@radix-ui/react-slot"
 import { cn } from "@/app/lib/utils"
