@@ -11,7 +11,7 @@ export default function WithdrawRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/wallet?tab=withdraw');
+    router.replace('/client/wallet?tab=withdraw');
   }, [router]);
 
   return (

@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -12,7 +11,7 @@ export default function NotificationsRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/account?tab=alerts');
+    router.replace('/client/account?tab=alerts');
   }, [router]);
 
   return (

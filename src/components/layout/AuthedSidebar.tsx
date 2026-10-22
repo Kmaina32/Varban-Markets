@@ -47,43 +47,43 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     {
       title: "OVERVIEW",
       items: [
-        { label: t('nav.dashboard'), href: "/dashboard", icon: LayoutDashboard },
-        { label: t('nav.news'), href: "/news", icon: Newspaper },
+        { label: t('nav.dashboard'), href: "/client/dashboard", icon: LayoutDashboard },
+        { label: t('nav.news'), href: "/client/news", icon: Newspaper },
       ]
     },
     {
       title: "TRADE",
       items: [
-        { label: t('nav.terminal'), href: "/terminal", icon: Monitor },
-        { label: t('nav.bots'), href: "/bots", icon: Cpu },
+        { label: t('nav.terminal'), href: "/client/terminal", icon: Monitor },
+        { label: t('nav.bots'), href: "/client/bots", icon: Cpu },
         { label: t('nav.markets'), href: "/markets", icon: Globe },
-        { label: t('nav.portfolio'), href: "/portfolio", icon: Briefcase },
-        { label: t('nav.positions'), href: "/positions", icon: Target },
-        { label: t('nav.orders'), href: "/orders", icon: FileText },
-        { label: t('nav.history'), href: "/history", icon: Clock },
-        { label: t('nav.watchlist'), href: "/watchlist", icon: Star },
+        { label: t('nav.portfolio'), href: "/client/portfolio", icon: Briefcase },
+        { label: t('nav.positions'), href: "/client/positions", icon: Target },
+        { label: t('nav.orders'), href: "/client/orders", icon: FileText },
+        { label: t('nav.history'), href: "/client/history", icon: Clock },
+        { label: t('nav.watchlist'), href: "/client/watchlist", icon: Star },
       ]
     },
     {
       title: "ANALYSIS",
       items: [
-        { label: "Market Heatmaps", href: "/markets/heatmaps", icon: Layers },
-        { label: "Market Screener", href: "/markets/screener", icon: BarChart4 },
-        { label: "Economic Calendar", href: "/calendar", icon: Calendar },
+        { label: "Market Heatmaps", href: "/client/markets/heatmaps", icon: Layers },
+        { label: "Market Screener", href: "/client/markets/screener", icon: BarChart4 },
+        { label: "Economic Calendar", href: "/client/calendar", icon: Calendar },
       ]
     },
     {
       title: "MONEY",
       items: [
-        { label: "Wallet Hub", href: "/wallet", icon: Wallet },
+        { label: "Wallet Hub", href: "/client/wallet", icon: Wallet },
       ]
     },
     {
       title: "ACCOUNT",
       items: [
-        { label: "Account Hub", href: "/account", icon: User },
-        { label: "Alerts", href: "/notifications", icon: Bell },
-        { label: "Referral Program", href: "/referral", icon: Share2 },
+        { label: "Account Hub", href: "/client/account", icon: User },
+        { label: "Alerts", href: "/client/account?tab=alerts", icon: Bell },
+        { label: "Referral Program", href: "/client/referral", icon: Share2 },
       ]
     }
   ];
@@ -108,8 +108,8 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
   const renderItems = (items: any[]) => items.map((item) => {
     const isActive = pathname === item.href || 
       (item.href === '/admin' && pathname?.startsWith('/admin')) ||
-      (item.href === '/wallet' && pathname?.startsWith('/wallet')) ||
-      (item.href === '/account' && pathname?.startsWith('/account'));
+      (item.href === '/client/wallet' && pathname?.startsWith('/client/wallet')) ||
+      (item.href === '/client/account' && pathname?.startsWith('/client/account'));
     
     return (
       <Link

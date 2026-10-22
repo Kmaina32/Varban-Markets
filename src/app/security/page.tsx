@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -12,7 +11,7 @@ export default function SecurityRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/account?tab=security');
+    router.replace('/client/account?tab=security');
   }, [router]);
 
   return (

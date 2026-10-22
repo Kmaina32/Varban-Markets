@@ -15,14 +15,6 @@ import { cn } from "@/app/lib/utils";
 import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
 import { doc, updateDoc } from "firebase/firestore";
 
-const STRICT_PATHS = [
-  '/terminal', '/dashboard', '/portfolio', '/positions', 
-  '/orders', '/history', '/watchlist', '/wallet', 
-  '/deposit', '/withdraw', '/transactions', '/account', 
-  '/verification', '/security', '/notifications', '/preferences',
-  '/referral', '/admin', '/news', '/bots'
-];
-
 const SUPER_ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
 
 const TIMEZONES = [
@@ -92,7 +84,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   };
 
   const isStrict = useMemo(() => {
-    return STRICT_PATHS.some(path => pathname === path || pathname?.startsWith(path + '/'));
+    return pathname?.startsWith('/client') || pathname?.startsWith('/admin');
   }, [pathname]);
 
   const isAdminPath = useMemo(() => {
@@ -112,7 +104,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
       router.replace('/login');
     }
     if (user && isAdminPath && !isAdmin && !profileLoading) {
-      router.replace('/dashboard');
+      router.replace('/client/dashboard');
     }
   }, [user, loading, profileLoading, isStrict, isAdminPath, isAdmin, router]);
 
@@ -127,7 +119,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
       <header className="relative h-16 border-b border-[#E4E4E4] bg-white flex items-center justify-between px-3 md:px-6 shrink-0 z-[150] shadow-sm">
         <div className="flex items-center space-x-2 md:space-x-4">
           <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-1.5 lg:hidden text-[#0A0A0A]"><Menu className="w-5 h-5" /></button>
-          <Link href="/dashboard" className="flex items-center"><Image src="/assets/logo2.png" alt="Varban" width={95} height={22} className="w-auto object-contain" priority /></Link>
+          <Link href="/client/dashboard" className="flex items-center"><Image src="/assets/logo2.png" alt="Varban" width={95} height={22} className="w-auto object-contain" priority /></Link>
           <div className="h-6 w-px bg-[#E4E4E4] hidden lg:block"></div>
           <div className="hidden lg:block">
             <h1 className="text-[10px] font-bold uppercase tracking-[0.1em]">{title}</h1>

@@ -11,16 +11,8 @@ import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
 
 /**
  * @fileOverview Public Landing Page Navigation.
- * Updated for full Multilingual Support.
+ * Updated for full Multilingual Support and new /client routing.
  */
-
-const STRICT_PATHS = [
-  '/terminal', '/dashboard', '/portfolio', '/positions', 
-  '/orders', '/history', '/watchlist', '/wallet', 
-  '/deposit', '/withdraw', '/transactions', '/account', 
-  '/verification', '/security', '/notifications', '/preferences',
-  '/referral', '/admin', '/news', '/bots'
-];
 
 const AUTH_PATHS = ['/login', '/register', '/forgot-password'];
 
@@ -30,7 +22,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   
-  const isStrict = STRICT_PATHS.some(path => pathname === path || pathname?.startsWith(path + '/'));
+  const isStrict = pathname?.startsWith('/client') || pathname?.startsWith('/admin');
   const isAuthPage = AUTH_PATHS.some(path => pathname === path);
 
   if (isStrict || isAuthPage) return null;
@@ -73,7 +65,7 @@ export default function Navbar() {
             hideTitle: true,
             items: [
               { label: t('landing.nav.all'), href: "/markets" },
-              { label: t('landing.nav.forex'), href: "/markets?cat=Forex" },
+              { label: t('landing.nav.forex'), href: "/markets/forex" },
               { label: t('landing.nav.crypto'), href: "/markets?cat=Crypto" },
               { label: t('landing.nav.indices'), href: "/markets?cat=Equities" },
               { label: t('landing.nav.commodities'), href: "/markets/commodities" },
@@ -91,7 +83,7 @@ export default function Navbar() {
           {
             title: t('landing.nav.terminals'),
             items: [
-              { label: t('landing.nav.web'), href: "/terminal" },
+              { label: t('landing.nav.web'), href: "/client/terminal" },
               { label: t('landing.nav.desktop'), href: "/platforms/desktop" },
             ]
           },
@@ -114,8 +106,8 @@ export default function Navbar() {
           {
             title: t('landing.nav.analysis'),
             items: [
-              { label: t('landing.nav.intelligence'), href: "/news" },
-              { label: t('landing.nav.calendar'), href: "/help/markets" },
+              { label: t('landing.nav.intelligence'), href: "/client/news" },
+              { label: t('landing.nav.calendar'), href: "/client/calendar" },
             ]
           },
           {
@@ -154,13 +146,13 @@ export default function Navbar() {
           {
             title: t('landing.nav.solutions'),
             items: [
-              { label: t('landing.nav.rewards'), href: "/referral" },
+              { label: t('landing.nav.rewards'), href: "/client/referral" },
             ]
           }
         ]
       }
     },
-    { label: t('nav.partners'), href: "/referral", isExternal: true }
+    { label: t('nav.partners'), href: "/client/referral", isExternal: true }
   ];
 
   return (

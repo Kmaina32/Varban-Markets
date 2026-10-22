@@ -11,7 +11,7 @@ export default function DepositRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/wallet?tab=deposit');
+    router.replace('/client/wallet?tab=deposit');
   }, [router]);
 
   return (

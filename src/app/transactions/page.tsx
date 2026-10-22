@@ -11,7 +11,7 @@ export default function TransactionsRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/wallet?tab=activity');
+    router.replace('/client/wallet?tab=activity');
   }, [router]);
 
   return (

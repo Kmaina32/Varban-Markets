@@ -19,8 +19,8 @@ export default function CompleteProfilePage() {
       if (!user) {
         router.push('/login');
       } else {
-        // Redirect to Account page to consolidate profile management
-        router.push('/account');
+        // Redirect to new client Account page
+        router.push('/client/account');
       }
     }
   }, [user, loading, router]);

@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -12,7 +11,7 @@ export default function VerificationRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/account?tab=verification');
+    router.replace('/client/account?tab=verification');
   }, [router]);
 
   return (

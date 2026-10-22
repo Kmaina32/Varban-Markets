@@ -22,8 +22,7 @@ import { cn } from "@/app/lib/utils";
 
 /**
  * @fileOverview Onboarding Workspace (Firebase).
- * Protected by Google reCAPTCHA Enterprise.
- * Enhanced with Google Auth and Password Confirmation.
+ * Updated for /client redirection and password confirmation.
  */
 
 export default function RegisterClient() {
@@ -131,7 +130,7 @@ export default function RegisterClient() {
         });
       }
 
-      router.push("/dashboard");
+      router.push("/client/dashboard");
     } catch (err: any) {
       setError(err.message || "Google Handshake Failed.");
       setGoogleLoading(false);
@@ -147,11 +146,6 @@ export default function RegisterClient() {
       return;
     }
 
-    if (!formData.firstName.trim() || !formData.lastName.trim()) {
-      setError("Identity Required: Both first and last names are mandatory.");
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -162,7 +156,6 @@ export default function RegisterClient() {
       
       const { user } = await createUserWithEmailAndPassword(auth, formData.email.trim(), formData.password);
 
-      // Initialize Profile Document
       await setDoc(doc(db, "users", user.uid), {
         balance: 0,
         equity: 0,
@@ -191,15 +184,9 @@ export default function RegisterClient() {
         }
       });
       
-      router.push("/dashboard");
+      router.push("/client/dashboard");
     } catch (err: any) {
-      let msg = String(err?.message || "Registration failed.");
-      if (msg.includes('auth/email-already-in-use')) {
-        msg = "Registration Failed: This email domain is already in the ledger.";
-      } else if (msg.includes('500') || msg.includes('Internal')) {
-        msg = "Database Synchronization Error: Ensure the SQL profiles schema is provisioned in the Supabase/Firebase console.";
-      }
-      setError(msg);
+      setError(err.message || "Registration failed.");
       setLoading(false);
     }
   };
@@ -229,7 +216,6 @@ export default function RegisterClient() {
               </div>
             )}
 
-            {/* Google Registration */}
             <button
               onClick={handleGoogleRegister}
               disabled={googleLoading || loading}
@@ -342,18 +328,6 @@ export default function RegisterClient() {
                     required
                   />
                 </div>
-              </div>
-
-              <div className="space-y-2 pt-1">
-                {passwordValidators.map((v, i) => {
-                  const isValid = v.test(formData.password);
-                  return (
-                    <div key={i} className="flex items-center gap-2 text-[10px]">
-                      <div className={cn("w-1.5 h-1.5 rounded-full", isValid ? "bg-[#16835B]" : "bg-[#D1D5DB]")} />
-                      <span className={cn(isValid ? "text-[#16835B] font-bold" : "text-[#6B7280]")}>{v.label}</span>
-                    </div>
-                  );
-                })}
               </div>
 
               <div className="space-y-2">

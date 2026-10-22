@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Universal Profile Dropdown Component.
- * Updated to handle Supabase SignOut.
+ * Updated to handle Supabase SignOut and new /client routing.
  */
 
 import { useEffect, useRef, useMemo } from "react";
@@ -120,9 +120,6 @@ export default function ProfileDropdown({
           <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#6B7280] flex items-center gap-2">
             <Wallet className="w-3 h-3" /> Account Domain
           </span>
-          <span className="text-[8px] font-bold uppercase tracking-widest text-[#0055FF] bg-[#0055FF]/5 px-2 py-0.5 border border-[#0055FF]/10">
-            Switch Account
-          </span>
         </div>
 
         <div className="grid grid-cols-1 gap-2">
@@ -185,7 +182,7 @@ export default function ProfileDropdown({
 
         <div className="grid grid-cols-2 gap-3 pt-2">
           <Link
-            href="/wallet?tab=deposit"
+            href="/client/wallet?tab=deposit"
             onClick={onClose}
             className="py-3 px-3 bg-[#0A0A0A] text-white text-[9px] font-bold uppercase tracking-[0.2em] flex items-center justify-center space-x-2 hover:bg-[#0055FF] transition-all shadow-md group"
           >
@@ -193,7 +190,7 @@ export default function ProfileDropdown({
             <span>Deposit</span>
           </Link>
           <Link
-            href="/wallet?tab=withdraw"
+            href="/client/wallet?tab=withdraw"
             onClick={onClose}
             className="py-3 px-3 bg-white border border-[#E4E4E4] text-[#0A0A0A] text-[9px] font-bold uppercase tracking-[0.2em] flex items-center justify-center space-x-2 hover:bg-[#F7F7F5] shadow-sm group"
           >
@@ -218,7 +215,7 @@ export default function ProfileDropdown({
         )}
         
         <Link
-          href="/account"
+          href="/client/account"
           onClick={onClose}
           className="w-full px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] hover:bg-[#F7F7F5] transition-all flex items-center justify-between group"
         >

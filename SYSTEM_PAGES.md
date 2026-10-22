@@ -17,30 +17,34 @@ These nodes are accessible to the public and serve as the primary onboarding fun
 - **`/register`**: Onboarding form with geolocation detection.
 - **`/forgot-password`**: Identity recovery node.
 
-## 2. TRADING WORKSPACE (SIDEBAR)
-Restricted pages for active traders, synchronized with the institutional ledger.
+## 2. TRADING WORKSPACE (CLIENT)
+Authenticated pages for active traders, prefixed with `/client/`.
 
-- **`/dashboard`**: Unified portfolio snapshot and real-time metrics.
-- **`/terminal`**: 4-Panel execution interface with TradingView integration.
-- **`/news`**: Real-time market intelligence hub with report analysis.
-- **`/bots`**: Automated trading marketplace for pre-verified tools.
-- **`/portfolio`**: Asset allocation and performance curve visualization.
-- **`/positions`**: Live contract management and risk tracking.
-- **`/orders`**: Pending order tracker for limit and stop entries.
-- **`/history`**: Searchable archive of closed execution records.
-- **`/watchlist`**: Prioritized registry of tracked instruments.
-- **`/wallet`**: Centralized capital hub for deposits and withdrawals.
+- **`/client/dashboard`**: Unified portfolio snapshot and real-time metrics.
+- **`/client/terminal`**: Professional execution interface with TradingView integration.
+- **`/client/news`**: Real-time market intelligence hub.
+- **`/client/bots`**: Automated trading marketplace.
+- **`/client/portfolio`**: Asset allocation and performance curve visualization.
+- **`/client/positions`**: Live contract management and risk tracking.
+- **`/client/orders`**: Pending order tracker.
+- **`/client/history`**: Searchable archive of closed execution records.
+- **`/client/watchlist`**: Prioritized registry of tracked instruments.
+- **`/client/wallet`**: Centralized capital hub for deposits and withdrawals.
+- **`/client/calendar`**: Economic event catalyst feed.
+- **`/client/markets/heatmaps`**: Visual performance discovery.
+- **`/client/markets/screener`**: Technical asset filtering.
 
 ## 3. ACCOUNT HUB (SETTINGS)
-Identity management and workspace personalization.
+Identity management and workspace personalization, within the client namespace.
 
-- **`/account?tab=profile`**: Mandatory Investor Profile and metadata.
-- **`/account?tab=verification`**: 3-Slot KYC pipeline (Identity, Residence, Biometric).
-- **`/account?tab=security`**: Session management, password resets, and 2FA.
-- **`/account?tab=display`**: Localization (Language), Currency, and Timezone settings.
+- **`/client/account?tab=profile`**: Mandatory Investor Profile and metadata.
+- **`/client/account?tab=verification`**: 3-Slot KYC pipeline (Identity, Residence, Biometric).
+- **`/client/account?tab=security`**: Session management, password resets, and 2FA.
+- **`/client/account?tab=display`**: Localization (Language), Currency, and Timezone settings.
+- **`/client/referral`**: Network growth portal and partner rewards.
 
 ## 4. ADMINISTRATIVE OVERSIGHT (ADMIN)
-Restricted to Root Authority entities. Maintained in **Institutional English** for data integrity.
+Restricted to Root Authority entities. Maintained in **Institutional English**.
 
 - **`/admin`**: Global platform metrics and registration feed.
 - **`/admin/users`**: Entity directory and role authority management.

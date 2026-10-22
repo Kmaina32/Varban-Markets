@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -12,7 +11,7 @@ export default function PreferencesRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/account?tab=display');
+    router.replace('/client/account?tab=display');
   }, [router]);
 
   return (
