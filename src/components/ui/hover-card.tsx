@@ -2,26 +2,26 @@
 
 /**
  * @fileOverview Institutional Hover Card component.
- * Refined to use root package namespace imports to resolve runtime resolution failures.
+ * Refined to use explicit destructured imports to resolve runtime resolution failures.
  */
 
 import * as React from "react"
-import * as BaseUI from "@base-ui/react"
+import { HoverCard as HoverCardPrimitive } from "@base-ui/react"
 import { cn } from "@/app/lib/utils"
 
-const HoverCard = BaseUI.HoverCard.Root
+const HoverCard = HoverCardPrimitive.Root
 
-const HoverCardTrigger = BaseUI.HoverCard.Trigger
+const HoverCardTrigger = HoverCardPrimitive.Trigger
 
-const HoverCardPortal = BaseUI.HoverCard.Portal
+const HoverCardPortal = HoverCardPrimitive.Portal
 
 const HoverCardContent = React.forwardRef<
-  React.ElementRef<typeof BaseUI.HoverCard.Popup>,
-  React.ComponentPropsWithoutRef<typeof BaseUI.HoverCard.Popup>
+  React.ElementRef<typeof HoverCardPrimitive.Popup>,
+  React.ComponentPropsWithoutRef<typeof HoverCardPrimitive.Popup>
 >(({ className, sideOffset = 12, ...props }, ref) => (
-  <BaseUI.HoverCard.Portal>
-    <BaseUI.HoverCard.Positioner side="right" align="center" sideOffset={sideOffset}>
-      <BaseUI.HoverCard.Popup
+  <HoverCardPrimitive.Portal>
+    <HoverCardPrimitive.Positioner side="right" align="center" sideOffset={sideOffset}>
+      <HoverCardPrimitive.Popup
         ref={ref}
         className={cn(
           "z-[700] w-64 overflow-hidden border border-[#E4E4E4] bg-white p-4 text-[#0A0A0A] shadow-2xl outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 rounded-none",
@@ -29,8 +29,8 @@ const HoverCardContent = React.forwardRef<
         )}
         {...props}
       />
-    </BaseUI.HoverCard.Positioner>
-  </BaseUI.HoverCard.Portal>
+    </HoverCardPrimitive.Positioner>
+  </HoverCardPrimitive.Portal>
 ))
 HoverCardContent.displayName = "HoverCardContent"
 

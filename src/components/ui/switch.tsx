@@ -2,31 +2,31 @@
 
 /**
  * @fileOverview Institutional Switch component.
- * Updated to use root package namespace imports for stable runtime resolution.
+ * Updated to use explicit destructured imports for stable runtime resolution.
  */
 
 import * as React from "react"
-import * as BaseUI from "@base-ui/react"
+import { Switch as SwitchPrimitive } from "@base-ui/react"
 import { cn } from "@/app/lib/utils"
 
 const Switch = React.forwardRef<
-  React.ElementRef<typeof BaseUI.Switch.Root>,
-  React.ComponentPropsWithoutRef<typeof BaseUI.Switch.Root>
+  React.ElementRef<typeof SwitchPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof SwitchPrimitive.Root>
 >(({ className, ...props }, ref) => (
-  <BaseUI.Switch.Root
+  <SwitchPrimitive.Root
+    ref={ref}
     className={cn(
       "group inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-[#0055FF] data-[state=unchecked]:bg-[#E4E4E4]",
       className
     )}
     {...props}
-    ref={ref}
   >
-    <BaseUI.Switch.Thumb
+    <SwitchPrimitive.Thumb
       className={cn(
         "pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0"
       )}
     />
-  </BaseUI.Switch.Root>
+  </SwitchPrimitive.Root>
 ))
 Switch.displayName = "Switch"
 
