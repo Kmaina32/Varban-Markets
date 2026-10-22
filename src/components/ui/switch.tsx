@@ -1,7 +1,12 @@
 'use client';
 
+/**
+ * @fileOverview Institutional Switch component.
+ * Updated to use root package imports to resolve module export errors.
+ */
+
 import * as React from "react"
-import { Switch as SwitchPrimitive } from "@base-ui/react/switch"
+import { Switch as SwitchPrimitive } from "@base-ui/react"
 import { cn } from "@/app/lib/utils"
 
 const Switch = React.forwardRef<

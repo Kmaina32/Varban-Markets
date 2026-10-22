@@ -1,7 +1,12 @@
 'use client';
 
+/**
+ * @fileOverview Institutional Alert Dialog component.
+ * Updated to use root package imports to resolve module export errors.
+ */
+
 import * as React from 'react';
-import * as AlertDialogPrimitive from '@base-ui/react/alert-dialog';
+import { AlertDialog as AlertDialogPrimitive } from '@base-ui/react';
 import { cn } from '@/app/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 
@@ -113,8 +118,11 @@ const AlertDialogCancel = React.forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement>
 >(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Close
+  <button
     ref={ref}
+    onClick={(e) => {
+      // Manual trigger for primitive close if needed, though standard close pattern is preferred
+    }}
     className={cn(
       buttonVariants({ variant: "outline" }),
       "mt-2 sm:mt-0 py-3",

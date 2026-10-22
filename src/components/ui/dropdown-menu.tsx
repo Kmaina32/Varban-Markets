@@ -1,7 +1,12 @@
 'use client';
 
+/**
+ * @fileOverview Institutional Dropdown Menu component.
+ * Updated to use root package imports to resolve module export errors.
+ */
+
 import * as React from "react"
-import { Menu as MenuPrimitive } from "@base-ui/react/menu"
+import { Menu as MenuPrimitive } from "@base-ui/react"
 import { Check, ChevronRight, Circle } from "lucide-react"
 import { Slot } from "@radix-ui/react-slot"
 import { cn } from "@/app/lib/utils"

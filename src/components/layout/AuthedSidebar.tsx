@@ -13,6 +13,11 @@ import { useTranslation } from "@/app/lib/i18n-context";
 import { useUser, useDoc, useFirestore } from "@/firebase";
 import { useSupabaseAuth } from "@/app/lib/supabase/auth-context";
 import { useMemo } from "react";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 interface AuthedSidebarProps {
   onLinkClick?: () => void;
@@ -47,43 +52,43 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     {
       title: "OVERVIEW",
       items: [
-        { label: t('nav.dashboard'), href: "/client/dashboard", icon: LayoutDashboard },
-        { label: t('nav.news'), href: "/client/news", icon: Newspaper },
+        { label: t('nav.dashboard'), href: "/client/dashboard", icon: LayoutDashboard, description: "Unified portfolio snapshot and real-time metrics." },
+        { label: t('nav.news'), href: "/client/news", icon: Newspaper, description: "Real-time financial headlines refined for trading." },
       ]
     },
     {
       title: "TRADE",
       items: [
-        { label: t('nav.terminal'), href: "/client/terminal", icon: Monitor },
-        { label: t('nav.bots'), href: "/client/bots", icon: Cpu },
-        { label: t('nav.markets'), href: "/markets", icon: Globe },
-        { label: t('nav.portfolio'), href: "/client/portfolio", icon: Briefcase },
-        { label: t('nav.positions'), href: "/client/positions", icon: Target },
-        { label: t('nav.orders'), href: "/client/orders", icon: FileText },
-        { label: t('nav.history'), href: "/client/history", icon: Clock },
-        { label: t('nav.watchlist'), href: "/client/watchlist", icon: Star },
+        { label: t('nav.terminal'), href: "/client/terminal", icon: Monitor, description: "Professional execution interface with TradingView integration." },
+        { label: t('nav.bots'), href: "/client/bots", icon: Cpu, description: "Automated trading tools and pre-verified algorithms." },
+        { label: t('nav.markets'), href: "/markets", icon: Globe, description: "Global instrument registry with live pricing." },
+        { label: t('nav.portfolio'), href: "/client/portfolio", icon: Briefcase, description: "Asset allocation and performance curve visualization." },
+        { label: t('nav.positions'), href: "/client/positions", icon: Target, description: "Live contract management and risk tracking." },
+        { label: t('nav.orders'), href: "/client/orders", icon: FileText, description: "Pending order tracker for scheduled contracts." },
+        { label: t('nav.history'), href: "/client/history", icon: Clock, description: "Searchable archive of closed execution records." },
+        { label: t('nav.watchlist'), href: "/client/watchlist", icon: Star, description: "Prioritized registry of tracked instruments." },
       ]
     },
     {
       title: "ANALYSIS",
       items: [
-        { label: "Market Heatmaps", href: "/client/markets/heatmaps", icon: Layers },
-        { label: "Market Screener", href: "/client/markets/screener", icon: BarChart4 },
-        { label: "Economic Calendar", href: "/client/calendar", icon: Calendar },
+        { label: "Market Heatmaps", href: "/client/markets/heatmaps", icon: Layers, description: "Visual comparison of sector performance (Crypto/Forex)." },
+        { label: "Market Screener", href: "/client/markets/screener", icon: BarChart4, description: "Technical asset filtering and technical indicator alerts." },
+        { label: "Economic Calendar", href: "/client/calendar", icon: Calendar, description: "Real-time global fundamental catalyst feed." },
       ]
     },
     {
       title: "MONEY",
       items: [
-        { label: "Wallet Hub", href: "/client/wallet", icon: Wallet },
+        { label: "Wallet Hub", href: "/client/wallet", icon: Wallet, description: "Centralized capital hub for deposits and withdrawals." },
       ]
     },
     {
       title: "ACCOUNT",
       items: [
-        { label: "Account Hub", href: "/client/account", icon: User },
-        { label: "Alerts", href: "/client/account?tab=alerts", icon: Bell },
-        { label: "Referral Program", href: "/client/referral", icon: Share2 },
+        { label: "Account Hub", href: "/client/account", icon: User, description: "Identity management and workspace personalization." },
+        { label: "Alerts", href: "/client/account?tab=alerts", icon: Bell, description: "Security and trade notification settings." },
+        { label: "Referral Program", href: "/client/referral", icon: Share2, description: "Network growth portal and partner rewards." },
       ]
     }
   ];
@@ -92,7 +97,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     sections.push({
       title: "ADMINISTRATION",
       items: [
-        { label: "Admin Oversight", href: "/admin", icon: ShieldAlert },
+        { label: "Admin Oversight", href: "/admin", icon: ShieldAlert, description: "Global platform metrics and administrative oversight node." },
       ]
     });
   }
@@ -100,8 +105,8 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
   sections.push({
     title: "SUPPORT",
     items: [
-      { label: "Help Center", href: "/help", icon: HelpCircle },
-      { label: "Contact Support", href: "/about/contact", icon: Mail },
+      { label: "Help Center", href: "/help", icon: HelpCircle, description: "Educational roadmap and knowledge base." },
+      { label: "Contact Support", href: "/about/contact", icon: Mail, description: "Public support gateway and technical desk." },
     ]
   });
 
@@ -111,7 +116,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
       (item.href === '/client/wallet' && pathname?.startsWith('/client/wallet')) ||
       (item.href === '/client/account' && pathname?.startsWith('/client/account'));
     
-    return (
+    const linkContent = (
       <Link
         key={item.href}
         href={item.href}
@@ -128,6 +133,24 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
           {item.label}
         </span>
       </Link>
+    );
+
+    if (isMobile) return linkContent;
+
+    return (
+      <HoverCard key={item.href}>
+        <HoverCardTrigger asChild>
+          {linkContent}
+        </HoverCardTrigger>
+        <HoverCardContent>
+          <div className="space-y-2">
+            <h4 className="text-[11px] font-bold uppercase tracking-widest text-[#0055FF]">{item.label}</h4>
+            <p className="text-[10px] text-[#6B7280] leading-relaxed font-medium uppercase tracking-tight">
+              {item.description}
+            </p>
+          </div>
+        </HoverCardContent>
+      </HoverCard>
     );
   });
 
