@@ -48,6 +48,7 @@
 - [x] **ShadCN Resizable System**: Integrated accessible panel management via react-resizable-panels.
 - [x] **TanStack Table v9**: Implemented high-performance data grid system across all ledgers.
 - [x] **Skeleton Shimmers**: High-fidelity placeholder loaders for client-side data synchronization.
+- [x] **Dependency Hardening**: Synchronized @base-ui/react and Radix versions to resolve environment installation failures.
 
 ---
 
