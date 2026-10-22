@@ -2,18 +2,18 @@
 
 /**
  * @fileOverview Institutional Switch component.
- * Refined to use namespaced subpath imports for stable resolution in Base UI 1.0 Beta.
+ * Refined to use lowercase namespaced subpath imports for stable resolution in Base UI 1.0 Beta.
  */
 
 import * as React from "react"
-import { Switch as SwitchPrimitive } from "@base-ui/react/Switch"
+import { Switch } from "@base-ui/react/switch"
 import { cn } from "@/app/lib/utils"
 
-const Switch = React.forwardRef<
-  React.ElementRef<typeof SwitchPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof SwitchPrimitive.Root>
+const SwitchRoot = React.forwardRef<
+  React.ElementRef<typeof Switch.Root>,
+  React.ComponentPropsWithoutRef<typeof Switch.Root>
 >(({ className, ...props }, ref) => (
-  <SwitchPrimitive.Root
+  <Switch.Root
     ref={ref}
     className={cn(
       "group inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-[#0055FF] data-[state=unchecked]:bg-[#E4E4E4]",
@@ -21,13 +21,13 @@ const Switch = React.forwardRef<
     )}
     {...props}
   >
-    <SwitchPrimitive.Thumb
+    <Switch.Thumb
       className={cn(
         "pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0"
       )}
     />
-  </SwitchPrimitive.Root>
+  </Switch.Root>
 ))
-Switch.displayName = "Switch"
+SwitchRoot.displayName = "Switch"
 
-export { Switch }
+export { SwitchRoot as Switch }
