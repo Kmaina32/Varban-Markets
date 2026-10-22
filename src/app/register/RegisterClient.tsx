@@ -1,3 +1,4 @@
+
 "use client";
 
 /**
@@ -28,6 +29,7 @@ export default function RegisterClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,10 +68,10 @@ export default function RegisterClient() {
 
   const executeRecaptcha = async (action: string) => {
     return new Promise<string>((resolve) => {
-      if (typeof window !== 'undefined' && window.grecaptcha?.enterprise) {
+      if (typeof window !== 'undefined' && window.grecaptcha?.enterprise && siteKey) {
         window.grecaptcha.enterprise.ready(async () => {
           try {
-            const token = await window.grecaptcha.enterprise.execute('6Le4lvotAAAAAOGKStaGBQ1H7DpRsKXGrLW64BQ1', { action });
+            const token = await window.grecaptcha.enterprise.execute(siteKey, { action });
             resolve(token);
           } catch (e) {
             console.error("reCAPTCHA execution failure", e);
@@ -90,10 +92,10 @@ export default function RegisterClient() {
     setError(null);
 
     try {
-      // Execute reCAPTCHA Enterprise
+      // Execute reCAPTCHA Enterprise handshake
       const recaptchaToken = await executeRecaptcha('REGISTER');
       if (recaptchaToken) {
-        console.log("Security Token Obtained:", recaptchaToken.substring(0, 10) + "...");
+        console.log("Institutional Security Token Obtained for Onboarding");
       }
 
       const { error: signUpError } = await supabase.auth.signUp({

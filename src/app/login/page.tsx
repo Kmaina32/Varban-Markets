@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -26,6 +27,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { t } = useTranslation();
   const supabase = createClient();
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,10 +38,10 @@ export default function LoginPage() {
 
   const executeRecaptcha = async (action: string) => {
     return new Promise<string>((resolve) => {
-      if (typeof window !== 'undefined' && window.grecaptcha?.enterprise) {
+      if (typeof window !== 'undefined' && window.grecaptcha?.enterprise && siteKey) {
         window.grecaptcha.enterprise.ready(async () => {
           try {
-            const token = await window.grecaptcha.enterprise.execute('6Le4lvotAAAAAOGKStaGBQ1H7DpRsKXGrLW64BQ1', { action });
+            const token = await window.grecaptcha.enterprise.execute(siteKey, { action });
             resolve(token);
           } catch (e) {
             console.error("reCAPTCHA execution failure", e);
@@ -58,10 +60,11 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      // Execute reCAPTCHA Enterprise
+      // Execute reCAPTCHA Enterprise handshake
       const recaptchaToken = await executeRecaptcha('LOGIN');
       if (recaptchaToken) {
-        console.log("Security Token Obtained:", recaptchaToken.substring(0, 10) + "...");
+        // Token is obtained; in a full implementation, this is sent to the backend assessment API
+        console.log("Institutional Security Token Obtained");
       }
 
       const { error: authError } = await supabase.auth.signInWithPassword({

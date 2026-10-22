@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
@@ -19,13 +20,20 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+
   return (
     <html lang="en">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <Script src="https://www.google.com/recaptcha/enterprise.js?render=6Le4lvotAAAAAOGKStaGBQ1H7DpRsKXGrLW64BQ1" strategy="beforeInteractive" />
+        {siteKey && (
+          <Script 
+            src={`https://www.google.com/recaptcha/enterprise.js?render=${siteKey}`} 
+            strategy="beforeInteractive" 
+          />
+        )}
       </head>
       <body className="min-h-screen flex flex-col bg-[#F7F7F5] overflow-x-hidden">
         <SupabaseAuthProvider>
