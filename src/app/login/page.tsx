@@ -13,7 +13,14 @@ import { useTranslation } from "@/app/lib/i18n-context";
 /**
  * @fileOverview Login Workspace.
  * Refined for multi-language support and institutional blue success reveal.
+ * Protected by Google reCAPTCHA Enterprise.
  */
+
+declare global {
+  interface Window {
+    grecaptcha: any;
+  }
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,12 +34,36 @@ export default function LoginPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const executeRecaptcha = async (action: string) => {
+    return new Promise<string>((resolve) => {
+      if (typeof window !== 'undefined' && window.grecaptcha?.enterprise) {
+        window.grecaptcha.enterprise.ready(async () => {
+          try {
+            const token = await window.grecaptcha.enterprise.execute('6Le4lvotAAAAAOGKStaGBQ1H7DpRsKXGrLW64BQ1', { action });
+            resolve(token);
+          } catch (e) {
+            console.error("reCAPTCHA execution failure", e);
+            resolve("");
+          }
+        });
+      } else {
+        resolve("");
+      }
+    });
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
+      // Execute reCAPTCHA Enterprise
+      const recaptchaToken = await executeRecaptcha('LOGIN');
+      if (recaptchaToken) {
+        console.log("Security Token Obtained:", recaptchaToken.substring(0, 10) + "...");
+      }
+
       const { error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,

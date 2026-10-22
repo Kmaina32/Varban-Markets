@@ -7,6 +7,7 @@ import { I18nProvider } from "@/app/lib/i18n-context";
 import { SupabaseAuthProvider } from "@/app/lib/supabase/auth-context";
 import CookieConsent from "@/components/layout/CookieConsent";
 import ChatSupport from "@/components/ChatSupport";
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: "Varban Markets | Easy & Secure Global Trading for Everyone",
@@ -24,6 +25,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <Script src="https://www.google.com/recaptcha/enterprise.js?render=6Le4lvotAAAAAOGKStaGBQ1H7DpRsKXGrLW64BQ1" strategy="beforeInteractive" />
       </head>
       <body className="min-h-screen flex flex-col bg-[#F7F7F5] overflow-x-hidden">
         <SupabaseAuthProvider>

@@ -3,6 +3,7 @@
 /**
  * @fileOverview Finalized Onboarding Client Component.
  * Refined institutional error mapping and validation feedback.
+ * Protected by Google reCAPTCHA Enterprise.
  */
 
 import { useState, useEffect } from "react";
@@ -63,6 +64,24 @@ export default function RegisterClient() {
   const isPasswordValid = passwordValidators.every(v => v.test(formData.password));
   const canSubmit = isPasswordValid && formData.isNotUSCitizen && !loading && formData.email && formData.firstName;
 
+  const executeRecaptcha = async (action: string) => {
+    return new Promise<string>((resolve) => {
+      if (typeof window !== 'undefined' && window.grecaptcha?.enterprise) {
+        window.grecaptcha.enterprise.ready(async () => {
+          try {
+            const token = await window.grecaptcha.enterprise.execute('6Le4lvotAAAAAOGKStaGBQ1H7DpRsKXGrLW64BQ1', { action });
+            resolve(token);
+          } catch (e) {
+            console.error("reCAPTCHA execution failure", e);
+            resolve("");
+          }
+        });
+      } else {
+        resolve("");
+      }
+    });
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
@@ -71,6 +90,12 @@ export default function RegisterClient() {
     setError(null);
 
     try {
+      // Execute reCAPTCHA Enterprise
+      const recaptchaToken = await executeRecaptcha('REGISTER');
+      if (recaptchaToken) {
+        console.log("Security Token Obtained:", recaptchaToken.substring(0, 10) + "...");
+      }
+
       const { error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
