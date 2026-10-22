@@ -10,6 +10,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, ISeriesApi, CandlestickData, ColorType, IChartApi } from 'lightweight-charts';
 import { fetchHistoricalData, fetchLivePrice } from '@/app/lib/market-service';
 import { Loader2, Info } from 'lucide-react';
+import { cn } from "@/app/lib/utils";
 
 interface TradingViewChartProps {
   symbol: string;
