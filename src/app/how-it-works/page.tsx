@@ -1,5 +1,18 @@
-
 import Link from "next/link";
+import { Metadata } from 'next';
+
+/**
+ * @fileOverview Educational Roadmap of the Trading Lifecycle.
+ * SEO Metadata for instructional search results.
+ */
+
+export const metadata: Metadata = {
+  title: "How It Works | Trading Lifecycle Guide",
+  description: "Learn the step-by-step process of trading on Varban Markets. From account registration and wallet funding to automated trade settlement.",
+  alternates: {
+    canonical: '/how-it-works',
+  },
+};
 
 export default function HowItWorksPage() {
   const steps = [

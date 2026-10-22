@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     template: "%s | Varban Markets"
   },
   description: "Professional electronic trading protocol for advanced derivatives and synthetic markets. High-speed execution, deterministic settlement, and institutional capital protection.",
-  keywords: ["Forex Trading", "Crypto Derivatives", "Synthetic Markets", "Institutional Trading", "Varban Markets", "High-Speed Execution"],
+  keywords: ["Forex Trading", "Crypto Derivatives", "Synthetic Markets", "Institutional Trading", "Varban Markets", "High-Speed Execution", "Online Broker"],
   authors: [{ name: "Varban Markets Ltd" }],
   creator: "Varban Markets",
   publisher: "Varban Markets Ltd",
@@ -25,6 +25,9 @@ export const metadata: Metadata = {
     telephone: false,
   },
   metadataBase: new URL('https://varbanmarkets.com'),
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     title: "Varban Markets | Institutional Electronic Trading Protocol",
     description: "Access global derivatives and synthetic markets with millisecond-accurate execution and institutional-grade security.",
@@ -40,6 +43,12 @@ export const metadata: Metadata = {
     ],
     locale: 'en_US',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Varban Markets | Institutional Trading',
+    description: 'High-speed derivative execution and synthetic market infrastructure.',
+    images: ['/assets/hero.png'],
   },
   robots: {
     index: true,

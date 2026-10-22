@@ -1,7 +1,20 @@
-
 import Link from "next/link";
 import Image from "next/image";
 import placeholderImages from "@/app/lib/placeholder-images.json";
+import { Metadata } from 'next';
+
+/**
+ * @fileOverview Infrastructure Overview and System Reliability.
+ * SEO Metadata for technology and performance search terms.
+ */
+
+export const metadata: Metadata = {
+  title: "Technology & Infrastructure | Performance Architecture",
+  description: "Explore the low-latency infrastructure powering Varban Markets. From deterministic execution engines to multi-node price aggregation and institutional data server protocols.",
+  alternates: {
+    canonical: '/technology',
+  },
+};
 
 export default function TechnologyArchitecturePage() {
   const techPillars = [

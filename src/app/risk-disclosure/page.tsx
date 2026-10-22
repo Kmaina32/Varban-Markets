@@ -1,4 +1,18 @@
 import Link from "next/link";
+import { Metadata } from 'next';
+
+/**
+ * @fileOverview Regulatory Risk Notice and Compliance Disclosure.
+ * SEO Metadata for high-authority compliance searches.
+ */
+
+export const metadata: Metadata = {
+  title: "Risk Disclosure | Regulatory Notice",
+  description: "Critical risk warning for Varban Markets traders. Understand the implications of derivative trading and high-volatility synthetic markets in the Saint Lucia jurisdiction.",
+  alternates: {
+    canonical: '/risk-disclosure',
+  },
+};
 
 export default function PublicRiskDisclosurePage() {
   const disclosurePoints = [

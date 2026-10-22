@@ -3,6 +3,7 @@
 /**
  * @fileOverview Institutional Landing Page.
  * Fully localized for global financial markets.
+ * SEO Note: Metadata is handled via the default title in layout.tsx for this client component.
  */
 
 import { useState, useEffect } from "react";
@@ -77,7 +78,7 @@ export default function HomePage() {
           {t('landing.footer.riskWarning')}: {t('landing.riskWarningText')} 
           <span className="text-[#FFDE00]"> {t('landing.lossStat')} </span> 
           {t('landing.riskContext')}
-          <Link href="/terms/risk-disclosure" className="text-[#FFDE00] underline ml-1">{t('landing.learnMore')}</Link>
+          <Link href="/risk-disclosure" className="text-[#FFDE00] underline ml-1">{t('landing.learnMore')}</Link>
         </p>
       </div>
 
@@ -286,7 +287,7 @@ export default function HomePage() {
                       </td>
                       <td className="p-5 text-right">
                         <Link 
-                          href={`/terminal?symbol=${ticker.symbol}`}
+                          href={`/client/terminal?symbol=${ticker.symbol}`}
                           className="inline-flex items-center px-6 py-2 bg-[#0055FF] hover:bg-[#0044cc] text-white text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm"
                         >
                           {t('landing.nav.trading')}
