@@ -51,7 +51,7 @@ const BubbleContent = React.forwardRef<
     <Comp
       ref={ref}
       className={cn(
-        "max-w-[85%] px-4 py-3 text-xs leading-relaxed border shadow-sm",
+        "max-w-[85%] px-4 py-3 text-[11px] leading-relaxed border shadow-sm rounded-none",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0055FF]",
         className
       )}

@@ -2,13 +2,12 @@
 
 /**
  * @fileOverview Varban Assistant Chatbot.
- * Refactored with Message and MessageScroller for an institutional streaming experience.
- * Updated: Draggable trigger with side-wall snapping and adaptive window alignment.
+ * Adheres strictly to the Institutional Chat pattern using Message Scroller and Bubbles.
  */
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
-import { X, Send, Loader2, MessageSquare, ChevronDown, GripVertical } from 'lucide-react';
+import { X, Send, Loader2, MessageSquare, ChevronDown, GripVertical, Copy, RotateCcw } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import { supportChat } from '@/ai/flows/support-chat-flow';
 import { useTranslation } from '@/app/lib/i18n-context';
@@ -17,7 +16,8 @@ import {
   Message, 
   MessageAvatar, 
   MessageContent, 
-  MessageHeader 
+  MessageHeader,
+  MessageFooter
 } from '@/components/ui/message';
 import { 
   MessageScroller, 
@@ -27,8 +27,10 @@ import {
   MessageScrollerProvider, 
   MessageScrollerViewport 
 } from '@/components/ui/message-scroller';
+import { Button } from '@/components/ui/button';
 
 interface ChatMessage {
+  id: string;
   role: 'user' | 'model';
   content: string;
 }
@@ -53,7 +55,7 @@ export default function ChatSupport() {
   // Initialize localized starter
   useEffect(() => {
     setMessages([
-      { role: 'model', content: t('chat.starter') }
+      { id: 'starter', role: 'model', content: t('chat.starter') }
     ]);
   }, [locale, t]);
 
@@ -67,7 +69,6 @@ export default function ChatSupport() {
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     
-    // Calculate current position if not set
     const currentX = position?.x ?? window.innerWidth - 80;
     const currentY = position?.y ?? window.innerHeight - 80;
 
@@ -87,7 +88,6 @@ export default function ChatSupport() {
     const newX = clientX - dragOffset.x;
     const newY = clientY - dragOffset.y;
 
-    // Bounds checking
     const boundedX = Math.max(10, Math.min(window.innerWidth - 64, newX));
     const boundedY = Math.max(10, Math.min(window.innerHeight - 64, newY));
 
@@ -101,7 +101,6 @@ export default function ChatSupport() {
 
   const handleMouseUp = useCallback(() => {
     if (dragOffset && isDragging) {
-      // SNAPPING LOGIC: Snap to nearest side wall
       if (position) {
         const snapX = position.x < window.innerWidth / 2 ? 24 : window.innerWidth - 80;
         setPosition({ x: snapX, y: position.y });
@@ -137,7 +136,12 @@ export default function ChatSupport() {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const userMessage: ChatMessage = { role: 'user', content: input.trim() };
+    const userMessage: ChatMessage = { 
+      id: Date.now().toString(), 
+      role: 'user', 
+      content: input.trim() 
+    };
+    
     setMessages(prev => [...prev, userMessage]);
     const currentInput = input.trim();
     setInput('');
@@ -156,12 +160,14 @@ export default function ChatSupport() {
       });
 
       setMessages(prev => [...prev, { 
+        id: (Date.now() + 1).toString(),
         role: 'model', 
-        content: response || "Processing error." 
+        content: response || "Handshake error." 
       }]);
     } catch (error) {
       console.error("Assistant Error:", error);
       setMessages(prev => [...prev, { 
+        id: 'error-' + Date.now(),
         role: 'model', 
         content: t('chat.error')
       }]);
@@ -170,10 +176,13 @@ export default function ChatSupport() {
     }
   };
 
+  const handleCopy = (content: string) => {
+    navigator.clipboard.writeText(content);
+  };
+
   const isTerminal = pathname?.includes('/terminal');
   if (isTerminal) return null;
 
-  // Calculate Window Position relative to trigger
   const getWindowStyles = () => {
     const isLeft = (position?.x ?? window.innerWidth) < window.innerWidth / 2;
     const triggerX = position?.x ?? window.innerWidth - 80;
@@ -188,7 +197,6 @@ export default function ChatSupport() {
 
   return (
     <>
-      {/* Floating Draggable Trigger */}
       <div 
         onMouseDown={handleMouseDown}
         onTouchStart={handleMouseDown}
@@ -201,80 +209,85 @@ export default function ChatSupport() {
         )}
       >
         {isOpen ? <ChevronDown className="w-7 h-7" /> : <MessageSquare className="w-6 h-6" />}
-        
-        {/* Subtle Drag Handle Visual */}
         <div className="absolute -top-1 -left-1 opacity-0 group-hover:opacity-100 transition-opacity">
            <GripVertical className="w-3 h-3 text-white/40" />
         </div>
       </div>
 
-      {/* Adaptive Chat Window */}
       {isOpen && (
         <div 
           style={getWindowStyles()}
           className={cn(
-            "fixed w-80 sm:w-[400px] h-[580px] bg-white border border-[#E4E4E4] shadow-2xl z-[140] flex flex-col animate-in slide-in-from-bottom-4 duration-300 rounded-sm overflow-hidden",
+            "fixed w-80 sm:w-[420px] h-[600px] bg-white border border-[#E4E4E4] shadow-2xl z-[140] flex flex-col animate-in slide-in-from-bottom-4 duration-300 rounded-none overflow-hidden",
             (position?.x ?? window.innerWidth) < window.innerWidth / 2 ? "origin-bottom-left" : "origin-bottom-right"
           )}
         >
           <div className="p-4 border-b border-[#F7F7F5] bg-white flex justify-between items-center shrink-0">
             <div className="flex items-center gap-2">
                <div className="w-2 h-2 rounded-full bg-[#16835B] animate-pulse"></div>
-               <h3 className="text-xs font-bold text-[#0A0A0A] uppercase tracking-widest">{t('chat.title')}</h3>
+               <h3 className="text-[10px] font-bold text-[#0A0A0A] uppercase tracking-widest">{t('chat.title')}</h3>
             </div>
             <button onClick={() => setIsOpen(false)} className="text-[#6B7280] hover:text-[#0A0A0A] transition-colors"><X className="w-5 h-5" /></button>
           </div>
 
           <div className="flex-grow overflow-hidden bg-white">
-            <MessageScrollerProvider autoScroll defaultScrollPosition="last-anchor" scrollPreviousItemPeek={32}>
+            <MessageScrollerProvider autoScroll>
               <MessageScroller>
-                <MessageScrollerViewport>
+                <MessageScrollerViewport className="px-0">
                   <MessageScrollerContent>
-                    <div className="flex items-center justify-center py-4">
-                      <div className="flex items-center w-full max-w-[200px]">
-                        <div className="flex-grow h-px bg-[#F7F7F5]"></div>
-                        <span className="px-3 text-[9px] font-bold text-[#6B7280] uppercase tracking-widest whitespace-nowrap">
-                          {t('chat.started')} {startTime}
-                        </span>
-                        <div className="flex-grow h-px bg-[#F7F7F5]"></div>
-                      </div>
+                    <div className="flex items-center justify-center py-4 opacity-50">
+                      <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">
+                        {t('chat.started')} {startTime}
+                      </span>
                     </div>
 
-                    {messages.map((msg, i) => (
+                    {messages.map((msg) => (
                       <MessageScrollerItem 
-                        key={i} 
-                        messageId={`msg-${i}`} 
+                        key={msg.id} 
+                        messageId={msg.id} 
                         scrollAnchor={msg.role === 'user'}
                       >
                         <Message align={msg.role === 'user' ? 'end' : 'start'}>
                           {msg.role === 'model' && (
                             <MessageAvatar>
-                              <div className="w-8 h-8 rounded-full bg-[#0A0A0A] border border-[#E4E4E4] flex items-center justify-center overflow-hidden">
+                              <div className="w-8 h-8 rounded-none bg-[#0A0A0A] border border-[#E4E4E4] flex items-center justify-center overflow-hidden">
                                 <img src="https://picsum.photos/seed/varbanbot/60/60" alt="Bot" className="w-full h-full object-cover" />
                               </div>
                             </MessageAvatar>
                           )}
                           <MessageContent>
                             {msg.role === 'model' && (
-                              <MessageHeader>
-                                <span>Varban Assistant</span>
-                              </MessageHeader>
+                              <MessageHeader>Varban Assistant</MessageHeader>
                             )}
-                            <Bubble variant={msg.role === 'user' ? 'default' : 'secondary'}>
-                              <BubbleContent className="rounded-none text-[11px] leading-relaxed">
+                            {msg.role === 'user' ? (
+                              <Bubble align="end" variant="muted">
+                                <BubbleContent>{msg.content}</BubbleContent>
+                              </Bubble>
+                            ) : (
+                              <div className="px-1 text-[11px] leading-relaxed text-[#333333]">
                                 {msg.content}
-                              </BubbleContent>
-                            </Bubble>
+                                <MessageFooter>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-7 w-7 p-0"
+                                    onClick={() => handleCopy(msg.content)}
+                                  >
+                                    <Copy className="h-3 w-3" />
+                                  </Button>
+                                </MessageFooter>
+                              </div>
+                            )}
                           </MessageContent>
                         </Message>
                       </MessageScrollerItem>
                     ))}
                     
                     {isLoading && (
-                      <MessageScrollerItem messageId="loading-indicator">
+                      <MessageScrollerItem messageId="loading">
                         <Message align="start">
                           <MessageAvatar>
-                            <div className="w-8 h-8 rounded-full bg-[#F3F4F6] border border-[#E4E4E4] flex items-center justify-center">
+                            <div className="w-8 h-8 bg-[#F3F4F6] border border-[#E4E4E4] flex items-center justify-center">
                               <Loader2 className="w-4 h-4 text-[#0055FF] animate-spin" />
                             </div>
                           </MessageAvatar>

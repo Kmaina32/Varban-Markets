@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Institutional Message Scroller implementation.
- * Self-contained scrolling logic to ensure platform stability.
+ * Supports auto-scrolling with anchor points for turn-based conversations.
  */
 
 import * as React from "react"
@@ -14,11 +14,17 @@ interface MessageScrollerContextType {
   isAtBottom: boolean;
   setIsAtBottom: (val: boolean) => void;
   viewportRef: React.RefObject<HTMLDivElement | null>;
+  autoScroll: boolean;
 }
 
 const MessageScrollerContext = React.createContext<MessageScrollerContextType | null>(null);
 
-export function MessageScrollerProvider({ children }: { children: React.ReactNode }) {
+interface MessageScrollerProviderProps {
+  children: React.ReactNode;
+  autoScroll?: boolean;
+}
+
+export function MessageScrollerProvider({ children, autoScroll = true }: MessageScrollerProviderProps) {
   const [isAtBottom, setIsAtBottom] = React.useState(true);
   const viewportRef = React.useRef<HTMLDivElement>(null);
 
@@ -35,8 +41,9 @@ export function MessageScrollerProvider({ children }: { children: React.ReactNod
     scrollToBottom, 
     isAtBottom, 
     setIsAtBottom,
-    viewportRef 
-  }), [scrollToBottom, isAtBottom]);
+    viewportRef,
+    autoScroll
+  }), [scrollToBottom, isAtBottom, autoScroll]);
 
   return (
     <MessageScrollerContext.Provider value={value}>
@@ -63,17 +70,20 @@ export const MessageScroller = React.forwardRef<HTMLDivElement, React.HTMLAttrib
 
 export const MessageScrollerViewport = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, children, ...props }, ref) => {
-    const { viewportRef, setIsAtBottom, scrollToBottom } = useMessageScroller();
+    const { viewportRef, setIsAtBottom, scrollToBottom, autoScroll } = useMessageScroller();
 
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
       const target = e.currentTarget;
-      const atBottom = Math.abs(target.scrollHeight - target.clientHeight - target.scrollTop) < 10;
+      const atBottom = Math.abs(target.scrollHeight - target.clientHeight - target.scrollTop) < 50;
       setIsAtBottom(atBottom);
     };
 
+    // Follow content changes if autoScroll is enabled and we are near the bottom
     React.useEffect(() => {
-      scrollToBottom();
-    }, [children, scrollToBottom]);
+      if (autoScroll && isAtBottom) {
+        scrollToBottom();
+      }
+    }, [children, autoScroll, isAtBottom, scrollToBottom]);
 
     return (
       <div 
@@ -94,11 +104,30 @@ export const MessageScrollerContent = ({ className, children }: { className?: st
   </div>
 );
 
-export const MessageScrollerItem = ({ children, messageId, scrollAnchor }: { children: React.ReactNode, messageId?: string, scrollAnchor?: boolean }) => (
-  <div data-message-id={messageId} data-anchor={scrollAnchor} className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-    {children}
-  </div>
-);
+export const MessageScrollerItem = ({ 
+  children, 
+  messageId, 
+  scrollAnchor 
+}: { 
+  children: React.ReactNode, 
+  messageId?: string, 
+  scrollAnchor?: boolean 
+}) => {
+  const itemRef = React.useRef<HTMLDivElement>(null);
+  const { isAtBottom, autoScroll } = useMessageScroller();
+
+  React.useEffect(() => {
+    if (scrollAnchor && !isAtBottom && autoScroll) {
+      itemRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [scrollAnchor, isAtBottom, autoScroll]);
+
+  return (
+    <div ref={itemRef} data-message-id={messageId} data-anchor={scrollAnchor} className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+      {children}
+    </div>
+  );
+};
 
 export const MessageScrollerButton = () => {
   const { scrollToBottom, isAtBottom } = useMessageScroller();

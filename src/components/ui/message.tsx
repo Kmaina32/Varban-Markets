@@ -48,7 +48,7 @@ const MessageContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex flex-col gap-1 max-w-[85%]", className)} {...props} />
+  <div ref={ref} className={cn("flex flex-col gap-1 max-w-full", className)} {...props} />
 ))
 MessageContent.displayName = "MessageContent"
 
@@ -56,7 +56,7 @@ const MessageHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("text-[10px] font-bold uppercase tracking-widest text-[#6B7280] px-1", className)} {...props} />
+  <div ref={ref} className={cn("text-[10px] font-bold uppercase tracking-widest text-[#6B7280] px-1 mb-1", className)} {...props} />
 ))
 MessageHeader.displayName = "MessageHeader"
 
@@ -64,7 +64,7 @@ const MessageFooter = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex items-center gap-2 text-[9px] text-[#6B7280] uppercase font-bold px-1", className)} {...props} />
+  <div ref={ref} className={cn("flex items-center gap-2 text-[9px] text-[#6B7280] uppercase font-bold px-1 mt-1", className)} {...props} />
 ))
 MessageFooter.displayName = "MessageFooter"
 
