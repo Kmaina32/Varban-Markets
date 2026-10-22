@@ -70,7 +70,7 @@ export const MessageScroller = React.forwardRef<HTMLDivElement, React.HTMLAttrib
 
 export const MessageScrollerViewport = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, children, ...props }, ref) => {
-    const { viewportRef, setIsAtBottom, scrollToBottom, autoScroll } = useMessageScroller();
+    const { viewportRef, isAtBottom, setIsAtBottom, scrollToBottom, autoScroll } = useMessageScroller();
 
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
       const target = e.currentTarget;
