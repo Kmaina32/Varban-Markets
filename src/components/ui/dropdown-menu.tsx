@@ -2,51 +2,62 @@
 
 /**
  * @fileOverview Institutional Dropdown Menu component.
- * Refined to use root package imports for stable runtime resolution in Next.js 15.
+ * Refined to use direct named exports from the root package for stable resolution.
  */
 
 import * as React from "react"
-import { Menu as Primitive } from "@base-ui/react"
-import { Check, ChevronRight, Circle } from "lucide-react"
+import { 
+  MenuRoot, 
+  MenuTrigger, 
+  MenuPortal, 
+  MenuPositioner, 
+  MenuPopup, 
+  MenuItem, 
+  MenuCheckboxItem, 
+  MenuCheckboxItemIndicator, 
+  MenuSeparator, 
+  MenuGroup 
+} from "@base-ui/react"
+import { Check, ChevronRight } from "lucide-react"
 import { Slot } from "@radix-ui/react-slot"
 import { cn } from "@/app/lib/utils"
 
-const DropdownMenu = Primitive.Root
+const DropdownMenu = MenuRoot
 
 const DropdownMenuTrigger = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentPropsWithoutRef<typeof Primitive.Trigger> & { render?: React.ReactElement }
+  React.ComponentPropsWithoutRef<typeof MenuTrigger> & { render?: React.ReactElement }
 >(({ className, render, children, ...props }, ref) => {
   if (render) {
     return (
-      <Primitive.Trigger {...props} asChild>
+      <MenuTrigger {...props} asChild>
         <Slot ref={ref} className={className}>
           {render}
         </Slot>
-      </Primitive.Trigger>
+      </MenuTrigger>
     )
   }
   return (
-    <Primitive.Trigger
+    <MenuTrigger
       ref={ref}
       className={cn("outline-none", className)}
       {...props}
     >
       {children}
-    </Primitive.Trigger>
+    </MenuTrigger>
   )
 })
 DropdownMenuTrigger.displayName = "DropdownMenuTrigger"
 
-const DropdownMenuPortal = Primitive.Portal
+const DropdownMenuPortal = MenuPortal
 
 const DropdownMenuContent = React.forwardRef<
-  React.ElementRef<typeof Primitive.Popup>,
-  React.ComponentPropsWithoutRef<typeof Primitive.Popup>
+  React.ElementRef<typeof MenuPopup>,
+  React.ComponentPropsWithoutRef<typeof MenuPopup> & { sideOffset?: number }
 >(({ className, sideOffset = 4, ...props }, ref) => (
-  <Primitive.Portal>
-    <Primitive.Positioner sideOffset={sideOffset}>
-      <Primitive.Popup
+  <MenuPortal>
+    <MenuPositioner sideOffset={sideOffset}>
+      <MenuPopup
         ref={ref}
         className={cn(
           "z-[600] min-w-[8rem] overflow-hidden border border-[#E4E4E4] bg-white p-1 text-[#0A0A0A] shadow-xl outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 rounded-none",
@@ -54,16 +65,16 @@ const DropdownMenuContent = React.forwardRef<
         )}
         {...props}
       />
-    </Primitive.Positioner>
-  </Primitive.Portal>
+    </MenuPositioner>
+  </MenuPortal>
 ))
 DropdownMenuContent.displayName = "DropdownMenuContent"
 
 const DropdownMenuItem = React.forwardRef<
-  React.ElementRef<typeof Primitive.Item>,
-  React.ComponentPropsWithoutRef<typeof Primitive.Item>
+  React.ElementRef<typeof MenuItem>,
+  React.ComponentPropsWithoutRef<typeof MenuItem>
 >(({ className, ...props }, ref) => (
-  <Primitive.Item
+  <MenuItem
     ref={ref}
     className={cn(
       "relative flex cursor-default select-none items-center rounded-none px-2 py-1.5 text-xs font-bold uppercase tracking-wider outline-none transition-colors focus:bg-[#F7F7F5] focus:text-[#0055FF] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
@@ -75,10 +86,10 @@ const DropdownMenuItem = React.forwardRef<
 DropdownMenuItem.displayName = "DropdownMenuItem"
 
 const DropdownMenuCheckboxItem = React.forwardRef<
-  React.ElementRef<typeof Primitive.CheckboxItem>,
-  React.ComponentPropsWithoutRef<typeof Primitive.CheckboxItem>
+  React.ElementRef<typeof MenuCheckboxItem>,
+  React.ComponentPropsWithoutRef<typeof MenuCheckboxItem>
 >(({ className, children, checked, ...props }, ref) => (
-  <Primitive.CheckboxItem
+  <MenuCheckboxItem
     ref={ref}
     className={cn(
       "relative flex cursor-default select-none items-center rounded-none py-1.5 pl-8 pr-2 text-xs font-bold uppercase tracking-wider outline-none transition-colors focus:bg-[#F7F7F5] focus:text-[#0055FF] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
@@ -88,12 +99,12 @@ const DropdownMenuCheckboxItem = React.forwardRef<
     {...props}
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-      <Primitive.CheckboxItemIndicator>
+      <MenuCheckboxItemIndicator>
         <Check className="h-4 w-4 text-[#0055FF]" />
-      </Primitive.CheckboxItemIndicator>
+      </MenuCheckboxItemIndicator>
     </span>
     {children}
-  </Primitive.CheckboxItem>
+  </MenuCheckboxItem>
 ))
 DropdownMenuCheckboxItem.displayName = "DropdownMenuCheckboxItem"
 
@@ -114,10 +125,10 @@ const DropdownMenuLabel = React.forwardRef<
 DropdownMenuLabel.displayName = "DropdownMenuLabel"
 
 const DropdownMenuSeparator = React.forwardRef<
-  React.ElementRef<typeof Primitive.Separator>,
-  React.ComponentPropsWithoutRef<typeof Primitive.Separator>
+  React.ElementRef<typeof MenuSeparator>,
+  React.ComponentPropsWithoutRef<typeof MenuSeparator>
 >(({ className, ...props }, ref) => (
-  <Primitive.Separator
+  <MenuSeparator
     ref={ref}
     className={cn("-mx-1 my-1 h-px bg-[#E4E4E4]", className)}
     {...props}
@@ -125,7 +136,7 @@ const DropdownMenuSeparator = React.forwardRef<
 ))
 DropdownMenuSeparator.displayName = "DropdownMenuSeparator"
 
-const DropdownMenuGroup = Primitive.Group
+const DropdownMenuGroup = MenuGroup
 
 export {
   DropdownMenu,

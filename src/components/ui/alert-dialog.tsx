@@ -2,25 +2,33 @@
 
 /**
  * @fileOverview Institutional Alert Dialog component.
- * Refined to use root package imports for stable runtime resolution in Next.js 15.
+ * Refined to use direct named exports from the root package for stable resolution.
  */
 
 import * as React from 'react';
-import { AlertDialog as Primitive } from '@base-ui/react';
+import { 
+  AlertDialogRoot, 
+  AlertDialogTrigger, 
+  AlertDialogPortal, 
+  AlertDialogBackdrop, 
+  AlertDialogPopup, 
+  AlertDialogTitle as Title, 
+  AlertDialogDescription as Description 
+} from '@base-ui/react';
 import { cn } from '@/app/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 
-const AlertDialog = Primitive.Root;
+const AlertDialog = AlertDialogRoot
 
-const AlertDialogTrigger = Primitive.Trigger;
+const AlertDialogTrigger = AlertDialogTrigger
 
-const AlertDialogPortal = Primitive.Portal;
+const AlertDialogPortal = AlertDialogPortal
 
 const AlertDialogOverlay = React.forwardRef<
-  React.ElementRef<typeof Primitive.Backdrop>,
-  React.ComponentPropsWithoutRef<typeof Primitive.Backdrop>
+  React.ElementRef<typeof AlertDialogBackdrop>,
+  React.ComponentPropsWithoutRef<typeof AlertDialogBackdrop>
 >(({ className, ...props }, ref) => (
-  <Primitive.Backdrop
+  <AlertDialogBackdrop
     className={cn(
       "fixed inset-0 z-50 bg-[#0A0A0A]/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
@@ -32,12 +40,12 @@ const AlertDialogOverlay = React.forwardRef<
 AlertDialogOverlay.displayName = "AlertDialogOverlay";
 
 const AlertDialogContent = React.forwardRef<
-  React.ElementRef<typeof Primitive.Popup>,
-  React.ComponentPropsWithoutRef<typeof Primitive.Popup> & { size?: 'default' | 'sm' }
+  React.ElementRef<typeof AlertDialogPopup>,
+  React.ComponentPropsWithoutRef<typeof AlertDialogPopup> & { size?: 'default' | 'sm' }
 >(({ className, size = 'default', ...props }, ref) => (
-  <Primitive.Portal>
+  <AlertDialogPortal>
     <AlertDialogOverlay />
-    <Primitive.Popup
+    <AlertDialogPopup
       ref={ref}
       className={cn(
         "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-6 border border-[#E4E4E4] bg-white p-8 shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 rounded-none",
@@ -46,7 +54,7 @@ const AlertDialogContent = React.forwardRef<
       )}
       {...props}
     />
-  </Primitive.Portal>
+  </AlertDialogPortal>
 ));
 AlertDialogContent.displayName = "AlertDialogContent";
 
@@ -79,10 +87,10 @@ const AlertDialogFooter = ({
 AlertDialogFooter.displayName = "AlertDialogFooter";
 
 const AlertDialogTitle = React.forwardRef<
-  React.ElementRef<typeof Primitive.Title>,
-  React.ComponentPropsWithoutRef<typeof Primitive.Title>
+  React.ElementRef<typeof Title>,
+  React.ComponentPropsWithoutRef<typeof Title>
 >(({ className, ...props }, ref) => (
-  <Primitive.Title
+  <Title
     ref={ref}
     className={cn("text-lg font-bold uppercase tracking-tight text-[#0A0A0A]", className)}
     {...props}
@@ -91,10 +99,10 @@ const AlertDialogTitle = React.forwardRef<
 AlertDialogTitle.displayName = "AlertDialogTitle";
 
 const AlertDialogDescription = React.forwardRef<
-  React.ElementRef<typeof Primitive.Description>,
-  React.ComponentPropsWithoutRef<typeof Primitive.Description>
+  React.ElementRef<typeof Description>,
+  React.ComponentPropsWithoutRef<typeof Description>
 >(({ className, ...props }, ref) => (
-  <Primitive.Description
+  <Description
     ref={ref}
     className={cn("text-xs text-[#6B7280] leading-relaxed uppercase font-bold tracking-tight opacity-70", className)}
     {...props}
