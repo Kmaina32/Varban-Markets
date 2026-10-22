@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
- * 4-Panel Grid Architecture with resizable portfolio manager and utility node.
+ * 4-Panel Grid Architecture with Resizable Panels for professional workspace control.
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -37,6 +37,11 @@ import ExecutionTicket from "@/components/terminal/ExecutionTicket";
 import PortfolioManager from "@/components/terminal/PortfolioManager";
 import TerminalTutorial from "@/components/terminal/TerminalTutorial";
 import MarketNewsFeed from "@/components/dashboard/MarketNewsFeed";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
 interface Position {
   id: string;
@@ -79,9 +84,6 @@ export default function TerminalWorkspace() {
   const [activeInst, setActiveInst] = useState<Instrument>(AVAILABLE_INSTRUMENTS[0]);
   const [marketData, setMarketData] = useState<Record<string, { price: number; percent: number }>>({});
   const [positions, setPositions] = useState<Position[]>([]);
-  
-  const [bottomPanelHeight, setBottomPanelHeight] = useState(250);
-  const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
     const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
@@ -162,25 +164,6 @@ export default function TerminalWorkspace() {
     setPositions(prev => [newPos, ...prev]);
     setIsTradeDrawerOpen(false);
   };
-
-  const startResizing = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsResizing(true);
-  }, []);
-
-  const stopResizing = useCallback(() => setIsResizing(false), []);
-  const resize = useCallback((e: MouseEvent) => {
-    if (isResizing) {
-      const newHeight = window.innerHeight - e.clientY;
-      if (newHeight >= 150 && newHeight <= 600) setBottomPanelHeight(newHeight);
-    }
-  }, [isResizing]);
-
-  useEffect(() => {
-    window.addEventListener('mousemove', resize);
-    window.addEventListener('mouseup', stopResizing);
-    return () => { window.removeEventListener('mousemove', resize); window.removeEventListener('mouseup', stopResizing); };
-  }, [resize, stopResizing]);
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
@@ -286,86 +269,99 @@ export default function TerminalWorkspace() {
         <AuthedSidebar className="hidden lg:flex" />
 
         <main className="flex-grow flex lg:ml-16 overflow-hidden">
-          <div className="flex-grow flex flex-col overflow-hidden">
-            <div id="tour-chart" className="flex-grow min-h-0 bg-[#F7F7F5] relative">
-              <TradingViewChart symbol={activeInst.symbol} />
-            </div>
-
-            <div 
-              style={{ height: `${bottomPanelHeight}px` }}
-              className="hidden lg:flex flex-col shrink-0 relative"
-            >
-              <div 
-                onMouseDown={startResizing}
-                className="absolute -top-1 left-0 right-0 h-1 cursor-row-resize z-50 hover:bg-[#0055FF]/40 transition-colors"
-              />
-              <PortfolioManager 
-                positions={positions.filter(p => p.status === 'Open')}
-                orders={[]}
-                history={positions.filter(p => p.status === 'Closed')}
-              />
-            </div>
-          </div>
-
-          <div className="hidden lg:flex w-[340px] border-l border-[#E4E4E4] shrink-0 bg-white shadow-xl relative z-40 flex-col">
-            {/* Tabbed Right Utility Panel */}
-            <div className="flex border-b border-[#E4E4E4] shrink-0">
-               {[
-                 { id: 'TRADE', label: 'Order Ticket', icon: MousePointer2 },
-                 { id: 'MARKET', label: 'Market Data', icon: Layout },
-                 { id: 'NEWS', label: 'News Feed', icon: Newspaper }
-               ].map(tab => (
-                 <button 
-                  key={tab.id}
-                  onClick={() => setActiveRightTab(tab.id as any)}
-                  className={cn(
-                    "flex-1 py-3 text-[8px] font-bold uppercase tracking-widest border-b-2 transition-all flex flex-col items-center gap-1",
-                    activeRightTab === tab.id ? "border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5" : "border-transparent text-[#6B7280] hover:bg-[#F7F7F5]"
-                  )}
-                 >
-                   <tab.icon className="w-3 h-3" />
-                   <span>{tab.label}</span>
-                 </button>
-               ))}
-            </div>
-
-            <div className="flex-grow overflow-y-auto no-scrollbar">
-               {activeRightTab === 'TRADE' && (
-                 <div id="tour-settings" className="h-full">
-                    <ExecutionTicket 
-                      instrument={activeInst} 
-                      livePrice={marketData[activeInst.symbol]?.price}
-                      balance={activeBalance}
-                      accountMode={accountMode}
-                      onExecute={handleExecution}
+          {/* Main Desktop Workspace with Resizable Panels */}
+          <ResizablePanelGroup direction="horizontal" className="hidden lg:flex flex-grow overflow-hidden">
+            <ResizablePanel defaultSize={75} minSize={30}>
+              <ResizablePanelGroup direction="vertical">
+                <ResizablePanel defaultSize={70} minSize={30}>
+                  <div id="tour-chart" className="h-full w-full bg-[#F7F7F5] relative">
+                    <TradingViewChart symbol={activeInst.symbol} />
+                  </div>
+                </ResizablePanel>
+                <ResizableHandle withHandle />
+                <ResizablePanel defaultSize={30} minSize={10}>
+                  <div className="h-full w-full flex flex-col shrink-0 relative">
+                    <PortfolioManager 
+                      positions={positions.filter(p => p.status === 'Open')}
+                      orders={[]}
+                      history={positions.filter(p => p.status === 'Closed')}
                     />
-                 </div>
-               )}
-               {activeRightTab === 'MARKET' && (
-                 <div className="p-6 space-y-8 animate-in fade-in duration-300">
-                    <section className="space-y-4">
-                       <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">Instrument Details</h3>
-                       <div className="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase text-[#6B7280]">
-                          <div><span className="block opacity-50 mb-1">Exchange</span> <span className="text-[#0A0A0A]">Varban Synthetic</span></div>
-                          <div><span className="block opacity-50 mb-1">Settlement</span> <span className="text-[#16835B]">Instant</span></div>
-                          <div><span className="block opacity-50 mb-1">Leverage</span> <span className="text-[#0A0A0A]">1:400</span></div>
-                          <div><span className="block opacity-50 mb-1">Market State</span> <span className="text-[#16835B]">Active</span></div>
-                       </div>
-                    </section>
-                    <section className="space-y-4">
-                       <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">Active Technical Rating</h3>
-                       <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] text-center">
-                          <span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Buy Momentum</span>
-                          <div className="text-xl font-mono font-bold text-[#16835B]">NEUTRAL</div>
-                       </div>
-                    </section>
-                 </div>
-               )}
-               {activeRightTab === 'NEWS' && (
-                 <div className="h-full">
-                    <MarketNewsFeed />
-                 </div>
-               )}
+                  </div>
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            </ResizablePanel>
+            
+            <ResizableHandle withHandle />
+            
+            <ResizablePanel defaultSize={25} minSize={15}>
+              <div className="h-full w-full border-l border-[#E4E4E4] shrink-0 bg-white shadow-xl relative z-40 flex flex-col overflow-hidden">
+                {/* Tabbed Right Utility Panel */}
+                <div className="flex border-b border-[#E4E4E4] shrink-0">
+                   {[
+                     { id: 'TRADE', label: 'Order Ticket', icon: MousePointer2 },
+                     { id: 'MARKET', label: 'Market Data', icon: Layout },
+                     { id: 'NEWS', label: 'News Feed', icon: Newspaper }
+                   ].map(tab => (
+                     <button 
+                      key={tab.id}
+                      onClick={() => setActiveRightTab(tab.id as any)}
+                      className={cn(
+                        "flex-1 py-3 text-[8px] font-bold uppercase tracking-widest border-b-2 transition-all flex flex-col items-center gap-1",
+                        activeRightTab === tab.id ? "border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5" : "border-transparent text-[#6B7280] hover:bg-[#F7F7F5]"
+                      )}
+                     >
+                       <tab.icon className="w-3 h-3" />
+                       <span>{tab.label}</span>
+                     </button>
+                   ))}
+                </div>
+
+                <div className="flex-grow overflow-y-auto no-scrollbar">
+                   {activeRightTab === 'TRADE' && (
+                     <div id="tour-settings" className="h-full">
+                        <ExecutionTicket 
+                          instrument={activeInst} 
+                          livePrice={marketData[activeInst.symbol]?.price}
+                          balance={activeBalance}
+                          accountMode={accountMode}
+                          onExecute={handleExecution}
+                        />
+                     </div>
+                   )}
+                   {activeRightTab === 'MARKET' && (
+                     <div className="p-6 space-y-8 animate-in fade-in duration-300">
+                        <section className="space-y-4">
+                           <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">Instrument Details</h3>
+                           <div className="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase text-[#6B7280]">
+                              <div><span className="block opacity-50 mb-1">Exchange</span> <span className="text-[#0A0A0A]">Varban Synthetic</span></div>
+                              <div><span className="block opacity-50 mb-1">Settlement</span> <span className="text-[#16835B]">Instant</span></div>
+                              <div><span className="block opacity-50 mb-1">Leverage</span> <span className="text-[#0A0A0A]">1:400</span></div>
+                              <div><span className="block opacity-50 mb-1">Market State</span> <span className="text-[#16835B]">Active</span></div>
+                           </div>
+                        </section>
+                        <section className="space-y-4">
+                           <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">Active Technical Rating</h3>
+                           <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] text-center">
+                              <span className="text-[9px] font-bold text-[#6B7280] uppercase block mb-1">Buy Momentum</span>
+                              <div className="text-xl font-mono font-bold text-[#16835B]">NEUTRAL</div>
+                           </div>
+                        </section>
+                     </div>
+                   )}
+                   {activeRightTab === 'NEWS' && (
+                     <div className="h-full">
+                        <MarketNewsFeed />
+                     </div>
+                   )}
+                </div>
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+
+          {/* Fallback for smaller screens (Non-resizable mobile main) */}
+          <div className="flex lg:hidden flex-grow flex-col overflow-hidden">
+            <div id="tour-chart-mobile" className="flex-grow min-h-0 bg-[#F7F7F5] relative">
+              <TradingViewChart symbol={activeInst.symbol} />
             </div>
           </div>
         </main>

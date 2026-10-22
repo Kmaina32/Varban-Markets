@@ -18,6 +18,7 @@
 - [x] **Terminal Feature Tour**: Spotlight-driven tutorial system for high-speed execution modules.
 - [x] **Universal Clock**: Real-time clock with selectable timezone persistence (UTC-8 to UTC+8).
 - [ ] **TradingView Technical Indicators Toolbar**: RSI, MACD, Moving Averages, and Bollinger Bands overlay controls are not yet wired to direct chart indicator controls.
+- [x] **Resizable Layout**: Implemented professional resizable panels for chart, ledger, and utility sections using TanStack primitives.
 
 ### C. Watchlist & Portfolio (`/watchlist`, `/portfolio`)
 - [x] **Watchlist `Add Asset` Button**: Dynamic search modal to add new currency pairs/crypto to user's custom watchlist.
@@ -43,6 +44,7 @@
 ### C. UI Component Library
 - [x] **ShadCN Alert System**: Manually installed and themed for institutional use.
 - [x] **ShadCN Alert Dialog System**: Manually installed via @base-ui/react.
+- [x] **ShadCN Resizable System**: Integrated accessible panel management via react-resizable-panels.
 
 ---
 
