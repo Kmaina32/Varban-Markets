@@ -1,0 +1,225 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import AuthedLayout from "@/components/layout/AuthedLayout";
+import { Card } from "@/components/ui/card";
+import { 
+  Users, 
+  Copy, 
+  Check, 
+  TrendingUp, 
+  DollarSign, 
+  Trophy,
+  ArrowRight,
+  Gift
+} from "lucide-react";
+import { useUser, useDoc, useFirestore, useCollection } from "@/firebase";
+import { collection, query, where, orderBy } from "firebase/firestore";
+import { useTranslation } from "@/app/lib/i18n-context";
+import { cn } from "@/app/lib/utils";
+import PageTutorial, { TutorialStep } from "@/components/shared/PageTutorial";
+
+export default function ReferralPortal() {
+  const { user } = useUser();
+  const db = useFirestore();
+  const { t, formatNumber, formatDate } = useTranslation();
+  const [copied, setCopied] = useState(false);
+
+  const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
+
+  const referralsQuery = useMemo(() => {
+    if (!db || !user) return null;
+    return query(
+      collection(db, "users"),
+      where("referredBy", "==", user.uid),
+      orderBy("createdAt", "desc")
+    );
+  }, [db, user]);
+
+  const { data: referredUsers, loading: referralsLoading } = useCollection<any>(referralsQuery);
+
+  const referralCode = profile?.referralCode || "---";
+  const referralLink = `https://varbanmarkets.com/register?ref=${referralCode}`;
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(referralLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const metrics = [
+    { label: t('referral.totalNetwork'), value: referredUsers?.length || 0, icon: Users, color: "text-[#0055FF]" },
+    { label: t('referral.activeTraders'), value: referredUsers?.filter(u => (u.balance || 0) > 1000).length || 0, icon: TrendingUp, color: "text-[#16835B]" },
+    { label: t('referral.pendingPayout'), value: "$0.00", icon: DollarSign, color: "text-[#6B7280]" },
+    { label: t('referral.partnerLevel'), value: "Standard", icon: Trophy, color: "text-[#C9A227]" }
+  ];
+
+  const tutorialSteps: TutorialStep[] = [
+    {
+      selector: "#tour-referral-banner",
+      title: "Growth Conduit",
+      description: "Copy your unique invitation link to build your professional trading network."
+    },
+    {
+      selector: "#tour-referral-metrics",
+      title: "Partner Performance",
+      description: "Track network size, activity status, and upcoming partner rewards."
+    },
+    {
+      selector: "#tour-referral-ledger",
+      title: "Enrollment Log",
+      description: "Monitor every new trader that enters our ecosystem through your domain."
+    }
+  ];
+
+  return (
+    <AuthedLayout 
+      title={t('referral.portalTitle')} 
+      subtitle={t('referral.portalSubtitle')}
+    >
+      <PageTutorial steps={tutorialSteps} storageKey="varban_referral_tutorial" />
+
+      <div className="max-w-5xl mx-auto space-y-8">
+        
+        <Card id="tour-referral-banner" className="bg-white text-[#0A0A0A] p-8 md:p-12 relative overflow-hidden border-[#E4E4E4] shadow-sm">
+          <div className="relative z-10 max-w-2xl">
+            <div className="flex items-center gap-2 text-[#0055FF] mb-4">
+              <Gift className="w-5 h-5" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Institutional Growth</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-tight mb-4 text-[#0A0A0A]">
+              {t('referral.bannerTitle')}
+            </h1>
+            <p className="text-sm text-[#6B7280] leading-relaxed mb-8">
+              {t('referral.bannerDesc')}
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="w-full sm:w-auto flex-grow bg-[#F7F7F5] border border-[#E4E4E4] p-3 flex items-center justify-between group">
+                <code className="text-xs font-mono text-[#0A0A0A] truncate mr-4">{referralLink}</code>
+                <button 
+                  onClick={copyToClipboard}
+                  className="p-2 hover:bg-[#E4E4E4] transition-colors shrink-0"
+                >
+                  {copied ? <Check className="w-4 h-4 text-[#16835B]" /> : <Copy className="w-4 h-4 text-[#6B7280]" />}
+                </button>
+              </div>
+              <button 
+                onClick={copyToClipboard}
+                className="w-full sm:w-auto btn-institutional-primary bg-[#0055FF] border-[#0055FF] hover:bg-[#0A0A0A] hover:border-[#0A0A0A] text-white"
+              >
+                {copied ? "Link Copied" : "Copy Invitation Link"}
+              </button>
+            </div>
+          </div>
+        </Card>
+
+        <div id="tour-referral-metrics" className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {metrics.map((m, idx) => (
+            <Card key={idx} className="bg-white border-[#E4E4E4] p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">{m.label}</span>
+                <m.icon className={cn("w-3.5 h-3.5", m.color)} />
+              </div>
+              <div className="text-xl font-mono font-bold text-[#0A0A0A]">
+                {referralsLoading ? "..." : m.value}
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider px-1">Network Enrollment Ledger</h3>
+            <Card id="tour-referral-ledger" className="bg-white border-[#E4E4E4] overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-[#F7F7F5] border-b border-[#E4E4E4]">
+                      <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase">Entity Profile</th>
+                      <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase">Enrollment Date</th>
+                      <th className="p-4 text-[9px] font-bold text-[#6B7280] uppercase text-right">Activity Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#E4E4E4] text-xs">
+                    {referralsLoading ? (
+                      <tr><td colSpan={3} className="p-8 text-center text-[#6B7280] font-mono italic">Synchronizing Network Data...</td></tr>
+                    ) : referredUsers?.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="p-12 text-center">
+                          <Users className="w-8 h-8 text-[#E4E4E4] mx-auto mb-3" />
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">No network members discovered.</p>
+                          <p className="text-[9px] text-[#6B7280] mt-1">Start by sharing your unique referral link.</p>
+                        </td>
+                      </tr>
+                    ) : referredUsers?.map((ref: any) => (
+                      <tr key={ref.id} className="hover:bg-[#F7F7F5]">
+                        <td className="p-4">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 rounded-full bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-center font-bold text-[10px] text-[#0055FF]">
+                              {ref.fullName?.charAt(0) || "U"}
+                            </div>
+                            <div>
+                              <span className="font-bold block text-[#0A0A0A]">{ref.fullName || "Unnamed Entity"}</span>
+                              <span className="text-[9px] text-[#6B7280] font-mono">{ref.id.slice(0, 10).toUpperCase()}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-4 text-[#6B7280] font-mono">
+                          {ref.createdAt ? formatDate(new Date(ref.createdAt)) : "---"}
+                        </td>
+                        <td className="p-4 text-right">
+                          <span className={cn(
+                            "px-2 py-0.5 border text-[9px] font-bold uppercase",
+                            ref.verificationStatus === 'Verified' ? "border-[#16835B] text-[#16835B]" : "border-[#C9A227] text-[#C9A227]"
+                          )}>
+                            {ref.verificationStatus || t('common.pending')}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
+
+          <div className="space-y-6">
+            <Card className="bg-white border-[#E4E4E4] p-6 shadow-sm">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A] border-b border-[#E4E4E4] pb-2 mb-4">
+                {t('referral.howItWorks')}
+              </h3>
+              <div className="space-y-6">
+                {[
+                  { step: "01", title: t('referral.step1Title'), text: t('referral.step1Desc') },
+                  { step: "02", title: t('referral.step2Title'), text: t('referral.step2Desc') },
+                  { step: "03", title: t('referral.step3Title'), text: t('referral.step3Desc') }
+                ].map((s, idx) => (
+                  <div key={idx} className="flex gap-4">
+                    <span className="text-xs font-mono font-bold text-[#0055FF]">{s.step}</span>
+                    <div>
+                      <h4 className="text-[10px] font-bold uppercase text-[#0A0A0A] mb-1">{s.title}</h4>
+                      <p className="text-[10px] text-[#6B7280] leading-relaxed">{s.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card className="bg-[#F7F7F5] border-[#E4E4E4] p-6 text-center">
+              <Gift className="w-8 h-8 text-[#0055FF] mx-auto mb-3 opacity-20" />
+              <h4 className="text-xs font-bold uppercase text-[#0A0A0A] mb-2">{t('referral.rewardsActive')}</h4>
+              <p className="text-[10px] text-[#6B7280] leading-relaxed">
+                {t('referral.rewardsPolicy')}
+              </p>
+              <Link href="/help" className="inline-flex items-center text-[9px] font-bold text-[#0055FF] uppercase tracking-widest mt-4 hover:underline">
+                View Policy Details <ArrowRight className="w-3 h-3 ml-1" />
+              </Link>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </AuthedLayout>
+  );
+}
