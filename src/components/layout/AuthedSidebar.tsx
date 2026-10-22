@@ -5,7 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { 
   LayoutDashboard, Monitor, Globe, Briefcase, Target, 
   FileText, Clock, Star, Wallet, User, Bell, ShieldAlert,
-  Share2, Newspaper, HelpCircle, Mail, LogOut, Cpu
+  Share2, Newspaper, HelpCircle, Mail, LogOut, Cpu,
+  BarChart4, Calendar, Layers
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -61,6 +62,14 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
         { label: t('nav.orders'), href: "/orders", icon: FileText },
         { label: t('nav.history'), href: "/history", icon: Clock },
         { label: t('nav.watchlist'), href: "/watchlist", icon: Star },
+      ]
+    },
+    {
+      title: "ANALYSIS",
+      items: [
+        { label: "Market Heatmaps", href: "/markets/heatmaps", icon: Layers },
+        { label: "Market Screener", href: "/markets/screener", icon: BarChart4 },
+        { label: "Economic Calendar", href: "/calendar", icon: Calendar },
       ]
     },
     {

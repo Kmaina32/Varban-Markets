@@ -3,13 +3,14 @@
 /**
  * @fileOverview Institutional Execution Ticket.
  * Supports Spot and Duration trading modes.
- * Design: Text-only, minimalist, icon-free to match institutional standards.
+ * Updated: Integrated Risk-Per-Trade Calculator (Stage 2 Roadmap).
  */
 
 import React, { useState, useMemo } from 'react';
 import { Instrument } from '@/app/lib/instruments';
 import { cn } from '@/app/lib/utils';
 import { useTranslation } from '@/app/lib/i18n-context';
+import { AlertCircle, Calculator } from 'lucide-react';
 
 interface ExecutionTicketProps {
   instrument: Instrument;
@@ -37,7 +38,12 @@ export default function ExecutionTicket({ instrument, livePrice, balance, onExec
   const [useTP, setUseTP] = useState(false);
   const [tpPrice, setTpPrice] = useState<number | string>("");
 
-  const percentages = [25, 50, 75, 100];
+  const riskPercentage = useMemo(() => {
+    if (!balance || !amount) return 0;
+    return ((amount / balance) * 100).toFixed(2);
+  }, [amount, balance]);
+
+  const percentages = [10, 25, 50, 100];
 
   const handlePercentage = (pct: number) => {
     setAmount(Math.floor((balance * pct) / 100));
@@ -125,19 +131,6 @@ export default function ExecutionTicket({ instrument, livePrice, balance, onExec
               </div>
             </div>
 
-            {orderType !== 'MARKET' && (
-              <div className="space-y-2 animate-in slide-in-from-top-1 duration-200">
-                <label className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block">{orderType} Price</label>
-                <input 
-                  type="number" 
-                  value={limitPrice}
-                  onChange={e => setLimitPrice(e.target.value)}
-                  placeholder={livePrice?.toString()}
-                  className="w-full p-3 bg-[#F7F7F5] border border-[#E4E4E4] font-mono text-sm font-bold focus:border-[#0055FF] outline-none"
-                />
-              </div>
-            )}
-
             <div className="space-y-3">
               <div className="flex justify-between items-end">
                 <label className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">Amount (USD)</label>
@@ -149,6 +142,21 @@ export default function ExecutionTicket({ instrument, livePrice, balance, onExec
                 onChange={e => setAmount(Number(e.target.value))}
                 className="w-full p-4 bg-[#F7F7F5] border border-[#E4E4E4] font-mono text-2xl font-bold focus:border-[#0055FF] outline-none"
               />
+              
+              {/* Institutional Risk Calculator Output */}
+              <div className="flex items-center justify-between p-3 bg-[#0055FF]/5 border border-[#0055FF]/20 mt-1">
+                 <div className="flex items-center gap-2">
+                    <Calculator className="w-3 h-3 text-[#0055FF]" />
+                    <span className="text-[9px] font-bold text-[#0055FF] uppercase tracking-widest">Risk Analysis</span>
+                 </div>
+                 <span className={cn(
+                   "text-[10px] font-mono font-bold",
+                   Number(riskPercentage) > 5 ? "text-[#C43D3D]" : "text-[#16835B]"
+                 )}>
+                   {riskPercentage}% of Equity
+                 </span>
+              </div>
+
               <div className="grid grid-cols-4 gap-1.5 pt-1">
                 {percentages.map(p => (
                   <button key={p} onClick={() => handlePercentage(p)} className="py-2 border border-[#E4E4E4] text-[9px] font-bold text-[#6B7280] hover:bg-[#F7F7F5] transition-colors">{p}%</button>
@@ -156,7 +164,6 @@ export default function ExecutionTicket({ instrument, livePrice, balance, onExec
               </div>
             </div>
 
-            {/* Risk Management - Text Only */}
             <div className="space-y-4 pt-4 border-t border-[#F7F7F5]">
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -231,17 +238,6 @@ export default function ExecutionTicket({ instrument, livePrice, balance, onExec
 
       {/* Action Area */}
       <div className="p-6 border-t border-[#E4E4E4] bg-[#F7F7F5] space-y-4 shrink-0">
-        <div className="flex flex-col gap-1.5 text-[9px] font-bold text-[#6B7280] uppercase tracking-[0.1em]">
-           <div className="flex justify-between">
-              <span>Market Execution Price</span>
-              <span className="text-[#0A0A0A] font-mono">${livePrice?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '---'}</span>
-           </div>
-           <div className="flex justify-between">
-              <span>Dynamic Spread Cost</span>
-              <span className="text-[#16835B] font-mono">$0.00</span>
-           </div>
-        </div>
-
         <button 
           onClick={handleExecute}
           className={cn(
@@ -252,9 +248,10 @@ export default function ExecutionTicket({ instrument, livePrice, balance, onExec
           {side === 'BUY' ? 'Execute Buy Order' : 'Execute Sell Order'}
         </button>
 
-        <div className="p-4 bg-white border border-[#E4E4E4] shadow-sm">
-           <p className="text-[8px] text-[#6B7280] uppercase font-bold leading-relaxed text-center tracking-tighter">
-             By executing, you agree to the platform risk disclosure. Stake is the maximum commitment.
+        <div className="p-4 bg-white border border-[#E4E4E4] shadow-sm flex items-start gap-3">
+           <AlertCircle className="w-3.5 h-3.5 text-[#6B7280] shrink-0 mt-0.5" />
+           <p className="text-[8px] text-[#6B7280] uppercase font-bold leading-relaxed tracking-tighter">
+             By executing, you agree to the platform risk disclosure. Committed stake is the absolute maximum loss limit.
            </p>
         </div>
       </div>
