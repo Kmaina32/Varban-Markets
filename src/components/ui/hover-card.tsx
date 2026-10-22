@@ -3,6 +3,7 @@
 /**
  * @fileOverview Institutional Hover Card component.
  * Uses the Base UI PreviewCard primitive as the authoritative hover implementation.
+ * Updated to use the Base UI 'render' pattern to avoid hydration errors.
  */
 
 import * as React from "react"
@@ -11,7 +12,18 @@ import { cn } from "@/app/lib/utils"
 
 const HoverCardRoot = PreviewCard.Root
 
-const HoverCardTrigger = PreviewCard.Trigger
+const HoverCardTrigger = React.forwardRef<
+  HTMLElement,
+  React.ComponentPropsWithoutRef<typeof PreviewCard.Trigger>
+>(({ className, render, ...props }, ref) => (
+  <PreviewCard.Trigger
+    ref={ref}
+    render={render}
+    className={cn("outline-none", className)}
+    {...props}
+  />
+))
+HoverCardTrigger.displayName = "HoverCardTrigger"
 
 const HoverCardPortal = PreviewCard.Portal
 

@@ -3,39 +3,27 @@
 /**
  * @fileOverview Institutional Dropdown Menu component.
  * Uses the namespaced Menu object from the root @base-ui/react package.
+ * Updated to use the Base UI 'render' pattern for cleaner DOM structure.
  */
 
 import * as React from "react"
 import { Menu } from "@base-ui/react"
-import { Check, ChevronRight } from "lucide-react"
-import { Slot } from "@radix-ui/react-slot"
+import { Check } from "lucide-react"
 import { cn } from "@/app/lib/utils"
 
 const DropdownMenu = Menu.Root
 
 const DropdownMenuTrigger = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentPropsWithoutRef<typeof Menu.Trigger> & { render?: React.ReactElement }
->(({ className, render, children, ...props }, ref) => {
-  if (render) {
-    return (
-      <Menu.Trigger {...props} asChild>
-        <Slot ref={ref} className={className}>
-          {render}
-        </Slot>
-      </Menu.Trigger>
-    )
-  }
-  return (
-    <Menu.Trigger
-      ref={ref}
-      className={cn("outline-none", className)}
-      {...props}
-    >
-      {children}
-    </Menu.Trigger>
-  )
-})
+  HTMLElement,
+  React.ComponentPropsWithoutRef<typeof Menu.Trigger>
+>(({ className, render, ...props }, ref) => (
+  <Menu.Trigger
+    ref={ref}
+    render={render}
+    className={cn("outline-none", className)}
+    {...props}
+  />
+))
 DropdownMenuTrigger.displayName = "DropdownMenuTrigger"
 
 const DropdownMenuPortal = Menu.Portal

@@ -116,9 +116,9 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
       (item.href === '/client/wallet' && pathname?.startsWith('/client/wallet')) ||
       (item.href === '/client/account' && pathname?.startsWith('/client/account'));
     
-    const linkContent = (
+    // Core Link implementation
+    const linkElement = (
       <Link
-        key={item.href}
         href={item.href}
         onClick={onLinkClick}
         className={cn(
@@ -135,13 +135,11 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
       </Link>
     );
 
-    if (isMobile) return linkContent;
+    if (isMobile) return <div key={item.href}>{linkElement}</div>;
 
     return (
       <HoverCard key={item.href}>
-        <HoverCardTrigger asChild>
-          {linkContent}
-        </HoverCardTrigger>
+        <HoverCardTrigger render={linkElement} />
         <HoverCardContent>
           <div className="space-y-2">
             <h4 className="text-[11px] font-bold uppercase tracking-widest text-[#0055FF]">{item.label}</h4>
