@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Institutional Switch component.
- * Updated to use root package imports to resolve module export errors.
+ * Updated to use root imports for Base UI 1.0 Beta compatibility.
  */
 
 import * as React from "react"

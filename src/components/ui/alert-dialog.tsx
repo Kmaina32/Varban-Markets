@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Institutional Alert Dialog component.
- * Updated to use root package imports to resolve module export errors.
+ * Updated to use root imports for Base UI 1.0 Beta compatibility.
  */
 
 import * as React from 'react';
@@ -120,9 +120,6 @@ const AlertDialogCancel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <button
     ref={ref}
-    onClick={(e) => {
-      // Manual trigger for primitive close if needed, though standard close pattern is preferred
-    }}
     className={cn(
       buttonVariants({ variant: "outline" }),
       "mt-2 sm:mt-0 py-3",
