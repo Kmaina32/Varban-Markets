@@ -3,15 +3,16 @@
 /**
  * @fileOverview Varban Assistant Chatbot.
  * Redesigned to match high-precision institutional standards.
- * Updated for Multilingual Support.
+ * Integrated with the Bubble component system.
  */
 
 import React, { useState, useRef, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { X, Send, Loader2, ThumbsUp, ChevronDown, MessageSquare } from 'lucide-react';
+import { X, Send, Loader2, MessageSquare, ChevronDown } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import { supportChat } from '@/ai/flows/support-chat-flow';
 import { useTranslation } from '@/app/lib/i18n-context';
+import { Bubble, BubbleContent, BubbleGroup } from '@/components/ui/bubble';
 
 interface Message {
   role: 'user' | 'model';
@@ -33,9 +34,9 @@ export default function ChatSupport() {
     setMessages([
       { role: 'model', content: t('chat.starter') }
     ]);
-  }, [locale]);
+  }, [locale, t]);
 
-  const isTerminal = pathname === '/terminal';
+  const isTerminal = pathname?.includes('/terminal');
 
   useEffect(() => {
     const now = new Date();
@@ -116,35 +117,38 @@ export default function ChatSupport() {
               </div>
             </div>
 
-            {messages.map((msg, i) => (
-              <div key={i} className={cn("flex items-start", msg.role === 'user' ? "justify-end" : "justify-start")}>
-                {msg.role === 'model' && (
-                  <div className="mr-3 mt-1 shrink-0">
-                    <div className="w-8 h-8 rounded-full bg-[#0055FF] flex items-center justify-center border border-[#E4E4E4] overflow-hidden">
-                      <img src="https://picsum.photos/seed/varbanbot/80/80" alt="Bot" className="w-full h-full object-cover" />
+            <BubbleGroup>
+              {messages.map((msg, i) => (
+                <Bubble 
+                  key={i} 
+                  align={msg.role === 'user' ? 'end' : 'start'}
+                  variant={msg.role === 'user' ? 'default' : 'secondary'}
+                >
+                  {msg.role === 'model' && (
+                    <div className="mr-2 mt-1 shrink-0">
+                      <div className="w-6 h-6 rounded-full bg-[#0055FF] flex items-center justify-center border border-[#E4E4E4] overflow-hidden">
+                        <img src="https://picsum.photos/seed/varbanbot/60/60" alt="Bot" className="w-full h-full object-cover" />
+                      </div>
                     </div>
-                  </div>
-                )}
-                <div className="max-w-[80%] flex flex-col">
-                  <div className={cn(
-                    "p-3.5 text-xs leading-relaxed border shadow-sm",
-                    msg.role === 'user' 
-                      ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" 
-                      : "bg-[#F3F4F6] text-[#0A0A0A] border-[#F3F4F6]"
-                  )}>
+                  )}
+                  <BubbleContent className={cn(msg.role === 'user' ? "rounded-none" : "rounded-none")}>
                     {msg.content}
-                  </div>
-                </div>
-              </div>
-            ))}
+                  </BubbleContent>
+                </Bubble>
+              ))}
+            </BubbleGroup>
             
             {isLoading && (
-              <div className="flex justify-start items-center space-x-2">
-                <div className="w-8 h-8 rounded-full bg-[#F3F4F6] border border-[#E4E4E4] flex items-center justify-center shrink-0">
-                  <Loader2 className="w-3.5 h-3.5 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin" />
+              <Bubble align="start" variant="muted">
+                <div className="mr-2 mt-1 shrink-0">
+                  <div className="w-6 h-6 rounded-full bg-[#F3F4F6] border border-[#E4E4E4] flex items-center justify-center shrink-0">
+                    <Loader2 className="w-3 h-3 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin" />
+                  </div>
                 </div>
-                <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">{t('chat.typing')}</span>
-              </div>
+                <BubbleContent className="italic font-bold tracking-widest uppercase text-[9px] border-none shadow-none bg-transparent">
+                  {t('chat.typing')}
+                </BubbleContent>
+              </Bubble>
             )}
             <div ref={messagesEndRef} />
           </div>
