@@ -247,13 +247,6 @@ export default function ExecutionTicket({ instrument, livePrice, balance, onExec
         >
           {side === 'BUY' ? 'Execute Buy Order' : 'Execute Sell Order'}
         </button>
-
-        <div className="p-4 bg-white border border-[#E4E4E4] shadow-sm flex items-start gap-3">
-           <AlertCircle className="w-3.5 h-3.5 text-[#6B7280] shrink-0 mt-0.5" />
-           <p className="text-[8px] text-[#6B7280] uppercase font-bold leading-relaxed tracking-tighter">
-             By executing, you agree to the platform risk disclosure. Committed stake is the absolute maximum loss limit.
-           </p>
-        </div>
       </div>
     </div>
   );
