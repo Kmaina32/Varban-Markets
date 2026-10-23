@@ -3,7 +3,7 @@
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
  * 4-Panel Grid Architecture with Resizable Panels and full TradingView feature parity.
- * Updated: Replaced native selects with professional DropdownMenu components.
+ * Updated: Increased header z-index to fix dropdown visibility.
  */
 
 import { useState, useEffect, useCallback, Suspense, use } from "react";
@@ -179,7 +179,7 @@ function TerminalContent() {
     <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
       <TerminalTutorial />
 
-      <header className="h-14 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[100] px-2 lg:px-4">
+      <header className="h-14 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[500] px-2 lg:px-4">
         <div className="flex items-center space-x-2 lg:space-x-4">
           <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 lg:hidden text-[#0A0A0A]"><Menu className="w-5 h-5" /></button>
           <Link href="/client/dashboard" className="hidden sm:block shrink-0">

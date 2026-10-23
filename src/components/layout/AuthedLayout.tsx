@@ -130,7 +130,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
 
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
-      <header className="relative h-16 border-b border-[#E4E4E4] bg-white flex items-center justify-between px-3 md:px-6 shrink-0 z-[150] shadow-sm">
+      <header className="relative h-16 border-b border-[#E4E4E4] bg-white flex items-center justify-between px-3 md:px-6 shrink-0 z-[500] shadow-sm">
         <div className="flex items-center space-x-2 md:space-x-4">
           <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-1.5 lg:hidden text-[#0A0A0A]"><Menu className="w-5 h-5" /></button>
           <Link href="/client/dashboard" className="flex items-center"><Image src="/assets/logo2.png" alt="Varban" width={95} height={22} className="w-auto object-contain" priority /></Link>

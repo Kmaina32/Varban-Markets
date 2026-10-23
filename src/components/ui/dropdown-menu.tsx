@@ -3,6 +3,7 @@
 /**
  * @fileOverview Institutional Dropdown Menu component.
  * Refined to use namespaced subpath imports for stable resolution in Base UI 1.0 Beta.
+ * Updated: Increased z-index to ensure visibility above sticky terminal components.
  */
 
 import * as React from "react"
@@ -44,7 +45,7 @@ const DropdownMenuContent = React.forwardRef<
       <Menu.Popup
         ref={ref}
         className={cn(
-          "z-[600] min-w-[8rem] overflow-hidden border border-[#E4E4E4] bg-white p-1 text-[#0A0A0A] shadow-xl outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 rounded-none",
+          "z-[1000] min-w-[8rem] overflow-hidden border border-[#E4E4E4] bg-white p-1 text-[#0A0A0A] shadow-xl outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 rounded-none",
           className
         )}
         {...props}
