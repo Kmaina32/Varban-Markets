@@ -77,6 +77,14 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
     return () => clearInterval(interval);
   }, [activeTimezone]);
 
+  // Hide reCAPTCHA on authed pages
+  useEffect(() => {
+    document.body.classList.add('hide-recaptcha');
+    return () => {
+      document.body.classList.remove('hide-recaptcha');
+    };
+  }, []);
+
   const handleTimezoneChange = async (val: string) => {
     if (user && db) {
       await updateDoc(doc(db, "users", user.uid), { "preferences.timezone": val });
