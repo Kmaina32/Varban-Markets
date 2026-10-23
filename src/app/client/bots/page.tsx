@@ -3,6 +3,7 @@
 /**
  * @fileOverview Bot Marketplace Registry.
  * Integrated with AI-assisted configuration modification and versioned ledgers.
+ * Updated: Expanded default configurations with Martingale and SL/TP parameters.
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -116,11 +117,118 @@ const STATIC_METADATA: Record<string, any> = {
 };
 
 const DEFAULT_CONFIGS: BotConfig[] = [
-  { id: "bm-liquidity-sweep", name: "BM Liquidity Sweep", enabled: false, mode: 'paper', symbols: ['XAUUSD'], timeframes: ['5m', '15m'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { asianBars: 24, displacementAtr: 0.8, structureLookback: 4, stopBuffer: 0.15 }, version: 1, updatedAt: '' },
-  { id: "trend-continuation", name: "EMA Momentum", enabled: false, mode: 'paper', symbols: ['EURUSD', 'BTCUSD'], timeframes: ['15m', '1h'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { pullbackAtr: 0.35, targetAtr: 2.0, fastEma: 50, slowEma: 200 }, version: 1, updatedAt: '' },
-  { id: "breakout-retest", name: "Structure Master", enabled: false, mode: 'paper', symbols: ['EURUSD', 'BTCUSD'], timeframes: ['5m', '15m'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { rangeLookback: 20, retestAtr: 0.2, retestExpiry: 5 }, version: 1, updatedAt: '' },
-  { id: "mean-reversion", name: "Mean Reversion", enabled: false, mode: 'paper', symbols: ['EURUSD', 'BTCUSD'], timeframes: ['15m', '1h'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { period: 20, bandWidth: 2.0, rsiThreshold: 35 }, version: 1, updatedAt: '' },
-  { id: "momentum-scanner", name: "Momentum Scanner", enabled: false, mode: 'paper', symbols: ['XAUUSD', 'EURUSD'], timeframes: ['15m', '1h'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { momentumLookback: 20, momentumThreshold: 0.004, stopAtr: 1.5 }, version: 1, updatedAt: '' }
+  { 
+    id: "bm-liquidity-sweep", 
+    name: "BM Liquidity Sweep", 
+    enabled: false, 
+    mode: 'paper', 
+    symbols: ['XAUUSD'], 
+    timeframes: ['5m', '15m'], 
+    riskPercent: 0.25, 
+    minRiskReward: 1.5, 
+    maxTradesPerDay: 3, 
+    params: { 
+      asianBars: 24, 
+      displacementAtr: 0.8, 
+      structureLookback: 4, 
+      stopBuffer: 0.15,
+      martingaleMultiplier: 1.0,
+      martingaleSteps: 0,
+      slAtrMultiplier: 1.5,
+      tpAtrMultiplier: 3.0
+    }, 
+    version: 1, 
+    updatedAt: '' 
+  },
+  { 
+    id: "trend-continuation", 
+    name: "EMA Momentum", 
+    enabled: false, 
+    mode: 'paper', 
+    symbols: ['EURUSD', 'BTCUSD'], 
+    timeframes: ['15m', '1h'], 
+    riskPercent: 0.25, 
+    minRiskReward: 1.5, 
+    maxTradesPerDay: 3, 
+    params: { 
+      pullbackAtr: 0.35, 
+      targetAtr: 2.0, 
+      fastEma: 50, 
+      slowEma: 200,
+      martingaleMultiplier: 1.0,
+      martingaleSteps: 0,
+      slAtrMultiplier: 1.5,
+      tpAtrMultiplier: 3.0
+    }, 
+    version: 1, 
+    updatedAt: '' 
+  },
+  { 
+    id: "breakout-retest", 
+    name: "Structure Master", 
+    enabled: false, 
+    mode: 'paper', 
+    symbols: ['EURUSD', 'BTCUSD'], 
+    timeframes: ['5m', '15m'], 
+    riskPercent: 0.25, 
+    minRiskReward: 1.5, 
+    maxTradesPerDay: 3, 
+    params: { 
+      rangeLookback: 20, 
+      retestAtr: 0.2, 
+      retestExpiry: 5,
+      martingaleMultiplier: 1.0,
+      martingaleSteps: 0,
+      slAtrMultiplier: 1.5,
+      tpAtrMultiplier: 3.0
+    }, 
+    version: 1, 
+    updatedAt: '' 
+  },
+  { 
+    id: "mean-reversion", 
+    name: "Mean Reversion", 
+    enabled: false, 
+    mode: 'paper', 
+    symbols: ['EURUSD', 'BTCUSD'], 
+    timeframes: ['15m', '1h'], 
+    riskPercent: 0.25, 
+    minRiskReward: 1.5, 
+    maxTradesPerDay: 3, 
+    params: { 
+      period: 20, 
+      bandWidth: 2.0, 
+      rsiThreshold: 35,
+      martingaleMultiplier: 1.0,
+      martingaleSteps: 0,
+      slAtrMultiplier: 1.5,
+      tpAtrMultiplier: 3.0
+    }, 
+    version: 1, 
+    updatedAt: '' 
+  },
+  { 
+    id: "momentum-scanner", 
+    name: "Momentum Scanner", 
+    enabled: false, 
+    mode: 'paper', 
+    symbols: ['XAUUSD', 'EURUSD'], 
+    timeframes: ['15m', '1h'], 
+    riskPercent: 0.25, 
+    minRiskReward: 1.5, 
+    maxTradesPerDay: 3, 
+    params: { 
+      momentumLookback: 20, 
+      momentumThreshold: 0.004, 
+      stopAtr: 1.5,
+      martingaleMultiplier: 1.0,
+      martingaleSteps: 0,
+      slAtrMultiplier: 1.5,
+      tpAtrMultiplier: 3.0
+    }, 
+    version: 1, 
+    updatedAt: '' 
+  }
 ];
 
 export default function BotMarketplacePage() {

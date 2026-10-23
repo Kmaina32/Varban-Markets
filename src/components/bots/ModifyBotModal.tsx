@@ -3,7 +3,7 @@
 /**
  * @fileOverview Institutional Bot Modification Workspace.
  * Exclusive manual parameter tuning with deterministic risk validation.
- * Optimized for the Varban Markets Design System.
+ * Optimized for Martingale, SL, TP and high-precision trading settings.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -14,7 +14,10 @@ import {
   Check,
   Cpu,
   Settings2,
-  Globe
+  Globe,
+  TrendingUp,
+  Target,
+  ArrowRightLeft
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/app/lib/utils';
@@ -95,6 +98,20 @@ export default function ModifyBotModal({ bot, isOpen, onClose, onUpdate }: Modif
     }
   };
 
+  const updateParam = (key: string, value: any) => {
+    setEditedConfig({
+      ...editedConfig,
+      params: { ...editedConfig.params, [key]: value }
+    });
+  };
+
+  // Common Parameter Filters
+  const martingaleKeys = ['martingaleMultiplier', 'martingaleSteps'];
+  const exitKeys = ['slAtrMultiplier', 'tpAtrMultiplier', 'stopAtr', 'targetAtr', 'stopBuffer'];
+  const strategyKeys = Object.keys(editedConfig.params || {}).filter(
+    k => !martingaleKeys.includes(k) && !exitKeys.includes(k)
+  );
+
   return (
     <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-[#0A0A0A]/60 backdrop-blur-md animate-in fade-in duration-300">
       <StatusDialog 
@@ -121,8 +138,8 @@ export default function ModifyBotModal({ bot, isOpen, onClose, onUpdate }: Modif
         </div>
 
         <div className="flex-grow overflow-y-auto p-8 no-scrollbar bg-white">
-          <div className="space-y-10 animate-in fade-in duration-300">
-            {/* Markets & Timeframes */}
+          <div className="space-y-12 animate-in fade-in duration-300">
+            {/* 1. EXECUTION DOMAIN */}
             <section className="space-y-6">
               <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0055FF] border-b border-[#F7F7F5] pb-2 flex items-center gap-2">
                  <Globe className="w-3 h-3" /> Execution Domain
@@ -147,37 +164,100 @@ export default function ModifyBotModal({ bot, isOpen, onClose, onUpdate }: Modif
               </div>
             </section>
 
-            {/* Strategy Specific Params */}
+            {/* 2. STRATEGY TUNING */}
             <section className="space-y-6">
               <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0A0A0A] border-b border-[#F7F7F5] pb-2 flex items-center gap-2">
                  <Settings2 className="w-3 h-3" /> Strategy Tuning
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {editedConfig.params && Object.entries(editedConfig.params).map(([key, val]) => (
-                  <div key={key} className="space-y-1.5">
-                    <label className="text-[9px] font-bold uppercase text-[#6B7280]">{key.replace(/([A-Z])/g, ' $1')}</label>
-                    <input 
-                      type={typeof val === 'number' ? 'number' : 'text'}
-                      value={val as string | number}
-                      step={0.1}
-                      onChange={(e) => setEditedConfig({
-                        ...editedConfig,
-                        params: { ...editedConfig.params, [key]: typeof val === 'number' ? parseFloat(e.target.value) : e.target.value }
-                      })}
-                      className="w-full p-3 bg-[#F7F7F5] border border-[#E4E4E4] text-xs font-mono font-bold focus:border-[#0055FF] outline-none"
-                    />
-                  </div>
-                ))}
+                {strategyKeys.map((key) => {
+                  const val = editedConfig.params[key];
+                  return (
+                    <div key={key} className="space-y-1.5">
+                      <label className="text-[9px] font-bold uppercase text-[#6B7280]">{key.replace(/([A-Z])/g, ' $1')}</label>
+                      <input 
+                        type={typeof val === 'number' ? 'number' : 'text'}
+                        value={val}
+                        step={0.1}
+                        onChange={(e) => updateParam(key, typeof val === 'number' ? parseFloat(e.target.value) : e.target.value)}
+                        className="w-full p-3 bg-[#F7F7F5] border border-[#E4E4E4] text-xs font-mono font-bold focus:border-[#0055FF] outline-none"
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </section>
 
-            {/* Risk Policy */}
+            {/* 3. MONEY MANAGEMENT (Martingale) */}
             <section className="space-y-6">
-              <div className="flex items-center justify-between border-b border-[#F7F7F5] pb-2">
-                 <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C43D3D] flex items-center gap-2">
-                    <ShieldCheck className="w-3 h-3" /> Risk Safeguards
-                 </h3>
+              <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#16835B] border-b border-[#F7F7F5] pb-2 flex items-center gap-2">
+                 <TrendingUp className="w-3 h-3" /> Money Management
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-bold uppercase text-[#6B7280]">Martingale Multiplier</label>
+                  <input 
+                    type="number" 
+                    value={editedConfig.params.martingaleMultiplier || 1.0}
+                    step={0.1}
+                    min={1.0}
+                    onChange={(e) => updateParam('martingaleMultiplier', parseFloat(e.target.value))}
+                    className="w-full p-3 bg-[#F7F7F5] border border-[#E4E4E4] text-xs font-mono font-bold focus:border-[#16835B] outline-none"
+                  />
+                  <p className="text-[8px] text-[#6B7280] uppercase font-bold">Multiplier for stake recovery after a loss (1.0 = Disabled)</p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-bold uppercase text-[#6B7280]">Max Martingale Steps</label>
+                  <input 
+                    type="number" 
+                    value={editedConfig.params.martingaleSteps || 0}
+                    min={0}
+                    onChange={(e) => updateParam('martingaleSteps', parseInt(e.target.value))}
+                    className="w-full p-3 bg-[#F7F7F5] border border-[#E4E4E4] text-xs font-mono font-bold focus:border-[#16835B] outline-none"
+                  />
+                  <p className="text-[8px] text-[#6B7280] uppercase font-bold">Maximum consecutive steps allowed (0 = Infinite)</p>
+                </div>
               </div>
+            </section>
+
+            {/* 4. EXIT STRATEGY (SL/TP) */}
+            <section className="space-y-6">
+              <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C9A227] border-b border-[#F7F7F5] pb-2 flex items-center gap-2">
+                 <Target className="w-3 h-3" /> Exit Strategy
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-bold uppercase text-[#6B7280]">Stop Loss Distance (ATR)</label>
+                  <input 
+                    type="number" 
+                    value={editedConfig.params.slAtrMultiplier || editedConfig.params.stopAtr || 1.5}
+                    step={0.1}
+                    min={0.1}
+                    onChange={(e) => updateParam('slAtrMultiplier', parseFloat(e.target.value))}
+                    className="w-full p-3 bg-[#F7F7F5] border border-[#E4E4E4] text-xs font-mono font-bold focus:border-[#C9A227] outline-none"
+                  />
+                  <p className="text-[8px] text-[#6B7280] uppercase font-bold">Distance from entry based on market volatility</p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-bold uppercase text-[#6B7280]">Take Profit Distance (ATR)</label>
+                  <input 
+                    type="number" 
+                    value={editedConfig.params.tpAtrMultiplier || editedConfig.params.targetAtr || 3.0}
+                    step={0.1}
+                    min={0.5}
+                    onChange={(e) => updateParam('tpAtrMultiplier', parseFloat(e.target.value))}
+                    className="w-full p-3 bg-[#F7F7F5] border border-[#E4E4E4] text-xs font-mono font-bold focus:border-[#C9A227] outline-none"
+                  />
+                  <p className="text-[8px] text-[#6B7280] uppercase font-bold">Standard target ratio for profit realization</p>
+                </div>
+              </div>
+            </section>
+
+            {/* 5. RISK SAFEGUARDS */}
+            <section className="space-y-6">
+              <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C43D3D] border-b border-[#F7F7F5] pb-2 flex items-center gap-2">
+                 <ShieldCheck className="w-3 h-3" /> Risk Safeguards
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-1.5">
                   <label className="text-[9px] font-bold uppercase text-[#6B7280]">Risk per trade (% of equity)</label>
