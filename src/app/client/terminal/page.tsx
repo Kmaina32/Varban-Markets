@@ -1,10 +1,10 @@
+
 'use client';
 
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
  * 4-Panel Grid Architecture with Resizable Panels and full TradingView feature parity.
- * Mobile Overhaul: Implements a drawer-based command system for high-fidelity mobile UX.
- * Layout Fix: Optimized viewport sizing and flex overflow handling for mobile stability.
+ * Mobile Overhaul: Left-side command drawer for trade settings, chart-dominant viewport.
  */
 
 import { useState, useEffect, useCallback, Suspense, use } from "react";
@@ -26,7 +26,8 @@ import {
   Check,
   Activity,
   Briefcase,
-  ArrowUpRight
+  ArrowUpRight,
+  TrendingDown
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
@@ -90,7 +91,7 @@ function TerminalContent() {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // Mobile UI States - Strictly False by Default
+  // Mobile UI States
   const [isExecutionOpen, setIsExecutionOpen] = useState(false);
   const [isLedgerOpen, setIsLedgerOpen] = useState(false);
   
@@ -178,7 +179,6 @@ function TerminalContent() {
     };
 
     setPositions(prev => [newPos, ...prev]);
-    // Close execution drawer on mobile after success
     setIsExecutionOpen(false);
   };
 
@@ -313,7 +313,7 @@ function TerminalContent() {
         <AuthedSidebar className="hidden lg:flex" />
 
         <main className="flex min-h-0 min-w-0 w-full flex-1 overflow-hidden lg:ml-16">
-          {/* DESKTOP WORKSPACE - Using xl breakpoint for desktop focus */}
+          {/* DESKTOP WORKSPACE */}
           <ResizablePanelGroup direction="horizontal" className="hidden xl:flex flex-grow overflow-hidden">
             <ResizablePanel defaultSize={75} minSize={40}>
               <ResizablePanelGroup direction="vertical">
@@ -407,50 +407,59 @@ function TerminalContent() {
             </ResizablePanel>
           </ResizablePanelGroup>
 
-          {/* MOBILE WORKSPACE - Hidden on Large/Desktop screens */}
+          {/* MOBILE WORKSPACE */}
           <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-hidden xl:hidden">
             <div id="tour-chart-mobile" className="relative min-h-0 min-w-0 w-full flex-1 overflow-hidden bg-[#F7F7F5]">
               <TradingViewChart symbol={activeInst.symbol} />
             </div>
             
             {/* MOBILE ACTION BAR */}
-            <div className="relative z-[110] flex h-[76px] w-full shrink-0 items-center gap-3 border-t border-[#E4E4E4] bg-white px-3 shadow-[0_-2px_15px_rgba(0,0,0,0.08)] sm:px-4">
-              <div className="flex-grow flex flex-col">
-                <span className="text-[9px] font-mono font-bold text-[#6B7280] uppercase tracking-tighter">{activeInst.symbol}</span>
-                <span className={cn("text-base font-mono font-bold", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
+            <div className="relative z-[110] flex h-[76px] w-full shrink-0 items-center gap-2 border-t border-[#E4E4E4] bg-white px-2 shadow-[0_-2px_15px_rgba(0,0,0,0.08)] sm:px-4">
+              <div className="flex-grow flex flex-col pl-1">
+                <span className="text-[8px] font-mono font-bold text-[#6B7280] uppercase tracking-tighter">{activeInst.symbol}</span>
+                <span className={cn("text-sm font-mono font-bold", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
                   {marketData[activeInst.symbol]?.price?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "---"}
                 </span>
               </div>
               
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 <button 
                   onClick={() => setIsLedgerOpen(true)}
-                  className="w-12 h-12 border border-[#E4E4E4] flex items-center justify-center text-[#6B7280] hover:bg-[#F7F7F5] transition-colors"
+                  className="w-10 h-10 border border-[#E4E4E4] flex items-center justify-center text-[#6B7280] hover:bg-[#F7F7F5] transition-colors"
                   title="Portfolio"
                 >
-                  <Briefcase className="w-5 h-5" />
+                  <Briefcase className="w-4 h-4" />
                 </button>
-                <button 
-                  onClick={() => setIsExecutionOpen(true)}
-                  className="px-8 py-3 bg-[#0A0A0A] text-white text-[11px] font-bold uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-transform flex items-center gap-2"
-                >
-                  Execute <ChevronDown className="w-4 h-4 opacity-50" />
-                </button>
+                <div className="flex gap-1">
+                  <button 
+                    onClick={() => setIsExecutionOpen(true)}
+                    className="px-4 py-2.5 bg-[#16835B] text-white text-[9px] font-bold uppercase tracking-widest shadow-md active:scale-95 transition-transform flex items-center gap-1.5"
+                  >
+                    <TrendingUp className="w-3 h-3" />
+                    BUY
+                  </button>
+                  <button 
+                    onClick={() => setIsExecutionOpen(true)}
+                    className="px-4 py-2.5 bg-[#C43D3D] text-white text-[9px] font-bold uppercase tracking-widest shadow-md active:scale-95 transition-transform flex items-center gap-1.5"
+                  >
+                    <TrendingDown className="w-3 h-3" />
+                    SELL
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* MOBILE EXECUTION DRAWER */}
+            {/* MOBILE EXECUTION DRAWER (Left Side) */}
             {isExecutionOpen && (
-              <div className="fixed inset-0 z-[700] flex flex-col justify-end">
+              <div className="fixed inset-0 z-[700] flex">
                 <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsExecutionOpen(false)}></div>
-                <div className="relative bg-white animate-in slide-in-from-bottom duration-300 rounded-t-2xl overflow-hidden max-h-[85vh] flex flex-col shadow-2xl border-t border-[#E4E4E4]">
-                  <div className="h-1.5 w-12 bg-[#E4E4E4] rounded-full mx-auto mt-3 mb-1 shrink-0"></div>
-                  <div className="p-4 border-b border-[#F7F7F5] flex justify-between items-center bg-white shrink-0">
+                <div className="relative w-[85%] max-w-[340px] bg-white animate-in slide-in-from-left duration-300 overflow-hidden flex flex-col shadow-2xl border-r border-[#E4E4E4]">
+                  <div className="p-4 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5] shrink-0">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-[#16835B] animate-pulse"></div>
-                      <span className="text-[11px] font-bold uppercase tracking-widest text-[#0A0A0A]">New Order: {activeInst.symbol}</span>
+                      <Settings className="w-4 h-4 text-[#0055FF]" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Trade Settings</span>
                     </div>
-                    <button onClick={() => setIsExecutionOpen(false)} className="p-2 text-[#6B7280] hover:text-[#0A0A0A]"><X className="w-5 h-5" /></button>
+                    <button onClick={() => setIsExecutionOpen(false)} className="p-1 text-[#6B7280] hover:text-[#0A0A0A]"><X className="w-5 h-5" /></button>
                   </div>
                   <div className="flex-grow overflow-y-auto no-scrollbar pb-10">
                     <ExecutionTicket 
@@ -465,7 +474,7 @@ function TerminalContent() {
               </div>
             )}
 
-            {/* MOBILE LEDGER DRAWER */}
+            {/* MOBILE LEDGER DRAWER (Bottom) */}
             {isLedgerOpen && (
               <div className="fixed inset-0 z-[700] flex flex-col justify-end">
                 <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsLedgerOpen(false)}></div>
