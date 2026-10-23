@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -9,21 +10,21 @@ import {
   ArrowDownCircle, 
   ArrowUpCircle, 
   Activity, 
-  Bitcoin, 
-  Building2, 
-  CreditCard,
+  Shield,
   ArrowDownLeft,
   ArrowUpRight,
   Download,
-  Check,
-  Shield
+  Link as LinkIcon,
+  ShieldCheck
 } from "lucide-react";
 import { useUser, useDoc, useCollection, useFirestore } from "@/firebase";
+import { useWeb3 } from "@/app/lib/web3-context";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 import PageTutorial, { TutorialStep } from "@/components/shared/PageTutorial";
 import CryptoDepositForm from "@/components/CryptoDepositForm";
 import CryptoWithdrawForm from "@/components/CryptoWithdrawForm";
+import Web3TransferForm from "@/components/wallet/Web3TransferForm";
 import dynamic from "next/dynamic";
 import { TransactionReceipt } from "@/components/wallet/TransactionReceipt";
 import html2canvas from "html2canvas";
@@ -41,7 +42,6 @@ const PaystackDepositForm = dynamic(() => import("@/components/PaystackDepositFo
 });
 
 type FundTab = 'overview' | 'deposit' | 'withdraw' | 'activity';
-const PAYSTACK_CURRENCIES = ["USD", "NGN", "GHS", "ZAR", "KES"];
 
 export default function WalletClient() {
   const { user } = useUser();
@@ -49,6 +49,7 @@ export default function WalletClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t, formatNumber, formatDate } = useTranslation();
+  const { isConnected, address, login, logout } = useWeb3();
 
   const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   
@@ -149,10 +150,40 @@ export default function WalletClient() {
                   </div>
                 </Card>
               </div>
+
+              {/* Web3 Link Section */}
+              <Card className="bg-white border-[#E4E4E4] p-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-center">
+                    <LinkIcon className={cn("w-6 h-6", isConnected ? "text-[#16835B]" : "text-[#6B7280]")} />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Web3 Connectivity</h4>
+                    <p className="text-[10px] text-[#6B7280] font-mono mt-1">
+                      {isConnected ? `LINKED: ${address?.slice(0, 6)}...${address?.slice(-4)}` : 'DECENTRALIZED NODE OFFLINE'}
+                    </p>
+                  </div>
+                </div>
+                {isConnected ? (
+                  <button onClick={logout} className="px-6 py-2 border border-[#C43D3D] text-[#C43D3D] text-[9px] font-bold uppercase tracking-widest hover:bg-[#C43D3D] hover:text-white transition-all">
+                    Disconnect Wallet
+                  </button>
+                ) : (
+                  <button onClick={login} className="btn-institutional-primary px-8">
+                    Link MetaMask
+                  </button>
+                )}
+              </Card>
             </div>
           )}
           {activeTab === 'deposit' && (
-            <div className="space-y-6">
+            <div className="space-y-12">
+              <Web3TransferForm />
+              <div className="flex items-center gap-4">
+                <div className="h-px flex-grow bg-[#E4E4E4]"></div>
+                <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">OR MANUAL HANDSHAKE</span>
+                <div className="h-px flex-grow bg-[#E4E4E4]"></div>
+              </div>
               <CryptoDepositForm />
             </div>
           )}

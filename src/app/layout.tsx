@@ -1,9 +1,11 @@
+
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { FirebaseProvider } from "@/firebase";
 import { I18nProvider } from "@/app/lib/i18n-context";
+import { Web3AuthProvider } from "@/app/lib/web3-context";
 import CookieConsent from "@/components/layout/CookieConsent";
 import ChatSupport from "@/components/ChatSupport";
 import Script from 'next/script';
@@ -26,39 +28,6 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://varbanmarkets.com'),
   alternates: {
     canonical: '/',
-  },
-  openGraph: {
-    title: "Varban Markets | Institutional Electronic Trading Protocol",
-    description: "Access global derivatives and synthetic markets with millisecond-accurate execution and institutional-grade security.",
-    url: 'https://varbanmarkets.com',
-    siteName: 'Varban Markets',
-    images: [
-      {
-        url: '/assets/hero.png',
-        width: 1200,
-        height: 630,
-        alt: 'Varban Markets Trading Terminal',
-      },
-    ],
-    locale: 'en_US',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Varban Markets | Institutional Trading',
-    description: 'High-speed derivative execution and synthetic market infrastructure.',
-    images: ['/assets/hero.png'],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
   },
 };
 
@@ -85,13 +54,15 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col bg-[#F7F7F5] overflow-x-hidden">
         <FirebaseProvider>
           <I18nProvider>
-            <Navbar />
-            <main className="flex-grow flex flex-col">
-              {children}
-            </main>
-            <Footer />
-            <CookieConsent />
-            <ChatSupport />
+            <Web3AuthProvider>
+              <Navbar />
+              <main className="flex-grow flex flex-col">
+                {children}
+              </main>
+              <Footer />
+              <CookieConsent />
+              <ChatSupport />
+            </Web3AuthProvider>
           </I18nProvider>
         </FirebaseProvider>
       </body>
