@@ -8,7 +8,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { getTVSymbol } from '@/app/lib/tradingview-symbols';
-import { Loader2, Info, ShieldCheck } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { cn } from "@/app/lib/utils";
 
 interface TradingViewChartProps {
@@ -96,24 +96,6 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({ symbol }) =>
         </div>
       )}
       
-      {/* Chart Attribution Bar */}
-      <div className="h-8 border-b border-[#F7F7F5] bg-white flex items-center justify-between px-4 shrink-0 z-20">
-        <div className="flex items-center gap-4">
-           <div className="flex items-center gap-1.5">
-             <div className="w-1.5 h-1.5 rounded-full bg-[#16835B] animate-pulse"></div>
-             <span className="text-[10px] font-mono font-bold uppercase text-[#0A0A0A]">{symbol}</span>
-           </div>
-           <div className="hidden sm:flex items-center gap-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#0055FF]" />
-              <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">Institutional Feed Active</span>
-           </div>
-        </div>
-        <div className="flex items-center gap-2">
-           <Info className="w-3 h-3 text-[#D1D5DB]" />
-           <span className="text-[8px] font-bold text-[#D1D5DB] uppercase">TradingView Pro Node</span>
-        </div>
-      </div>
-
       <div ref={containerRef} className="flex-1 w-full" />
     </div>
   );
