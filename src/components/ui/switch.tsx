@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Institutional Switch component.
- * Refined to use namespaced subpath imports for stable resolution in Base UI 1.0 Beta.
+ * Refined to ensure the "pill" track is prominent and professional.
  */
 
 import * as React from "react"
@@ -16,14 +16,14 @@ const Switch = React.forwardRef<
   <SwitchPrimitive.Root
     ref={ref}
     className={cn(
-      "group inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-[#0055FF] data-[state=unchecked]:bg-[#E4E4E4]",
+      "group relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0055FF] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-[#0055FF] data-[state=unchecked]:bg-[#D1D5DB] shadow-inner",
       className
     )}
     {...props}
   >
     <SwitchPrimitive.Thumb
       className={cn(
-        "pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0"
+        "pointer-events-none block h-5 w-5 rounded-full bg-white shadow-md ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0"
       )}
     />
   </SwitchPrimitive.Root>
