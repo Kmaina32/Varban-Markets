@@ -4,6 +4,7 @@
  * @fileOverview Institutional Charting Node.
  * Re-engineered to use the TradingView Lightweight Charts library (Open Source).
  * Pipes real-time normalized data directly into the renderer.
+ * Hardened state machine to prevent endless loading on data node timeout.
  */
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -62,11 +63,17 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     chartRef.current = chart;
     seriesRef.current = series;
 
-    // Load initial data
+    // Load initial data - Hardened against endless loading
     const initData = async () => {
-      const history = await fetchHistoricalData(symbol);
-      if (history.length > 0) {
-        series.setData(history as CandlestickData[]);
+      try {
+        const history = await fetchHistoricalData(symbol);
+        if (history && history.length > 0) {
+          series.setData(history as CandlestickData[]);
+        }
+      } catch (e) {
+        console.error("[Chart] Initial data load failed:", e);
+      } finally {
+        // ALWAYS terminate loading state to prevent UI hang
         setIsLoading(false);
       }
     };
@@ -75,24 +82,28 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
     // Real-time Polling / Simulated Stream for $0 cost
     const interval = setInterval(async () => {
-      const latest = await fetchLivePrice(symbol);
-      if (latest.status !== 'Unavailable') {
-        setProviderInfo({ name: latest.provider, status: latest.status });
-        series.update({
-          time: Math.floor(latest.timestamp / 1000) as any,
-          open: latest.open,
-          high: latest.high,
-          low: latest.low,
-          close: latest.price
-        });
-      } else {
-        setProviderInfo({ name: "None", status: "Offline" });
+      try {
+        const latest = await fetchLivePrice(symbol);
+        if (latest && latest.status !== 'Unavailable' && latest.price > 0) {
+          setProviderInfo({ name: latest.provider, status: latest.status });
+          series.update({
+            time: Math.floor(latest.timestamp / 1000) as any,
+            open: latest.open || latest.price,
+            high: latest.high || latest.price,
+            low: latest.low || latest.price,
+            close: latest.price
+          });
+        } else {
+          setProviderInfo({ name: "None", status: "Offline" });
+        }
+      } catch (err) {
+        setProviderInfo({ name: "Connection Error", status: "Offline" });
       }
     }, 5000);
 
     const handleResize = () => {
-      if (containerRef.current) {
-        chart.applyOptions({ width: containerRef.current.clientWidth });
+      if (containerRef.current && chartRef.current) {
+        chartRef.current.applyOptions({ width: containerRef.current.clientWidth });
       }
     };
 
@@ -101,7 +112,9 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     return () => {
       window.removeEventListener('resize', handleResize);
       clearInterval(interval);
-      chart.remove();
+      if (chartRef.current) {
+        chartRef.current.remove();
+      }
     };
   }, [symbol, theme]);
 
