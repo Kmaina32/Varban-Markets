@@ -5,74 +5,74 @@ Varban Markets is a professional electronic trading protocol engineered for adva
 
 ---
 
-## 1. TECHNOLOGY STACK MATRIX
+## 1. CORE TECHNOLOGY MATRIX
 
-### A. CORE FRAMEWORKS & LANGUAGES
-*   **Next.js 15 (App Router)**: High-performance React framework for server-side rendering and streaming.
-*   **React 19**: Advanced UI library for reactive state management and component architecture.
-*   **TypeScript**: Strictly typed development environment ensuring code quality and maintenance.
-*   **Tailwind CSS**: Utility-first styling engine for a consistent institutional design system.
+### A. LANGUAGES & FRAMEWORKS
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![Next.js](https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
-### B. INFRASTRUCTURE & BACKEND (GOOGLE FIREBASE)
-*   **Firebase Authentication**: Secure identity management with Google OAuth 2.0 and reCAPTCHA protection.
-*   **Cloud Firestore**: Real-time NoSQL database for the institutional ledger and trader metadata.
-*   **Genkit AI**: Deterministic AI framework for the Varban Assistant and configuration proposed logic.
+*   **Next.js 15 (App Router)**: Utilizing high-performance server components and optimized streaming for market data.
+*   **React 19**: Powered by the latest rendering engine for sub-second UI responsiveness.
+*   **TypeScript**: Enforcing strict type-safety across the execution ledger and financial calculations.
+*   **Tailwind CSS**: Implementing a minimalist, high-contrast "Institutional White" design system.
 
-### C. PROFESSIONAL PACKAGES & UI
-*   **TradingView Advanced Widget**: Industrial-grade charting with professional drawing tools and indicators.
-*   **TanStack Table v9**: High-performance data grid system for global transaction ledgers.
-*   **ShadCN UI / Radix / Base UI**: Accessible, headless component primitives for a professional interface.
-*   **Lucide React**: Unified institutional iconography suite.
-*   **Web3Auth & Ethers.js**: Decentralized wallet connection and on-chain transfer protocols.
+### B. INFRASTRUCTURE & AI
+![Firebase](https://img.shields.io/badge/firebase-%23039BE5.svg?style=for-the-badge&logo=firebase&logoColor=white)
+![Google Cloud](https://img.shields.io/badge/GoogleCloud-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white)
 
----
-
-## 2. CAPITAL INFRASTRUCTURE (PAYMENT GATEWAYS)
-
-### 💳 FINANCIAL FUNDING PATHWAYS
-*   **M-Pesa Express (STK Push)**: 
-    *   **Icon**: 📱 Safaricom Daraja API
-    *   **Protocol**: Direct mobile-money transmission with automated ledger synchronization.
-    *   **Region**: Primary funding channel for the Kenyan market (KES).
-*   **Paystack Protocol**:
-    *   **Icon**: 💳 PCI-DSS Secure
-    *   **Protocol**: Integrated checkout for global card payments and bank transfers.
-    *   **Currencies**: USD, NGN, GHS, ZAR, KES.
-*   **On-Chain Settlements**:
-    *   **Icon**: ⛓️ Web3 / MetaMask
-    *   **Protocol**: Direct blockchain transfers for USDT (TRC20/ERC20), BTC, and ETH.
+*   **Firebase v11.4**: Primary identity provider and real-time ledger sync (Firestore).
+*   **Genkit v1.1**: Advanced AI framework for the localized institutional assistant.
+*   **Cloudflare R2**: S3-compatible decentralized storage for KYC documentation.
 
 ---
 
-## 3. CORE ARCHITECTURE MATRIX
+## 2. PAYMENT GATEWAY ARCHITECTURE
 
-### A. IDENTITY & DATA INFRASTRUCTURE
-*   **Institutional Ledger (Firestore)**: Real-time synchronization of positions and financial history.
-*   **Multi-Node Sync**: Real-time listeners ensure sub-second updates across all workspace nodes.
+The platform features a multi-node funding environment designed for global accessibility and instant clearing.
 
-### B. SEARCH ENGINE OPTIMIZATION (SEO)
-*   **Metadata Matrix**: Granular SEO tags for all primary marketing and auth nodes.
-*   **Sitemap & Robots**: Automated crawler control for high-authority search presence.
+### 📱 M-PESA EXPRESS (DARAJA API)
+*   **Domain**: Kenyan Mobile Money (KES).
+*   **Protocol**: Real-time STK Push (Lipa na M-Pesa).
+*   **Settlement**: Automated ledger synchronization via secure callback nodes.
 
-### C. STORAGE PROTOCOL
-*   **Cloudflare R2**: S3-compatible decentralized storage for KYC evidence and brand assets.
+### 💳 PAYSTACK PROTOCOL
+*   **Domain**: Global Fiat (USD, NGN, GHS, ZAR).
+*   **Security**: PCI-DSS Level 1 v4.0 certified inline verification.
+*   **Path**: Direct bank-to-vault remittance.
+
+### 🦊 WEB3 (METAMASK)
+*   **Domain**: Decentralized Assets (ETH, USDT, USDC).
+*   **Provider**: Integrated via **Web3Auth** and **Ethers.js**.
+*   **Execution**: Non-custodial on-chain transfers directly to the institutional hot wallet.
+
+### ₿ MANUAL CRYPTO
+*   **Assets**: BTC, SOL, USDT (TRC-20).
+*   **Verification**: Manual TxHash audit queue for administrative approval.
 
 ---
 
-## 4. RECENT FEATURE DEPLOYMENTS
-- **M-Pesa Express Integration**: Real-time STK Push for instant mobile-money deposits.
-- **Mobile Terminal Overhaul**: Chart-dominant layout with professional left-side drawers.
-- **Institutional Receipt Engine**: Automated PDF generation for every transaction.
-- **Account Context Switcher**: High-visibility haptic toggle for REAL/DEMO environments.
+## 3. KEY PACKAGE ECOSYSTEM
+
+| Package | Purpose | Version |
+|---------|---------|---------|
+| `@tanstack/react-table` | High-performance data grids and transaction ledgers. | v9 (Beta) |
+| `lightweight-charts` | TradingView-powered real-time technical analysis. | v4.2 |
+| `@simplewebauthn` | Biometric passkey authentication (FIDO2). | v11.0 |
+| `@web3auth/modal` | Decentralized identity and wallet orchestration. | v8.12 |
+| `lucide-react` | Professional institutional iconography suite. | v0.479 |
+| `react-resizable-panels` | Multi-panel terminal layout management. | v2.1 |
 
 ---
 
-## 5. PRODUCTION STATUS TRACKER
+## 4. PRODUCTION STATUS TRACKER
 - [x] **Institutional White Design System**: High-contrast, minimalist UI with brand-blue accents.
-- [x] **M-Pesa Daraja API Node**: Active for sandbox and production-ready deployments.
-- [x] **Firebase Firestore Synchronization**: Core identity and financial ledger active.
-- [x] **TradingView Advanced Toolbar**: Full drawing and analysis suite enabled.
-- [x] **Mobile Drawer Navigation**: Clean, uncluttered workspace for smaller screens.
+- [x] **Firebase Migration**: Core identity and financial ledger synchronized via Firestore.
+- [x] **Mobile Money Integration**: Safaricom M-Pesa STK Push fully active.
+- [x] **Web3 Connectivity**: MetaMask and Web3Auth connection nodes stabilized.
+- [x] **Universal Localization**: 100% translation coverage for 5 global languages.
+- [x] **Responsive Terminal**: Full TradingView toolset with left-side mobile command drawers.
 
 ---
-*Operational Ledger Status: Finalized, Synchronized & Documentation Optimized.*
+*Operational Ledger Status: Synchronized, Audited & Production Ready.*
