@@ -5,6 +5,7 @@ import LoadingOverlay from "@/components/shared/LoadingOverlay";
 /**
  * @fileOverview Capital Hub Server Page.
  * Implements a Suspense boundary with deterministic logo reveal.
+ * Wraps WalletClient to handle client-side parameters and chunking gracefully.
  */
 
 export default function WalletPage() {
