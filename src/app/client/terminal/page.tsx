@@ -2,8 +2,8 @@
 
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
- * 4-Panel Grid Architecture with resizable portfolio manager.
- * Optimized for Mobile: Left-side side command drawer for trade execution.
+ * Overhauled: Full-page mobile drawers for execution and portfolio.
+ * Advanced: Enabled full TradingView toolsets.
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
@@ -18,7 +18,9 @@ import {
   TrendingDown,
   Activity,
   ShieldCheck,
-  Sliders
+  Sliders,
+  History,
+  LayoutDashboard
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
@@ -63,12 +65,12 @@ export default function TerminalWorkspace() {
   const db = useFirestore();
   const { formatNumber, locale, setLocale } = useTranslation();
 
-  // Profile data from Firestore
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isTradeDrawerOpen, setIsTradeDrawerOpen] = useState(false);
+  const [isPortfolioDrawerOpen, setIsPortfolioDrawerOpen] = useState(false);
   const [preselectedSide, setPreselectedSide] = useState<'BUY' | 'SELL'>('BUY');
   
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
@@ -187,9 +189,10 @@ export default function TerminalWorkspace() {
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
-  const openDrawer = (side: 'BUY' | 'SELL') => {
+  const openTradeDrawer = (side: 'BUY' | 'SELL') => {
     setPreselectedSide(side);
     setIsTradeDrawerOpen(true);
+    setIsPortfolioDrawerOpen(false);
   };
 
   return (
@@ -199,7 +202,7 @@ export default function TerminalWorkspace() {
       <header className="h-14 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[100] px-2 lg:px-4">
         <div className="flex items-center space-x-2 lg:space-x-4">
           <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 lg:hidden text-[#0A0A0A]"><Menu className="w-5 h-5" /></button>
-          <Link href="/dashboard" className="hidden lg:block shrink-0"><Image src="/assets/logo2.png" alt="Varban" width={80} height={20} className="w-auto object-contain" priority /></Link>
+          <Link href="/client/dashboard" className="hidden lg:block shrink-0"><Image src="/assets/logo2.png" alt="Varban" width={80} height={20} className="w-auto object-contain" priority /></Link>
           <div className="h-6 w-px bg-[#E4E4E4] hidden lg:block"></div>
           
           <MarketSelector 
@@ -298,7 +301,7 @@ export default function TerminalWorkspace() {
               <TradingViewChart symbol={activeInst.symbol} />
             </div>
 
-            {/* Mobile Chart Area */}
+            {/* Mobile Chart Area (Always Full Height unless Drawers are Open) */}
             <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-hidden lg:hidden">
               <div id="tour-chart-mobile" className="relative min-h-0 min-w-0 w-full flex-1 overflow-hidden bg-[#F7F7F5]">
                 <TradingViewChart symbol={activeInst.symbol} />
@@ -320,15 +323,6 @@ export default function TerminalWorkspace() {
                 history={positions.filter(p => p.status === 'Closed')}
               />
             </div>
-            
-            {/* Mobile Ledger (Compact) */}
-            <div className="lg:hidden h-24 shrink-0 bg-white border-t border-[#E4E4E4] overflow-hidden">
-              <PortfolioManager 
-                positions={positions.filter(p => p.status === 'Open')}
-                orders={[]}
-                history={positions.filter(p => p.status === 'Closed')}
-              />
-            </div>
           </div>
 
           {/* Desktop Execution Panel */}
@@ -344,52 +338,49 @@ export default function TerminalWorkspace() {
         </main>
       </div>
 
-      {/* MOBILE COMMAND BAR: BUY/SELL TRIGGERS */}
-      <div className="relative z-[110] flex h-[76px] w-full shrink-0 items-center gap-3 border-t border-[#E4E4E4] bg-white px-3 shadow-[0_-2px_15px_rgba(0,0,0,0.08)] sm:px-4 lg:hidden">
-        <div className="flex-grow flex flex-col justify-center min-w-0">
-           <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-mono font-bold text-[#6B7280] truncate">{activeInst.symbol}</span>
-              <span className={cn(
-                "text-[8px] font-bold uppercase",
-                (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]"
-              )}>
-                {(marketData[activeInst.symbol]?.percent || 0) >= 0 ? "+" : ""}{marketData[activeInst.symbol]?.percent || "0.00"}%
-              </span>
-           </div>
-           <span className={cn("text-sm font-mono font-bold tracking-tight", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
-              {marketData[activeInst.symbol]?.price?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "---"}
-           </span>
-        </div>
-        
-        <div className="flex gap-2 shrink-0">
-          <button 
-            onClick={() => openDrawer('SELL')}
-            className="px-6 py-3 bg-[#C43D3D] text-white text-[10px] font-bold uppercase tracking-widest shadow-md flex flex-col items-center justify-center leading-none"
-          >
-            <span className="mb-0.5">SELL</span>
-            <span className="text-[8px] opacity-60 font-mono">PUT</span>
-          </button>
-          <button 
-            onClick={() => openDrawer('BUY')}
-            className="px-6 py-3 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-widest shadow-md flex flex-col items-center justify-center leading-none"
-          >
-            <span className="mb-0.5">BUY</span>
-            <span className="text-[8px] opacity-60 font-mono">CALL</span>
-          </button>
-        </div>
+      {/* MOBILE COMMAND BAR: HAPTIC TRIGGERS */}
+      <div className="relative z-[110] flex h-[76px] w-full shrink-0 items-center gap-2 border-t border-[#E4E4E4] bg-white px-2 shadow-[0_-2px_15px_rgba(0,0,0,0.08)] sm:px-4 lg:hidden">
+        <button 
+          onClick={() => openTradeDrawer('SELL')}
+          className="flex-1 h-[54px] bg-[#C43D3D] text-white text-[10px] font-bold uppercase tracking-widest shadow-md flex flex-col items-center justify-center leading-none"
+        >
+          <span className="mb-0.5">SELL</span>
+          <span className="text-[8px] opacity-60 font-mono">PUT</span>
+        </button>
+
+        <button 
+          onClick={() => setIsPortfolioDrawerOpen(true)}
+          className="w-16 h-[54px] border border-[#E4E4E4] bg-[#F7F7F5] flex flex-col items-center justify-center gap-1 text-[#0A0A0A] group active:bg-[#0A0A0A] active:text-white transition-colors"
+        >
+          <History className="w-4 h-4" />
+          <span className="text-[7px] font-bold uppercase tracking-tighter">Ledger</span>
+        </button>
+
+        <button 
+          onClick={() => openTradeDrawer('BUY')}
+          className="flex-1 h-[54px] bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-widest shadow-md flex flex-col items-center justify-center leading-none"
+        >
+          <span className="mb-0.5">BUY</span>
+          <span className="text-[8px] opacity-60 font-mono">CALL</span>
+        </button>
       </div>
 
-      {/* MOBILE LEFT COMMAND DRAWER (SETTINGS) */}
+      {/* MOBILE EXECUTION DRAWER (FULL PAGE) */}
       {isTradeDrawerOpen && (
         <div className="fixed inset-0 z-[600] lg:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsTradeDrawerOpen(false)}></div>
-          <div className="absolute top-0 left-0 bottom-0 w-[85%] max-w-[340px] bg-white animate-in slide-in-from-left duration-300 flex flex-col shadow-2xl overflow-hidden">
-            <div className="p-4 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5] shrink-0">
-               <div className="flex items-center gap-2">
-                  <Sliders className="w-4 h-4 text-[#0055FF]" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Order Config: {activeInst.symbol}</span>
+          <div className="absolute top-0 left-0 bottom-0 w-full bg-white animate-in slide-in-from-left duration-300 flex flex-col shadow-2xl overflow-hidden">
+            <div className="p-4 h-16 border-b border-[#F7F7F5] flex justify-between items-center bg-white shrink-0">
+               <div className="flex items-center gap-3">
+                  <button onClick={() => setIsTradeDrawerOpen(false)} className="p-2 -ml-2 text-[#6B7280] hover:text-[#0A0A0A]">
+                    <X className="w-6 h-6" />
+                  </button>
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-[#0A0A0A]">Contract Config: {activeInst.symbol}</span>
                </div>
-               <button onClick={() => setIsTradeDrawerOpen(false)} className="p-1 text-[#6B7280] hover:text-[#0A0A0A]"><X className="w-5 h-5" /></button>
+               <div className="flex flex-col text-right">
+                  <span className="text-[8px] font-bold text-[#6B7280] uppercase">Balance</span>
+                  <span className="text-xs font-mono font-bold text-[#16835B]">${formatNumber(activeBalance, { minimumFractionDigits: 2 })}</span>
+               </div>
             </div>
             <div className="flex-grow overflow-y-auto no-scrollbar">
               <ExecutionTicket 
@@ -401,10 +392,44 @@ export default function TerminalWorkspace() {
               />
             </div>
             <div className="p-4 bg-[#F7F7F5] border-t border-[#E4E4E4] shrink-0">
-               <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span className="text-[9px] font-bold uppercase text-[#6B7280]">Risk Engine Verified</span>
+               <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-[#16835B]" />
+                    <span className="text-[9px] font-bold uppercase text-[#6B7280]">Risk Engine Node Active</span>
+                  </div>
+                  <span className="text-[8px] font-mono text-[#D1D5DB] uppercase">TRX: {Math.random().toString(36).substring(7).toUpperCase()}</span>
                </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MOBILE PORTFOLIO DRAWER (FULL PAGE) */}
+      {isPortfolioDrawerOpen && (
+        <div className="fixed inset-0 z-[600] lg:hidden">
+          <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsPortfolioDrawerOpen(false)}></div>
+          <div className="absolute top-0 left-0 right-0 bottom-0 bg-white animate-in slide-in-from-bottom duration-400 flex flex-col shadow-2xl overflow-hidden">
+            <div className="p-4 h-16 border-b border-[#F7F7F5] flex justify-between items-center bg-white shrink-0">
+               <div className="flex items-center gap-3">
+                  <button onClick={() => setIsPortfolioDrawerOpen(false)} className="p-2 -ml-2 text-[#6B7280] hover:text-[#0A0A0A]">
+                    <ChevronDown className="w-6 h-6" />
+                  </button>
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-[#0A0A0A]">Institutional Ledger</span>
+               </div>
+               <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[#16835B]" />
+                  <span className="text-[9px] font-bold uppercase text-[#6B7280]">Audit Verified</span>
+               </div>
+            </div>
+            <div className="flex-grow overflow-hidden">
+              <PortfolioManager 
+                positions={positions.filter(p => p.status === 'Open')}
+                orders={[]}
+                history={positions.filter(p => p.status === 'Closed')}
+              />
+            </div>
+            <div className="p-4 border-t border-[#E4E4E4] bg-[#F7F7F5] text-center">
+               <button onClick={() => setIsPortfolioDrawerOpen(false)} className="w-full btn-institutional-primary py-4">Close Ledger</button>
             </div>
           </div>
         </div>

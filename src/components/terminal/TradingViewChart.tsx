@@ -2,8 +2,7 @@
 
 /**
  * @fileOverview Institutional Advanced Charting Node.
- * Restored to the full TradingView Advanced Charting Widget to support
- * drawings, indicators, and professional technical analysis tools.
+ * Fully enabled TradingView Advanced Widget with professional toolsets.
  */
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -41,9 +40,12 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({ symbol }) =>
           "locale": "en",
           "toolbar_bg": "#f1f3f6",
           "enable_publishing": false,
-          "hide_side_toolbar": false, // Enabled for drawings/fibs [Roadmap Stage 1]
-          "allow_symbol_change": false,
-          "save_image": false,
+          "hide_side_toolbar": false, // ENABLED for professional tools
+          "allow_symbol_change": true, // ENABLED for workspace flexibility
+          "save_image": true,
+          "details": true,
+          "hotlist": true,
+          "calendar": true,
           "container_id": widgetContainer.id,
           "library_path": "https://s3.tradingview.com/tv.js",
           "hide_top_toolbar": false,
@@ -56,10 +58,18 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({ symbol }) =>
           "show_popup_button": true,
           "popup_width": "1000",
           "popup_height": "650",
+          "overrides": {
+            "mainSeriesProperties.candleStyle.upColor": "#16835B",
+            "mainSeriesProperties.candleStyle.downColor": "#C43D3D",
+            "mainSeriesProperties.candleStyle.borderUpColor": "#16835B",
+            "mainSeriesProperties.candleStyle.borderDownColor": "#C43D3D",
+            "mainSeriesProperties.candleStyle.wickUpColor": "#16835B",
+            "mainSeriesProperties.candleStyle.wickDownColor": "#C43D3D",
+          }
         });
         
         // Brief delay to allow widget to capture height
-        setTimeout(() => setIsLoading(false), 800);
+        setTimeout(() => setIsLoading(false), 1200);
       }
     };
 
@@ -75,7 +85,6 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({ symbol }) =>
     }
 
     return () => {
-      // Keep script but clear container
       if (containerRef.current) containerRef.current.innerHTML = '';
     };
   }, [symbol]);
