@@ -3,7 +3,7 @@
 /**
  * @fileOverview Institutional Dropdown Menu component.
  * Refined to use namespaced subpath imports for stable resolution in Base UI 1.0 Beta.
- * Updated: Increased z-index to ensure visibility above sticky terminal components.
+ * Updated: Increased z-index on Positioner to ensure visibility above sticky components.
  */
 
 import * as React from "react"
@@ -41,7 +41,7 @@ const DropdownMenuContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof Menu.Popup> & { sideOffset?: number; align?: "start" | "center" | "end"; side?: "top" | "bottom" | "left" | "right" }
 >(({ className, sideOffset = 4, align, side, ...props }, ref) => (
   <Menu.Portal>
-    <Menu.Positioner sideOffset={sideOffset} align={align} side={side}>
+    <Menu.Positioner sideOffset={sideOffset} align={align} side={side} className="z-[1000]">
       <Menu.Popup
         ref={ref}
         className={cn(
