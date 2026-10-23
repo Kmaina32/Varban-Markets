@@ -120,7 +120,7 @@ export default function ProfileDropdown({
       <div className="p-5 bg-white border-b border-[#E4E4E4] space-y-4">
         <div className="flex items-center justify-between">
           <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#6B7280] flex items-center gap-2">
-            <Activity className="w-3 h-3" /> Account Context
+            <Activity className="w-3" /> Account Context
           </span>
         </div>
 

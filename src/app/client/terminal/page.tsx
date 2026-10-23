@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -7,7 +6,7 @@
  * Mobile Overhaul: Left-side command drawer for trade settings, chart-dominant viewport.
  */
 
-import { useState, useEffect, useCallback, Suspense, use } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -20,13 +19,11 @@ import {
   TrendingUp,
   Newspaper,
   Layout,
-  Globe,
   Settings,
   ShieldCheck,
   Check,
   Activity,
   Briefcase,
-  ArrowUpRight,
   TrendingDown
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
