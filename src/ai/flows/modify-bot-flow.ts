@@ -3,8 +3,7 @@
 /**
  * @fileOverview Bot Configuration AI Assistant Flow.
  * Proposes safe, typed configuration patches for trading strategies.
- * 
- * - modifyBot - Primary function to generate a configuration proposal.
+ * Strictly adheres to the Varban Markets System Prompt and JSON Output Schema.
  */
 
 import { ai } from '@/ai/genkit';
@@ -26,20 +25,20 @@ const ModifyBotInputSchema = z.object({
 });
 
 const ProposalPatchSchema = z.object({
-  field: z.string(),
-  value: z.any(),
-  reason: z.string()
+  field: z.string().describe('The name of the parameter field being modified.'),
+  value: z.any().describe('The new value proposed for the field.'),
+  reason: z.string().max(300).describe('Plain language explanation of why this change was made.')
 });
 
 const ModifyBotOutputSchema = z.object({
   bot_id: BotIdSchema,
-  summary: z.string().describe('Concise summary of the proposed changes.'),
+  summary: z.string().max(500).describe('Concise summary of the proposed changes.'),
   patch: z.array(ProposalPatchSchema).describe('List of field updates.'),
-  warnings: z.array(z.string()).describe('Safety or performance warnings.'),
-  assumptions: z.array(z.string()).describe('Logical assumptions made by the AI.'),
-  tests_to_run: z.array(z.string()).describe('Recommended validation tests.'),
+  warnings: z.array(z.string().max(300)).max(10).describe('Safety or performance warnings (e.g. liquidity risks).'),
+  assumptions: z.array(z.string().max(300)).max(10).describe('Logical assumptions made by the AI during translation.'),
+  tests_to_run: z.array(z.string().max(300)).max(20).describe('Recommended validation tests or backtest scenarios.'),
   requires_human_review: z.boolean(),
-  clarification_question: z.string().nullable()
+  clarification_question: z.string().max(500).nullable().describe('Question to ask the user if the request was ambiguous.')
 });
 
 export type ModifyBotOutput = z.infer<typeof ModifyBotOutputSchema>;
@@ -57,22 +56,24 @@ CORE RULES:
 4. Do not generate or execute arbitrary JavaScript, TypeScript, SQL, shell commands, database queries, broker requests or Pine Script.
 5. Return only a structured configuration patch using the bot's allowlisted fields. Never modify fields not present in the bot's schema.
 6. Preserve all unspecified settings. Do not silently reinterpret ambiguous requests. Ask a clarification question if a requested change is ambiguous.
-7. Global risk limits (0.5% max risk), server-side authorization, and emergency kill switches are IMMUTABLE to this assistant.
+7. Global risk limits (0.5% max risk hard cap), server-side authorization, and emergency kill switches are IMMUTABLE to this assistant.
 8. If a request changes strategy logic rather than a documented parameter, mark it as a strategy-code change and set requires_human_review to true.
 9. When changing stop/target settings, explain how the change affects exit behaviour. Reject invalid geometry.
+10. Ensure reward/risk ratio remains at least 1.5.
 
 BOT CONTEXT:
-- ID: {{botId}}
+- Bot ID: {{botId}}
 - Current Configuration: {{json currentConfig}}
-- Locale: {{locale}}
+- Active Locale: {{locale}}
 
 USER REQUEST:
 "{{userRequest}}"
 
-Analyze the request and return a structured JSON proposal. Respond in language: {{locale}}.`,
+Analyze the request and return a structured JSON proposal conforming strictly to the defined output schema.`,
 });
 
 export async function modifyBot(input: z.infer<typeof ModifyBotInputSchema>): Promise<ModifyBotOutput> {
   const { output } = await modifyBotPrompt(input);
-  return output!;
+  if (!output) throw new Error("AI engine failed to generate a configuration proposal.");
+  return output;
 }

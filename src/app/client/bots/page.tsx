@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Bot Marketplace Registry.
- * Integrated with AI-assisted configuration modification.
+ * Integrated with AI-assisted configuration modification and versioned ledgers.
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -21,14 +21,15 @@ import {
   Check,
   BarChart3,
   Settings2,
-  Loader2
+  Loader2,
+  History
 } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import { useTranslation } from '@/app/lib/i18n-context';
 import type { BotId, BotConfig } from '@/app/lib/bots-engine/types';
 import ModifyBotModal from '@/components/bots/ModifyBotModal';
 import { useUser, useFirestore, useCollection } from '@/firebase';
-import { collection, query } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 
 interface BotDisplay extends BotConfig {
   category: string;
@@ -114,11 +115,11 @@ const STATIC_METADATA: Record<string, any> = {
 };
 
 const DEFAULT_CONFIGS: BotConfig[] = [
-  { id: "bm-liquidity-sweep", name: "BM Liquidity Sweep", enabled: false, mode: 'paper', symbols: ['XAUUSD'], timeframes: ['5m', '15m'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { asianBars: 24, displacementAtr: 0.8 }, version: 1, updatedAt: '' },
-  { id: "trend-continuation", name: "EMA Momentum", enabled: false, mode: 'paper', symbols: ['EURUSD', 'BTCUSD'], timeframes: ['15m', '1h'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { pullbackAtr: 0.35, targetAtr: 2.0 }, version: 1, updatedAt: '' },
-  { id: "breakout-retest", name: "Structure Master", enabled: false, mode: 'paper', symbols: ['EURUSD', 'BTCUSD'], timeframes: ['5m', '15m'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { rangeLookback: 20, retestAtr: 0.2 }, version: 1, updatedAt: '' },
-  { id: "mean-reversion", name: "Mean Reversion", enabled: false, mode: 'paper', symbols: ['EURUSD', 'BTCUSD'], timeframes: ['15m', '1h'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { period: 20 }, version: 1, updatedAt: '' },
-  { id: "momentum-scanner", name: "Momentum Scanner", enabled: false, mode: 'paper', symbols: ['XAUUSD', 'EURUSD'], timeframes: ['15m', '1h'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { momentumLookback: 20, momentumThreshold: 0.004 }, version: 1, updatedAt: '' }
+  { id: "bm-liquidity-sweep", name: "BM Liquidity Sweep", enabled: false, mode: 'paper', symbols: ['XAUUSD'], timeframes: ['5m', '15m'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { asianBars: 24, displacementAtr: 0.8, structureLookback: 4, stopBuffer: 0.15 }, version: 1, updatedAt: '' },
+  { id: "trend-continuation", name: "EMA Momentum", enabled: false, mode: 'paper', symbols: ['EURUSD', 'BTCUSD'], timeframes: ['15m', '1h'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { pullbackAtr: 0.35, targetAtr: 2.0, fastEma: 50, slowEma: 200 }, version: 1, updatedAt: '' },
+  { id: "breakout-retest", name: "Structure Master", enabled: false, mode: 'paper', symbols: ['EURUSD', 'BTCUSD'], timeframes: ['5m', '15m'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { rangeLookback: 20, retestAtr: 0.2, retestExpiry: 5 }, version: 1, updatedAt: '' },
+  { id: "mean-reversion", name: "Mean Reversion", enabled: false, mode: 'paper', symbols: ['EURUSD', 'BTCUSD'], timeframes: ['15m', '1h'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { period: 20, bandWidth: 2.0, rsiThreshold: 35 }, version: 1, updatedAt: '' },
+  { id: "momentum-scanner", name: "Momentum Scanner", enabled: false, mode: 'paper', symbols: ['XAUUSD', 'EURUSD'], timeframes: ['15m', '1h'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { momentumLookback: 20, momentumThreshold: 0.004, stopAtr: 1.5 }, version: 1, updatedAt: '' }
 ];
 
 export default function BotMarketplacePage() {
@@ -178,13 +179,13 @@ export default function BotMarketplacePage() {
           <div className="relative z-10 max-w-2xl space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0055FF]/5 border border-[#0055FF]/20">
               <Zap className="w-3.5 h-3.5 text-[#0055FF]" />
-              <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.2em]">Five Strategy Engine</span>
+              <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.2em]">Institutional Strategy Engine</span>
             </div>
             <h1 className="text-3xl md:text-5xl font-bold uppercase tracking-tight leading-tight text-[#0A0A0A]">
-              {t('bots.bannerTitle')}
+              Deterministic Trading Hub.
             </h1>
             <p className="text-sm text-[#6B7280] leading-relaxed font-medium uppercase tracking-tight">
-              {t('bots.bannerDesc')}
+              Manage your verified algorithmic bots via natural language or manual control. Every strategy is powered by deterministic risk protocols.
             </p>
           </div>
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#0055FF]/5 rounded-full -mr-32 -mt-32"></div>
@@ -227,7 +228,7 @@ export default function BotMarketplacePage() {
             {configsLoading ? (
               <div className="col-span-2 py-32 flex flex-col items-center justify-center space-y-4">
                 <Loader2 className="w-8 h-8 text-[#0055FF] animate-spin" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Syncing Engine Configurations...</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Synchronizing Engine Ledger...</span>
               </div>
             ) : filteredBots.map((bot) => (
               <Card key={bot.id} className="bg-white border-[#E4E4E4] shadow-sm hover:border-[#0055FF] transition-all group overflow-hidden flex flex-col">
@@ -235,7 +236,7 @@ export default function BotMarketplacePage() {
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest">Version {bot.version}.0</span>
+                        <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest">Version {bot.version || 1}.0</span>
                         <span className="px-1.5 py-0.5 bg-[#F7F7F5] border border-[#E4E4E4] text-[8px] font-bold uppercase text-[#6B7280]">{bot.enabled ? 'ACTIVE' : 'IDLE'} Node</span>
                       </div>
                       <h3 className="text-lg font-bold uppercase tracking-tight text-[#0A0A0A] group-hover:text-[#0055FF] transition-colors">{bot.name}</h3>
@@ -256,15 +257,15 @@ export default function BotMarketplacePage() {
 
                   <div className="grid grid-cols-3 gap-4 pt-4 border-t border-[#F7F7F5]">
                     <div>
-                      <span className="text-[8px] font-bold text-[#6B7280] uppercase block mb-1">{t('bots.successRate')}</span>
+                      <span className="text-[8px] font-bold text-[#6B7280] uppercase block mb-1">Win Rate</span>
                       <span className="text-xs font-mono font-bold text-[#16835B]">{bot.winRate}</span>
                     </div>
                     <div>
-                      <span className="text-[8px] font-bold text-[#6B7280] uppercase block mb-1">{t('bots.typicalRisk')}</span>
-                      <span className="text-xs font-mono font-bold text-[#C43D3D]">{bot.drawdown}</span>
+                      <span className="text-[8px] font-bold text-[#6B7280] uppercase block mb-1">Risk Limit</span>
+                      <span className="text-xs font-mono font-bold text-[#C43D3D]">{bot.riskPercent}%</span>
                     </div>
                     <div>
-                      <span className="text-[8px] font-bold text-[#6B7280] uppercase block mb-1">{t('bots.growthHistory')}</span>
+                      <span className="text-[8px] font-bold text-[#6B7280] uppercase block mb-1">Total P/L</span>
                       <span className="text-xs font-mono font-bold text-[#0A0A0A]">{bot.pnl}</span>
                     </div>
                   </div>
@@ -273,8 +274,12 @@ export default function BotMarketplacePage() {
                 <div className="px-6 py-4 bg-[#F7F7F5] border-t border-[#E4E4E4] flex justify-between items-center">
                   <div className="flex items-center gap-4">
                      <div className="flex flex-col">
-                        <span className="text-[8px] font-bold text-[#6B7280] uppercase">Risk Cap</span>
-                        <span className="text-[10px] font-mono font-bold">{bot.riskPercent}%</span>
+                        <span className="text-[8px] font-bold text-[#6B7280] uppercase">Risk Level</span>
+                        <span className={cn(
+                          "text-[10px] font-bold uppercase",
+                          bot.risk === 'Low' || bot.risk === 'Very Low' ? "text-[#16835B]" : 
+                          bot.risk === 'Medium' ? "text-[#C9A227]" : "text-[#C43D3D]"
+                        )}>{bot.risk}</span>
                      </div>
                      <div className="flex flex-col">
                         <span className="text-[8px] font-bold text-[#6B7280] uppercase">Status</span>
@@ -301,14 +306,14 @@ export default function BotMarketplacePage() {
            <div className="flex items-start gap-4">
               <ShieldCheck className="w-6 h-6 text-[#0055FF] shrink-0 mt-0.5" />
               <div>
-                 <h4 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">{t('bots.policyTitle')}</h4>
+                 <h4 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Rule-Based Execution Gating</h4>
                  <p className="text-[10px] text-[#6B7280] leading-relaxed font-bold uppercase mt-1">
-                    {t('bots.policyDesc')}
+                    Every modification is subject to risk-engine validation. Past performance does not guarantee future results.
                  </p>
               </div>
            </div>
            <Link href="/help" className="text-[9px] font-bold text-[#0055FF] uppercase tracking-widest underline decoration-2 underline-offset-4 whitespace-nowrap">
-              {t('bots.reviewPolicy')}
+              Review Trading Policy
            </Link>
         </div>
       </div>
@@ -362,7 +367,7 @@ export default function BotMarketplacePage() {
           bot={editingBot} 
           isOpen={!!editingBot} 
           onClose={() => setEditingBot(null)}
-          onUpdate={() => {}} // useCollection handles the live update
+          onUpdate={() => {}} 
         />
       )}
     </AuthedLayout>
