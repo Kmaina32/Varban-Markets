@@ -6,31 +6,35 @@
  */
 
 import * as React from "react"
-import { PreviewCard as HoverCardPrimitive } from "@base-ui/react/preview-card"
+import { PreviewCard } from "@base-ui/react"
 import { cn } from "@/app/lib/utils"
 
-const HoverCard = HoverCardPrimitive.Root
+const HoverCard = PreviewCard.Root
 
-const HoverCardTrigger = HoverCardPrimitive.Trigger
+const HoverCardTrigger = PreviewCard.Trigger
 
-const HoverCardPortal = HoverCardPrimitive.Portal
+const HoverCardPortal = PreviewCard.Portal
 
 const HoverCardContent = React.forwardRef<
-  React.ElementRef<typeof HoverCardPrimitive.Popup>,
-  React.ComponentPropsWithoutRef<typeof HoverCardPrimitive.Popup> & { sideOffset?: number }
->(({ className, sideOffset = 12, ...props }, ref) => (
-  <HoverCardPrimitive.Portal>
-    <HoverCardPrimitive.Positioner side="right" align="center" sideOffset={sideOffset}>
-      <HoverCardPrimitive.Popup
+  React.ElementRef<typeof PreviewCard.Popup>,
+  React.ComponentPropsWithoutRef<typeof PreviewCard.Popup> & { 
+    sideOffset?: number;
+    side?: "top" | "bottom" | "left" | "right";
+    align?: "start" | "center" | "end";
+  }
+>(({ className, sideOffset = 12, side = "right", align = "center", ...props }, ref) => (
+  <PreviewCard.Portal>
+    <PreviewCard.Positioner side={side} align={align} sideOffset={sideOffset}>
+      <PreviewCard.Popup
         ref={ref}
         className={cn(
-          "z-[700] w-64 overflow-hidden border border-[#E4E4E4] bg-white p-4 text-[#0A0A0A] shadow-2xl outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 rounded-none",
+          "z-[1000] w-64 overflow-hidden border border-[#E4E4E4] bg-white p-4 text-[#0A0A0A] shadow-2xl outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 rounded-none",
           className
         )}
         {...props}
       />
-    </HoverCardPrimitive.Positioner>
-  </HoverCardPrimitive.Portal>
+    </PreviewCard.Positioner>
+  </PreviewCard.Portal>
 ))
 HoverCardContent.displayName = "HoverCardContent"
 

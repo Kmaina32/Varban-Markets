@@ -38,32 +38,34 @@ export default function AdminSidebar({ onLinkClick, className, isMobile = false 
     const isActive = pathname === item.href;
     const linkContent = (
       <Link
-        key={item.href}
         href={item.href}
         onClick={onLinkClick}
         className={cn(
-          "flex items-center h-9 px-2 text-[10px] font-bold uppercase tracking-wider transition-all border-l-2 whitespace-nowrap group/item",
+          "flex items-center h-12 px-5 text-[10px] font-bold uppercase tracking-widest transition-all border-l-2 whitespace-nowrap",
           isActive 
             ? "text-[#0055FF] bg-[#0055FF]/5 border-[#0055FF]" 
             : "text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5] border-transparent"
         )}
       >
-        <item.icon className={cn("w-3.5 h-3.5 shrink-0 transition-colors", isActive ? "text-[#0055FF]" : "text-[#6B7280] group-hover/item:text-[#0A0A0A]")} />
-        <span className={cn("ml-4 transition-opacity", !isMobile && "opacity-0 group-hover:opacity-100 duration-300")}>
+        <item.icon className={cn("w-4 h-4 shrink-0 transition-colors", isActive ? "text-[#0055FF]" : "text-[#6B7280]")} />
+        <span className={cn(
+          "ml-6 transition-all duration-300 whitespace-nowrap overflow-hidden",
+          !isMobile && "w-0 opacity-0 group-hover:w-48 group-hover:opacity-100"
+        )}>
           {item.label}
         </span>
       </Link>
     );
 
-    if (isMobile) return linkContent;
+    if (isMobile) return <div key={item.href}>{linkContent}</div>;
 
     return (
       <HoverCard key={item.href}>
         <HoverCardTrigger render={linkContent} />
-        <HoverCardContent>
-          <div className="space-y-2">
-            <h4 className="text-[11px] font-bold uppercase tracking-widest text-[#0055FF]">{item.label}</h4>
-            <p className="text-[10px] text-[#6B7280] leading-relaxed font-medium uppercase tracking-tight">
+        <HoverCardContent side="right" align="center" sideOffset={10}>
+          <div className="space-y-1.5">
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#0055FF]">{item.label}</h4>
+            <p className="text-[9px] text-[#6B7280] leading-relaxed font-bold uppercase tracking-tight opacity-80">
               {item.description}
             </p>
           </div>
@@ -72,42 +74,32 @@ export default function AdminSidebar({ onLinkClick, className, isMobile = false 
     );
   });
 
-  const content = (
-    <div className="flex flex-col h-full justify-between">
-      <div className="space-y-6">
-        <div>
-          <div className="space-y-1">
-            {renderItems()}
-          </div>
+  return (
+    <aside className={cn(
+      isMobile ? "flex flex-col h-full bg-white" : "group absolute left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-[#E4E4E4] flex flex-col transition-all duration-300 z-[200] overflow-hidden no-scrollbar hidden lg:flex",
+      className
+    )}>
+      <div className="pt-6">
+        <div className="space-y-0.5">
+          {renderItems()}
         </div>
       </div>
 
-      <div className="space-y-1 pt-4 border-t border-[#E4E4E4]">
+      <div className="mt-auto border-t border-[#E4E4E4]">
         <Link
           href="/dashboard"
           onClick={onLinkClick}
-          className="flex items-center h-9 px-2 text-[10px] font-bold uppercase tracking-wider text-[#0055FF] hover:bg-[#0055FF]/5 transition-all whitespace-nowrap"
+          className="flex items-center h-14 px-5 text-[10px] font-bold uppercase tracking-widest text-[#0055FF] hover:bg-[#0055FF]/5 transition-all"
         >
-          <ArrowLeftRight className="w-3.5 h-3.5 shrink-0" />
-          <span className={cn("ml-4 transition-opacity", !isMobile && "opacity-0 group-hover:opacity-100 duration-300")}>
+          <ArrowLeftRight className="w-4 h-4 shrink-0" />
+          <span className={cn(
+            "ml-6 transition-all duration-300 whitespace-nowrap overflow-hidden",
+            !isMobile && "w-0 opacity-0 group-hover:w-48 group-hover:opacity-100"
+          )}>
             Trader Mode
           </span>
         </Link>
       </div>
-    </div>
-  );
-
-  if (isMobile) {
-    return (
-      <div className={cn("flex flex-col h-full bg-white px-4 py-6", className)}>
-        {content}
-      </div>
-    );
-  }
-
-  return (
-    <aside className={cn("group absolute left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-[#E4E4E4] flex flex-col transition-all duration-300 z-[40] overflow-hidden no-scrollbar py-6 px-4 hidden lg:flex", className)}>
-      {content}
     </aside>
   );
 }

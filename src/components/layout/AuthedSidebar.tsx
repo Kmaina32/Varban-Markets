@@ -117,32 +117,34 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     
     const linkContent = (
       <Link
-        key={item.href}
         href={item.href}
         onClick={onLinkClick}
         className={cn(
-          "flex items-center h-10 lg:h-8 px-2 text-[11px] lg:text-[10px] font-bold uppercase tracking-widest transition-all border-l-2 lg:border-l-0 lg:group-hover:border-l-2",
+          "flex items-center h-12 px-5 text-[11px] lg:text-[10px] font-bold uppercase tracking-widest transition-all border-l-2",
           isActive 
             ? "text-[#0055FF] bg-[#0055FF]/5 border-[#0055FF]" 
             : "text-[#6B7280] hover:text-[#0A0A0A] border-transparent"
         )}
       >
-        <item.icon className={cn("w-4 h-4 lg:w-3.5 lg:h-3.5 shrink-0 transition-colors", isActive ? "text-[#0055FF]" : "text-[#6B7280]")} />
-        <span className={cn("ml-4 transition-opacity duration-300", !isMobile && "opacity-0 group-hover:opacity-100 whitespace-nowrap")}>
+        <item.icon className={cn("w-4 h-4 lg:w-4 lg:h-4 shrink-0 transition-colors", isActive ? "text-[#0055FF]" : "text-[#6B7280]")} />
+        <span className={cn(
+          "ml-6 transition-all duration-300 whitespace-nowrap overflow-hidden",
+          !isMobile && "w-0 opacity-0 group-hover:w-48 group-hover:opacity-100"
+        )}>
           {item.label}
         </span>
       </Link>
     );
 
-    if (isMobile) return linkContent;
+    if (isMobile) return <div key={item.href}>{linkContent}</div>;
 
     return (
       <HoverCard key={item.href}>
         <HoverCardTrigger render={linkContent} />
-        <HoverCardContent>
-          <div className="space-y-2">
-            <h4 className="text-[11px] font-bold uppercase tracking-widest text-[#0055FF]">{item.label}</h4>
-            <p className="text-[10px] text-[#6B7280] leading-relaxed font-medium uppercase tracking-tight">
+        <HoverCardContent side="right" align="center" sideOffset={10}>
+          <div className="space-y-1.5">
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#0055FF]">{item.label}</h4>
+            <p className="text-[9px] text-[#6B7280] leading-relaxed font-bold uppercase tracking-tight opacity-80">
               {item.description}
             </p>
           </div>
@@ -153,18 +155,18 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
 
   return (
     <aside className={cn(
-      isMobile ? "flex flex-col h-full bg-white" : "group absolute left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-[#E4E4E4] flex flex-col transition-all duration-300 z-[40] overflow-hidden no-scrollbar hidden lg:flex",
+      isMobile ? "flex flex-col h-full bg-white" : "group absolute left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-[#E4E4E4] flex flex-col transition-all duration-300 z-[200] overflow-hidden no-scrollbar hidden lg:flex",
       className
     )}>
       <div className="pt-4"></div>
       <nav className={cn(
-        "flex-grow space-y-6 px-4 pb-6 overflow-y-auto no-scrollbar",
-        isMobile && "space-y-8 px-6 py-8 pb-32"
+        "flex-grow space-y-6 px-0 pb-6 overflow-y-auto no-scrollbar",
+        isMobile && "space-y-8 px-0 py-8 pb-32"
       )}>
         {sections.map((section) => (
           <div key={section.title} className="space-y-1">
             <h3 className={cn(
-              "text-[9px] font-bold text-[#D1D5DB] uppercase tracking-[0.2em] mb-2 px-2 transition-opacity duration-300 whitespace-nowrap",
+              "text-[9px] font-bold text-[#D1D5DB] uppercase tracking-[0.2em] mb-2 px-6 transition-opacity duration-300 whitespace-nowrap",
               !isMobile && "opacity-0 group-hover:opacity-100"
             )}>
               {section.title}
@@ -175,25 +177,25 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
           </div>
         ))}
         {isMobile && (
-          <div className="pt-6 border-t border-[#F7F7F5]">
+          <div className="pt-6 border-t border-[#F7F7F5] px-5">
              <button 
                 onClick={handleLogout}
-                className="flex items-center h-10 px-2 text-[11px] font-bold uppercase tracking-widest text-[#C43D3D] w-full"
+                className="flex items-center h-12 text-[11px] font-bold uppercase tracking-widest text-[#C43D3D] w-full"
               >
-                <LogOut className="w-4 h-4 shrink-0 mr-4" />
+                <LogOut className="w-4 h-4 shrink-0 mr-6" />
                 <span>End Session</span>
               </button>
           </div>
         )}
       </nav>
       {!isMobile && (
-        <div className="p-4 border-t border-[#F7F7F5] bg-[#F7F7F5]/30">
+        <div className="border-t border-[#F7F7F5] bg-[#F7F7F5]/30">
           <button 
             onClick={handleLogout}
-            className="flex items-center h-8 px-2 text-[10px] font-bold uppercase tracking-widest text-[#C43D3D] hover:bg-[#C43D3D]/5 transition-all w-full group/logout"
+            className="flex items-center h-14 px-5 text-[10px] font-bold uppercase tracking-widest text-[#C43D3D] hover:bg-[#C43D3D]/5 transition-all w-full"
           >
-            <LogOut className="w-3.5 h-3.5 shrink-0" />
-            <span className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+            <LogOut className="w-4 h-4 shrink-0" />
+            <span className="ml-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
               End Session
             </span>
           </button>
