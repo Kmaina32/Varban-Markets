@@ -6,6 +6,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 /**
  * @fileOverview M-Pesa STK Push Initiator.
  * Handles OAuth authentication and Lipa na M-Pesa Online request.
+ * Hardened: Enforces HTTPS callbacks and provides detailed error telemetry.
  */
 
 const CONSUMER_KEY = process.env.MPESA_CONSUMER_KEY;
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     if (!CONSUMER_KEY || !CONSUMER_SECRET || !PASSKEY || !SHORT_CODE) {
       console.error("[M-Pesa API] Infrastructure Configuration Error: Keys missing in .env");
-      return NextResponse.json({ error: "M-Pesa configuration error on server." }, { status: 500 });
+      return NextResponse.json({ error: "Server Configuration Error: M-Pesa keys are missing." }, { status: 500 });
     }
 
     // 1. Generate Access Token
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
     if (!tokenRes.ok) {
       const errData = await tokenRes.text();
       console.error("[M-Pesa API] Auth Token Fetch Failed:", errData);
-      return NextResponse.json({ error: "Safaricom Auth Handshake Failed" }, { status: 502 });
+      return NextResponse.json({ error: "Safaricom Authentication Failed. Check Consumer Key/Secret." }, { status: 502 });
     }
 
     const tokenData = await tokenRes.json();
@@ -55,8 +56,11 @@ export async function POST(req: NextRequest) {
     const timestamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
     const password = Buffer.from(`${SHORT_CODE}${PASSKEY}${timestamp}`).toString('base64');
     
-    const protocol = req.headers.get('x-forwarded-proto') || 'https';
+    // SAFEGUARD: Safaricom requires an HTTPS CallBackURL. 
+    // We force HTTPS and use the provided BASE_URL or detect it from headers.
     const host = req.headers.get('host');
+    let protocol = 'https'; // Force HTTPS as per Safaricom requirement
+    
     const detectedBaseUrl = BASE_URL || `${protocol}://${host}`;
     const callbackUrl = `${detectedBaseUrl}/api/payments/mpesa/callback?userId=${userId}`;
 
@@ -73,6 +77,8 @@ export async function POST(req: NextRequest) {
       AccountReference: "VarbanMarkets",
       TransactionDesc: "Vault Deposit"
     };
+
+    console.log(`[M-Pesa API] Initiating STK Push for ${phoneNumber} to ${callbackUrl}`);
 
     const stkRes = await fetch('https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest', {
       method: 'POST',
@@ -102,8 +108,11 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({ success: true, checkoutRequestId: data.CheckoutRequestID });
     } else {
-      console.error("[M-Pesa API] STK Push Rejected:", data);
-      return NextResponse.json({ error: data.ResponseDescription || "STK Push Initiation Failed" }, { status: 400 });
+      // Safaricom rejected the push (e.g. invalid phone, shortcode mismatch)
+      console.error("[M-Pesa API] STK Push Rejected by Safaricom:", data);
+      return NextResponse.json({ 
+        error: data.errorMessage || data.ResponseDescription || "STK Push Initiation Failed" 
+      }, { status: 400 });
     }
 
   } catch (error: any) {
