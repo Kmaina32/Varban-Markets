@@ -1,9 +1,9 @@
-
 'use client';
 
 /**
  * @fileOverview Institutional Web3 Connection Node.
  * Manages the lifecycle of Web3Auth and MetaMask wallet connections.
+ * Updated: Replaced Ankr RPC with a public Sepolia endpoint to resolve auth errors.
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
@@ -40,8 +40,8 @@ export function Web3AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const chainConfig = {
           chainNamespace: CHAIN_NAMESPACES.EIP155,
-          chainId: "0xaa36a7", // Sepolia Testnet (for Devnet environment)
-          rpcTarget: "https://rpc.ankr.com/eth_sepolia",
+          chainId: "0xaa36a7", // Sepolia Testnet
+          rpcTarget: "https://ethereum-sepolia-rpc.publicnode.com", // Public reliable node
           displayName: "Ethereum Sepolia Testnet",
           blockExplorerUrl: "https://sepolia.etherscan.io",
           ticker: "ETH",
@@ -84,13 +84,17 @@ export function Web3AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const getUserInfo = async (p: IProvider) => {
-    const ethersProvider = new BrowserProvider(p);
-    const signer = await ethersProvider.getSigner();
-    const addr = await signer.getAddress();
-    const bal = await ethersProvider.getBalance(addr);
-    
-    setAddress(addr);
-    setBalance(formatEther(bal));
+    try {
+      const ethersProvider = new BrowserProvider(p);
+      const signer = await ethersProvider.getSigner();
+      const addr = await signer.getAddress();
+      const bal = await ethersProvider.getBalance(addr);
+      
+      setAddress(addr);
+      setBalance(formatEther(bal));
+    } catch (e) {
+      console.warn("Could not retrieve user info from provider:", e);
+    }
   };
 
   const login = async () => {
