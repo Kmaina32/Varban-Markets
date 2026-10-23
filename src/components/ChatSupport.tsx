@@ -3,14 +3,20 @@
 /**
  * @fileOverview Varban Assistant Chatbot.
  * Adheres strictly to the Institutional Chat pattern using Message Scroller and Bubbles.
+ * 
+ * BEST PRACTICES:
+ * 1. Legal Disclaimer: Persistent notice regarding financial advice.
+ * 2. User Context: Passes user profile data to the AI flow.
+ * 3. Graceful Failure: Handles service interruptions without crashing.
  */
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
-import { X, Send, Loader2, MessageSquare, ChevronDown, GripVertical, Copy, RotateCcw } from 'lucide-react';
+import { X, Send, Loader2, MessageSquare, ChevronDown, GripVertical, Copy, ShieldAlert } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import { supportChat } from '@/ai/flows/support-chat-flow';
 import { useTranslation } from '@/app/lib/i18n-context';
+import { useUser, useFirestore, useDoc } from '@/firebase';
 import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import { 
   Message, 
@@ -37,7 +43,10 @@ interface ChatMessage {
 
 export default function ChatSupport() {
   const pathname = usePathname();
+  const { user } = useUser();
+  const db = useFirestore();
   const { t, locale } = useTranslation();
+  const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   
   // Chat State
   const [isOpen, setIsOpen] = useState(false);
@@ -155,6 +164,7 @@ export default function ChatSupport() {
       
       const response = await supportChat({
         message: currentInput,
+        userName: profile?.profile?.firstName,
         locale,
         history
       });
@@ -264,7 +274,7 @@ export default function ChatSupport() {
                                 <BubbleContent>{msg.content}</BubbleContent>
                               </Bubble>
                             ) : (
-                              <div className="px-1 text-[11px] leading-relaxed text-[#333333]">
+                              <div className="px-1 text-[11px] font-medium leading-relaxed text-[#333333]">
                                 {msg.content}
                                 <MessageFooter>
                                   <Button 
@@ -306,7 +316,14 @@ export default function ChatSupport() {
             </MessageScrollerProvider>
           </div>
 
-          <div className="p-4 border-t border-[#F7F7F5] bg-white shrink-0">
+          <div className="p-4 border-t border-[#F7F7F5] bg-[#F7F7F5]/30 shrink-0 space-y-3">
+            <div className="flex items-start gap-2 p-3 bg-white border border-[#E4E4E4] shadow-sm">
+               <ShieldAlert className="w-4 h-4 text-[#0055FF] shrink-0 mt-0.5" />
+               <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
+                 Institutional Notice: This assistant provides platform guidance only and strictly declines financial advice.
+               </p>
+            </div>
+            
             <form onSubmit={handleSend} className="relative">
               <input 
                 type="text" 
@@ -326,9 +343,6 @@ export default function ChatSupport() {
                 </button>
               </div>
             </form>
-            <div className="mt-2 text-center">
-               <span className="text-[8px] font-bold text-[#D1D5DB] uppercase tracking-[0.2em]">Institutional Intelligence Node</span>
-            </div>
           </div>
         </div>
       )}
