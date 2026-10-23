@@ -1,11 +1,10 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { initializeFirebase } from '@/firebase';
-import { collection, addDoc, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 
 /**
  * @fileOverview M-Pesa Result Callback Handler.
- * Receives payment status from Safaricom and updates the Firestore ledger.
+ * Receives payment status from Safaricom and updates the existing Firestore ledger entry.
  */
 
 export async function POST(req: NextRequest) {
@@ -23,6 +22,11 @@ export async function POST(req: NextRequest) {
     const { ResultCode, ResultDesc, CallbackMetadata, CheckoutRequestID } = Body.stkCallback;
     const { db } = initializeFirebase();
 
+    // 1. Locate the pending transaction created by the STK-Push route
+    const txRef = collection(db, `users/${userId}/transactions`);
+    const q = query(txRef, where("checkoutRequestId", "==", CheckoutRequestID));
+    const querySnapshot = await getDocs(q);
+
     if (ResultCode === 0) {
       // Payment Successful
       const amountItem = CallbackMetadata.Item.find((i: any) => i.Name === "Amount");
@@ -31,22 +35,19 @@ export async function POST(req: NextRequest) {
       const amountKes = amountItem?.Value || 0;
       const receipt = receiptItem?.Value || CheckoutRequestID;
       
-      // Approximate conversion for balance provisioning (KES to USD)
+      // Update the identified transaction document
+      if (!querySnapshot.empty) {
+        const txDoc = querySnapshot.docs[0];
+        await updateDoc(doc(db, `users/${userId}/transactions`, txDoc.id), {
+          status: "Confirmed",
+          ref: receipt,
+          settledAt: serverTimestamp(),
+          metadata: CallbackMetadata
+        });
+      }
+
+      // Credit User Balance
       const amountUsd = amountKes / 130; 
-
-      // Update Ledger
-      await addDoc(collection(db, `users/${userId}/transactions`), {
-        type: "M-Pesa Deposit",
-        asset: "KES",
-        amount: amountUsd,
-        nativeAmount: amountKes,
-        status: "Confirmed",
-        timestamp: serverTimestamp(),
-        ref: receipt,
-        provider: "Safaricom M-Pesa"
-      });
-
-      // Credit Balance
       await updateDoc(doc(db, "users", userId), {
         balance: increment(amountUsd),
         equity: increment(amountUsd)
@@ -54,19 +55,16 @@ export async function POST(req: NextRequest) {
 
       console.log(`[M-Pesa Callback] Success for User ${userId}: ${amountKes} KES`);
     } else {
+      // Payment Failed or Cancelled
+      if (!querySnapshot.empty) {
+        const txDoc = querySnapshot.docs[0];
+        await updateDoc(doc(db, `users/${userId}/transactions`, txDoc.id), {
+          status: "Failed",
+          error: ResultDesc,
+          settledAt: serverTimestamp()
+        });
+      }
       console.warn(`[M-Pesa Callback] Failed/Cancelled: ${ResultDesc}`);
-      
-      // Log failure in user's history
-      await addDoc(collection(db, `users/${userId}/transactions`), {
-        type: "M-Pesa Deposit",
-        asset: "KES",
-        amount: 0,
-        status: "Failed",
-        timestamp: serverTimestamp(),
-        ref: CheckoutRequestID,
-        provider: "Safaricom M-Pesa",
-        error: ResultDesc
-      });
     }
 
     return NextResponse.json({ ResultCode: 0, ResultDesc: "Success" });

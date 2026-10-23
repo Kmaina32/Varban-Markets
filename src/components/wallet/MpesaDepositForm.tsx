@@ -1,24 +1,28 @@
-
 'use client';
 
 /**
  * @fileOverview M-Pesa Deposit Form Component.
- * Initiates STK Push via internal API.
+ * Initiates STK Push and listens for real-time Firestore updates for confirmation.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { cn } from '@/app/lib/utils';
-import { Loader2, Phone, DollarSign, CheckCircle2, AlertTriangle, Smartphone } from 'lucide-react';
+import { Loader2, Phone, CheckCircle2, AlertTriangle, Smartphone, Check } from 'lucide-react';
 import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
 
 export default function MpesaDepositForm() {
   const { user } = useUser();
+  const db = useFirestore();
+  
   const [phone, setPhone] = useState('2547');
   const [amountKes, setAmountKes] = useState('1000');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
+  const [checkoutId, setCheckoutId] = useState<string | null>(null);
+  const [isConfirmed, setIsConfirmed] = useState(false);
 
   const [dialog, setDialog] = useState<{ status: DialogStatus; title: string; message: string }>({
     status: null,
@@ -26,11 +30,42 @@ export default function MpesaDepositForm() {
     message: ''
   });
 
+  // REAL-TIME LISTENER FOR TRANSACTION STATUS
+  useEffect(() => {
+    if (!isWaiting || !checkoutId || !user || !db) return;
+
+    const txRef = collection(db, `users/${user.uid}/transactions`);
+    const q = query(txRef, where("checkoutRequestId", "==", checkoutId));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const txData = snapshot.docs[0].data();
+        if (txData.status === 'Confirmed') {
+          setIsConfirmed(true);
+          setIsWaiting(false);
+          setDialog({
+            status: 'success',
+            title: 'Deposit Verified',
+            message: 'Your M-Pesa payment has been confirmed and your balance is provisioned.'
+          });
+        } else if (txData.status === 'Failed') {
+          setIsWaiting(false);
+          setDialog({
+            status: 'error',
+            title: 'Payment Failed',
+            message: txData.error || 'The transaction was cancelled or declined.'
+          });
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [isWaiting, checkoutId, user, db]);
+
   const handleMpesaDeposit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
-    // Basic Validation
     const cleanPhone = phone.replace('+', '').trim();
     if (!cleanPhone.startsWith('254') || cleanPhone.length !== 12) {
       setDialog({
@@ -56,6 +91,7 @@ export default function MpesaDepositForm() {
       const data = await res.json();
 
       if (res.ok) {
+        setCheckoutId(data.checkoutRequestId);
         setIsWaiting(true);
       } else {
         throw new Error(data.error || "M-Pesa Handshake Failed");
@@ -92,7 +128,16 @@ export default function MpesaDepositForm() {
         </div>
       </div>
 
-      {isWaiting ? (
+      {isConfirmed ? (
+        <div className="text-center py-10 space-y-4 animate-in zoom-in-95 duration-500">
+           <div className="w-16 h-16 bg-[#16835B]/10 border border-[#16835B] rounded-full flex items-center justify-center mx-auto">
+              <Check className="w-8 h-8 text-[#16835B]" />
+           </div>
+           <h4 className="text-sm font-bold uppercase text-[#0A0A0A]">Payment Successful</h4>
+           <p className="text-[11px] text-[#6B7280] uppercase font-bold tracking-tight">Your ledger has been updated.</p>
+           <button onClick={() => setIsConfirmed(false)} className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest underline underline-offset-4">Add More Funds</button>
+        </div>
+      ) : isWaiting ? (
         <div className="text-center py-10 space-y-6 animate-in fade-in duration-500">
            <div className="flex justify-center">
               <Loader2 className="w-12 h-12 text-[#16835B] animate-spin" />
