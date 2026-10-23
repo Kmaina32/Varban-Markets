@@ -3,9 +3,10 @@
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
  * 4-Panel Grid Architecture with Resizable Panels and full TradingView feature parity.
+ * Updated for Next.js 15: params and searchParams are now Promises.
  */
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -320,7 +321,7 @@ function TerminalContent() {
                         activeRightTab === tab.id ? "border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5" : "border-transparent text-[#6B7280] hover:bg-[#F7F7F5]"
                       )}
                      >
-                       <tab.icon className="w-3 h-3" />
+                       <tab.icon className="w-3.5 h-3.5" />
                        <span>{tab.label}</span>
                      </button>
                    ))}
@@ -430,7 +431,11 @@ function TerminalContent() {
   );
 }
 
-export default function TerminalWorkspace() {
+export default function TerminalWorkspace(props: { params: Promise<any>; searchParams: Promise<any> }) {
+  // unwrap Promises for Next.js 15 proxy satisfaction
+  const params = use(props.params);
+  const searchParams = use(props.searchParams);
+  
   return (
     <Suspense fallback={<LoadingOverlay message="Synchronizing High-Speed Trading Node" />}>
       <TerminalContent />

@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Institutional Instrument detail Workspace.
- * Updated with a full-width banner hero for visual continuity.
+ * Updated for Next.js 15: params and searchParams are now Promises.
  */
 
 import { useState, use, useEffect } from "react";
@@ -19,9 +19,10 @@ import { useTranslation } from "@/app/lib/i18n-context";
 import { MarketIcon } from "@/components/MarketIcon";
 import { cn } from "@/app/lib/utils";
 
-export default function MarketDetailPage({ params }: { params: Promise<{ symbol: string }> }) {
-  const resolvedParams = use(params);
-  const inst = AVAILABLE_INSTRUMENTS.find(i => i.symbol === resolvedParams.symbol);
+export default function MarketDetailPage(props: { params: Promise<{ symbol: string }>; searchParams: Promise<any> }) {
+  const params = use(props.params);
+  const searchParams = use(props.searchParams);
+  const inst = AVAILABLE_INSTRUMENTS.find(i => i.symbol === params.symbol);
 
   if (!inst) {
     notFound();

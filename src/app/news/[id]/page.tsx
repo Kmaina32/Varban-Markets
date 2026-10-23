@@ -3,6 +3,7 @@
 /**
  * @fileOverview Market Intelligence Report Workspace.
  * Displays high-precision article analysis from the persisted news archive.
+ * Updated for Next.js 15: params and searchParams are now Promises.
  */
 
 import { use, useEffect, useState } from "react";
@@ -27,9 +28,10 @@ import { useFirestore, useDoc } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 
-export default function NewsReportPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params);
-  const id = resolvedParams.id;
+export default function NewsReportPage(props: { params: Promise<{ id: string }>; searchParams: Promise<any> }) {
+  const params = use(props.params);
+  const searchParams = use(props.searchParams);
+  const id = params.id;
   const db = useFirestore();
   const router = useRouter();
   const { formatDate } = useTranslation();
@@ -72,7 +74,7 @@ export default function NewsReportPage({ params }: { params: Promise<{ id: strin
   return (
     <AuthedLayout 
       title="Intelligence Report" 
-      subtitle={`Impact Analysis: ${article.uuid.substring(0, 8).toUpperCase()}`}
+      subtitle={`Impact Analysis: ${article.uuid?.substring(0, 8).toUpperCase()}`}
     >
       <div className="max-w-4xl mx-auto space-y-8 pb-20">
         
@@ -114,7 +116,7 @@ export default function NewsReportPage({ params }: { params: Promise<{ id: strin
                 <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-[0.15em] block">Institutional Source</span>
                 <div className="flex items-center gap-2">
                    <div className="w-6 h-6 bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-[10px]">
-                      {article.publisher.charAt(0)}
+                      {article.publisher?.charAt(0)}
                    </div>
                    <span className="text-xs font-bold text-[#0A0A0A]">{article.publisher}</span>
                 </div>
@@ -124,7 +126,7 @@ export default function NewsReportPage({ params }: { params: Promise<{ id: strin
                 <div className="flex items-center gap-2 text-[#0A0A0A]">
                   <Calendar className="w-3.5 h-3.5 text-[#6B7280]" />
                   <span className="text-xs font-mono font-bold">
-                    {new Date(article.published_at).toLocaleDateString()}
+                    {article.published_at ? new Date(article.published_at).toLocaleDateString() : '---'}
                   </span>
                 </div>
               </div>
