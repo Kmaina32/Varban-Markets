@@ -3,7 +3,7 @@
 /**
  * @fileOverview Institutional Bot Modification Workspace.
  * Exclusive manual parameter tuning with deterministic risk validation.
- * Optimized for Martingale, SL, TP and high-precision trading settings.
+ * Added: Reset to Factory Defaults capability per user.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -17,7 +17,8 @@ import {
   Globe,
   TrendingUp,
   Target,
-  ArrowRightLeft
+  RotateCcw,
+  AlertTriangle
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/app/lib/utils';
@@ -26,6 +27,7 @@ import { BotConfig } from '@/app/lib/bots-engine/types';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
+import { DEFAULT_CONFIGS } from '@/app/lib/bots-engine/defaults';
 
 interface ModifyBotModalProps {
   bot: BotConfig;
@@ -55,11 +57,11 @@ export default function ModifyBotModal({ bot, isOpen, onClose, onUpdate }: Modif
 
   if (!isOpen) return null;
 
-  const handleFinalSave = async () => {
+  const handleFinalSave = async (configToSave = editedConfig) => {
     if (!user || !db) return;
     
     // Final hard gate for risk percentage
-    if (editedConfig.riskPercent > 0.5) {
+    if (configToSave.riskPercent > 0.5) {
       setDialog({
         status: 'error',
         title: 'Safety Violation',
@@ -71,8 +73,8 @@ export default function ModifyBotModal({ bot, isOpen, onClose, onUpdate }: Modif
     setIsProcessing(true);
     try {
       const updated = {
-        ...editedConfig,
-        version: (editedConfig.version || 1) + 1,
+        ...configToSave,
+        version: (configToSave.version || 1) + 1,
         updatedAt: new Date().toISOString()
       };
       
@@ -98,6 +100,26 @@ export default function ModifyBotModal({ bot, isOpen, onClose, onUpdate }: Modif
     }
   };
 
+  const handleResetToDefaults = () => {
+    const factoryDefault = DEFAULT_CONFIGS.find(c => c.id === bot.id);
+    if (!factoryDefault) return;
+
+    setDialog({
+      status: 'warning',
+      title: 'Reset to Factory Defaults?',
+      message: 'This will erase all your custom tunings and restore the original institutional parameters. This action is versioned and logged.'
+    });
+
+    // We enhance the dialog with an action
+    setDialog(prev => ({
+      ...prev,
+      onAction: () => {
+        handleFinalSave({ ...factoryDefault, id: bot.id, name: bot.name });
+      },
+      actionLabel: "Restore Defaults"
+    } as any));
+  };
+
   const updateParam = (key: string, value: any) => {
     setEditedConfig({
       ...editedConfig,
@@ -118,7 +140,9 @@ export default function ModifyBotModal({ bot, isOpen, onClose, onUpdate }: Modif
         status={dialog.status} 
         title={dialog.title} 
         message={dialog.message} 
-        onClose={() => setDialog({ ...dialog, status: null })} 
+        onClose={() => setDialog({ ...dialog, status: null })}
+        onAction={(dialog as any).onAction}
+        actionLabel={(dialog as any).actionLabel}
       />
 
       <Card className="bg-white border-[#E4E4E4] w-full max-w-4xl max-h-[90vh] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 rounded-none border-b-4 border-b-[#0055FF]">
@@ -294,12 +318,15 @@ export default function ModifyBotModal({ bot, isOpen, onClose, onUpdate }: Modif
 
         {/* Footer Actions */}
         <div className="p-6 border-t border-[#E4E4E4] bg-[#F7F7F5] flex justify-between items-center shrink-0">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-[9px] font-bold text-[#6B7280] uppercase">
-               <ShieldCheck className="w-4 h-4 text-[#16835B]" />
-               <span>Risk Engine: ACTIVE</span>
-            </div>
-          </div>
+          <button 
+            onClick={handleResetToDefaults}
+            disabled={isProcessing}
+            className="px-6 py-3 border border-[#E4E4E4] text-[10px] font-bold uppercase tracking-widest hover:bg-white text-[#C43D3D] transition-colors flex items-center gap-2"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Restore Factory Defaults</span>
+          </button>
+
           <div className="flex gap-4">
              <button 
               onClick={onClose}
@@ -308,7 +335,7 @@ export default function ModifyBotModal({ bot, isOpen, onClose, onUpdate }: Modif
                Discard
              </button>
              <button 
-              onClick={handleFinalSave}
+              onClick={() => handleFinalSave()}
               disabled={isProcessing}
               className="px-10 py-3 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-[0.25em] shadow-xl hover:bg-[#0055FF] transition-all flex items-center justify-center gap-2 disabled:opacity-40"
              >
