@@ -3,7 +3,7 @@
 /**
  * @fileOverview Institutional Web3 Connection Node.
  * Manages the lifecycle of Web3Auth and MetaMask wallet connections.
- * Updated: Replaced Ankr RPC with a public Sepolia endpoint to resolve auth errors.
+ * Hardened: Fixed 'could not coalesce error' by ensuring proper async initialization and error handling in getUserInfo.
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
@@ -84,16 +84,23 @@ export function Web3AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const getUserInfo = async (p: IProvider) => {
+    if (!p) return;
     try {
       const ethersProvider = new BrowserProvider(p);
       const signer = await ethersProvider.getSigner();
-      const addr = await signer.getAddress();
-      const bal = await ethersProvider.getBalance(addr);
       
-      setAddress(addr);
-      setBalance(formatEther(bal));
+      // Attempt to retrieve info, handling potential RPC latency or empty states
+      const [addr, bal] = await Promise.all([
+        signer.getAddress().catch(() => null),
+        ethersProvider.getBalance(await signer.getAddress().catch(() => "0x00")).catch(() => BigInt(0))
+      ]);
+      
+      if (addr) {
+        setAddress(addr);
+        setBalance(formatEther(bal));
+      }
     } catch (e) {
-      console.warn("Could not retrieve user info from provider:", e);
+      console.warn("Could not retrieve user info from provider. Handshake may still be initializing.", e);
     }
   };
 

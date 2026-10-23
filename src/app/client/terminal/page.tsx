@@ -3,7 +3,7 @@
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
  * 4-Panel Grid Architecture with Resizable Panels and full TradingView feature parity.
- * Updated: Enhanced mobile responsiveness and refined header z-index.
+ * Updated: Fixed missing 'Activity' icon import and resolved Next.js 15 async prop warnings.
  */
 
 import { useState, useEffect, useCallback, Suspense, use } from "react";
@@ -22,7 +22,8 @@ import {
   Globe,
   Settings,
   ShieldCheck,
-  Check
+  Check,
+  Activity
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
@@ -468,10 +469,7 @@ function TerminalContent() {
   );
 }
 
-export default function TerminalWorkspace(props: { params: Promise<any>; searchParams: Promise<any> }) {
-  const params = use(props.params);
-  const searchParams = use(props.searchParams);
-  
+export default function TerminalWorkspace() {
   return (
     <Suspense fallback={<LoadingOverlay message="Synchronizing High-Speed Trading Node" />}>
       <TerminalContent />
