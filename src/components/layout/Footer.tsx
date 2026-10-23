@@ -52,7 +52,7 @@ export default function Footer() {
                 <li><Link href="/markets" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">{t('nav.markets')}</Link></li>
                 <li><Link href="/how-it-works" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">How to Trade</Link></li>
                 <li><Link href="/terms/trading-rules" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Trading Rules</Link></li>
-                <li><Link href="/terms/market-data" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">{t('landing.footer.data')}</Link></li>
+                <li><Link href="/sitemap.xml" className="hover:text-[#0A0A0A] transition-colors uppercase font-bold text-[9px]">Sitemap</Link></li>
               </ul>
             </div>
             
