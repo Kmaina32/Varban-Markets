@@ -2,8 +2,7 @@
 
 /**
  * @fileOverview Bot Marketplace Registry.
- * High-performance hub for automated trading tools.
- * Integrated with the Varban Five Strategy Engine.
+ * Integrated with the Varban Five Strategy Engine core.
  */
 
 import React, { useState, useMemo } from 'react';
@@ -24,9 +23,10 @@ import {
 } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import { useTranslation } from '@/app/lib/i18n-context';
+import type { BotId } from '@/app/lib/bots-engine/types';
 
 interface Bot {
-  id: string;
+  id: BotId;
   name: string;
   version: string;
   category: string;
