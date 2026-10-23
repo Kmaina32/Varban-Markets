@@ -2,13 +2,14 @@
 
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal (PRODUCTION).
- * Optimized for mobile with left-side command drawers and high-fidelity charting.
+ * Optimized for mobile with full-page command drawers and high-fidelity charting.
  * Wired to Firestore Ledger for real-time trade settlement and balance sync.
  */
 
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { 
   Menu, 
   X,
@@ -16,7 +17,6 @@ import {
   Clock as ClockIcon,
   ShieldCheck,
   History,
-  Loader2,
   ChevronUp,
   Activity
 } from "lucide-react";
@@ -36,6 +36,7 @@ import MarketSelector from "@/components/terminal/MarketSelector";
 import ExecutionTicket from "@/components/terminal/ExecutionTicket";
 import PortfolioManager from "@/components/terminal/PortfolioManager";
 import TerminalTutorial from "@/components/terminal/TerminalTutorial";
+import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
 
 const TIMEZONES = [
   { label: "UTC +00:00 (GMT)", value: "UTC+0" },
@@ -48,6 +49,7 @@ const TIMEZONES = [
 export default function TerminalWorkspace() {
   const { user } = useUser();
   const db = useFirestore();
+  const router = useRouter();
   const { formatNumber, locale, setLocale } = useTranslation();
 
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
@@ -76,6 +78,19 @@ export default function TerminalWorkspace() {
   
   const [bottomPanelHeight, setBottomPanelHeight] = useState(250);
   const [isResizing, setIsResizing] = useState(false);
+
+  // Status Dialog State
+  const [dialog, setDialog] = useState<{ 
+    status: DialogStatus; 
+    title: string; 
+    message: string; 
+    actionLabel?: string; 
+    onAction?: () => void 
+  }>({
+    status: null,
+    title: '',
+    message: ''
+  });
 
   useEffect(() => {
     const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
@@ -133,7 +148,13 @@ export default function TerminalWorkspace() {
     const stake = params.amount;
 
     if (!isDemo && (profile?.balance || 0) < stake) {
-      alert("Insufficient liquidity in vault domain.");
+      setDialog({
+        status: 'warning',
+        title: 'Insufficient Liquidity',
+        message: 'Your current vault balance is below the required stake for this contract. Please add funds to continue real-mode execution.',
+        actionLabel: 'Deposit Funds',
+        onAction: () => router.push('/client/wallet?tab=deposit')
+      });
       return;
     }
 
@@ -163,7 +184,11 @@ export default function TerminalWorkspace() {
       setIsTradeDrawerOpen(false);
     } catch (err) {
       console.error("Ledger Transmission Failure:", err);
-      alert("Matching Engine Handshake Interrupted.");
+      setDialog({
+        status: 'error',
+        title: 'Matching Engine Error',
+        message: 'Could not establish a secure handshake with the execution node. Please verify your connection.'
+      });
     }
   };
 
@@ -201,6 +226,15 @@ export default function TerminalWorkspace() {
   return (
     <div className="flex h-[100dvh] min-h-0 w-full max-w-full flex-col overflow-hidden bg-white text-[#0A0A0A]">
       <TerminalTutorial />
+      
+      <StatusDialog 
+        status={dialog.status} 
+        title={dialog.title} 
+        message={dialog.message} 
+        actionLabel={dialog.actionLabel}
+        onAction={dialog.onAction}
+        onClose={() => setDialog({ ...dialog, status: null })} 
+      />
 
       <header className="h-14 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[100] px-2 lg:px-4">
         <div className="flex items-center space-x-2 lg:space-x-4">
