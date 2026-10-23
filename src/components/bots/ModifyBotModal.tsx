@@ -20,7 +20,9 @@ import {
   Info,
   Settings2,
   Lock,
-  ArrowRight
+  ArrowRight,
+  Globe,
+  BarChart3
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/app/lib/utils';

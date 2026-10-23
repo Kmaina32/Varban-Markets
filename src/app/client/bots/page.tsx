@@ -22,7 +22,8 @@ import {
   BarChart3,
   Settings2,
   Loader2,
-  History
+  History,
+  Globe
 } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import { useTranslation } from '@/app/lib/i18n-context';
