@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import { useUser, useFirestore } from "@/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { createClient } from "@/app/lib/supabase/client";
 import { cn } from "@/app/lib/utils";
 import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
 
@@ -65,7 +64,6 @@ const CRYPTO_NETWORKS: CryptoOption[] = [
 export default function CryptoDepositForm() {
   const { user } = useUser();
   const db = useFirestore();
-  const supabase = createClient();
 
   const [selectedAsset, setSelectedAsset] = useState<CryptoOption>(CRYPTO_NETWORKS[0]);
   const [copied, setCopied] = useState(false);
@@ -95,18 +93,6 @@ export default function CryptoDepositForm() {
     const depositRef = `CRYPTO-DEP-${Math.random().toString(36).substring(7).toUpperCase()}`;
 
     try {
-      // 1. Supabase (Primary)
-      await supabase.from('transactions').insert({
-        user_id: user.uid,
-        type: "Crypto Deposit",
-        asset: `${selectedAsset.symbol} (${selectedAsset.network})`,
-        amount: parseFloat(usdAmount),
-        status: "Pending Verification",
-        ref: depositRef,
-        meta_data: { txHash: txHash.trim() }
-      });
-
-      // 2. Firebase (Guard)
       if (db) {
         await addDoc(collection(db, `users/${user.uid}/transactions`), {
           type: "Crypto Deposit",

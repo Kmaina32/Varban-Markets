@@ -2,14 +2,14 @@
 'use client';
 
 /**
- * @fileOverview Notification Preferences Workspace (Supabase Version).
- * Synchronizes alert flags with the Supabase profiles ledger.
+ * @fileOverview Notification Preferences Workspace .
+ * Synchronizes alert flags with the Firestore user document.
  */
 
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { createClient } from '@/app/lib/supabase/client';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { cn } from '@/app/lib/utils';
 
 interface AlertItem {
@@ -26,37 +26,48 @@ const ALERT_ITEMS: AlertItem[] = [
 
 export default function AlertsTab() {
   const { user } = useUser();
-  const supabase = createClient();
+  const db = useFirestore();
   
   const [preferences, setPreferences] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadAlerts() {
-      if (!user?.uid) return;
-      const { data } = await supabase
-        .from('profiles')
-        .select('alert_preferences')
-        .eq('id', user.uid)
-        .single();
-      
-      if (data) setPreferences(data.alert_preferences);
-      setLoading(false);
+      if (!user?.uid || !db) return;
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        const data: any = snap.exists() ? snap.data() : null;
+        setPreferences(data?.preferences?.alerts ?? null);
+      } catch (e) {
+        console.error("Alerts Load Error:", e);
+      } finally {
+        setLoading(false);
+      }
     }
     loadAlerts();
-  }, [user?.uid, supabase]);
+  }, [user?.uid, db]);
 
   const toggleAlert = async (key: string, current: boolean) => {
-    if (!user?.uid) return;
-    const newPrefs = { ...preferences, [key]: !current };
+    if (!user?.uid || !db) return;
+    const newPrefs = {
+      newTrades: true,
+      withdrawSuccess: true,
+      securityAlerts: true,
+      systemStatus: true,
+      ...(preferences || {}),
+      [key]: !current
+    };
     
     // Optimistic update
     setPreferences(newPrefs);
     
-    await supabase
-      .from('profiles')
-      .update({ alert_preferences: newPrefs })
-      .eq('id', user.uid);
+    try {
+      await setDoc(doc(db, 'users', user.uid), {
+        preferences: { alerts: newPrefs }
+      }, { merge: true });
+    } catch (e) {
+      console.error("Alerts Save Error:", e);
+    }
   };
 
   if (loading) return <div className="p-12 text-center text-[#6B7280] font-mono animate-pulse">Syncing Alerts...</div>;

@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Universal Profile Dropdown Component.
- * Updated to handle Supabase SignOut and features a new Switch for mode selection.
+ * Handles Firebase SignOut and features a new Switch for mode selection.
  */
 
 import { useEffect, useRef, useMemo } from "react";
@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
-import { useSupabaseAuth } from "@/app/lib/supabase/auth-context";
+import { initializeFirebase } from "@/firebase";
 import { Switch } from "@/components/ui/switch";
 
 interface ProfileDropdownProps {
@@ -48,7 +48,6 @@ export default function ProfileDropdown({
   onSignOut
 }: ProfileDropdownProps) {
   const router = useRouter();
-  const { signOut } = useSupabaseAuth();
   const { formatNumber } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -76,7 +75,7 @@ export default function ProfileDropdown({
     if (onSignOut) {
       onSignOut();
     } else {
-      await signOut();
+      try { await initializeFirebase().auth.signOut(); } catch (e) { console.error("Sign out failed:", e); }
       onClose();
       router.push('/');
     }

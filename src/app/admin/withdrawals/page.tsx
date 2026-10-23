@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @fileOverview Admin Withdrawal Approval Queue (Supabase Migrated).
+ * @fileOverview Admin Withdrawal Approval Queue (Firestore).
  * Allows administrators to review and approve outgoing remittance requests.
  */
 
@@ -9,14 +9,66 @@ import { useState, useEffect, useMemo } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, XCircle, User, Loader2, ShieldAlert } from "lucide-react";
-import { createClient } from "@/app/lib/supabase/client";
+import { useFirestore } from "@/firebase";
+import { collection, collectionGroup, getDocs, doc, updateDoc, increment } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
 
+
+const toMillis = (ts: any): number => {
+  try {
+    if (!ts) return 0;
+    if (typeof ts.toMillis === "function") return ts.toMillis();
+    if (typeof ts.toDate === "function") return ts.toDate().getTime();
+    const d = new Date(ts);
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  } catch { return 0; }
+};
+
+const mapTx = (d: any, profileMap: Record<string, any>) => {
+  const x: any = d.data() || {};
+  const uid: string = d.ref.parent.parent?.id || "";
+  return {
+    id: d.id,
+    docRef: d.ref,
+    user_id: uid,
+    ref: x.ref || "",
+    type: x.type || "",
+    asset: x.asset || "",
+    amount: Number(x.amount) || 0,
+    status: x.status || "",
+    created_at: toMillis(x.timestamp),
+    meta_data: {
+      txHash: x.txHash,
+      destinationAddress: x.destinationAddress,
+      accountNumber: x.accountNumber,
+    },
+    profiles: profileMap[uid] || null,
+  };
+};
+
+const loadProfileMap = async (db: any) => {
+  const map: Record<string, any> = {};
+  try {
+    const snap = await getDocs(collection(db, "users"));
+    snap.docs.forEach(u => {
+      const x: any = u.data() || {};
+      map[u.id] = {
+        full_name: x.profile?.fullName || [x.profile?.firstName, x.profile?.lastName].filter(Boolean).join(" ") || "",
+        email: x.profile?.email || "",
+        balance: Number(x.balance) || 0,
+      };
+    });
+  } catch (e) {
+    console.error("Profile lookup failed:", e);
+  }
+  return map;
+};
+
 export default function AdminWithdrawalQueue() {
   const { formatDate, formatNumber } = useTranslation();
-  const supabase = createClient();
+  const db = useFirestore();
   
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,36 +81,33 @@ export default function AdminWithdrawalQueue() {
   });
 
   const loadWithdrawals = async () => {
+    if (!db) return;
     setLoading(true);
-    const { data, error } = await supabase
-      .from('transactions')
-      .select('*, profiles(full_name, email, balance)')
-      .in('type', ['Withdrawal', 'Crypto Withdrawal'])
-      .eq('status', 'Pending Verification')
-      .order('created_at', { ascending: false });
-    
-    if (error) {
+    try {
+      const [snap, profileMap] = await Promise.all([
+        getDocs(collectionGroup(db, 'transactions')),
+        loadProfileMap(db),
+      ]);
+      const rows = snap.docs
+        .map(d => mapTx(d, profileMap))
+        .filter(t => ['Withdrawal', 'Crypto Withdrawal'].includes(t.type) && t.status === 'Pending Verification')
+        .sort((a, b) => b.created_at - a.created_at);
+      setWithdrawals(rows);
+    } catch (error) {
       console.error("Withdrawal load error:", error);
-    } else {
-      setWithdrawals(data || []);
     }
     setLoading(false);
   };
 
   useEffect(() => {
     loadWithdrawals();
-  }, []);
+  }, [db]);
 
   const handleApprove = async (tx: any) => {
     if (!window.confirm(`Confirm $${tx.amount} remittance? Ensure funds are sent externally first.`)) return;
     setIsSyncing(tx.id);
     try {
-      const { error } = await supabase
-        .from('transactions')
-        .update({ status: 'Approved' })
-        .eq('id', tx.id);
-      
-      if (error) throw error;
+      await updateDoc(tx.docRef, { status: 'Approved' });
       setDialog({ status: 'success', title: 'Remittance Approved', message: 'Payout state updated to Approved in the institutional ledger.' });
       await loadWithdrawals();
     } catch (e) {
@@ -72,27 +121,12 @@ export default function AdminWithdrawalQueue() {
     if (!window.confirm("Reject withdrawal and refund entity balance?")) return;
     setIsSyncing(tx.id);
     try {
-      // 1. Fetch current profile state
-      const { data: profile } = await supabase.from('profiles').select('balance, equity').eq('id', tx.user_id).single();
-      if (!profile) throw new Error("Entity context unreachable.");
+      if (!db || !tx.user_id) throw new Error("Entity context unreachable.");
+      const amt = Number(tx.amount) || 0;
 
-      const newBalance = (parseFloat(profile.balance) || 0) + parseFloat(tx.amount);
-      const newEquity = (parseFloat(profile.equity) || 0) + parseFloat(tx.amount);
-
-      // 2. Refund balance & update transaction
-      const { error: txErr } = await supabase
-        .from('transactions')
-        .update({ status: 'Rejected' })
-        .eq('id', tx.id);
-      
-      if (txErr) throw txErr;
-
-      const { error: profErr } = await supabase
-        .from('profiles')
-        .update({ balance: newBalance, equity: newEquity })
-        .eq('id', tx.user_id);
-      
-      if (profErr) throw profErr;
+      // Refund balance & update transaction
+      await updateDoc(tx.docRef, { status: 'Rejected' });
+      await updateDoc(doc(db, 'users', tx.user_id), { balance: increment(amt), equity: increment(amt) });
 
       setDialog({ status: 'success', title: 'Capital Refunded', message: 'Withdrawal rejected. Stake has been returned to the entity balance.' });
       await loadWithdrawals();
@@ -141,13 +175,13 @@ export default function AdminWithdrawalQueue() {
                       <div className="flex items-center space-x-3">
                         <User className="w-4 h-4 text-[#0055FF]" />
                         <div>
-                          <span className="font-bold block text-[#0A0A0A]">{tx.profiles?.full_name || tx.user_id.slice(0, 8)}</span>
+                          <span className="font-bold block text-[#0A0A0A]">{tx.profiles?.full_name || (tx.user_id || "").slice(0, 8)}</span>
                           <span className="text-[9px] text-[#6B7280] font-mono lowercase">{tx.profiles?.email}</span>
                         </div>
                       </div>
                     </td>
                     <td className="p-4 font-mono font-bold text-[#C43D3D]">
-                      ${formatNumber(tx.amount, { minimumFractionDigits: 2 })}
+                      ${formatNumber(tx.amount || 0, { minimumFractionDigits: 2 })}
                     </td>
                     <td className="p-4 font-mono text-[10px] text-[#6B7280]">
                       <span className="block font-bold text-[#0A0A0A] uppercase tracking-tighter">{tx.asset}</span>

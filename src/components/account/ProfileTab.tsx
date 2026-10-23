@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @fileOverview Profile Management Tab (Supabase Version).
+ * @fileOverview Profile Management Tab .
  * Features expanded Address and Investor Profile sections.
  * Enforces mandatory data fields for regulatory compliance.
  */
@@ -9,15 +9,15 @@
 import React, { useState, useEffect } from 'react';
 import { User, Camera, Loader2, ShieldAlert, MapPin, Briefcase, Globe, Info } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { createClient } from '@/app/lib/supabase/client';
 import { COUNTRIES } from '@/app/lib/countries';
 import { cn } from '@/app/lib/utils';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
 
 export default function ProfileTab() {
   const { user } = useUser();
-  const supabase = createClient();
+  const db = useFirestore();
   
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -54,37 +54,35 @@ export default function ProfileTab() {
 
   useEffect(() => {
     async function loadProfile() {
-      if (!user?.uid) return;
+      if (!user?.uid || !db) return;
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.uid)
-          .maybeSingle();
-        
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        const data: any = snap.exists() ? snap.data() : null;
         if (data) {
-          setProfile(data);
-          const rawPhone = data.phone || "";
+          const p = data?.profile ?? {};
+          const inv = data?.investor ?? {};
+          setProfile({ profile_completed: !!p?.profileCompleted });
+          const rawPhone: string = p?.phone || "";
           const phoneParts = rawPhone.split(' ');
           setForm({
-            firstName: data.first_name || "",
-            lastName: data.last_name || "",
+            firstName: p?.firstName || "",
+            lastName: p?.lastName || "",
             phone: phoneParts.length > 1 ? phoneParts.slice(1).join(' ') : rawPhone,
-            country: data.country || "United Kingdom",
+            country: p?.country || "United Kingdom",
             dialCode: phoneParts.length > 1 ? phoneParts[0] : "+44",
-            addressLine1: data.address_line1 || "",
-            addressLine2: data.address_line2 || "",
-            city: data.city || "",
-            state: data.state || "",
-            zipCode: data.zip_code || "",
-            accountPurpose: data.account_purpose || "Portfolio Diversification",
-            originFunds: data.origin_funds || "Kenya",
-            netWorth: data.net_worth || "Less than $10,000",
-            annualIncome: data.annual_income || "Less than $10,000",
-            tradeForecast: data.trade_forecast || "$5,000 - $25,000",
-            education: data.education || "Bachelor's Degree / Diploma",
-            employmentStatus: data.employment_status || "Employed",
-            sourceWealth: data.source_wealth || "Business Revenue"
+            addressLine1: p?.addressLine1 || "",
+            addressLine2: p?.addressLine2 || "",
+            city: p?.city || "",
+            state: p?.state || "",
+            zipCode: p?.zipCode || "",
+            accountPurpose: inv?.accountPurpose || "Portfolio Diversification",
+            originFunds: inv?.originFunds || "Kenya",
+            netWorth: inv?.netWorth || "Less than $10,000",
+            annualIncome: inv?.annualIncome || "Less than $10,000",
+            tradeForecast: inv?.tradeForecast || "$5,000 - $25,000",
+            education: inv?.education || "Bachelor's Degree / Diploma",
+            employmentStatus: inv?.employmentStatus || "Employed",
+            sourceWealth: inv?.sourceWealth || "Business Revenue"
           });
         }
       } catch (err: any) {
@@ -94,43 +92,42 @@ export default function ProfileTab() {
       }
     }
     loadProfile();
-  }, [user?.uid, supabase]);
+  }, [user?.uid, db]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?.uid || isSaving) return;
+    if (!user?.uid || !db || isSaving) return;
     setIsSaving(true);
     
     try {
       const fullName = `${form.firstName} ${form.lastName}`.trim();
       const cleanPhone = `${form.dialCode} ${form.phone}`.trim();
       
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          first_name: form.firstName.trim(),
-          last_name: form.lastName.trim(),
-          full_name: fullName,
+      await setDoc(doc(db, 'users', user.uid), {
+        profile: {
+          firstName: form.firstName.trim(),
+          lastName: form.lastName.trim(),
+          fullName,
           phone: cleanPhone,
           country: form.country,
-          address_line1: form.addressLine1,
-          address_line2: form.addressLine2,
+          addressLine1: form.addressLine1,
+          addressLine2: form.addressLine2,
           city: form.city,
           state: form.state,
-          zip_code: form.zipCode,
-          account_purpose: form.accountPurpose,
-          origin_funds: form.originFunds,
-          net_worth: form.netWorth,
-          annual_income: form.annualIncome,
-          trade_forecast: form.tradeForecast,
+          zipCode: form.zipCode,
+          profileCompleted: true // Mark as finalized
+        },
+        investor: {
+          accountPurpose: form.accountPurpose,
+          originFunds: form.originFunds,
+          netWorth: form.netWorth,
+          annualIncome: form.annualIncome,
+          tradeForecast: form.tradeForecast,
           education: form.education,
-          employment_status: form.employmentStatus,
-          source_wealth: form.sourceWealth,
-          profile_completed: true // Mark as finalized
-        })
-        .eq('id', user.uid);
-      
-      if (error) throw error;
+          employmentStatus: form.employmentStatus,
+          sourceWealth: form.sourceWealth
+        }
+      }, { merge: true });
 
       setDialog({
         status: 'success',
@@ -139,7 +136,7 @@ export default function ProfileTab() {
       });
       
       // Refresh local profile state
-      setProfile(prev => ({ ...prev, profile_completed: true }));
+      setProfile((prev: any) => ({ ...prev, profile_completed: true }));
     } catch (err: any) {
       setDialog({
         status: 'error',

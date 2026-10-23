@@ -4,12 +4,23 @@ import React, { useState, useEffect, useMemo } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { Search, ShieldCheck, X, Check, Loader2 } from "lucide-react";
-import { createClient } from "@/app/lib/supabase/client";
+import { useFirestore } from "@/firebase";
+import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { cn } from "@/app/lib/utils";
 import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
 
+const toMillis = (ts: any): number => {
+  try {
+    if (!ts) return 0;
+    if (typeof ts.toMillis === "function") return ts.toMillis();
+    if (typeof ts.toDate === "function") return ts.toDate().getTime();
+    const d = new Date(ts);
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  } catch { return 0; }
+};
+
 export default function AdminKycApprovalsPage() {
-  const supabase = createClient();
+  const db = useFirestore();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('Pending');
@@ -23,33 +34,37 @@ export default function AdminKycApprovalsPage() {
   });
 
   const loadEntities = async () => {
+    if (!db) return;
     setLoading(true);
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .order('id', { ascending: false });
-    
-    if (error) {
+    try {
+      const snap = await getDocs(collection(db, 'users'));
+      const rows = snap.docs.map(d => {
+        const x: any = d.data() || {};
+        return {
+          id: d.id,
+          full_name: x.profile?.fullName || [x.profile?.firstName, x.profile?.lastName].filter(Boolean).join(" ") || "",
+          email: x.profile?.email || "",
+          country: x.profile?.country || "",
+          verification_status: x.status?.verificationStatus || "Not Verified",
+          created: toMillis(x.profile?.createdAt) || toMillis(x.status?.createdAt),
+        };
+      }).sort((a, b) => b.created - a.created);
+      setUsers(rows);
+    } catch (error) {
       console.error("KYC load error:", error);
       setUsers([]);
-    } else {
-      setUsers(data || []);
     }
     setLoading(false);
   };
 
   useEffect(() => {
     loadEntities();
-  }, []);
+  }, [db]);
 
   const handleUpdateStatus = async (userId: string, status: string) => {
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ verification_status: status })
-        .eq('id', userId);
-      
-      if (error) throw error;
+      if (!db) throw new Error('no db');
+      await updateDoc(doc(db, 'users', userId), { 'status.verificationStatus': status });
       
       setDialog({ 
         status: 'success', 

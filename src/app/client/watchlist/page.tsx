@@ -2,17 +2,18 @@
 
 /**
  * @fileOverview Institutional Watchlist Registry.
- * Migrated to Supabase for persistence.
+ * Persisted in Firestore.
  * Fully localized for international markets.
  */
 
 import { useMemo, useState, useEffect } from "react";
+import { collection, query, doc, setDoc, deleteDoc } from "firebase/firestore";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { Star, Sliders, X, Plus, Search, Check } from "lucide-react";
 import Link from "next/link";
-import { useUser } from "@/firebase";
-import { createClient } from "@/app/lib/supabase/client";
+import { useUser, useFirestore } from "@/firebase";
+import { useCollection } from "@/firebase/firestore/use-collection";
 import { fetchLivePrice } from "@/app/lib/market-service";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { AVAILABLE_INSTRUMENTS } from "@/app/lib/instruments";
@@ -22,11 +23,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function WatchlistPage() {
   const { user } = useUser();
-  const supabase = createClient();
+  const db = useFirestore();
   const { t, formatNumber } = useTranslation();
   
-  const [watchlist, setWatchlist] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const watchlistQuery = useMemo(() => {
+    if (!db || !user?.uid) return null;
+    return query(collection(db, `users/${user.uid}/watchlist`));
+  }, [db, user?.uid]);
+  const { data: watchlistData, loading } = useCollection<any>(watchlistQuery);
+  const watchlist = useMemo(() => watchlistData || [], [watchlistData]);
   const [prices, setPrices] = useState<Record<string, any>>({});
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -36,20 +41,6 @@ export default function WatchlistPage() {
   const trackedSymbols = useMemo(() => {
     return new Set(watchlist.map((item: any) => item.symbol));
   }, [watchlist]);
-
-  const loadWatchlist = async () => {
-    if (!user?.uid) return;
-    const { data } = await supabase
-      .from('watchlist')
-      .select('*')
-      .eq('user_id', user.uid);
-    if (data) setWatchlist(data);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    loadWatchlist();
-  }, [user?.uid]);
 
   useEffect(() => {
     if (watchlist.length === 0) return;
@@ -77,19 +68,23 @@ export default function WatchlistPage() {
   }, [watchlist]);
 
   const toggleSymbol = async (inst: any) => {
-    if (!user?.uid) return;
+    if (!user?.uid || !db) return;
     
-    if (trackedSymbols.has(inst.symbol)) {
-      await supabase.from('watchlist').delete().eq('user_id', user.uid).eq('symbol', inst.symbol);
-    } else {
-      await supabase.from('watchlist').insert({
-        user_id: user.uid,
-        symbol: inst.symbol,
-        name: inst.name,
-        category: inst.category
-      });
-    }
-    loadWatchlist();
+    try {
+      if (trackedSymbols.has(inst.symbol)) {
+        const existing = watchlist.find((w: any) => w.symbol === inst.symbol);
+        const docId = existing?.id || String(inst.symbol).replace(/\//g, "_");
+        await deleteDoc(doc(db, `users/${user.uid}/watchlist`, docId));
+      } else {
+        const docId = String(inst.symbol).replace(/\//g, "_");
+        await setDoc(doc(db, `users/${user.uid}/watchlist`, docId), {
+          symbol: inst.symbol,
+          name: inst.name,
+          category: inst.category,
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (e) {}
   };
 
   const filteredInstruments = useMemo(() => {

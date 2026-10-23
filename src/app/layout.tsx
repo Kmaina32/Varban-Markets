@@ -4,7 +4,6 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { FirebaseProvider } from "@/firebase";
 import { I18nProvider } from "@/app/lib/i18n-context";
-import { SupabaseAuthProvider } from "@/app/lib/supabase/auth-context";
 import CookieConsent from "@/components/layout/CookieConsent";
 import ChatSupport from "@/components/ChatSupport";
 import Script from 'next/script';
@@ -84,19 +83,17 @@ export default function RootLayout({
         )}
       </head>
       <body className="min-h-screen flex flex-col bg-[#F7F7F5] overflow-x-hidden">
-        <SupabaseAuthProvider>
-          <FirebaseProvider>
-            <I18nProvider>
-              <Navbar />
-              <main className="flex-grow flex flex-col">
-                {children}
-              </main>
-              <Footer />
-              <CookieConsent />
-              <ChatSupport />
-            </I18nProvider>
-          </FirebaseProvider>
-        </SupabaseAuthProvider>
+        <FirebaseProvider>
+          <I18nProvider>
+            <Navbar />
+            <main className="flex-grow flex flex-col">
+              {children}
+            </main>
+            <Footer />
+            <CookieConsent />
+            <ChatSupport />
+          </I18nProvider>
+        </FirebaseProvider>
       </body>
     </html>
   );

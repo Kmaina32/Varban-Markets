@@ -37,6 +37,7 @@ import { useTranslation } from "@/app/lib/i18n-context";
 import { MarketIcon } from "@/components/MarketIcon";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { cn } from "@/app/lib/utils";
+import { watchlistDocId } from "@/app/lib/watchlist";
 
 export default function CommoditiesMarketPage() {
   const { user } = useUser();
@@ -71,7 +72,7 @@ export default function CommoditiesMarketPage() {
 
   const toggleWatchlist = (inst: any) => {
     if (!user || !db) return;
-    const docRef = doc(db, `users/${user.uid}/watchlist`, inst.symbol);
+    const docRef = doc(db, `users/${user.uid}/watchlist`, watchlistDocId(inst.symbol));
     if (isInWatchlist(inst.symbol)) {
       deleteDoc(docRef).catch(() => {});
     } else {

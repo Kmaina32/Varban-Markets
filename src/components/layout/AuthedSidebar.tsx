@@ -11,7 +11,7 @@ import {
 import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { useUser, useDoc, useFirestore } from "@/firebase";
-import { useSupabaseAuth } from "@/app/lib/supabase/auth-context";
+import { initializeFirebase } from "@/firebase";
 import { useMemo } from "react";
 import {
   HoverCard,
@@ -30,7 +30,6 @@ const SUPER_ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
 export default function AuthedSidebar({ onLinkClick, className, isMobile = false }: AuthedSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { signOut } = useSupabaseAuth();
   const { t } = useTranslation();
   const { user } = useUser();
   const db = useFirestore();
@@ -43,7 +42,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
   }, [user, profile]);
 
   const handleLogout = async () => {
-    await signOut();
+    try { await initializeFirebase().auth.signOut(); } catch (e) { console.error("Sign out failed:", e); }
     onLinkClick?.();
     router.push('/');
   };
@@ -61,7 +60,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
       items: [
         { label: t('nav.terminal'), href: "/client/terminal", icon: Monitor, description: "Professional execution interface with TradingView integration." },
         { label: t('nav.bots'), href: "/client/bots", icon: Cpu, description: "Automated trading tools and pre-verified algorithms." },
-        { label: t('nav.markets'), href: "/markets", icon: Globe, description: "Global instrument registry with live pricing." },
+        { label: t('nav.markets'), href: "/client/markets", icon: Globe, description: "Global instrument registry with live pricing." },
         { label: t('nav.portfolio'), href: "/client/portfolio", icon: Briefcase, description: "Asset allocation and performance curve visualization." },
         { label: t('nav.positions'), href: "/client/positions", icon: Target, description: "Live contract management and risk tracking." },
         { label: t('nav.orders'), href: "/client/orders", icon: FileText, description: "Pending order tracker for scheduled contracts." },

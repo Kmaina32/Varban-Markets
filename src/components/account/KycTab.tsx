@@ -10,7 +10,6 @@ import { ShieldCheck, FileText, Camera, Plus, Loader2, ShieldAlert, AlertCircle 
 import { Card } from '@/components/ui/card';
 import { useUser, useDoc, useFirestore } from '@/firebase';
 import { doc, setDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { createClient } from '@/app/lib/supabase/client';
 import { cn } from '@/app/lib/utils';
 import CameraCaptureModal from './CameraCaptureModal';
 import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
@@ -56,7 +55,6 @@ const KYC_SLOTS: KycSlot[] = [
 export default function KycTab() {
   const { user } = useUser();
   const db = useFirestore();
-  const supabase = createClient();
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   
   const [isUploading, setIsUploading] = useState<string | null>(null);
@@ -107,9 +105,6 @@ export default function KycTab() {
         }
       }
 
-      // Update Supabase profiles table
-      await supabase.from('profiles').update({ verification_status: 'Pending' }).eq('id', user.uid);
-
       if (db && profile?.status?.verificationStatus !== 'Verified') {
         await setDoc(doc(db, "users", user.uid), {
           status: { verificationStatus: 'Pending' }
@@ -132,7 +127,7 @@ export default function KycTab() {
     }
   };
 
-  const status = profile?.verification_status || profile?.status?.verificationStatus || 'Not Verified';
+  const status = profile?.status?.verificationStatus || 'Not Verified';
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">

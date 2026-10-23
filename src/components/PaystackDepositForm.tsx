@@ -9,8 +9,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { ShieldCheck, Check, CreditCard } from "lucide-react";
 import { useUser, useFirestore, useDoc } from "@/firebase";
-import { collection, addDoc, serverTimestamp, doc, setDoc, increment } from "firebase/firestore";
-import { createClient } from "@/app/lib/supabase/client";
+import { collection, addDoc, serverTimestamp, doc, setDoc, increment, getDoc } from "firebase/firestore";
 import { usePaystackPayment } from 'react-paystack';
 import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
 
@@ -19,7 +18,6 @@ const PAYSTACK_CURRENCIES = ["USD", "NGN", "GHS", "ZAR", "KES"];
 export default function PaystackDepositForm() {
   const { user } = useUser();
   const db = useFirestore();
-  const supabase = createClient();
   
   const [profile, setProfile] = useState<any>(null);
   const [amount, setAmount] = useState("2500");
@@ -34,15 +32,18 @@ export default function PaystackDepositForm() {
 
   useEffect(() => {
     async function loadProfile() {
-      if (!user?.uid) return;
-      const { data } = await supabase.from('profiles').select('*').eq('id', user.uid).single();
-      if (data) {
-        setProfile(data);
-        setSelectedCurrency(data.currency || "USD");
-      }
+      if (!user?.uid || !db) return;
+      try {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        const data = snap.exists() ? snap.data() : null;
+        if (data) {
+          setProfile(data);
+          setSelectedCurrency(data?.currency || "USD");
+        }
+      } catch (e) {}
     }
     loadProfile();
-  }, [user?.uid, supabase]);
+  }, [user?.uid, db]);
 
   const config = {
     reference: `DEP-${new Date().getTime()}-${Math.floor(Math.random() * 1000000)}`,
@@ -60,23 +61,6 @@ export default function PaystackDepositForm() {
     const amountNum = parseFloat(amount);
     
     try {
-      // 1. Log in Supabase (Primary)
-      await supabase.from('transactions').insert({
-        user_id: user.uid,
-        type: "Vault Deposit",
-        asset: selectedCurrency,
-        amount: amountNum,
-        status: "Confirmed",
-        ref: reference.reference,
-        provider: "Paystack Protocol"
-      });
-
-      await supabase.from('profiles').update({
-        balance: (profile?.balance || 0) + amountNum,
-        equity: (profile?.equity || 0) + amountNum
-      }).eq('id', user.uid);
-
-      // 2. Log in Firebase (Legacy Guard)
       if (db) {
         await addDoc(collection(db, `users/${user.uid}/transactions`), {
           type: "Vault Deposit",

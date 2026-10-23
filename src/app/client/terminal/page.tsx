@@ -22,9 +22,9 @@ import {
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
-import { useUser } from "@/firebase";
+import { useUser, useFirestore } from "@/firebase";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
-import { createClient } from "@/app/lib/supabase/client";
 import { cn } from "@/app/lib/utils";
 import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
 
@@ -66,7 +66,7 @@ const TIMEZONES = [
 
 export default function TerminalWorkspace() {
   const { user } = useUser();
-  const supabase = createClient();
+  const db = useFirestore();
   const { formatNumber, locale, setLocale } = useTranslation();
 
   const [profile, setProfile] = useState<any>(null);
@@ -90,15 +90,18 @@ export default function TerminalWorkspace() {
     if (savedMode) setAccountMode(savedMode);
     
     async function init() {
-      if (!user?.uid) return;
-      const { data } = await supabase.from('profiles').select('*').eq('id', user.uid).single();
-      if (data) {
-        setProfile(data);
-        if (data.timezone) setActiveTimezone(data.timezone);
-      }
+      if (!user?.uid || !db) return;
+      try {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        const data: any = snap.exists() ? snap.data() : null;
+        if (data) {
+          setProfile(data);
+          if (data?.preferences?.timezone) setActiveTimezone(data.preferences.timezone);
+        }
+      } catch (e) {}
     }
     init();
-  }, [user?.uid, supabase]);
+  }, [user?.uid, db]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -122,8 +125,10 @@ export default function TerminalWorkspace() {
 
   const handleTimezoneChange = async (val: string) => {
     setActiveTimezone(val);
-    if (user?.uid) {
-      await supabase.from('profiles').update({ timezone: val }).eq('id', user.uid);
+    if (user?.uid && db) {
+      try {
+        await updateDoc(doc(db, "users", user.uid), { "preferences.timezone": val });
+      } catch (e) {}
     }
   };
 

@@ -8,12 +8,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { createClient } from "@/app/lib/supabase/client";
+import { initializeFirebase } from "@/firebase";
+import { sendPasswordResetEmail } from "firebase/auth";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { ArrowLeft, CheckCircle2, Mail, Loader2, AlertCircle } from "lucide-react";
 
 export default function ForgotPasswordPage() {
-  const supabase = createClient();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,19 +25,15 @@ export default function ForgotPasswordPage() {
     setError(null);
 
     try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
-      });
-
-      if (resetError) {
-        if (resetError.message.includes('too many requests')) {
-          throw new Error("Security Lock: Too many reset attempts. Please wait a moment before trying again.");
-        }
-        throw resetError;
-      }
+      const { auth } = initializeFirebase();
+      await sendPasswordResetEmail(auth, email);
       setSuccess(true);
     } catch (err: any) {
-      setError(err.message || "A recovery link could not be generated for this domain.");
+      if (err?.code === 'auth/too-many-requests') {
+        setError("Security Lock: Too many reset attempts. Please wait a moment before trying again.");
+        return;
+      }
+      setError(err?.message || "A recovery link could not be generated for this domain.");
     } finally {
       setLoading(false);
     }

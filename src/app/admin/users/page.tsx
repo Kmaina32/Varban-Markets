@@ -9,12 +9,43 @@ import * as React from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { UserCog, AlertTriangle, ShieldCheck } from "lucide-react";
 import { useTranslation } from "@/app/lib/i18n-context";
-import { createClient } from "@/app/lib/supabase/client";
+import { useFirestore } from "@/firebase";
+import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { DataTable } from "@/components/ui/data-table";
 import { createColumnHelper } from "@tanstack/react-table";
 import { type DataTableFeatures } from "@/components/ui/data-table-features";
 import { cn } from "@/app/lib/utils";
 import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
+
+
+const toMillis = (ts: any): number => {
+  try {
+    if (!ts) return 0;
+    if (typeof ts.toMillis === "function") return ts.toMillis();
+    if (typeof ts.toDate === "function") return ts.toDate().getTime();
+    const d = new Date(ts);
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  } catch { return 0; }
+};
+
+const toDateSafe = (ts: any): Date | null => {
+  const ms = toMillis(ts);
+  return ms ? new Date(ms) : null;
+};
+
+const mapUser = (d: any) => {
+  const x = d.data() || {};
+  return {
+    id: d.id,
+    full_name: x.profile?.fullName || [x.profile?.firstName, x.profile?.lastName].filter(Boolean).join(" ") || "",
+    email: x.profile?.email || "",
+    country: x.profile?.country || "",
+    verification_status: x.status?.verificationStatus || "Not Verified",
+    role: x.status?.role || "Trader",
+    balance: Number(x.balance) || 0,
+    created: toMillis(x.profile?.createdAt) || toMillis(x.status?.createdAt),
+  };
+};
 
 type UserProfile = {
   id: string;
@@ -27,7 +58,7 @@ type UserProfile = {
 
 export default function UserManagement() {
   const { formatNumber } = useTranslation();
-  const supabase = createClient();
+  const db = useFirestore();
   
   const [data, setData] = React.useState<UserProfile[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -40,25 +71,27 @@ export default function UserManagement() {
   });
 
   const loadUsers = async () => {
+    if (!db) return;
     setLoading(true);
-    const { data: users, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .order('id', { ascending: false });
-    
-    if (users) setData(users as any);
+    try {
+      const snap = await getDocs(collection(db, 'users'));
+      setData(snap.docs.map(mapUser).sort((a, b) => b.created - a.created) as any);
+    } catch (e) {
+      console.error("User load error:", e);
+    }
     setLoading(false);
   };
 
   React.useEffect(() => {
     loadUsers();
-  }, []);
+  }, [db]);
 
   const handleVerify = async (userId: string, currentStatus: string) => {
     setIsProcessing(userId);
     const nextStatus = currentStatus === 'Verified' ? 'Not Verified' : 'Verified';
     try {
-      await supabase.from('profiles').update({ verification_status: nextStatus }).eq('id', userId);
+      if (!db) throw new Error('no db');
+      await updateDoc(doc(db, 'users', userId), { 'status.verificationStatus': nextStatus });
       await loadUsers();
     } catch (e) {
       setDialog({ status: 'error', title: 'Update Failed', message: 'Failed to modify verification state.' });
@@ -72,7 +105,8 @@ export default function UserManagement() {
     setIsProcessing(userId);
     const nextRole = currentRole === 'Admin' ? 'Trader' : 'Admin';
     try {
-      await supabase.from('profiles').update({ role: nextRole }).eq('id', userId);
+      if (!db) throw new Error('no db');
+      await updateDoc(doc(db, 'users', userId), { 'status.role': nextRole });
       await loadUsers();
     } catch (e) {
       setDialog({ status: 'error', title: 'Update Failed', message: 'Failed to modify role authority.' });
@@ -130,7 +164,7 @@ export default function UserManagement() {
     }),
     columnHelper.accessor("balance", {
       header: () => <div className="text-right">Balance</div>,
-      cell: info => <div className="text-right font-mono font-bold">${formatNumber(info.getValue(), { minimumFractionDigits: 2 })}</div>,
+      cell: info => <div className="text-right font-mono font-bold">${formatNumber(info.getValue() || 0, { minimumFractionDigits: 2 })}</div>,
     }),
     columnHelper.display({
       id: "actions",

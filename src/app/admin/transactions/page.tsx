@@ -9,11 +9,29 @@ import * as React from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Download, AlertCircle, FileSpreadsheet } from "lucide-react";
 import { useTranslation } from "@/app/lib/i18n-context";
-import { createClient } from "@/app/lib/supabase/client";
+import { useFirestore } from "@/firebase";
+import { collectionGroup, collection, getDocs } from "firebase/firestore";
 import { DataTable } from "@/components/ui/data-table";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { type DataTableFeatures } from "@/components/ui/data-table-features";
 import { cn } from "@/app/lib/utils";
+
+
+const toMillis = (ts: any): number => {
+  try {
+    if (!ts) return 0;
+    if (typeof ts.toMillis === "function") return ts.toMillis();
+    if (typeof ts.toDate === "function") return ts.toDate().getTime();
+    const d = new Date(ts);
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  } catch { return 0; }
+};
+
+const toDateSafe = (ts: any): Date | null => {
+  const ms = toMillis(ts);
+  return ms ? new Date(ms) : null;
+};
+
 
 type Transaction = {
   id: string;
@@ -22,7 +40,7 @@ type Transaction = {
   asset: string;
   amount: number;
   status: string;
-  created_at: string;
+  created_at: number;
   user_id: string;
   profiles: {
     full_name: string;
@@ -32,7 +50,7 @@ type Transaction = {
 
 export default function GlobalLedger() {
   const { formatNumber, formatDate } = useTranslation();
-  const supabase = createClient();
+  const db = useFirestore();
   
   const [data, setData] = React.useState<Transaction[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -40,33 +58,60 @@ export default function GlobalLedger() {
 
   React.useEffect(() => {
     async function loadLedger() {
+      if (!db) return;
       setLoading(true);
-      const { data: tx, error } = await supabase
-        .from('transactions')
-        .select('*, profiles(full_name, email)')
-        .order('created_at', { ascending: false })
-        .limit(200);
-      
-      if (error && error.code === 'PGRST200') setSchemaError(true);
-      if (tx) setData(tx as any);
+      try {
+        const [txSnap, userSnap] = await Promise.all([
+          getDocs(collectionGroup(db, 'transactions')),
+          getDocs(collection(db, 'users')).catch(() => null),
+        ]);
+        const profileMap: Record<string, { full_name: string; email: string }> = {};
+        userSnap?.docs.forEach(u => {
+          const x: any = u.data() || {};
+          profileMap[u.id] = {
+            full_name: x.profile?.fullName || [x.profile?.firstName, x.profile?.lastName].filter(Boolean).join(" ") || "",
+            email: x.profile?.email || "",
+          };
+        });
+        const rows = txSnap.docs.map(d => {
+          const x: any = d.data() || {};
+          const uid = d.ref.parent.parent?.id || "";
+          return {
+            id: d.id,
+            ref: x.ref || "",
+            type: x.type || "",
+            asset: x.asset || "",
+            amount: Number(x.amount) || 0,
+            status: x.status || "",
+            created_at: toMillis(x.timestamp),
+            user_id: uid,
+            profiles: profileMap[uid] || { full_name: "", email: "" },
+          } as Transaction;
+        });
+        rows.sort((a, b) => b.created_at - a.created_at);
+        setData(rows.slice(0, 200));
+      } catch (e) {
+        console.error("Ledger load error:", e);
+        setSchemaError(true);
+      }
       setLoading(false);
     }
     loadLedger();
-  }, [supabase]);
+  }, [db]);
 
   const columnHelper = createColumnHelper<DataTableFeatures, Transaction>();
 
   const columns = columnHelper.columns([
     columnHelper.accessor("ref", {
       header: "Reference",
-      cell: info => <span className="font-mono font-bold uppercase">{info.getValue() || info.row.original.id.slice(0, 8)}</span>,
+      cell: info => <span className="font-mono font-bold uppercase">{info.getValue() || (info.row.original.id || "").slice(0, 8)}</span>,
     }),
     columnHelper.accessor("profiles.full_name", {
       id: "entity",
       header: "Entity",
       cell: info => (
         <div className="flex flex-col">
-          <span className="font-bold">{info.getValue() || `ID: ${info.row.original.user_id.slice(0, 8)}`}</span>
+          <span className="font-bold">{info.getValue() || `ID: ${(info.row.original.user_id || "").slice(0, 8)}`}</span>
           <span className="text-[9px] text-[#6B7280] lowercase font-mono">{info.row.original.profiles?.email}</span>
         </div>
       ),
@@ -79,7 +124,7 @@ export default function GlobalLedger() {
       header: () => <div className="text-right">Value (USD)</div>,
       cell: info => (
         <div className="text-right font-mono font-bold text-[#0A0A0A]">
-          ${formatNumber(info.getValue(), { minimumFractionDigits: 2 })}
+          ${formatNumber(info.getValue() || 0, { minimumFractionDigits: 2 })}
         </div>
       ),
     }),
@@ -103,7 +148,7 @@ export default function GlobalLedger() {
     }),
     columnHelper.accessor("created_at", {
       header: () => <div className="text-right">Settlement Time</div>,
-      cell: info => <div className="text-right font-mono text-[#6B7280]">{formatDate(new Date(info.getValue()))}</div>,
+      cell: info => <div className="text-right font-mono text-[#6B7280]">{info.getValue() ? formatDate(new Date(info.getValue())) : "---"}</div>,
     }),
   ]);
 
@@ -117,9 +162,9 @@ export default function GlobalLedger() {
           <div className="p-4 bg-[#C9A227]/5 border border-[#C9A227]/20 flex items-start space-x-3 shadow-sm">
             <AlertCircle className="w-5 h-5 text-[#C9A227] shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <p className="text-xs font-bold text-[#C9A227] uppercase tracking-widest">Database relationship missing (PGRST200)</p>
+              <p className="text-xs font-bold text-[#C9A227] uppercase tracking-widest">Ledger query failed</p>
               <p className="text-[10px] text-[#6B7280] leading-relaxed">
-                Supabase cannot link transactions to profile names. Identity resolution is restricted to entity IDs.
+                Unable to load the full ledger. Check admin permissions and indexes.
               </p>
             </div>
           </div>

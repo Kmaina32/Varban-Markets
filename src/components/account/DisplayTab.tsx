@@ -1,16 +1,15 @@
 'use client';
 
 /**
- * @fileOverview Institutional Settings Workspace (Supabase Version).
+ * @fileOverview Institutional Settings Workspace .
  * Handles global preferences for Currency, Language, and Timezone.
- * Updated with resilient schema detection to avoid 400 Bad Request errors.
  */
 
 import React, { useState, useEffect } from 'react';
 import { DollarSign, Globe, Clock, ChevronDown, CheckCircle2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { createClient } from '@/app/lib/supabase/client';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { cn } from '@/app/lib/utils';
 import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
 
@@ -24,7 +23,7 @@ const TIMEZONES = [
 
 export default function DisplayTab() {
   const { user } = useUser();
-  const supabase = createClient();
+  const db = useFirestore();
   
   const [form, setForm] = useState({
     currency: 'USD',
@@ -42,28 +41,15 @@ export default function DisplayTab() {
 
   useEffect(() => {
     async function loadSettings() {
-      if (!user?.uid) return;
+      if (!user?.uid || !db) return;
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('currency, language, timezone')
-          .eq('id', user.uid)
-          .maybeSingle();
-        
-        if (error) {
-          console.warn("Supabase Preference Load Warning:", error.message);
-          // If error is column missing (400), don't throw, just allow initialization
-          if (error.code !== 'PGRST116') {
-             setLoading(false);
-             return;
-          }
-        }
-        
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        const data: any = snap.exists() ? snap.data() : null;
         if (data) {
           setForm({
-            currency: data.currency || 'USD',
-            language: data.language || 'ENGLISH',
-            timezone: data.timezone || 'UTC+0'
+            currency: data?.currency || 'USD',
+            language: data?.preferences?.language || 'ENGLISH',
+            timezone: data?.preferences?.timezone || 'UTC+0'
           });
         }
       } catch (e) {
@@ -73,23 +59,20 @@ export default function DisplayTab() {
       }
     }
     loadSettings();
-  }, [user?.uid, supabase]);
+  }, [user?.uid, db]);
 
   const handleSave = async () => {
-    if (!user?.uid || isSaving) return;
+    if (!user?.uid || !db || isSaving) return;
     setIsSaving(true);
     
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          currency: form.currency,
+      await setDoc(doc(db, 'users', user.uid), {
+        currency: form.currency,
+        preferences: {
           language: form.language,
           timezone: form.timezone
-        })
-        .eq('id', user.uid);
-      
-      if (error) throw error;
+        }
+      }, { merge: true });
 
       setDialog({
         status: 'success',
@@ -100,7 +83,7 @@ export default function DisplayTab() {
       setDialog({
         status: 'error',
         title: 'Sync Interrupted',
-        message: e.message || 'Platform synchronization failure. Please verify database connectivity or run SQL setup.'
+        message: e.message || 'Platform synchronization failure. Please verify database connectivity.'
       });
     } finally {
       setIsSaving(false);

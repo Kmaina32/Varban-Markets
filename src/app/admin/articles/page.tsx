@@ -191,7 +191,7 @@ export default function AdminArticlesPage() {
           <div className="p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 flex items-center space-x-3">
             <AlertTriangle className="w-4 h-4 text-[#C43D3D]" />
             <p className="text-[10px] font-bold text-[#C43D3D] uppercase tracking-widest">
-              Firebase Node Offline: Synchronize Supabase connection to enable authoring.
+              Firebase Node Offline: Reconnect to Firebase to enable authoring.
             </p>
           </div>
         )}

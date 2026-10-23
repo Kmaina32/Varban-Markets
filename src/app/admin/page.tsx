@@ -5,17 +5,48 @@ import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { ShieldAlert, Users, DollarSign, Activity, TrendingUp, ArrowRight, Loader2 } from "lucide-react";
 import { useTranslation } from "@/app/lib/i18n-context";
-import { createClient } from "@/app/lib/supabase/client";
+import { useFirestore } from "@/firebase";
+import { collection, getDocs } from "firebase/firestore";
 import Link from "next/link";
 
 /**
- * @fileOverview Administrative Oversight Node (Supabase Migrated).
+ * @fileOverview Administrative Oversight Node (Firestore).
  * Provides platform-wide metrics derived from real-time database aggregates.
  */
 
+
+const toMillis = (ts: any): number => {
+  try {
+    if (!ts) return 0;
+    if (typeof ts.toMillis === "function") return ts.toMillis();
+    if (typeof ts.toDate === "function") return ts.toDate().getTime();
+    const d = new Date(ts);
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  } catch { return 0; }
+};
+
+const toDateSafe = (ts: any): Date | null => {
+  const ms = toMillis(ts);
+  return ms ? new Date(ms) : null;
+};
+
+const mapUser = (d: any) => {
+  const x = d.data() || {};
+  return {
+    id: d.id,
+    full_name: x.profile?.fullName || [x.profile?.firstName, x.profile?.lastName].filter(Boolean).join(" ") || "",
+    email: x.profile?.email || "",
+    country: x.profile?.country || "",
+    verification_status: x.status?.verificationStatus || "Not Verified",
+    role: x.status?.role || "Trader",
+    balance: Number(x.balance) || 0,
+    created: toMillis(x.profile?.createdAt) || toMillis(x.status?.createdAt),
+  };
+};
+
 export default function AdminDashboard() {
   const { formatNumber } = useTranslation();
-  const supabase = createClient();
+  const db = useFirestore();
   
   const [metrics, setMetrics] = useState({
     totalBalance: 0,
@@ -27,22 +58,14 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     async function fetchPlatformState() {
+      if (!db) return;
       setLoading(true);
       try {
-        // Fetch profiles with a fallback order to avoid schema missing errors
-        const { data: profiles, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .order('id', { ascending: false });
-        
-        if (error) {
-          console.error("Platform metrics fetch error:", error);
-          setLoading(false);
-          return;
-        }
+        const snap = await getDocs(collection(db, 'users'));
+        const profiles = snap.docs.map(mapUser).sort((a, b) => b.created - a.created);
 
-        if (profiles) {
-          const totalBalance = profiles.reduce((acc: number, p: any) => acc + (parseFloat(p.balance) || 0), 0);
+        {
+          const totalBalance = profiles.reduce((acc: number, p: any) => acc + (p.balance || 0), 0);
           const verified = profiles.filter((p: any) => p.verification_status === 'Verified').length;
           
           setMetrics({
@@ -60,7 +83,7 @@ export default function AdminDashboard() {
     }
 
     fetchPlatformState();
-  }, [supabase]);
+  }, [db]);
 
   const platformMetrics = [
     { title: "Global Assets", value: metrics.totalBalance, icon: DollarSign, color: "text-[#16835B]", isCurrency: true },
@@ -141,7 +164,7 @@ export default function AdminDashboard() {
               <div className="space-y-2">
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#6B7280]">Real-time Latency</span>
                 <p className="text-sm font-bold text-[#0A0A0A] leading-relaxed max-w-xs">
-                  All Supabase matching nodes are synchronized within &lt;45ms thresholds.
+                  All matching nodes are synchronized within &lt;45ms thresholds.
                 </p>
               </div>
               <div className="w-full h-1.5 bg-[#F7F7F5] relative overflow-hidden">
