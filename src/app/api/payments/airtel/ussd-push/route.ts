@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import { initializeFirebase } from '@/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -14,10 +15,20 @@ const BASE_URL = process.env.AIRTEL_BASE_URL || 'https://openapiuat.airtelkenya.
 
 export async function POST(req: NextRequest) {
   try {
-    const { phoneNumber, amount, userId } = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body) {
+      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+    }
+
+    const { phoneNumber, amount, userId } = body;
 
     if (!phoneNumber || !amount || !userId) {
-      return NextResponse.json({ error: "Missing required metadata" }, { status: 400 });
+      return NextResponse.json({ error: "Missing required metadata: phoneNumber, amount, or userId" }, { status: 400 });
+    }
+
+    if (!CLIENT_ID || !CLIENT_SECRET) {
+      console.error("[Airtel API] Configuration Error: CLIENT_ID or CLIENT_SECRET missing.");
+      return NextResponse.json({ error: "Airtel configuration error on server." }, { status: 500 });
     }
 
     // 1. GET OAUTH2 TOKEN
@@ -31,15 +42,20 @@ export async function POST(req: NextRequest) {
       })
     });
     
+    if (!authRes.ok) {
+      const errText = await authRes.text();
+      console.error("[Airtel API] Auth Handshake Failed:", errText);
+      return NextResponse.json({ error: "Airtel Auth Handshake Failed" }, { status: 502 });
+    }
+
     const authData = await authRes.json();
     const token = authData.access_token;
 
     if (!token) {
-      throw new Error("Airtel Auth Failure");
+      return NextResponse.json({ error: "No access token returned from Airtel" }, { status: 502 });
     }
 
     // 2. PREPARE USSD PUSH
-    // Note: Strip country code for Airtel MSISDN
     const msisdn = phoneNumber.startsWith('254') ? phoneNumber.substring(3) : phoneNumber;
     const partnerId = `ARTL-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
@@ -89,13 +105,14 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({ success: true, ref: partnerId });
     } else {
+      console.error("[Airtel API] Push Rejected:", data);
       return NextResponse.json({ 
         error: data.status?.message || "Airtel USSD Push Failed" 
       }, { status: 400 });
     }
 
   } catch (error: any) {
-    console.error("[Airtel API] Error:", error);
-    return NextResponse.json({ error: "Internal Airtel Gateway Error" }, { status: 500 });
+    console.error("[Airtel API] Internal Route Error:", error);
+    return NextResponse.json({ error: "Internal Airtel Gateway Error", details: error.message }, { status: 500 });
   }
 }

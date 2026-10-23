@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import { initializeFirebase } from '@/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -5,7 +6,6 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 /**
  * @fileOverview M-Pesa STK Push Initiator.
  * Handles OAuth authentication and Lipa na M-Pesa Online request.
- * Now logs a PENDING transaction to Firestore for UI synchronization.
  */
 
 const CONSUMER_KEY = process.env.MPESA_CONSUMER_KEY;
@@ -16,10 +16,20 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export async function POST(req: NextRequest) {
   try {
-    const { phoneNumber, amount, userId } = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body) {
+      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+    }
+
+    const { phoneNumber, amount, userId } = body;
 
     if (!phoneNumber || !amount || !userId) {
-      return NextResponse.json({ error: "Missing required metadata" }, { status: 400 });
+      return NextResponse.json({ error: "Missing required metadata: phoneNumber, amount, or userId" }, { status: 400 });
+    }
+
+    if (!CONSUMER_KEY || !CONSUMER_SECRET || !PASSKEY || !SHORT_CODE) {
+      console.error("[M-Pesa API] Infrastructure Configuration Error: Keys missing in .env");
+      return NextResponse.json({ error: "M-Pesa configuration error on server." }, { status: 500 });
     }
 
     // 1. Generate Access Token
@@ -27,13 +37,24 @@ export async function POST(req: NextRequest) {
     const tokenRes = await fetch('https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials', {
       headers: { Authorization: `Basic ${auth}` }
     });
-    const { access_token } = await tokenRes.json();
+    
+    if (!tokenRes.ok) {
+      const errData = await tokenRes.text();
+      console.error("[M-Pesa API] Auth Token Fetch Failed:", errData);
+      return NextResponse.json({ error: "Safaricom Auth Handshake Failed" }, { status: 502 });
+    }
+
+    const tokenData = await tokenRes.json();
+    const access_token = tokenData.access_token;
+
+    if (!access_token) {
+      return NextResponse.json({ error: "No access token returned from Safaricom" }, { status: 502 });
+    }
 
     // 2. Prepare STK Push Payload
     const timestamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
     const password = Buffer.from(`${SHORT_CODE}${PASSKEY}${timestamp}`).toString('base64');
     
-    // Auto-detect base URL for callback if not provided in env
     const protocol = req.headers.get('x-forwarded-proto') || 'https';
     const host = req.headers.get('host');
     const detectedBaseUrl = BASE_URL || `${protocol}://${host}`;
@@ -65,7 +86,7 @@ export async function POST(req: NextRequest) {
     const data = await stkRes.json();
 
     if (data.ResponseCode === "0") {
-      // 3. LOG PENDING TRANSACTION FOR UI LISTENER
+      // 3. LOG PENDING TRANSACTION
       const { db } = initializeFirebase();
       await addDoc(collection(db, `users/${userId}/transactions`), {
         type: "M-Pesa Deposit",
@@ -81,11 +102,12 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({ success: true, checkoutRequestId: data.CheckoutRequestID });
     } else {
+      console.error("[M-Pesa API] STK Push Rejected:", data);
       return NextResponse.json({ error: data.ResponseDescription || "STK Push Initiation Failed" }, { status: 400 });
     }
 
   } catch (error: any) {
-    console.error("[M-Pesa API] Error:", error);
-    return NextResponse.json({ error: "Internal Payment Gateway Error" }, { status: 500 });
+    console.error("[M-Pesa API] Internal Route Error:", error);
+    return NextResponse.json({ error: "Internal Payment Gateway Error", details: error.message }, { status: 500 });
   }
 }

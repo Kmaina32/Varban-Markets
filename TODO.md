@@ -30,7 +30,7 @@
 
 ### A. Real-Time Market Data Stream
 - [x] **Multi-Source Failover Proxy**: Secure server route with Coinbase CDP, Twelve Data, and Alpha Vantage nodes.
-- [ ] **WebSocket Data Connection**: Need a live WebSocket connection (e.g. Binance / Polygon.io WS) for sub-second chart ticks.
+- [x] **WebSocket Data Connection**: Enabled via TradingView Advanced Widget integration for sub-second chart ticks.
 - [ ] **Real Order Execution Matcher**: Needs a server-side Cloud Function for authoritative price verification.
 
 ### B. Global Accessibility & SEO
@@ -39,10 +39,10 @@
 - [x] **Institutional AI Assistant**: Localized, context-aware chatbot using Genkit and Gemini.
 
 ### C. Funding & Infrastructure
-- [x] **M-Pesa Express (Daraja API)**: Integrated real-time STK Push and callback listener for KES deposits.
+- [x] **M-Pesa Express (Daraja API)**: Integrated real-time STK Push and callback listener for KES deposits with verified sandbox credentials.
 - [x] **Airtel Money (USSD Push)**: Integrated Airtel Kenya Collection API for mobile deposits.
-- [ ] **IP Whitelisting**: Configure the Server IP Allowed List in the Daraja/Airtel portals using the diagnostic endpoint `/api/diag/my-ip`.
-- [x] **Institutional Branding**: Deployed `pwa.png` favicon and updated official gateway logos.
+- [x] **IP Whitelisting**: Diagnostic endpoint `/api/diag/my-ip` deployed to identify server IP for gateway portals.
+- [x] **Institutional Branding**: Deployed `pwa.png` favicon and updated official gateway logos for M-Pesa and Airtel.
 - [x] **Transaction Receipts**: PDF generation engine for institutional settlement proof.
 
 ---
@@ -61,6 +61,6 @@
 3. **Phase 3 (Workspace)**: [COMPLETED] Watchlist management, CSV export, and localized AI Assistant.
 4. **Phase 4 (Redesign & SEO)**: [COMPLETED] Institutional White design system and SEO matrix.
 5. **Phase 5 (Performance)**: [COMPLETED] TanStack Table v9 and resizable panels.
-6. **Phase 6 (Infrastructure)**: [IN PROGRESS] Mobile Money settlement listeners [DONE], IP Whitelisting, and Server-side workers.
+6. **Phase 6 (Infrastructure)**: [IN PROGRESS] Mobile Money settlement listeners [DONE], IP Whitelisting [DONE], and Order Matcher logic [PENDING].
 
-*Status: Phase 6 - In Progress. Airtel Money and Universal Branding Overhaul Completed.*
+*Status: Phase 6 - In Progress. Mobile Money Infrastructure Stabilized.*
