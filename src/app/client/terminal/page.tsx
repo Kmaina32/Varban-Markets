@@ -3,7 +3,7 @@
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
  * 4-Panel Grid Architecture with Resizable Panels and full TradingView feature parity.
- * Updated: Increased header z-index to ensure dropdown priority.
+ * Updated: Enhanced mobile responsiveness and refined header z-index.
  */
 
 import { useState, useEffect, useCallback, Suspense, use } from "react";
@@ -225,7 +225,6 @@ function TerminalContent() {
             </div>
             
             <div className="flex items-center space-x-3">
-              {/* PROFESSIONAL LANGUAGE DROPDOWN */}
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-widest text-[#0055FF] outline-none hover:opacity-70 transition-opacity">
                   <span>{LANGUAGE_LABELS[locale]}</span>
@@ -247,7 +246,6 @@ function TerminalContent() {
               
               <div className="w-px h-3 bg-[#E4E4E4]"></div>
 
-              {/* PROFESSIONAL TIMEZONE DROPDOWN */}
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none hover:text-[#0A0A0A] transition-colors">
                   <span>{TIMEZONES.find(t => t.value === activeTimezone)?.label || activeTimezone}</span>
@@ -305,6 +303,7 @@ function TerminalContent() {
         <AuthedSidebar className="hidden lg:flex" />
 
         <main className="flex-grow flex lg:ml-16 overflow-hidden">
+          {/* DESKTOP PANEL GROUP */}
           <ResizablePanelGroup direction="horizontal" className="hidden lg:flex flex-grow overflow-hidden">
             <ResizablePanel defaultSize={75} minSize={40}>
               <ResizablePanelGroup direction="vertical">
@@ -398,38 +397,53 @@ function TerminalContent() {
             </ResizablePanel>
           </ResizablePanelGroup>
 
-          <div className="flex lg:hidden flex-grow flex-col overflow-hidden">
+          {/* MOBILE TERMINAL VIEW */}
+          <div className="flex lg:hidden flex-grow flex-col overflow-hidden w-full">
             <div id="tour-chart-mobile" className="flex-grow min-h-0 bg-[#F7F7F5] relative">
               <TradingViewChart symbol={activeInst.symbol} />
+            </div>
+            
+            {/* MOBILE LEDGER OVERVIEW (Compact) */}
+            <div className="h-12 bg-white border-t border-[#E4E4E4] flex items-center justify-between px-4 shrink-0">
+               <div className="flex items-center gap-2">
+                  <Activity className="w-3.5 h-3.5 text-[#0055FF]" />
+                  <span className="text-[9px] font-bold uppercase text-[#0A0A0A]">Positions: {positions.filter(p => p.status === 'Open').length}</span>
+               </div>
+               <Link href="/client/portfolio" className="text-[9px] font-bold text-[#0055FF] uppercase tracking-widest underline underline-offset-4">Manage Portfolio</Link>
             </div>
           </div>
         </main>
       </div>
 
-      <div className="lg:hidden h-16 border-t border-[#E4E4E4] bg-white flex items-center px-4 gap-3 shrink-0 z-[110]">
+      {/* MOBILE ACTION BAR */}
+      <div className="lg:hidden h-16 border-t border-[#E4E4E4] bg-white flex items-center px-4 gap-3 shrink-0 z-[110] shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
         <div className="flex-grow flex flex-col">
-           <span className="text-[10px] font-mono font-bold text-[#6B7280]">{activeInst.symbol}</span>
-           <span className={cn("text-xs font-mono font-bold", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
+           <span className="text-[9px] font-mono font-bold text-[#6B7280] uppercase">{activeInst.symbol}</span>
+           <span className={cn("text-sm font-mono font-bold", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
               {marketData[activeInst.symbol]?.price?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "---"}
            </span>
         </div>
         <button 
           onClick={() => setIsTradeDrawerOpen(true)}
-          className="px-8 py-3 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"
+          className="px-10 py-3 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 shadow-lg active:scale-95 transition-transform"
         >
-          Execute <ChevronDown className="w-3.5 h-3.5" />
+          Execute <ChevronDown className="w-3.5 h-3.5 opacity-50" />
         </button>
       </div>
 
+      {/* MOBILE TRADE DRAWER */}
       {isTradeDrawerOpen && (
-        <div className="fixed inset-0 z-[500] lg:hidden">
-          <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsTradeDrawerOpen(false)}></div>
-          <div className="absolute bottom-0 left-0 right-0 bg-white animate-in slide-in-from-bottom duration-300 rounded-t-xl overflow-hidden max-h-[90vh] flex flex-col shadow-2xl">
-            <div className="p-4 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5]">
-               <span className="text-[10px] font-bold uppercase tracking-widest">Execute: {activeInst.symbol}</span>
-               <button onClick={() => setIsTradeDrawerOpen(false)} className="p-1"><X className="w-5 h-5" /></button>
+        <div className="fixed inset-0 z-[700] lg:hidden">
+          <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsTradeDrawerOpen(false)}></div>
+          <div className="absolute bottom-0 left-0 right-0 bg-white animate-in slide-in-from-bottom duration-300 rounded-t-xl overflow-hidden max-h-[90vh] flex flex-col shadow-2xl border-t border-[#E4E4E4]">
+            <div className="p-4 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5] shrink-0">
+               <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#16835B] animate-pulse"></div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Market Order: {activeInst.symbol}</span>
+               </div>
+               <button onClick={() => setIsTradeDrawerOpen(false)} className="p-1.5 bg-white border border-[#E4E4E4] rounded-full shadow-sm"><X className="w-4 h-4 text-[#6B7280]" /></button>
             </div>
-            <div className="flex-grow overflow-y-auto">
+            <div className="flex-grow overflow-y-auto no-scrollbar">
               <ExecutionTicket 
                 instrument={activeInst} 
                 livePrice={marketData[activeInst.symbol]?.price}
@@ -455,7 +469,6 @@ function TerminalContent() {
 }
 
 export default function TerminalWorkspace(props: { params: Promise<any>; searchParams: Promise<any> }) {
-  // unwrap Promises for Next.js 15 proxy satisfaction
   const params = use(props.params);
   const searchParams = use(props.searchParams);
   
