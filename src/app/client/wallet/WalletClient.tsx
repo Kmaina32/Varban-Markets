@@ -2,13 +2,11 @@
 
 /**
  * @fileOverview Unified Financial Workspace (Wallet).
- * Handles deposits (M-Pesa, Web3, Crypto), withdrawals, and transaction history.
- * Updated: Integrated official brand icons for M-Pesa, MetaMask, and Crypto.
+ * Handles deposits (M-Pesa, Airtel, Web3, Crypto), withdrawals, and transaction history.
  */
 
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import Image from "next/image";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { 
@@ -31,19 +29,20 @@ import CryptoDepositForm from "@/components/CryptoDepositForm";
 import CryptoWithdrawForm from "@/components/CryptoWithdrawForm";
 import Web3TransferForm from "@/components/wallet/Web3TransferForm";
 import MpesaDepositForm from "@/components/wallet/MpesaDepositForm";
+import AirtelDepositForm from "@/components/wallet/AirtelDepositForm";
 import { TransactionReceipt } from "@/components/wallet/TransactionReceipt";
 import { collection, query, orderBy, limit, where } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Heavy libraries imported dynamically or handled carefully
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 type FundTab = 'overview' | 'deposit' | 'withdraw' | 'activity';
-type DepositMethod = 'web3' | 'crypto' | 'mpesa';
+type DepositMethod = 'web3' | 'crypto' | 'mpesa' | 'airtel';
 
 // Official Brand Icon URLs
 const MPESA_ICON = "https://upload.wikimedia.org/wikipedia/commons/1/15/M-PESA_LOGO-01.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original";
+const AIRTEL_ICON = "https://upload.wikimedia.org/wikipedia/commons/3/3c/Airtel_logo.svg";
 const METAMASK_ICON = "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/MetaMask_Fox.svg/960px-MetaMask_Fox.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail";
 const CRYPTO_ICON = "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8b/Cryptocurrency_Logo.svg/960px-Cryptocurrency_Logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail&_=20171112032351";
 
@@ -272,44 +271,57 @@ export default function WalletClient() {
           {activeTab === 'deposit' && (
             <div className="space-y-12">
               {/* Method Selector */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <button 
                   onClick={() => setDepositMethod('mpesa')}
                   className={cn(
-                    "p-6 border flex items-center gap-4 transition-all rounded-none",
+                    "p-6 border flex flex-col items-center justify-center text-center gap-3 transition-all rounded-none",
                     depositMethod === 'mpesa' ? "bg-[#0A0A0A] text-white border-[#0A0A0A] shadow-md" : "bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
                   )}
                 >
                   <img src={MPESA_ICON} alt="M-Pesa" className="w-12 h-auto object-contain" />
-                  <div className="text-left">
-                    <span className="text-xs font-bold uppercase block tracking-wider">M-Pesa Express</span>
-                    <span className="text-[9px] uppercase tracking-tighter opacity-60">Mobile Money (KES)</span>
+                  <div className="text-center">
+                    <span className="text-[10px] font-bold uppercase block tracking-wider">M-Pesa</span>
+                    <span className="text-[8px] uppercase tracking-tighter opacity-60">Mobile KES</span>
+                  </div>
+                </button>
+                <button 
+                  onClick={() => setDepositMethod('airtel')}
+                  className={cn(
+                    "p-6 border flex flex-col items-center justify-center text-center gap-3 transition-all rounded-none",
+                    depositMethod === 'airtel' ? "bg-[#0A0A0A] text-white border-[#0A0A0A] shadow-md" : "bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
+                  )}
+                >
+                  <img src={AIRTEL_ICON} alt="Airtel" className="w-8 h-8 object-contain" />
+                  <div className="text-center">
+                    <span className="text-[10px] font-bold uppercase block tracking-wider">Airtel Money</span>
+                    <span className="text-[8px] uppercase tracking-tighter opacity-60">Mobile KES</span>
                   </div>
                 </button>
                 <button 
                   onClick={() => setDepositMethod('web3')}
                   className={cn(
-                    "p-6 border flex items-center gap-4 transition-all rounded-none",
+                    "p-6 border flex flex-col items-center justify-center text-center gap-3 transition-all rounded-none",
                     depositMethod === 'web3' ? "bg-[#0A0A0A] text-white border-[#0A0A0A] shadow-md" : "bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
                   )}
                 >
                   <img src={METAMASK_ICON} alt="MetaMask" className={cn("w-8 h-8 object-contain", depositMethod !== 'web3' && "grayscale")} />
-                  <div className="text-left">
-                    <span className="text-xs font-bold uppercase block tracking-wider">MetaMask Web3</span>
-                    <span className="text-[9px] uppercase tracking-tighter opacity-60">Smart Contract (ETH)</span>
+                  <div className="text-center">
+                    <span className="text-[10px] font-bold uppercase block tracking-wider">MetaMask</span>
+                    <span className="text-[8px] uppercase tracking-tighter opacity-60">Web3 ETH</span>
                   </div>
                 </button>
                 <button 
                   onClick={() => setDepositMethod('crypto')}
                   className={cn(
-                    "p-6 border flex items-center gap-4 transition-all rounded-none",
+                    "p-6 border flex flex-col items-center justify-center text-center gap-3 transition-all rounded-none",
                     depositMethod === 'crypto' ? "bg-[#0A0A0A] text-white border-[#0A0A0A] shadow-md" : "bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
                   )}
                 >
                   <img src={CRYPTO_ICON} alt="Crypto" className={cn("w-8 h-8 object-contain", depositMethod !== 'crypto' && "grayscale")} />
-                  <div className="text-left">
-                    <span className="text-xs font-bold uppercase block tracking-wider">Manual Crypto</span>
-                    <span className="text-[9px] uppercase tracking-tighter opacity-60">Any Wallet (BTC/USDT)</span>
+                  <div className="text-center">
+                    <span className="text-[10px] font-bold uppercase block tracking-wider">Manual Crypto</span>
+                    <span className="text-[8px] uppercase tracking-tighter opacity-60">BTC / USDT</span>
                   </div>
                 </button>
               </div>
@@ -317,6 +329,7 @@ export default function WalletClient() {
               {/* Dynamic Form Render */}
               <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                 {depositMethod === 'mpesa' && <MpesaDepositForm />}
+                {depositMethod === 'airtel' && <AirtelDepositForm />}
                 {depositMethod === 'web3' && <Web3TransferForm />}
                 {depositMethod === 'crypto' && <CryptoDepositForm />}
               </div>

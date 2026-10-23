@@ -47,7 +47,8 @@
 
 ### C. Funding & Branding
 - [x] **M-Pesa Express (Daraja API)**: Integrated real-time STK Push and callback listener for KES deposits.
-- [x] **Institutional Branding**: Deployed `pwa.png` favicon and integrated official M-Pesa, MetaMask, and Crypto logos.
+- [x] **Airtel Money (USSD Push)**: Integrated Airtel Kenya Collection API for USSD-driven mobile deposits.
+- [x] **Institutional Branding**: Deployed `pwa.png` favicon and integrated official M-Pesa, Airtel, MetaMask, and Crypto logos.
 - [x] **Transaction Receipts**: PDF generation engine for institutional settlement proof.
 
 ---
@@ -70,7 +71,7 @@
 3. **Phase 3 (Workspace)**: [COMPLETED] Watchlist management, CSV export, and localized AI Assistant.
 4. **Phase 4 (Redesign & SEO)**: [COMPLETED] Institutional White design system, SEO metadata matrix, and System Registry documentation.
 5. **Phase 5 (Performance)**: [COMPLETED] Implement TanStack Table v9, resizable panels, and skeleton loaders.
-6. **Phase 6 (Infrastructure)**: [IN PROGRESS] M-Pesa settlement listener [DONE], Upgrade to real-time WebSockets, and server-side settlement workers.
+6. **Phase 6 (Infrastructure)**: [IN PROGRESS] M-Pesa & Airtel settlement listeners [DONE], Upgrade to real-time WebSockets, and server-side settlement workers.
 7. **Phase 7 (Native)**: Finalize Windows Native Application distribution and auto-update node.
 
-*Status: Phase 6 - In Progress. M-Pesa and Mobile Terminal Overhaul Completed.*
+*Status: Phase 6 - In Progress. Airtel Money and Universal Branding Overhaul Completed.*
