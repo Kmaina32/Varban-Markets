@@ -3,7 +3,7 @@
 /**
  * @fileOverview Bot Marketplace Registry.
  * High-performance hub for automated trading tools.
- * Fully localized for international markets.
+ * Integrated with the Varban Five Strategy Engine.
  */
 
 import React, { useState, useMemo } from 'react';
@@ -19,7 +19,8 @@ import {
   Info,
   ShieldCheck,
   Zap,
-  Check
+  Check,
+  BarChart3
 } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import { useTranslation } from '@/app/lib/i18n-context';
@@ -41,79 +42,98 @@ interface Bot {
 
 const BOTS_REGISTRY: Bot[] = [
   {
-    id: "vrb-prime-01",
-    name: "Varban Prime Bot",
-    version: "v4.2.1",
+    id: "bm-liquidity-sweep",
+    name: "BM Liquidity Sweep",
+    version: "v4.2.0",
     category: "scalping",
-    winRate: "68%",
-    drawdown: "4%",
-    pnl: "+124%",
+    winRate: "74%",
+    drawdown: "3.5%",
+    pnl: "+142%",
     risk: "Medium",
-    desc: "Our fastest bot. Designed to catch small price moves and deliver steady results in active markets.",
-    status: "Verified",
-    minStake: 100,
-    features: [
-      "Fastest entry and exit speed",
-      "Works best on major currency pairs",
-      "Automatic risk protection on every trade",
-      "Built-in stop loss management"
-    ]
-  },
-  {
-    id: "vrb-trend-master",
-    name: "Momentum Bot",
-    version: "v2.0.0",
-    category: "trend",
-    winRate: "72%",
-    drawdown: "8%",
-    pnl: "+86%",
-    risk: "Low",
-    desc: "A smart bot that follows market trends. It waits for the best moment to enter a trade for long-term growth.",
+    desc: "Designed for institutional range sweeps, identifying high-precision reversals after Asian session liquidity grabs.",
     status: "Verified",
     minStake: 250,
     features: [
-      "Follows strong market movements",
-      "Highly reliable during news events",
-      "Optimized for Gold and Bitcoin",
-      "Smart trailing take-profit"
+      "Asian-session range sweep detection",
+      "Structure-shift validation protocol",
+      "Automatic displacement ATR filtering",
+      "Planned invalidation stop-loss"
     ]
   },
   {
-    id: "vrb-arb-crypto",
-    name: "Stability Bot",
-    version: "v1.1.4",
-    category: "arbitrage",
-    winRate: "94%",
-    drawdown: "1%",
-    pnl: "+42%",
-    risk: "Very Low",
-    desc: "Built for safety. This bot identifies small price gaps across different markets to provide low-risk growth.",
+    id: "trend-continuation",
+    name: "EMA Momentum",
+    version: "v2.1.0",
+    category: "trend",
+    winRate: "68%",
+    drawdown: "6.2%",
+    pnl: "+94%",
+    risk: "Low",
+    desc: "Follows established market momentum using dual EMA filters and volatility-adjusted pullbacks.",
     status: "Verified",
-    minStake: 1000,
+    minStake: 100,
     features: [
-      "Lowest risk profile in our registry",
-      "Consistently small but safe wins",
-      "No overnight trading exposure",
-      "Instant settlement verification"
+      "EMA 50/200 dual trend filter",
+      "ATR-adjusted pullback entry logic",
+      "Bullish/Bearish candle confirmation",
+      "Trailing take-profit targets"
     ]
   },
   {
-    id: "vrb-grid-04",
-    name: "Balanced Grid Bot",
-    version: "v3.5.0",
+    id: "breakout-retest",
+    name: "Structure Master",
+    version: "v3.0.1",
     category: "grid",
-    winRate: "59%",
-    drawdown: "12%",
-    pnl: "+156%",
+    winRate: "62%",
+    drawdown: "9.5%",
+    pnl: "+168%",
     risk: "High",
-    desc: "A powerful bot for markets that move sideways. It keeps your trades balanced by buying and selling within a set range.",
+    desc: "Identifies high-probability consolidation breakouts and validates entries on confirmed structural retests.",
     status: "Verified",
-    minStake: 50,
+    minStake: 150,
     features: [
-      "Best for flat market conditions",
-      "Works 24/7 on synthetic indices",
-      "Highly customizable price range",
-      "Profit reinvestment mode available"
+      "Consolidation range lookback logic",
+      "Retest tolerance ATR monitoring",
+      "High-velocity breakout detection",
+      "Risk-reward optimization engine"
+    ]
+  },
+  {
+    id: "mean-reversion",
+    name: "Mean Reversion",
+    version: "v1.8.0",
+    category: "arbitrage",
+    winRate: "82%",
+    drawdown: "2.1%",
+    pnl: "+48%",
+    risk: "Very Low",
+    desc: "Capitalizes on price extremes using Bollinger bands and RSI divergence, filtered by trend-strength guards.",
+    status: "Verified",
+    minStake: 500,
+    features: [
+      "Volatility band entry protocol",
+      "RSI extreme signal validation",
+      "Trend-strength guardian check",
+      "Instant mid-line exit targets"
+    ]
+  },
+  {
+    id: "momentum-scanner",
+    name: "Momentum Scanner",
+    version: "v2.5.0",
+    category: "trend",
+    winRate: "59%",
+    drawdown: "14%",
+    pnl: "+210%",
+    risk: "High",
+    desc: "Multi-market scanner that ranks assets by relative momentum for high-velocity trend following.",
+    status: "Verified",
+    minStake: 100,
+    features: [
+      "Lookback momentum ranking engine",
+      "Multi-EMA trend alignment check",
+      "Volatility-adjusted trailing stops",
+      "Global asset scan capability"
     ]
   }
 ];
@@ -126,10 +146,10 @@ export default function BotMarketplacePage() {
 
   const BOT_CATEGORIES = [
     { id: 'all', label: t('common.all') },
-    { id: 'scalping', label: 'Fast Response' },
-    { id: 'trend', label: 'Market Trends' },
-    { id: 'arbitrage', label: 'Low Risk' },
-    { id: 'grid', label: 'Balanced' }
+    { id: 'scalping', label: 'Liquidity/Scalp' },
+    { id: 'trend', label: 'Momentum/Trend' },
+    { id: 'arbitrage', label: 'Mean Reversion' },
+    { id: 'grid', label: 'Structural' }
   ];
 
   const filteredBots = useMemo(() => {
@@ -153,7 +173,7 @@ export default function BotMarketplacePage() {
           <div className="relative z-10 max-w-2xl space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0055FF]/5 border border-[#0055FF]/20">
               <Zap className="w-3.5 h-3.5 text-[#0055FF]" />
-              <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.2em]">Automated Trading Tools</span>
+              <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.2em]">Five Strategy Engine</span>
             </div>
             <h1 className="text-3xl md:text-5xl font-bold uppercase tracking-tight leading-tight text-[#0A0A0A]">
               {t('bots.bannerTitle')}
@@ -214,7 +234,7 @@ export default function BotMarketplacePage() {
                       onClick={() => setSelectedBot(bot)}
                       className="text-[9px] font-bold text-[#0055FF] uppercase tracking-widest hover:underline flex items-center gap-1.5"
                     >
-                      <Info className="w-3 h-3" /> {t('help.readGuide')}
+                      <Info className="w-3 h-3" /> Technical Specs
                     </button>
                   </div>
 
@@ -296,8 +316,8 @@ export default function BotMarketplacePage() {
           <Card className="w-full max-w-md bg-white border-[#E4E4E4] shadow-2xl relative overflow-hidden">
             <div className="p-6 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5]">
               <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-[#0055FF]" />
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">{selectedBot.name} Features</h3>
+                <BarChart3 className="w-4 h-4 text-[#0055FF]" />
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">{selectedBot.name} Strategy</h3>
               </div>
               <button onClick={() => setSelectedBot(null)} className="text-[#6B7280] hover:text-[#0A0A0A] transition-colors"><X className="w-5 h-5" /></button>
             </div>
@@ -326,7 +346,7 @@ export default function BotMarketplacePage() {
 
             <div className="bg-[#F7F7F5] p-3 text-center border-t border-[#E4E4E4]">
                <span className="text-[8px] font-bold text-[#6B7280] uppercase tracking-[0.3em]">
-                 Varban Bot Node &bull; Ready to Deploy
+                 Strategy Engine Node &bull; {selectedBot.id.toUpperCase()}
                </span>
             </div>
           </Card>

@@ -206,8 +206,8 @@ export const DICTIONARY = {
     bots: {
       marketplaceTitle: 'Bot Marketplace',
       marketplaceSubtitle: 'Find and use automated trading tools',
-      bannerTitle: 'Automate your trading strategy.',
-      bannerDesc: 'Start using our pre-verified bots to manage your trades automatically. Each bot is tested and ready to use in your trading area.',
+      bannerTitle: 'Deterministic Trading Engine.',
+      bannerDesc: 'Start using our verified algorithmic bots to manage your trades automatically. Each strategy is powered by five core deterministic modules designed for institutional precision.',
       verified: 'Verified',
       successRate: 'Success rate',
       typicalRisk: 'Typical risk',
@@ -216,8 +216,8 @@ export const DICTIONARY = {
       startUsing: 'Start using bot',
       noBotsFound: 'No Bots Found',
       adjustSearch: 'Adjust your search to find other bots.',
-      policyTitle: 'Tested for Reliability',
-      policyDesc: 'Every bot on this page has been tested. Past results show how the bot performed, but results can change depending on the market.',
+      policyTitle: 'Rule-Based Execution',
+      policyDesc: 'Every bot follows strict quantitative rules. Past performance is a baseline, but live results depend on sub-second market conditions and liquidity.',
       reviewPolicy: 'Review Trading Policy'
     },
     help: {
@@ -483,8 +483,8 @@ export const DICTIONARY = {
     bots: {
       marketplaceTitle: 'Marché des Bots',
       marketplaceSubtitle: 'Trouvez et utilisez des outils de trading automatisés',
-      bannerTitle: 'Automatisez votre stratégie de trading.',
-      bannerDesc: 'Commencez à utiliser nos bots pré-vérifiés pour gérer vos transactions automatiquement. Chaque bot est testé et prêt à l\'emploi dans votre zone de trading.',
+      bannerTitle: 'Moteur de Trading Déterministe.',
+      bannerDesc: 'Commencez à utiliser nos robots algorithmiques vérifiés pour gérer vos transactions automatiquement. Chaque stratégie est alimentée par cinq modules déterministes conçus pour une précision institutionnelle.',
       verified: 'Vérifié',
       successRate: 'Taux de réussite',
       typicalRisk: 'Risque typique',
@@ -493,8 +493,8 @@ export const DICTIONARY = {
       startUsing: 'Démarrer le bot',
       noBotsFound: 'Aucun bot trouvé',
       adjustSearch: 'Ajustez votre recherche pour trouver d\'autres bots.',
-      policyTitle: 'Testé pour la Fiabilité',
-      policyDesc: 'Chaque bot de cette page a été testé. Les résultats passés montrent les performances du bot, mais les résultats peuvent changer selon le marché.',
+      policyTitle: 'Exécution Basée sur des Règles',
+      policyDesc: 'Chaque robot suit des règles quantitatives strictes. Les performances passées sont une base, mais les résultats réels dépendent des conditions du marché.',
       reviewPolicy: 'Revoir la politique de trading'
     },
     help: {
@@ -607,7 +607,7 @@ export const DICTIONARY = {
         standard: 'Cuentas estándar',
         professional: 'Cuentas profesionales',
         demo: 'Cuenta de demostración',
-        conditions: 'Condiciones',
+        conditions: 'Conditions',
         payments: 'Depósitos y retiros',
         fees: 'Comisiones',
         protection: 'Protección al cliente',
@@ -760,8 +760,8 @@ export const DICTIONARY = {
     bots: {
       marketplaceTitle: 'Mercado de Bots',
       marketplaceSubtitle: 'Encuentre y use herramientas de trading automatizadas',
-      bannerTitle: 'Automatice su estrategia de trading.',
-      bannerDesc: 'Comience a usar nuestros bots pre-verificados para administrar sus operaciones automáticamente. Cada bot está probado y listo para usar en su área de trading.',
+      bannerTitle: 'Motor de Trading Determinista.',
+      bannerDesc: 'Comience a usar nuestros bots algorítmicos verificados para administrar sus operaciones automáticamente. Cada estrategia está impulsada por cinco módulos deterministas diseñados para precisión institucional.',
       verified: 'Verificado',
       successRate: 'Tasa de éxito',
       typicalRisk: 'Riesgo típico',
@@ -770,8 +770,8 @@ export const DICTIONARY = {
       startUsing: 'Empezar a usar el bot',
       noBotsFound: 'No se encontraron bots',
       adjustSearch: 'Ajuste su búsqueda para encontrar otros bots.',
-      policyTitle: 'Probado para su Confiabilidad',
-      policyDesc: 'Cada bot en esta página ha sido probado. Los resultados pasados muestran cómo funcionó el bot, pero los resultados pueden cambiar según el mercado.',
+      policyTitle: 'Ejecución Basada en Reglas',
+      policyDesc: 'Cada bot sigue reglas cuantitativas estrictas. Los resultados pasados son una base, pero los resultados reales dependen de las condiciones del mercado.',
       reviewPolicy: 'Revisar política de trading'
     },
     help: {
@@ -1037,8 +1037,8 @@ export const DICTIONARY = {
     bots: {
       marketplaceTitle: 'Mercado de Bots',
       marketplaceSubtitle: 'Encontre e use ferramentas de negociação automatizadas',
-      bannerTitle: 'Automatize sua estratégia de negociação.',
-      bannerDesc: 'Comece a usar nossos bots pré-verificados para gerenciar suas negociações automaticamente. Cada bot é testado e está pronto para uso em sua área de negociação.',
+      bannerTitle: 'Motor de Negociação Determinístico.',
+      bannerDesc: 'Comece a usar nossos bots algoritmos verificados para gerenciar suas negociações automaticamente. Cada estratégia é alimentada por cinco módulos determinísticos projetados para precisão institucional.',
       verified: 'Verificado',
       successRate: 'Taxa de sucesso',
       typicalRisk: 'Risco típico',
@@ -1047,8 +1047,8 @@ export const DICTIONARY = {
       startUsing: 'Começar a usar o bot',
       noBotsFound: 'Nenhum bot encontrado',
       adjustSearch: 'Ajuste sua pesquisa para encontrar outros bots.',
-      policyTitle: 'Testado para Confiabilidade',
-      policyDesc: 'Cada bot nesta página foi testado. Resultados passados mostram o desempenho do bot, mas os resultados podem mudar dependendo do mercado.',
+      policyTitle: 'Execução Baseada em Regras',
+      policyDesc: 'Cada bot segue regras quantitativas estritas. Resultados passados são uma base, mas resultados reais dependem das condições do mercado.',
       reviewPolicy: 'Revisar Política de Negociação'
     },
     help: {
@@ -1086,7 +1086,7 @@ export const DICTIONARY = {
       step2Title: 'Inscrição na rede',
       step2Desc: 'Novos negociadores registram-se usando seu condutor e entram em nosso ecossistema seguro.',
       step3Title: 'Recompensas de escala',
-      step3Desc: 'Monitore o crescimento da sua rede e desbloqueie níveis avançados de parceiros institucionais.',
+      step3Desc: 'Monitore o crescimento da sua rede e desloqueie níveis avançados de parceiros institucionais.',
       rewardsActive: 'Recompensas Activas',
       rewardsPolicy: 'As recompensas dos parceiros da plataforma são calculadas com base no volume ativo mensal dentro do seu domínio de rede direta.'
     },
@@ -1314,8 +1314,8 @@ export const DICTIONARY = {
     bots: {
       marketplaceTitle: '机器人市场',
       marketplaceSubtitle: '寻找并使用自动化交易工具',
-      bannerTitle: '自动化您的交易策略。',
-      bannerDesc: '开始使用我们经过预先验证的机器人来自动管理您的交易。每个机器人均经过测试，可在您的交易区随时部署。',
+      bannerTitle: '确定性交易引擎。',
+      bannerDesc: '开始使用我们经过验证的算法机器人自动管理您的交易。每个策略都由五个专门为机构精度设计的核心确定性模块驱动。',
       verified: '已验证',
       successRate: '成功率',
       typicalRisk: '典型风险',
@@ -1324,8 +1324,8 @@ export const DICTIONARY = {
       startUsing: '开始使用',
       noBotsFound: '未找到机器人',
       adjustSearch: '调整搜索词以寻找其他机器人。',
-      policyTitle: '可靠性经过测试',
-      policyDesc: '本页面的每个机器人都经过了测试。过往业绩展示了机器人的表现，但结果可能因市场环境而异。',
+      policyTitle: '基于规则的执行',
+      policyDesc: '每个机器人都遵循严格的定量规则。过往业绩是基准，但实时结果取决于市场流动性。',
       reviewPolicy: '查看交易政策'
     },
     help: {

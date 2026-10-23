@@ -1,0 +1,100 @@
+{
+  "bm-liquidity-sweep": {
+    "enabled": false,
+    "mode": "paper",
+    "symbols": [
+      "XAUUSD"
+    ],
+    "timeframes": [
+      "5m",
+      "15m"
+    ],
+    "riskPercent": 0.25,
+    "minRiskReward": 1.5,
+    "maxTradesPerDay": 3,
+    "params": {
+      "asianBars": 24,
+      "displacementAtr": 0.8
+    }
+  },
+  "trend-continuation": {
+    "enabled": false,
+    "mode": "paper",
+    "symbols": [
+      "EURUSD",
+      "BTCUSD",
+      "AAPL"
+    ],
+    "timeframes": [
+      "15m",
+      "1h"
+    ],
+    "riskPercent": 0.25,
+    "minRiskReward": 1.5,
+    "maxTradesPerDay": 3,
+    "params": {
+      "pullbackAtr": 0.35,
+      "targetAtr": 2
+    }
+  },
+  "breakout-retest": {
+    "enabled": false,
+    "mode": "paper",
+    "symbols": [
+      "EURUSD",
+      "BTCUSD",
+      "AAPL"
+    ],
+    "timeframes": [
+      "5m",
+      "15m"
+    ],
+    "riskPercent": 0.25,
+    "minRiskReward": 1.5,
+    "maxTradesPerDay": 3,
+    "params": {
+      "rangeLookback": 20,
+      "retestAtr": 0.2
+    }
+  },
+  "mean-reversion": {
+    "enabled": false,
+    "mode": "paper",
+    "symbols": [
+      "EURUSD",
+      "BTCUSD",
+      "AAPL"
+    ],
+    "timeframes": [
+      "15m",
+      "1h"
+    ],
+    "riskPercent": 0.25,
+    "minRiskReward": 1.5,
+    "maxTradesPerDay": 3,
+    "params": {
+      "period": 20
+    }
+  },
+  "momentum-scanner": {
+    "enabled": false,
+    "mode": "paper",
+    "symbols": [
+      "XAUUSD",
+      "EURUSD",
+      "BTCUSD",
+      "AAPL"
+    ],
+    "timeframes": [
+      "15m",
+      "1h"
+    ],
+    "riskPercent": 0.25,
+    "minRiskReward": 1.5,
+    "maxTradesPerDay": 3,
+    "params": {
+      "momentumLookback": 20,
+      "momentumThreshold": 0.004
+    }
+  }
+}
