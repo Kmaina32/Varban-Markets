@@ -18,7 +18,8 @@ import {
   ShieldCheck,
   Globe,
   Briefcase,
-  TrendingUp
+  TrendingUp,
+  Smartphone
 } from "lucide-react";
 import { useUser, useDoc, useCollection, useFirestore } from "@/firebase";
 import { useWeb3 } from "@/app/lib/web3-context";
@@ -28,6 +29,7 @@ import PageTutorial, { TutorialStep } from "@/components/shared/PageTutorial";
 import CryptoDepositForm from "@/components/CryptoDepositForm";
 import CryptoWithdrawForm from "@/components/CryptoWithdrawForm";
 import Web3TransferForm from "@/components/wallet/Web3TransferForm";
+import MpesaDepositForm from "@/components/wallet/MpesaDepositForm";
 import dynamic from "next/dynamic";
 import { TransactionReceipt } from "@/components/wallet/TransactionReceipt";
 import html2canvas from "html2canvas";
@@ -35,17 +37,8 @@ import jsPDF from "jspdf";
 import { collection, query, orderBy, limit, where } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const PaystackDepositForm = dynamic(() => import("@/components/PaystackDepositForm"), {
-  ssr: false,
-  loading: () => (
-    <div className="max-w-2xl mx-auto p-12 text-center">
-      <div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#6B7280]">Synchronizing payment node...</p>
-    </div>
-  )
-});
-
 type FundTab = 'overview' | 'deposit' | 'withdraw' | 'activity';
+type DepositMethod = 'web3' | 'crypto' | 'mpesa';
 
 const MetaMaskIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 318.6 318.6" className={className} xmlns="http://www.w3.org/2000/svg">
@@ -95,6 +88,7 @@ export default function WalletClient() {
   const { data: positions, loading: positionsLoading } = useCollection<any>(positionsQuery);
   
   const [activeTab, setActiveTab] = useState<FundTab>('overview');
+  const [depositMethod, setDepositMethod] = useState<DepositMethod>('mpesa');
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
 
@@ -235,13 +229,55 @@ export default function WalletClient() {
           )}
           {activeTab === 'deposit' && (
             <div className="space-y-12">
-              <Web3TransferForm />
-              <div className="flex items-center gap-4">
-                <div className="h-px flex-grow bg-[#E4E4E4]"></div>
-                <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">OR MANUAL HANDSHAKE</span>
-                <div className="h-px flex-grow bg-[#E4E4E4]"></div>
+              {/* Method Selector */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button 
+                  onClick={() => setDepositMethod('mpesa')}
+                  className={cn(
+                    "p-6 border flex items-center gap-4 transition-all rounded-none",
+                    depositMethod === 'mpesa' ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
+                  )}
+                >
+                  <Smartphone className={cn("w-6 h-6", depositMethod === 'mpesa' ? "text-[#16835B]" : "text-[#6B7280]")} />
+                  <div className="text-left">
+                    <span className="text-xs font-bold uppercase block tracking-wider">M-Pesa Express</span>
+                    <span className="text-[9px] uppercase tracking-tighter opacity-60">Mobile Money (KES)</span>
+                  </div>
+                </button>
+                <button 
+                  onClick={() => setDepositMethod('web3')}
+                  className={cn(
+                    "p-6 border flex items-center gap-4 transition-all rounded-none",
+                    depositMethod === 'web3' ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
+                  )}
+                >
+                  <MetaMaskIcon className={cn("w-6 h-6", depositMethod === 'web3' ? "" : "grayscale")} />
+                  <div className="text-left">
+                    <span className="text-xs font-bold uppercase block tracking-wider">MetaMask Web3</span>
+                    <span className="text-[9px] uppercase tracking-tighter opacity-60">Smart Contract (ETH)</span>
+                  </div>
+                </button>
+                <button 
+                  onClick={() => setDepositMethod('crypto')}
+                  className={cn(
+                    "p-6 border flex items-center gap-4 transition-all rounded-none",
+                    depositMethod === 'crypto' ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
+                  )}
+                >
+                  <Globe className={cn("w-6 h-6", depositMethod === 'crypto' ? "text-[#0055FF]" : "text-[#6B7280]")} />
+                  <div className="text-left">
+                    <span className="text-xs font-bold uppercase block tracking-wider">Manual Crypto</span>
+                    <span className="text-[9px] uppercase tracking-tighter opacity-60">Any Wallet (BTC/USDT)</span>
+                  </div>
+                </button>
               </div>
-              <CryptoDepositForm />
+
+              {/* Dynamic Form Render */}
+              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                {depositMethod === 'mpesa' && <MpesaDepositForm />}
+                {depositMethod === 'web3' && <Web3TransferForm />}
+                {depositMethod === 'crypto' && <CryptoDepositForm />}
+              </div>
             </div>
           )}
           {activeTab === 'withdraw' && (
