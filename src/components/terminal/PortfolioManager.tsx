@@ -4,9 +4,10 @@
  * @fileOverview Institutional Bottom Panel (Advanced Ledger).
  * Enhanced columns for precision risk tracking including Swap, Margin, and TP/SL.
  * Roadmap Stage 2: Advanced Ledger implementation.
+ * Updated: Fixed hydration mismatch for Audit-ID generation.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/app/lib/utils';
 import { Activity, Clock, FileText, ChevronRight, XCircle, Settings2, ShieldCheck } from 'lucide-react';
@@ -24,6 +25,12 @@ type Tab = 'POSITIONS' | 'ORDERS' | 'HISTORY';
 export default function PortfolioManager({ positions, orders, history, loading }: PortfolioManagerProps) {
   const { formatNumber } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('POSITIONS');
+  const [auditId, setAuditId] = useState<string>("");
+
+  // Fix hydration mismatch by generating the ID only on the client
+  useEffect(() => {
+    setAuditId(Math.random().toString(36).substring(7).toUpperCase());
+  }, []);
 
   const tabs = [
     { id: 'POSITIONS', label: `Active Exposure (${positions.length})`, icon: Activity },
@@ -192,7 +199,7 @@ export default function PortfolioManager({ positions, orders, history, loading }
                <span>Secure Handshake Verified</span>
             </div>
          </div>
-         <span className="text-[8px] font-mono text-[#D1D5DB] uppercase">Audit-ID: {Math.random().toString(36).substring(7).toUpperCase()}</span>
+         <span className="text-[8px] font-mono text-[#D1D5DB] uppercase">Audit-ID: {auditId || "---"}</span>
       </div>
     </div>
   );
