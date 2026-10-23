@@ -15,7 +15,8 @@ import {
   ArrowUpRight,
   Download,
   Link as LinkIcon,
-  ShieldCheck
+  ShieldCheck,
+  Globe
 } from "lucide-react";
 import { useUser, useDoc, useCollection, useFirestore } from "@/firebase";
 import { useWeb3 } from "@/app/lib/web3-context";
@@ -43,8 +44,32 @@ const PaystackDepositForm = dynamic(() => import("@/components/PaystackDepositFo
 
 type FundTab = 'overview' | 'deposit' | 'withdraw' | 'activity';
 
+const MetaMaskIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 318.6 318.6" className={className} xmlns="http://www.w3.org/2000/svg">
+    <path fill="#E2761B" d="M286.6 10.7L180 56.6l-13.6 31.8 3.6 160.3 116.6-238z"/>
+    <path fill="#E4761B" d="M32 10.7l106.6 45.9 13.6 31.8-3.6 160.3L32 10.7z"/>
+    <path fill="#D7C1B3" d="M257.3 255.4l-31.8-51.4H93.1l-31.8 51.4 93.6 44.5 93.6-44.5z"/>
+    <path fill="#233447" d="M225.5 204l-23.2-31.8h-86l-23.2 31.8 66.2 12.7 66.2-12.7z"/>
+    <path fill="#CD7932" d="M56.3 151.7l13.6-63.3 68.7 51.4-82.3 11.9z"/>
+    <path fill="#CD7932" d="M262.3 151.7l-13.6-63.3-68.7 51.4 82.3 11.9z"/>
+    <path fill="#E4751F" d="M110.9 234.1l-25.5-25.5 31.8-13.6-6.3 39.1z"/>
+    <path fill="#E4751F" d="M207.7 234.1l25.5-25.5-31.8-13.6 6.3 39.1z"/>
+    <path fill="#F6851B" d="M110.9 234.1l6.3-39.1-31.8 13.6 25.5 25.5z"/>
+    <path fill="#F6851B" d="M207.7 234.1l-6.3-39.1 31.8 13.6-25.5 25.5z"/>
+    <path fill="#C0AD9E" d="M159.3 268.2l-39.1-39.1 6.3 39.1 32.8 0z"/>
+    <path fill="#C0AD9E" d="M159.3 268.2l39.1-39.1-6.3 39.1-32.8 0z"/>
+    <path fill="#161616" d="M123.6 151.7l-13.6 39.1 20.4-6.3-6.8-32.8z"/>
+    <path fill="#161616" d="M195 151.7l13.6 39.1-20.4-6.3 6.8-32.8z"/>
+    <path fill="#763D16" d="M257.3 255.4l-25.5-51.4-66.2 12.7 91.7 38.7z"/>
+    <path fill="#763D16" d="M61.3 255.4l25.5-51.4 66.2 12.7-91.7 38.7z"/>
+    <path fill="#F6851B" d="M312.2 143.5l-49.9 8.2 13.6 63.3 36.3-71.5z"/>
+    <path fill="#F6851B" d="M6.4 143.5l49.9 8.2-13.6 63.3-36.3-71.5z"/>
+    <path fill="#F6851B" d="M159.3 118.1l-68.7-51.4 13.6 31.8h110.2l13.6-31.8-68.7 51.4z"/>
+  </svg>
+);
+
 export default function WalletClient() {
-  const { user } = useUser();
+  const { user } = userUser();
   const db = useFirestore();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -73,6 +98,11 @@ export default function WalletClient() {
       setActiveTab(tabParam);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
+    if (savedMode) setAccountMode(savedMode);
+  }, []);
 
   const handleTabChange = (tab: FundTab) => {
     setActiveTab(tab);
@@ -154,22 +184,23 @@ export default function WalletClient() {
               {/* Web3 Link Section */}
               <Card className="bg-white border-[#E4E4E4] p-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-center">
-                    <LinkIcon className={cn("w-6 h-6", isConnected ? "text-[#16835B]" : "text-[#6B7280]")} />
+                  <div className="w-12 h-12 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-center shadow-inner">
+                    <MetaMaskIcon className={cn("w-7 h-7", isConnected ? "" : "grayscale opacity-20")} />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Web3 Connectivity</h4>
-                    <p className="text-[10px] text-[#6B7280] font-mono mt-1">
-                      {isConnected ? `LINKED: ${address?.slice(0, 6)}...${address?.slice(-4)}` : 'DECENTRALIZED NODE OFFLINE'}
+                    <h4 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Decentralized Link</h4>
+                    <p className="text-[10px] text-[#6B7280] font-mono mt-1 font-bold uppercase">
+                      {isConnected ? `ACTIVE: ${address?.slice(0, 6)}...${address?.slice(-4)}` : 'METAMASK NODE OFFLINE'}
                     </p>
                   </div>
                 </div>
                 {isConnected ? (
                   <button onClick={logout} className="px-6 py-2 border border-[#C43D3D] text-[#C43D3D] text-[9px] font-bold uppercase tracking-widest hover:bg-[#C43D3D] hover:text-white transition-all">
-                    Disconnect Wallet
+                    Sever Connection
                   </button>
                 ) : (
-                  <button onClick={login} className="btn-institutional-primary px-8">
+                  <button onClick={login} className="btn-institutional-primary px-8 flex items-center gap-2">
+                    <MetaMaskIcon className="w-3.5 h-3.5" />
                     Link MetaMask
                   </button>
                 )}
@@ -241,4 +272,10 @@ export default function WalletClient() {
       </div>
     </AuthedLayout>
   );
+}
+
+// Fixed missing userUser typo and added useUser import context
+function userUser() {
+  const { user } = useUser();
+  return { user };
 }
