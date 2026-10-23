@@ -125,21 +125,23 @@ export default function ProfileDropdown({
         </div>
 
         {/* INSTITUTIONAL MODE SWITCH */}
-        <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-between">
+        <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-between shadow-inner">
           <div className="space-y-0.5">
             <span className={cn(
               "text-[10px] font-bold uppercase tracking-tight",
-              accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]"
+              accountMode === 'REAL' ? "text-[#16835B]" : "text-[#6B7280]"
             )}>
               {accountMode === 'REAL' ? 'Real Environment' : 'Practice Sandbox'}
             </span>
             <p className="text-[8px] text-[#6B7280] uppercase font-bold">
-              Toggle for {accountMode === 'REAL' ? 'Demo' : 'Real'} Mode
+              Toggled for {accountMode}
             </p>
           </div>
           <Switch 
             checked={accountMode === 'REAL'} 
-            onCheckedChange={(checked) => onSelectMode(checked ? 'REAL' : 'DEMO')} 
+            onCheckedChange={(checked) => {
+              onSelectMode(checked ? 'REAL' : 'DEMO');
+            }} 
           />
         </div>
 
