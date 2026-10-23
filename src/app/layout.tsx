@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -9,6 +9,14 @@ import CookieConsent from "@/components/layout/CookieConsent";
 import ChatSupport from "@/components/ChatSupport";
 import Script from 'next/script';
 
+export const viewport: Viewport = {
+  themeColor: '#0A0A0A',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export const metadata: Metadata = {
   title: {
     default: "Varban Markets | Institutional Electronic Trading Protocol",
@@ -16,9 +24,21 @@ export const metadata: Metadata = {
   },
   description: "Professional electronic trading protocol for advanced derivatives and synthetic markets. High-speed execution, deterministic settlement, and institutional capital protection.",
   icons: {
-    icon: '/pwa.png',
+    icon: [
+      { url: '/pwa.png', type: 'image/png' },
+      { url: '/pwa.png', sizes: '32x32', type: 'image/png' },
+      { url: '/pwa.png', sizes: '16x16', type: 'image/png' },
+    ],
     shortcut: '/pwa.png',
-    apple: '/pwa.png',
+    apple: [
+      { url: '/pwa.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  manifest: '/manifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Varban Markets',
   },
   keywords: ["Forex Trading", "Crypto Derivatives", "Synthetic Markets", "Institutional Trading", "Varban Markets", "High-Speed Execution", "Online Broker"],
   authors: [{ name: "Varban Markets Ltd" }],
