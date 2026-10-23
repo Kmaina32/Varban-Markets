@@ -16,6 +16,11 @@ export const metadata: Metadata = {
     template: "%s | Varban Markets"
   },
   description: "Professional electronic trading protocol for advanced derivatives and synthetic markets. High-speed execution, deterministic settlement, and institutional capital protection.",
+  icons: {
+    icon: '/pwa.png',
+    shortcut: '/pwa.png',
+    apple: '/pwa.png',
+  },
   keywords: ["Forex Trading", "Crypto Derivatives", "Synthetic Markets", "Institutional Trading", "Varban Markets", "High-Speed Execution", "Online Broker"],
   authors: [{ name: "Varban Markets Ltd" }],
   creator: "Varban Markets",
