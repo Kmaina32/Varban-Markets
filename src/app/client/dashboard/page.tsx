@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @file Overview User Dashboard (PRODUCTION).
+ * Synchronized with the Institutional Ledger for real-time equity and metrics tracking.
+ */
+
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { Shield, TrendingUp, DollarSign, Activity, ArrowRight, Star } from "lucide-react";
@@ -13,22 +18,21 @@ import MarketNewsFeed from "@/components/dashboard/MarketNewsFeed";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/app/lib/utils";
 
-/**
- * @fileOverview User Dashboard (Institutional Workspace).
- */
-
 export default function UserDashboard() {
   const { user } = useUser();
   const db = useFirestore();
   const { t, formatNumber } = useTranslation();
 
+  // PRODUCTION SYNC: Profile document containing balance and preferences
   const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   
+  // PRODUCTION SYNC: Recent positions (Open and Closed)
   const tradesQuery = useMemo(() => {
     if (!db || !user) return null;
     return query(collection(db, `users/${user.uid}/positions`), orderBy("timestamp", "desc"), limit(5));
   }, [db, user]);
 
+  // PRODUCTION SYNC: Personalized Watchlist
   const watchlistQuery = useMemo(() => {
     if (!db || !user) return null;
     return query(collection(db, `users/${user.uid}/watchlist`), limit(6));
@@ -61,6 +65,9 @@ export default function UserDashboard() {
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
   const activeEquity = accountMode === 'REAL' ? (profile?.equity || profile?.balance || 0) : demoBalance;
+
+  // Filter trades based on account context
+  const filteredTrades = recentTrades?.filter(t => (t.isDemo || false) === (accountMode === 'DEMO')) || [];
 
   const metrics = [
     { title: accountMode === 'REAL' ? t('dashboard.balance') : t('wallet.practiceAllocation'), value: activeBalance, icon: DollarSign, color: accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]" },
@@ -131,20 +138,20 @@ export default function UserDashboard() {
                             <td className="p-3 text-right"><Skeleton className="h-4 w-16 ml-auto" /></td>
                           </tr>
                         ))
-                      ) : recentTrades.length === 0 ? (
+                      ) : filteredTrades.length === 0 ? (
                         <tr><td colSpan={5} className="p-8 text-center text-[#6B7280] uppercase tracking-widest font-bold opacity-30">{t('trading.noPositions')}</td></tr>
-                      ) : recentTrades.map((trade: any) => (
+                      ) : filteredTrades.map((trade: any) => (
                         <tr key={trade.id} className="hover:bg-[#F7F7F5]">
-                          <td className="p-3 text-[#6B7280]">{trade.id.slice(0, 8).toUpperCase()}</td>
+                          <td className="p-3 text-[#6B7280] uppercase">{trade.id.slice(0, 8)}</td>
                           <td className="p-3 font-bold">{trade.instrument}</td>
                           <td className="p-3">
-                            <span className={cn("px-1 py-0.5 border text-[9px] font-bold", trade.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#C43D3D] text-[#C43D3D]')}>
+                            <span className={cn("px-1 py-0.5 border text-[9px] font-bold", trade.vector === 'BUY' || trade.vector === 'CALL' ? 'border-[#16835B] text-[#16835B]' : 'border-[#C43D3D] text-[#C43D3D]')}>
                               {trade.vector}
                             </span>
                           </td>
                           <td className="p-3 text-right">${formatNumber(trade.stake || 0, { minimumFractionDigits: 2 })}</td>
-                          <td className={`p-3 text-right font-bold ${trade.profit >= 0 ? 'text-[#16835B]' : 'text-[#C43D3D]'}`}>
-                            {trade.profit >= 0 ? '+' : ''}${formatNumber(trade.profit || 0, { minimumFractionDigits: 2 })}
+                          <td className={`p-3 text-right font-bold ${trade.status === 'Open' ? 'text-[#0055FF]' : (trade.profit || 0) >= 0 ? 'text-[#16835B]' : 'text-[#C43D3D]'}`}>
+                            {trade.status === 'Open' ? 'LIVE' : ((trade.profit || 0) >= 0 ? '+' : '') + '$' + formatNumber(trade.profit || 0, { minimumFractionDigits: 2 })}
                           </td>
                         </tr>
                       ))}

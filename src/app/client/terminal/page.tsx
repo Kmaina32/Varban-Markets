@@ -1,9 +1,8 @@
 'use client';
 
 /**
- * @fileOverview Institutional Multi-Asset Trading Terminal.
- * Overhauled: Full-page mobile drawers for execution and portfolio.
- * Advanced: Enabled full TradingView toolsets.
+ * @fileOverview Institutional Multi-Asset Trading Terminal (PRODUCTION).
+ * Wired to Firestore Ledger for real-time trade settlement and balance sync.
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
@@ -14,21 +13,17 @@ import {
   X,
   ChevronDown,
   Clock as ClockIcon,
-  TrendingUp,
-  TrendingDown,
-  Activity,
   ShieldCheck,
-  Sliders,
   History,
-  LayoutDashboard
+  Loader2
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
-import { useUser, useFirestore, useDoc } from "@/firebase";
+import { useUser, useFirestore, useDoc, useCollection } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, collection, addDoc, serverTimestamp, query, orderBy, where, increment } from "firebase/firestore";
 
 // Terminal Components
 import AuthedSidebar from "@/components/layout/AuthedSidebar";
@@ -38,19 +33,6 @@ import MarketSelector from "@/components/terminal/MarketSelector";
 import ExecutionTicket from "@/components/terminal/ExecutionTicket";
 import PortfolioManager from "@/components/terminal/PortfolioManager";
 import TerminalTutorial from "@/components/terminal/TerminalTutorial";
-
-interface Position {
-  id: string;
-  instrument: string;
-  vector: "BUY" | "SELL";
-  entryPrice: number;
-  stake: number;
-  duration?: string;
-  status: "Open" | "Closed";
-  timestamp: number;
-  isDemo: boolean;
-  mode: 'SPOT' | 'DURATION';
-}
 
 const TIMEZONES = [
   { label: "UTC +00:00 (GMT)", value: "UTC+0" },
@@ -65,8 +47,15 @@ export default function TerminalWorkspace() {
   const db = useFirestore();
   const { formatNumber, locale, setLocale } = useTranslation();
 
-  const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
+  const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   
+  // REAL-TIME POSITIONS LEDGER
+  const positionsQuery = useMemo(() => {
+    if (!db || !user) return null;
+    return query(collection(db, `users/${user.uid}/positions`), orderBy("timestamp", "desc"));
+  }, [db, user]);
+  const { data: rawPositions } = useCollection<any>(positionsQuery);
+
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isTradeDrawerOpen, setIsTradeDrawerOpen] = useState(false);
@@ -81,7 +70,6 @@ export default function TerminalWorkspace() {
 
   const [activeInst, setActiveInst] = useState<Instrument>(AVAILABLE_INSTRUMENTS[0]);
   const [marketData, setMarketData] = useState<Record<string, { price: number; percent: number }>>({});
-  const [positions, setPositions] = useState<Position[]>([]);
   
   const [bottomPanelHeight, setBottomPanelHeight] = useState(250);
   const [isResizing, setIsResizing] = useState(false);
@@ -134,38 +122,50 @@ export default function TerminalWorkspace() {
     return () => { active = false; clearInterval(interval); };
   }, [activeInst.symbol]);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = Date.now();
-      setPositions(prev => prev.map(p => {
-        if (p.status === 'Open' && p.mode === 'DURATION' && now - p.timestamp > 18000) {
-          return { ...p, status: 'Closed' };
-        }
-        return p;
-      }));
-    }, 2000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const handleExecution = (params: any) => {
+  // PRODUCTION EXECUTION HANDLER
+  const handleExecution = async (params: any) => {
     const live = marketData[activeInst.symbol];
-    if (!live || !user) return;
+    if (!live || !user || !db) return;
 
-    const newPos: Position = {
-      id: `VRB-${Math.random().toString(36).substring(7).toUpperCase()}`,
-      instrument: activeInst.symbol,
-      vector: params.side,
-      entryPrice: live.price,
-      stake: params.amount,
-      mode: params.mode,
-      duration: params.duration,
-      status: "Open",
-      timestamp: Date.now(),
-      isDemo: accountMode === 'DEMO'
-    };
+    const isDemo = accountMode === 'DEMO';
+    const stake = params.amount;
 
-    setPositions(prev => [newPos, ...prev]);
-    setIsTradeDrawerOpen(false);
+    // 1. Balance Gate
+    if (!isDemo && (profile?.balance || 0) < stake) {
+      alert("Insufficient liquidity in vault domain.");
+      return;
+    }
+
+    try {
+      // 2. Commit to Ledger
+      await addDoc(collection(db, `users/${user.uid}/positions`), {
+        instrument: activeInst.symbol,
+        vector: params.side,
+        entryPrice: live.price,
+        stake: stake,
+        mode: params.mode,
+        duration: params.duration || "N/A",
+        status: "Open",
+        timestamp: Date.now(),
+        isDemo,
+        createdAt: serverTimestamp()
+      });
+
+      // 3. Update Balance if REAL
+      if (!isDemo) {
+        await updateDoc(doc(db, "users", user.uid), {
+          balance: increment(-stake),
+          equity: increment(-stake)
+        });
+      } else {
+        setDemoBalance(prev => prev - stake);
+      }
+
+      setIsTradeDrawerOpen(false);
+    } catch (err) {
+      console.error("Ledger Transmission Failure:", err);
+      alert("Matching Engine Handshake Interrupted.");
+    }
   };
 
   const startResizing = useCallback((e: React.MouseEvent) => {
@@ -188,6 +188,10 @@ export default function TerminalWorkspace() {
   }, [resize, stopResizing]);
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
+
+  const filterPositions = (mode: 'Open' | 'Closed') => {
+    return rawPositions?.filter(p => p.status === mode && (p.isDemo || false) === (accountMode === 'DEMO')) || [];
+  };
 
   const openTradeDrawer = (side: 'BUY' | 'SELL') => {
     setPreselectedSide(side);
@@ -296,19 +300,12 @@ export default function TerminalWorkspace() {
 
         <main className="flex min-h-0 min-w-0 w-full flex-1 overflow-hidden lg:ml-16">
           <div className="flex-grow flex flex-col overflow-hidden">
-            {/* Desktop Chart Area */}
-            <div className="hidden lg:block flex-grow min-h-0 bg-[#F7F7F5] relative">
-              <TradingViewChart symbol={activeInst.symbol} />
-            </div>
-
-            {/* Mobile Chart Area (Always Full Height unless Drawers are Open) */}
-            <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-hidden lg:hidden">
+            <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-hidden">
               <div id="tour-chart-mobile" className="relative min-h-0 min-w-0 w-full flex-1 overflow-hidden bg-[#F7F7F5]">
                 <TradingViewChart symbol={activeInst.symbol} />
               </div>
             </div>
 
-            {/* Desktop Ledger */}
             <div 
               style={{ height: `${bottomPanelHeight}px` }}
               className="hidden lg:flex flex-col shrink-0 relative"
@@ -318,14 +315,13 @@ export default function TerminalWorkspace() {
                 className="absolute -top-1 left-0 right-0 h-1 cursor-row-resize z-50 hover:bg-[#0055FF]/40 transition-colors"
               />
               <PortfolioManager 
-                positions={positions.filter(p => p.status === 'Open')}
+                positions={filterPositions('Open')}
                 orders={[]}
-                history={positions.filter(p => p.status === 'Closed')}
+                history={filterPositions('Closed')}
               />
             </div>
           </div>
 
-          {/* Desktop Execution Panel */}
           <div className="hidden lg:flex w-[340px] border-l border-[#E4E4E4] shrink-0 bg-white shadow-xl relative z-40">
             <ExecutionTicket 
               instrument={activeInst} 
@@ -338,7 +334,6 @@ export default function TerminalWorkspace() {
         </main>
       </div>
 
-      {/* MOBILE COMMAND BAR: HAPTIC TRIGGERS */}
       <div className="relative z-[110] flex h-[76px] w-full shrink-0 items-center gap-2 border-t border-[#E4E4E4] bg-white px-2 shadow-[0_-2px_15px_rgba(0,0,0,0.08)] sm:px-4 lg:hidden">
         <button 
           onClick={() => openTradeDrawer('SELL')}
@@ -365,7 +360,6 @@ export default function TerminalWorkspace() {
         </button>
       </div>
 
-      {/* MOBILE EXECUTION DRAWER (FULL PAGE) */}
       {isTradeDrawerOpen && (
         <div className="fixed inset-0 z-[600] lg:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsTradeDrawerOpen(false)}></div>
@@ -397,14 +391,12 @@ export default function TerminalWorkspace() {
                     <ShieldCheck className="w-4 h-4 text-[#16835B]" />
                     <span className="text-[9px] font-bold uppercase text-[#6B7280]">Risk Engine Node Active</span>
                   </div>
-                  <span className="text-[8px] font-mono text-[#D1D5DB] uppercase">TRX: {Math.random().toString(36).substring(7).toUpperCase()}</span>
                </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* MOBILE PORTFOLIO DRAWER (FULL PAGE) */}
       {isPortfolioDrawerOpen && (
         <div className="fixed inset-0 z-[600] lg:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsPortfolioDrawerOpen(false)}></div>
@@ -416,16 +408,12 @@ export default function TerminalWorkspace() {
                   </button>
                   <span className="text-[11px] font-bold uppercase tracking-widest text-[#0A0A0A]">Institutional Ledger</span>
                </div>
-               <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-[#16835B]" />
-                  <span className="text-[9px] font-bold uppercase text-[#6B7280]">Audit Verified</span>
-               </div>
             </div>
             <div className="flex-grow overflow-hidden">
               <PortfolioManager 
-                positions={positions.filter(p => p.status === 'Open')}
+                positions={filterPositions('Open')}
                 orders={[]}
-                history={positions.filter(p => p.status === 'Closed')}
+                history={filterPositions('Closed')}
               />
             </div>
             <div className="p-4 border-t border-[#E4E4E4] bg-[#F7F7F5] text-center">
@@ -435,7 +423,6 @@ export default function TerminalWorkspace() {
         </div>
       )}
 
-      {/* MOBILE SIDEBAR NAVIGATION */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[700] lg:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsMobileMenuOpen(false)}></div>
