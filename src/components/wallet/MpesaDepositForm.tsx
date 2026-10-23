@@ -3,6 +3,7 @@
 /**
  * @fileOverview M-Pesa Deposit Form Component.
  * Initiates STK Push and listens for real-time Firestore updates for confirmation.
+ * Updated: Integrated official M-Pesa brand SVG.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -12,6 +13,8 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { cn } from '@/app/lib/utils';
 import { Loader2, Phone, CheckCircle2, AlertTriangle, Smartphone, Check } from 'lucide-react';
 import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
+
+const MPESA_ICON = "https://upload.wikimedia.org/wikipedia/commons/1/15/M-PESA_LOGO-01.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original";
 
 export default function MpesaDepositForm() {
   const { user } = useUser();
@@ -119,8 +122,8 @@ export default function MpesaDepositForm() {
       />
 
       <div className="flex items-center gap-4 mb-8 pb-6 border-b border-[#F7F7F5]">
-        <div className="w-12 h-12 bg-[#F7F7F5] flex items-center justify-center border border-[#E4E4E4]">
-           <Smartphone className="w-6 h-6 text-[#16835B]" />
+        <div className="w-16 h-12 bg-[#F7F7F5] flex items-center justify-center border border-[#E4E4E4] overflow-hidden">
+           <img src={MPESA_ICON} alt="M-Pesa" className="w-12 h-auto object-contain" />
         </div>
         <div>
           <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A]">M-Pesa Express</h3>

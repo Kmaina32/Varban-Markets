@@ -1,10 +1,10 @@
-
 'use client';
 
 /**
  * @fileOverview Web3 On-Chain Transfer Node.
  * Features multi-currency selection (ETH, USDT, USDC) and official MetaMask iconography.
  * Handles MetaMask transfers via Web3Auth to the institutional vault.
+ * Updated: Integrated official MetaMask Fox branding.
  */
 
 import React, { useState } from 'react';
@@ -17,6 +17,7 @@ import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
 import { cn } from '@/app/lib/utils';
 
 const COMPANY_HOT_WALLET = "0x892410b000000000000000000000000000000000";
+const METAMASK_ICON = "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/MetaMask_Fox.svg/960px-MetaMask_Fox.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail";
 
 interface Web3Asset {
   id: string;
@@ -31,30 +32,6 @@ const WEB3_ASSETS: Web3Asset[] = [
   { id: 'usdt', symbol: 'USDT', name: 'Tether USD', network: 'ERC-20', iconColor: 'text-[#26A17B]' },
   { id: 'usdc', symbol: 'USDC', name: 'USD Coin', network: 'ERC-20', iconColor: 'text-[#2775CA]' },
 ];
-
-const MetaMaskIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 318.6 318.6" className={className} xmlns="http://www.w3.org/2000/svg">
-    <path fill="#E2761B" d="M286.6 10.7L180 56.6l-13.6 31.8 3.6 160.3 116.6-238z"/>
-    <path fill="#E4761B" d="M32 10.7l106.6 45.9 13.6 31.8-3.6 160.3L32 10.7z"/>
-    <path fill="#D7C1B3" d="M257.3 255.4l-31.8-51.4H93.1l-31.8 51.4 93.6 44.5 93.6-44.5z"/>
-    <path fill="#233447" d="M225.5 204l-23.2-31.8h-86l-23.2 31.8 66.2 12.7 66.2-12.7z"/>
-    <path fill="#CD7932" d="M56.3 151.7l13.6-63.3 68.7 51.4-82.3 11.9z"/>
-    <path fill="#CD7932" d="M262.3 151.7l-13.6-63.3-68.7 51.4 82.3 11.9z"/>
-    <path fill="#E4751F" d="M110.9 234.1l-25.5-25.5 31.8-13.6-6.3 39.1z"/>
-    <path fill="#E4751F" d="M207.7 234.1l25.5-25.5-31.8-13.6 6.3 39.1z"/>
-    <path fill="#F6851B" d="M110.9 234.1l6.3-39.1-31.8 13.6 25.5 25.5z"/>
-    <path fill="#F6851B" d="M207.7 234.1l-6.3-39.1 31.8 13.6-25.5 25.5z"/>
-    <path fill="#C0AD9E" d="M159.3 268.2l-39.1-39.1 6.3 39.1 32.8 0z"/>
-    <path fill="#C0AD9E" d="M159.3 268.2l39.1-39.1-6.3 39.1-32.8 0z"/>
-    <path fill="#161616" d="M123.6 151.7l-13.6 39.1 20.4-6.3-6.8-32.8z"/>
-    <path fill="#161616" d="M195 151.7l13.6 39.1-20.4-6.3 6.8-32.8z"/>
-    <path fill="#763D16" d="M257.3 255.4l-25.5-51.4-66.2 12.7 91.7 38.7z"/>
-    <path fill="#763D16" d="M61.3 255.4l25.5-51.4 66.2 12.7-91.7 38.7z"/>
-    <path fill="#F6851B" d="M312.2 143.5l-49.9 8.2 13.6 63.3 36.3-71.5z"/>
-    <path fill="#F6851B" d="M6.4 143.5l49.9 8.2-13.6 63.3-36.3-71.5z"/>
-    <path fill="#F6851B" d="M159.3 118.1l-68.7-51.4 13.6 31.8h110.2l13.6-31.8-68.7 51.4z"/>
-  </svg>
-);
 
 export default function Web3TransferForm() {
   const { address, balance, isConnected, login, sendTransaction } = useWeb3();
@@ -127,8 +104,8 @@ export default function Web3TransferForm() {
 
       <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-[#F7F7F5] pb-6 gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-center rounded-none shadow-inner">
-            <MetaMaskIcon className="w-7 h-7" />
+          <div className="w-12 h-12 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-center rounded-none shadow-inner overflow-hidden">
+            <img src={METAMASK_ICON} alt="MetaMask" className="w-8 h-8 object-contain" />
           </div>
           <div>
             <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A]">Decentralized Transfer</h3>
@@ -140,7 +117,7 @@ export default function Web3TransferForm() {
             onClick={login}
             className="px-8 py-3 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0055FF] transition-all flex items-center gap-2 shadow-lg"
           >
-            <MetaMaskIcon className="w-4 h-4" />
+            <img src={METAMASK_ICON} alt="" className="w-4 h-4 object-contain" />
             Connect MetaMask
           </button>
         )}
@@ -194,7 +171,7 @@ export default function Web3TransferForm() {
                 required
               />
               <div className="flex justify-between items-center px-1">
-                <span className="text-[9px] text-[#6B7280] font-bold uppercase">Estimated Value: ${formatNumber(parseFloat(amount) * (selectedAsset.id === 'eth' ? 3500 : 1), { maximumFractionDigits: 2 })} USD</span>
+                <span className="text-[9px] text-[#6B7280] font-bold uppercase">Estimated Value: ${new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(parseFloat(amount) * (selectedAsset.id === 'eth' ? 3500 : 1))} USD</span>
                 <span className="text-[9px] text-[#6B7280] font-mono">Available: {parseFloat(balance || "0").toFixed(4)} ETH</span>
               </div>
             </div>
@@ -230,7 +207,7 @@ export default function Web3TransferForm() {
               </>
             ) : (
               <>
-                <MetaMaskIcon className="w-4 h-4" />
+                <img src={METAMASK_ICON} alt="" className="w-4 h-4 object-contain" />
                 <span>Execute {selectedAsset.symbol} On-Chain Transfer</span>
                 <ArrowRight className="w-4 h-4" />
               </>
@@ -239,8 +216,8 @@ export default function Web3TransferForm() {
         </form>
       ) : (
         <div className="py-20 text-center space-y-6">
-          <div className="w-20 h-20 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-center mx-auto shadow-inner">
-            <MetaMaskIcon className="w-12 h-12 grayscale opacity-20" />
+          <div className="w-20 h-20 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-center mx-auto shadow-inner overflow-hidden">
+            <img src={METAMASK_ICON} alt="MetaMask" className="w-12 h-12 grayscale opacity-20 object-contain" />
           </div>
           <div>
             <h4 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A]">MetaMask Node Offline</h4>
@@ -252,15 +229,11 @@ export default function Web3TransferForm() {
             onClick={login}
             className="btn-institutional-primary px-12 py-4 shadow-xl flex items-center gap-2 mx-auto"
           >
-            <MetaMaskIcon className="w-4 h-4" />
+            <img src={METAMASK_ICON} alt="" className="w-4 h-4 object-contain" />
             Connect MetaMask
           </button>
         </div>
       )}
     </Card>
   );
-}
-
-function formatNumber(val: number, options: any) {
-  return new Intl.NumberFormat('en-US', options).format(val);
 }

@@ -3,11 +3,12 @@
 /**
  * @fileOverview Unified Financial Workspace (Wallet).
  * Handles deposits (M-Pesa, Web3, Crypto), withdrawals, and transaction history.
- * Hardened: Optimized imports to resolve ChunkLoadErrors.
+ * Updated: Integrated official brand icons for M-Pesa, MetaMask, and Crypto.
  */
 
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { 
@@ -19,9 +20,6 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Download,
-  Globe,
-  Smartphone,
-  Check,
   Loader2
 } from "lucide-react";
 import { useUser, useDoc, useCollection, useFirestore } from "@/firebase";
@@ -37,36 +35,17 @@ import { TransactionReceipt } from "@/components/wallet/TransactionReceipt";
 import { collection, query, orderBy, limit, where } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Heavy libraries imported dynamically or handled carefully to avoid ChunkLoadErrors
+// Heavy libraries imported dynamically or handled carefully
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 type FundTab = 'overview' | 'deposit' | 'withdraw' | 'activity';
 type DepositMethod = 'web3' | 'crypto' | 'mpesa';
 
-const MetaMaskIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 318.6 318.6" className={className} xmlns="http://www.w3.org/2000/svg">
-    <path fill="#E2761B" d="M286.6 10.7L180 56.6l-13.6 31.8 3.6 160.3 116.6-238z"/>
-    <path fill="#E4761B" d="M32 10.7l106.6 45.9 13.6 31.8-3.6 160.3L32 10.7z"/>
-    <path fill="#D7C1B3" d="M257.3 255.4l-31.8-51.4H93.1l-31.8 51.4 93.6 44.5 93.6-44.5z"/>
-    <path fill="#233447" d="M225.5 204l-23.2-31.8h-86l-23.2 31.8 66.2 12.7 66.2-12.7z"/>
-    <path fill="#CD7932" d="M56.3 151.7l13.6-63.3 68.7 51.4-82.3 11.9z"/>
-    <path fill="#CD7932" d="M262.3 151.7l-13.6-63.3-68.7 51.4 82.3 11.9z"/>
-    <path fill="#E4751F" d="M110.9 234.1l-25.5-25.5 31.8-13.6-6.3 39.1z"/>
-    <path fill="#E4751F" d="M207.7 234.1l25.5-25.5-31.8-13.6 6.3 39.1z"/>
-    <path fill="#F6851B" d="M110.9 234.1l6.3-39.1-31.8 13.6 25.5 25.5z"/>
-    <path fill="#F6851B" d="M207.7 234.1l-6.3-39.1 31.8 13.6-25.5 25.5z"/>
-    <path fill="#C0AD9E" d="M159.3 268.2l-39.1-39.1 6.3 39.1 32.8 0z"/>
-    <path fill="#C0AD9E" d="M159.3 268.2l39.1-39.1-6.3 39.1-32.8 0z"/>
-    <path fill="#161616" d="M123.6 151.7l-13.6 39.1 20.4-6.3-6.8-32.8z"/>
-    <path fill="#161616" d="M195 151.7l13.6 39.1-20.4-6.3 6.8-32.8z"/>
-    <path fill="#763D16" d="M257.3 255.4l-25.5-51.4-66.2 12.7 91.7 38.7z"/>
-    <path fill="#763D16" d="M61.3 255.4l25.5-51.4 66.2 12.7-91.7 38.7z"/>
-    <path fill="#F6851B" d="M312.2 143.5l-49.9 8.2 13.6 63.3 36.3-71.5z"/>
-    <path fill="#F6851B" d="M6.4 143.5l49.9 8.2-13.6 63.3-36.3-71.5z"/>
-    <path fill="#F6851B" d="M159.3 118.1l-68.7-51.4 13.6 31.8h110.2l13.6-31.8-68.7 51.4z"/>
-  </svg>
-);
+// Official Brand Icon URLs
+const MPESA_ICON = "https://upload.wikimedia.org/wikipedia/commons/1/15/M-PESA_LOGO-01.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original";
+const METAMASK_ICON = "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/MetaMask_Fox.svg/960px-MetaMask_Fox.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail";
+const CRYPTO_ICON = "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8b/Cryptocurrency_Logo.svg/960px-Cryptocurrency_Logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail&_=20171112032351";
 
 export default function WalletClient() {
   const { user } = useUser();
@@ -127,7 +106,6 @@ export default function WalletClient() {
     setActiveReceiptTx(tx);
     setIsDownloadingReceipt(true);
     
-    // We use a small delay to ensure the receipt component is rendered in the hidden DOM
     setTimeout(async () => {
       const element = document.getElementById('institutional-receipt-render');
       if (element) {
@@ -172,7 +150,6 @@ export default function WalletClient() {
         storageKey="varban_consolidated_funds_tutorial" 
       />
       
-      {/* Hidden container for PDF rendering */}
       <div className="fixed -left-[9999px] top-0 opacity-0 pointer-events-none">
         {activeReceiptTx && (
           <TransactionReceipt 
@@ -264,8 +241,12 @@ export default function WalletClient() {
               {/* Web3 / MetaMask Connection Section */}
               <Card className="bg-white border-[#E4E4E4] p-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-center shadow-inner">
-                    <MetaMaskIcon className={cn("w-7 h-7", isConnected ? "" : "grayscale opacity-20")} />
+                  <div className="w-12 h-12 bg-[#F7F7F5] border border-[#E4E4E4] flex items-center justify-center shadow-inner overflow-hidden">
+                    <img 
+                      src={METAMASK_ICON} 
+                      alt="MetaMask" 
+                      className={cn("w-8 h-8 object-contain", isConnected ? "" : "grayscale opacity-20")} 
+                    />
                   </div>
                   <div>
                     <h4 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Decentralized Link</h4>
@@ -280,7 +261,7 @@ export default function WalletClient() {
                   </button>
                 ) : (
                   <button onClick={login} className="btn-institutional-primary px-8 flex items-center gap-2">
-                    <MetaMaskIcon className="w-3.5 h-3.5" />
+                    <img src={METAMASK_ICON} alt="" className="w-4 h-4 object-contain" />
                     Link MetaMask
                   </button>
                 )}
@@ -299,7 +280,7 @@ export default function WalletClient() {
                     depositMethod === 'mpesa' ? "bg-[#0A0A0A] text-white border-[#0A0A0A] shadow-md" : "bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
                   )}
                 >
-                  <Smartphone className={cn("w-6 h-6", depositMethod === 'mpesa' ? "text-[#16835B]" : "text-[#6B7280]")} />
+                  <img src={MPESA_ICON} alt="M-Pesa" className="w-12 h-auto object-contain" />
                   <div className="text-left">
                     <span className="text-xs font-bold uppercase block tracking-wider">M-Pesa Express</span>
                     <span className="text-[9px] uppercase tracking-tighter opacity-60">Mobile Money (KES)</span>
@@ -312,7 +293,7 @@ export default function WalletClient() {
                     depositMethod === 'web3' ? "bg-[#0A0A0A] text-white border-[#0A0A0A] shadow-md" : "bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
                   )}
                 >
-                  <MetaMaskIcon className={cn("w-6 h-6", depositMethod === 'web3' ? "" : "grayscale")} />
+                  <img src={METAMASK_ICON} alt="MetaMask" className={cn("w-8 h-8 object-contain", depositMethod !== 'web3' && "grayscale")} />
                   <div className="text-left">
                     <span className="text-xs font-bold uppercase block tracking-wider">MetaMask Web3</span>
                     <span className="text-[9px] uppercase tracking-tighter opacity-60">Smart Contract (ETH)</span>
@@ -325,7 +306,7 @@ export default function WalletClient() {
                     depositMethod === 'crypto' ? "bg-[#0A0A0A] text-white border-[#0A0A0A] shadow-md" : "bg-white border-[#E4E4E4] hover:bg-[#F7F7F5]"
                   )}
                 >
-                  <Globe className={cn("w-6 h-6", depositMethod === 'crypto' ? "text-[#0055FF]" : "text-[#6B7280]")} />
+                  <img src={CRYPTO_ICON} alt="Crypto" className={cn("w-8 h-8 object-contain", depositMethod !== 'crypto' && "grayscale")} />
                   <div className="text-left">
                     <span className="text-xs font-bold uppercase block tracking-wider">Manual Crypto</span>
                     <span className="text-[9px] uppercase tracking-tighter opacity-60">Any Wallet (BTC/USDT)</span>
