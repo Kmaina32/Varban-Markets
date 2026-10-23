@@ -89,7 +89,7 @@ function TerminalContent() {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // Mobile UI States
+  // Mobile UI States - Strictly False by Default
   const [isExecutionOpen, setIsExecutionOpen] = useState(false);
   const [isLedgerOpen, setIsLedgerOpen] = useState(false);
   
@@ -177,6 +177,7 @@ function TerminalContent() {
     };
 
     setPositions(prev => [newPos, ...prev]);
+    // Close execution drawer on mobile after success
     setIsExecutionOpen(false);
   };
 
@@ -311,8 +312,8 @@ function TerminalContent() {
         <AuthedSidebar className="hidden lg:flex" />
 
         <main className="flex-grow flex lg:ml-16 overflow-hidden">
-          {/* DESKTOP WORKSPACE */}
-          <ResizablePanelGroup direction="horizontal" className="hidden lg:flex flex-grow overflow-hidden">
+          {/* DESKTOP WORKSPACE - Using xl breakpoint for desktop focus */}
+          <ResizablePanelGroup direction="horizontal" className="hidden xl:flex flex-grow overflow-hidden">
             <ResizablePanel defaultSize={75} minSize={40}>
               <ResizablePanelGroup direction="vertical">
                 <ResizablePanel defaultSize={70} minSize={40}>
@@ -405,8 +406,8 @@ function TerminalContent() {
             </ResizablePanel>
           </ResizablePanelGroup>
 
-          {/* MOBILE WORKSPACE overhaul */}
-          <div className="flex lg:hidden flex-grow flex-col overflow-hidden w-full relative">
+          {/* MOBILE WORKSPACE - Hidden on Large/Desktop screens */}
+          <div className="flex xl:hidden flex-grow flex-col overflow-hidden w-full relative">
             <div id="tour-chart-mobile" className="flex-grow min-h-0 bg-[#F7F7F5] relative">
               <TradingViewChart symbol={activeInst.symbol} />
             </div>
@@ -439,9 +440,9 @@ function TerminalContent() {
 
             {/* MOBILE EXECUTION DRAWER */}
             {isExecutionOpen && (
-              <div className="fixed inset-0 z-[700]">
+              <div className="fixed inset-0 z-[700] flex flex-col justify-end">
                 <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsExecutionOpen(false)}></div>
-                <div className="absolute bottom-0 left-0 right-0 bg-white animate-in slide-in-from-bottom duration-300 rounded-t-2xl overflow-hidden max-h-[85vh] flex flex-col shadow-2xl border-t border-[#E4E4E4]">
+                <div className="relative bg-white animate-in slide-in-from-bottom duration-300 rounded-t-2xl overflow-hidden max-h-[85vh] flex flex-col shadow-2xl border-t border-[#E4E4E4]">
                   <div className="h-1.5 w-12 bg-[#E4E4E4] rounded-full mx-auto mt-3 mb-1 shrink-0"></div>
                   <div className="p-4 border-b border-[#F7F7F5] flex justify-between items-center bg-white shrink-0">
                     <div className="flex items-center gap-2">
@@ -465,9 +466,9 @@ function TerminalContent() {
 
             {/* MOBILE LEDGER DRAWER */}
             {isLedgerOpen && (
-              <div className="fixed inset-0 z-[700]">
+              <div className="fixed inset-0 z-[700] flex flex-col justify-end">
                 <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsLedgerOpen(false)}></div>
-                <div className="absolute bottom-0 left-0 right-0 h-[70vh] bg-white animate-in slide-in-from-bottom duration-300 rounded-t-2xl overflow-hidden flex flex-col shadow-2xl border-t border-[#E4E4E4]">
+                <div className="relative h-[70vh] bg-white animate-in slide-in-from-bottom duration-300 rounded-t-2xl overflow-hidden flex flex-col shadow-2xl border-t border-[#E4E4E4]">
                   <div className="h-1.5 w-12 bg-[#E4E4E4] rounded-full mx-auto mt-3 mb-1 shrink-0"></div>
                   <div className="p-4 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5] shrink-0">
                     <div className="flex items-center gap-2">
