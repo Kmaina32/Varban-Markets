@@ -4,10 +4,9 @@
  * @fileOverview Varban Assistant Chatbot.
  * Adheres strictly to the Institutional Chat pattern using Message Scroller and Bubbles.
  * 
- * BEST PRACTICES:
- * 1. Legal Disclaimer: Persistent notice regarding financial advice.
- * 2. User Context: Passes user profile data to the AI flow.
- * 3. Graceful Failure: Handles service interruptions without crashing.
+ * ENHANCEMENTS:
+ * 1. Context Injection: Passes current URL/Path to the AI.
+ * 2. User Personalization: Passes user profile name to the AI.
  */
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
@@ -166,6 +165,7 @@ export default function ChatSupport() {
         message: currentInput,
         userName: profile?.profile?.firstName,
         locale,
+        pageContext: pathname || "Home Page",
         history
       });
 
