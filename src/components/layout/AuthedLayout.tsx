@@ -4,7 +4,7 @@ import AuthedSidebar from "./AuthedSidebar";
 import AdminSidebar from "./AdminSidebar";
 import ProfileDropdown from "./ProfileDropdown";
 import LoadingOverlay from "@/components/shared/LoadingOverlay";
-import { Menu, Info, ShieldAlert, ChevronDown, Globe, Clock as ClockIcon } from "lucide-react";
+import { Menu, Info, ShieldAlert, ChevronDown, Globe, Clock as ClockIcon, Check } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useUser, useDoc, useFirestore, initializeFirebase } from "@/firebase";
@@ -14,6 +14,12 @@ import { useEffect, useState, useMemo } from "react";
 import { cn } from "@/app/lib/utils";
 import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
 import { doc, updateDoc } from "firebase/firestore";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const SUPER_ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
 
@@ -143,31 +149,47 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
             </div>
             
             <div className="flex items-center space-x-3">
-              <div className="relative flex items-center group">
-                <select 
-                  value={locale}
-                  onChange={(e) => setLocale(e.target.value as LocaleCode)}
-                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#0055FF] outline-none cursor-pointer pr-3 z-10"
-                >
+              {/* PROFESSIONAL LANGUAGE DROPDOWN */}
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-widest text-[#0055FF] outline-none hover:opacity-70 transition-opacity">
+                  <span>{LANGUAGE_LABELS[locale]}</span>
+                  <ChevronDown className="w-2.5 h-2.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[140px]">
                   {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
-                    <option key={code} value={code} className="bg-white text-[#0A0A0A]">{label}</option>
+                    <DropdownMenuItem 
+                      key={code} 
+                      onClick={() => setLocale(code as LocaleCode)}
+                      className="flex items-center justify-between"
+                    >
+                      <span>{label}</span>
+                      {locale === code && <Check className="w-3 h-3 text-[#0055FF]" />}
+                    </DropdownMenuItem>
                   ))}
-                </select>
-                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#0055FF] pointer-events-none" />
-              </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
               
               <div className="w-px h-3 bg-[#E4E4E4]"></div>
 
-              <div className="relative flex items-center group">
-                <select 
-                  value={activeTimezone}
-                  onChange={(e) => handleTimezoneChange(e.target.value)}
-                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none cursor-pointer pr-3 z-10"
-                >
-                  {TIMEZONES.map(tz => <option key={tz.value} value={tz.value} className="bg-white text-[#0A0A0A]">{tz.label}</option>)}
-                </select>
-                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
-              </div>
+              {/* PROFESSIONAL TIMEZONE DROPDOWN */}
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none hover:text-[#0A0A0A] transition-colors">
+                  <span>{TIMEZONES.find(t => t.value === activeTimezone)?.label || activeTimezone}</span>
+                  <ChevronDown className="w-2.5 h-2.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[180px]">
+                  {TIMEZONES.map(tz => (
+                    <DropdownMenuItem 
+                      key={tz.value} 
+                      onClick={() => handleTimezoneChange(tz.value)}
+                      className="flex items-center justify-between"
+                    >
+                      <span>{tz.label}</span>
+                      {activeTimezone === tz.value && <Check className="w-3 h-3 text-[#0055FF]" />}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 

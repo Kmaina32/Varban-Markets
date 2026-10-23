@@ -3,7 +3,7 @@
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
  * 4-Panel Grid Architecture with Resizable Panels and full TradingView feature parity.
- * Updated for Next.js 15: params and searchParams are now Promises.
+ * Updated: Replaced native selects with professional DropdownMenu components.
  */
 
 import { useState, useEffect, useCallback, Suspense, use } from "react";
@@ -21,7 +21,8 @@ import {
   Layout,
   Globe,
   Settings,
-  ShieldCheck
+  ShieldCheck,
+  Check
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
@@ -46,6 +47,12 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Position {
   id: string;
@@ -218,31 +225,47 @@ function TerminalContent() {
             </div>
             
             <div className="flex items-center space-x-3">
-              <div className="relative flex items-center group">
-                <select 
-                  value={locale}
-                  onChange={(e) => setLocale(e.target.value as LocaleCode)}
-                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#0055FF] outline-none cursor-pointer pr-3 z-10"
-                >
+              {/* PROFESSIONAL LANGUAGE DROPDOWN */}
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-widest text-[#0055FF] outline-none hover:opacity-70 transition-opacity">
+                  <span>{LANGUAGE_LABELS[locale]}</span>
+                  <ChevronDown className="w-2.5 h-2.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[140px]">
                   {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
-                    <option key={code} value={code} className="bg-white text-[#0A0A0A]">{label}</option>
+                    <DropdownMenuItem 
+                      key={code} 
+                      onClick={() => setLocale(code as LocaleCode)}
+                      className="flex items-center justify-between"
+                    >
+                      <span>{label}</span>
+                      {locale === code && <Check className="w-3 h-3 text-[#0055FF]" />}
+                    </DropdownMenuItem>
                   ))}
-                </select>
-                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#0055FF] pointer-events-none" />
-              </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
               
               <div className="w-px h-3 bg-[#E4E4E4]"></div>
 
-              <div className="relative flex items-center group">
-                <select 
-                  value={activeTimezone}
-                  onChange={(e) => handleTimezoneChange(e.target.value)}
-                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none cursor-pointer pr-3 z-10"
-                >
-                  {TIMEZONES.map(tz => <option key={tz.value} value={tz.value} className="bg-white text-[#0A0A0A]">{tz.label}</option>)}
-                </select>
-                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
-              </div>
+              {/* PROFESSIONAL TIMEZONE DROPDOWN */}
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none hover:text-[#0A0A0A] transition-colors">
+                  <span>{TIMEZONES.find(t => t.value === activeTimezone)?.label || activeTimezone}</span>
+                  <ChevronDown className="w-2.5 h-2.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[180px]">
+                  {TIMEZONES.map(tz => (
+                    <DropdownMenuItem 
+                      key={tz.value} 
+                      onClick={() => handleTimezoneChange(tz.value)}
+                      className="flex items-center justify-between"
+                    >
+                      <span>{tz.label}</span>
+                      {activeTimezone === tz.value && <Check className="w-3 h-3 text-[#0055FF]" />}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
@@ -327,7 +350,7 @@ function TerminalContent() {
                    ))}
                 </div>
 
-                <div className="flex-grow overflow-y-auto no-scrollbar">
+                <div className="flex-grow overflow-y-auto no-scrollbar p-0">
                    {activeRightTab === 'TRADE' && (
                      <div id="tour-settings" className="h-full">
                         <ExecutionTicket 

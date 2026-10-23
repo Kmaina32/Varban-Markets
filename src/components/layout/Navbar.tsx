@@ -4,14 +4,20 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, X, ArrowUpRight, ChevronDown, Globe } from "lucide-react";
+import { Menu, X, ArrowUpRight, ChevronDown, Globe, Check } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 /**
  * @fileOverview Public Landing Page Navigation.
- * Updated to prevent overlap with institutional workspace headers.
+ * Updated to feature professional Radix UI based dropdowns for language selection.
  */
 
 const AUTH_PATHS = ['/login', '/register', '/forgot-password'];
@@ -225,26 +231,32 @@ export default function Navbar() {
 
           <div className="hidden lg:flex items-center space-x-6">
             {/* PUBLIC LANGUAGE SELECTOR */}
-            <div className="flex items-center bg-[#F7F7F5] border border-[#E4E4E4] px-3 py-1.5 space-x-3">
-               <Globe className="w-3.5 h-3.5 text-[#0055FF]" />
-               <div className="relative flex items-center">
-                  <select 
-                    value={locale}
-                    onChange={(e) => setLocale(e.target.value as LocaleCode)}
-                    className="appearance-none bg-transparent text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A] outline-none cursor-pointer pr-4"
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center bg-[#F7F7F5] border border-[#E4E4E4] px-4 py-2 space-x-3 outline-none hover:bg-[#EAEAEA] transition-colors shadow-sm">
+                 <Globe className="w-3.5 h-3.5 text-[#0055FF]" />
+                 <div className="flex items-center gap-1.5">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#0A0A0A]">{LANGUAGE_LABELS[locale]}</span>
+                    <ChevronDown className="w-2.5 h-2.5 text-[#6B7280]" />
+                 </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[140px]">
+                {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
+                  <DropdownMenuItem 
+                    key={code} 
+                    onClick={() => setLocale(code as LocaleCode)}
+                    className="flex items-center justify-between"
                   >
-                    {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
-                      <option key={code} value={code}>{label}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
-               </div>
-            </div>
+                    <span>{label}</span>
+                    {locale === code && <Check className="w-3 h-3 text-[#0055FF]" />}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             <div className="flex items-center space-x-3">
               <Link 
                 href="/register" 
-                className="bg-[#0055FF] hover:bg-[#0044cc] text-white text-[11px] font-bold uppercase tracking-widest px-8 py-3 transition-colors duration-200"
+                className="bg-[#0055FF] hover:bg-[#0044cc] text-white text-[11px] font-bold uppercase tracking-widest px-8 py-3 transition-colors duration-200 shadow-md"
               >
                 {t('auth.register')}
               </Link>
