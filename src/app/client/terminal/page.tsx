@@ -2,6 +2,7 @@
 
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal (PRODUCTION).
+ * Optimized for mobile with left-side command drawers and high-fidelity charting.
  * Wired to Firestore Ledger for real-time trade settlement and balance sync.
  */
 
@@ -15,7 +16,9 @@ import {
   Clock as ClockIcon,
   ShieldCheck,
   History,
-  Loader2
+  Loader2,
+  ChevronUp,
+  Activity
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
@@ -23,7 +26,7 @@ import { useUser, useFirestore, useDoc, useCollection } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
-import { doc, updateDoc, collection, addDoc, serverTimestamp, query, orderBy, where, increment } from "firebase/firestore";
+import { doc, updateDoc, collection, addDoc, serverTimestamp, query, orderBy, increment } from "firebase/firestore";
 
 // Terminal Components
 import AuthedSidebar from "@/components/layout/AuthedSidebar";
@@ -47,7 +50,7 @@ export default function TerminalWorkspace() {
   const db = useFirestore();
   const { formatNumber, locale, setLocale } = useTranslation();
 
-  const { data: profile, loading: profileLoading } = useDoc<any>(db, user ? `users/${user.uid}` : null);
+  const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   
   // REAL-TIME POSITIONS LEDGER
   const positionsQuery = useMemo(() => {
@@ -59,7 +62,7 @@ export default function TerminalWorkspace() {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isTradeDrawerOpen, setIsTradeDrawerOpen] = useState(false);
-  const [isPortfolioDrawerOpen, setIsPortfolioDrawerOpen] = useState(false);
+  const [isLedgerDrawerOpen, setIsLedgerDrawerOpen] = useState(false);
   const [preselectedSide, setPreselectedSide] = useState<'BUY' | 'SELL'>('BUY');
   
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
@@ -122,7 +125,6 @@ export default function TerminalWorkspace() {
     return () => { active = false; clearInterval(interval); };
   }, [activeInst.symbol]);
 
-  // PRODUCTION EXECUTION HANDLER
   const handleExecution = async (params: any) => {
     const live = marketData[activeInst.symbol];
     if (!live || !user || !db) return;
@@ -130,14 +132,12 @@ export default function TerminalWorkspace() {
     const isDemo = accountMode === 'DEMO';
     const stake = params.amount;
 
-    // 1. Balance Gate
     if (!isDemo && (profile?.balance || 0) < stake) {
       alert("Insufficient liquidity in vault domain.");
       return;
     }
 
     try {
-      // 2. Commit to Ledger
       await addDoc(collection(db, `users/${user.uid}/positions`), {
         instrument: activeInst.symbol,
         vector: params.side,
@@ -151,7 +151,6 @@ export default function TerminalWorkspace() {
         createdAt: serverTimestamp()
       });
 
-      // 3. Update Balance if REAL
       if (!isDemo) {
         await updateDoc(doc(db, "users", user.uid), {
           balance: increment(-stake),
@@ -196,7 +195,7 @@ export default function TerminalWorkspace() {
   const openTradeDrawer = (side: 'BUY' | 'SELL') => {
     setPreselectedSide(side);
     setIsTradeDrawerOpen(true);
-    setIsPortfolioDrawerOpen(false);
+    setIsLedgerDrawerOpen(false);
   };
 
   return (
@@ -344,7 +343,7 @@ export default function TerminalWorkspace() {
         </button>
 
         <button 
-          onClick={() => setIsPortfolioDrawerOpen(true)}
+          onClick={() => setIsLedgerDrawerOpen(true)}
           className="w-16 h-[54px] border border-[#E4E4E4] bg-[#F7F7F5] flex flex-col items-center justify-center gap-1 text-[#0A0A0A] group active:bg-[#0A0A0A] active:text-white transition-colors"
         >
           <History className="w-4 h-4" />
@@ -369,11 +368,7 @@ export default function TerminalWorkspace() {
                   <button onClick={() => setIsTradeDrawerOpen(false)} className="p-2 -ml-2 text-[#6B7280] hover:text-[#0A0A0A]">
                     <X className="w-6 h-6" />
                   </button>
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-[#0A0A0A]">Contract Config: {activeInst.symbol}</span>
-               </div>
-               <div className="flex flex-col text-right">
-                  <span className="text-[8px] font-bold text-[#6B7280] uppercase">Balance</span>
-                  <span className="text-xs font-mono font-bold text-[#16835B]">${formatNumber(activeBalance, { minimumFractionDigits: 2 })}</span>
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-[#0A0A0A]">Execute: {activeInst.symbol}</span>
                </div>
             </div>
             <div className="flex-grow overflow-y-auto no-scrollbar">
@@ -397,13 +392,13 @@ export default function TerminalWorkspace() {
         </div>
       )}
 
-      {isPortfolioDrawerOpen && (
+      {isLedgerDrawerOpen && (
         <div className="fixed inset-0 z-[600] lg:hidden">
-          <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsPortfolioDrawerOpen(false)}></div>
+          <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsLedgerDrawerOpen(false)}></div>
           <div className="absolute top-0 left-0 right-0 bottom-0 bg-white animate-in slide-in-from-bottom duration-400 flex flex-col shadow-2xl overflow-hidden">
             <div className="p-4 h-16 border-b border-[#F7F7F5] flex justify-between items-center bg-white shrink-0">
                <div className="flex items-center gap-3">
-                  <button onClick={() => setIsPortfolioDrawerOpen(false)} className="p-2 -ml-2 text-[#6B7280] hover:text-[#0A0A0A]">
+                  <button onClick={() => setIsLedgerDrawerOpen(false)} className="p-2 -ml-2 text-[#6B7280] hover:text-[#0A0A0A]">
                     <ChevronDown className="w-6 h-6" />
                   </button>
                   <span className="text-[11px] font-bold uppercase tracking-widest text-[#0A0A0A]">Institutional Ledger</span>
@@ -417,7 +412,7 @@ export default function TerminalWorkspace() {
               />
             </div>
             <div className="p-4 border-t border-[#E4E4E4] bg-[#F7F7F5] text-center">
-               <button onClick={() => setIsPortfolioDrawerOpen(false)} className="w-full btn-institutional-primary py-4">Close Ledger</button>
+               <button onClick={() => setIsLedgerDrawerOpen(false)} className="w-full btn-institutional-primary py-4">Close Ledger</button>
             </div>
           </div>
         </div>

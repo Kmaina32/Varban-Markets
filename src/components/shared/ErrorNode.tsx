@@ -24,7 +24,7 @@ export default function ErrorNode({ error, reset, context = "System" }: ErrorNod
           {/* Status Indicator */}
           <div className="relative flex justify-center">
             <div className="w-20 h-20 bg-white border border-[#E4E4E4] rounded-full flex items-center justify-center shadow-xl">
-              <ShieldAlert className="w-10 h-10 text-[#C43D3D]" />
+              <ShieldAlert className="w-10 h-10 text-[#0A0A0A]" />
             </div>
           </div>
 
