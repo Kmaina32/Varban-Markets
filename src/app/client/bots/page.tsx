@@ -2,10 +2,10 @@
 
 /**
  * @fileOverview Bot Marketplace Registry.
- * Integrated with the Varban Five Strategy Engine core.
+ * Integrated with AI-assisted configuration modification.
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import AuthedLayout from '@/components/layout/AuthedLayout';
 import { Card } from '@/components/ui/card';
@@ -19,40 +19,35 @@ import {
   ShieldCheck,
   Zap,
   Check,
-  BarChart3
+  BarChart3,
+  Settings2,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import { useTranslation } from '@/app/lib/i18n-context';
-import type { BotId } from '@/app/lib/bots-engine/types';
+import type { BotId, BotConfig } from '@/app/lib/bots-engine/types';
+import ModifyBotModal from '@/components/bots/ModifyBotModal';
+import { useUser, useFirestore, useCollection } from '@/firebase';
+import { collection, query } from 'firebase/firestore';
 
-interface Bot {
-  id: BotId;
-  name: string;
-  version: string;
+interface BotDisplay extends BotConfig {
   category: string;
   winRate: string;
   drawdown: string;
   pnl: string;
   risk: string;
   desc: string;
-  status: string;
-  minStake: number;
   features: string[];
 }
 
-const BOTS_REGISTRY: Bot[] = [
-  {
-    id: "bm-liquidity-sweep",
-    name: "BM Liquidity Sweep",
-    version: "v4.2.0",
+const STATIC_METADATA: Record<string, any> = {
+  "bm-liquidity-sweep": {
     category: "scalping",
     winRate: "74%",
     drawdown: "3.5%",
     pnl: "+142%",
     risk: "Medium",
     desc: "Designed for institutional range sweeps, identifying high-precision reversals after Asian session liquidity grabs.",
-    status: "Verified",
-    minStake: 250,
     features: [
       "Asian-session range sweep detection",
       "Structure-shift validation protocol",
@@ -60,18 +55,13 @@ const BOTS_REGISTRY: Bot[] = [
       "Planned invalidation stop-loss"
     ]
   },
-  {
-    id: "trend-continuation",
-    name: "EMA Momentum",
-    version: "v2.1.0",
+  "trend-continuation": {
     category: "trend",
     winRate: "68%",
     drawdown: "6.2%",
     pnl: "+94%",
     risk: "Low",
     desc: "Follows established market momentum using dual EMA filters and volatility-adjusted pullbacks.",
-    status: "Verified",
-    minStake: 100,
     features: [
       "EMA 50/200 dual trend filter",
       "ATR-adjusted pullback entry logic",
@@ -79,18 +69,13 @@ const BOTS_REGISTRY: Bot[] = [
       "Trailing take-profit targets"
     ]
   },
-  {
-    id: "breakout-retest",
-    name: "Structure Master",
-    version: "v3.0.1",
+  "breakout-retest": {
     category: "grid",
     winRate: "62%",
     drawdown: "9.5%",
     pnl: "+168%",
     risk: "High",
     desc: "Identifies high-probability consolidation breakouts and validates entries on confirmed structural retests.",
-    status: "Verified",
-    minStake: 150,
     features: [
       "Consolidation range lookback logic",
       "Retest tolerance ATR monitoring",
@@ -98,18 +83,13 @@ const BOTS_REGISTRY: Bot[] = [
       "Risk-reward optimization engine"
     ]
   },
-  {
-    id: "mean-reversion",
-    name: "Mean Reversion",
-    version: "v1.8.0",
+  "mean-reversion": {
     category: "arbitrage",
     winRate: "82%",
     drawdown: "2.1%",
     pnl: "+48%",
     risk: "Very Low",
     desc: "Capitalizes on price extremes using Bollinger bands and RSI divergence, filtered by trend-strength guards.",
-    status: "Verified",
-    minStake: 500,
     features: [
       "Volatility band entry protocol",
       "RSI extreme signal validation",
@@ -117,18 +97,13 @@ const BOTS_REGISTRY: Bot[] = [
       "Instant mid-line exit targets"
     ]
   },
-  {
-    id: "momentum-scanner",
-    name: "Momentum Scanner",
-    version: "v2.5.0",
+  "momentum-scanner": {
     category: "trend",
     winRate: "59%",
     drawdown: "14%",
     pnl: "+210%",
     risk: "High",
     desc: "Multi-market scanner that ranks assets by relative momentum for high-velocity trend following.",
-    status: "Verified",
-    minStake: 100,
     features: [
       "Lookback momentum ranking engine",
       "Multi-EMA trend alignment check",
@@ -136,13 +111,43 @@ const BOTS_REGISTRY: Bot[] = [
       "Global asset scan capability"
     ]
   }
+};
+
+const DEFAULT_CONFIGS: BotConfig[] = [
+  { id: "bm-liquidity-sweep", name: "BM Liquidity Sweep", enabled: false, mode: 'paper', symbols: ['XAUUSD'], timeframes: ['5m', '15m'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { asianBars: 24, displacementAtr: 0.8 }, version: 1, updatedAt: '' },
+  { id: "trend-continuation", name: "EMA Momentum", enabled: false, mode: 'paper', symbols: ['EURUSD', 'BTCUSD'], timeframes: ['15m', '1h'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { pullbackAtr: 0.35, targetAtr: 2.0 }, version: 1, updatedAt: '' },
+  { id: "breakout-retest", name: "Structure Master", enabled: false, mode: 'paper', symbols: ['EURUSD', 'BTCUSD'], timeframes: ['5m', '15m'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { rangeLookback: 20, retestAtr: 0.2 }, version: 1, updatedAt: '' },
+  { id: "mean-reversion", name: "Mean Reversion", enabled: false, mode: 'paper', symbols: ['EURUSD', 'BTCUSD'], timeframes: ['15m', '1h'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { period: 20 }, version: 1, updatedAt: '' },
+  { id: "momentum-scanner", name: "Momentum Scanner", enabled: false, mode: 'paper', symbols: ['XAUUSD', 'EURUSD'], timeframes: ['15m', '1h'], riskPercent: 0.25, minRiskReward: 1.5, maxTradesPerDay: 3, params: { momentumLookback: 20, momentumThreshold: 0.004 }, version: 1, updatedAt: '' }
 ];
 
 export default function BotMarketplacePage() {
   const { t, formatNumber } = useTranslation();
+  const { user } = useUser();
+  const db = useFirestore();
+
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBot, setSelectedBot] = useState<Bot | null>(null);
+  const [selectedBotMetadata, setSelectedBotMetadata] = useState<any | null>(null);
+  const [editingBot, setEditingBot] = useState<BotConfig | null>(null);
+
+  const configsQuery = useMemo(() => {
+    if (!db || !user) return null;
+    return query(collection(db, `users/${user.uid}/bot_configs`));
+  }, [db, user]);
+
+  const { data: userConfigs, loading: configsLoading } = useCollection<BotConfig>(configsQuery);
+
+  const displayBots = useMemo(() => {
+    return DEFAULT_CONFIGS.map(def => {
+      const userConfig = userConfigs?.find(c => c.id === def.id);
+      const meta = STATIC_METADATA[def.id];
+      return {
+        ...(userConfig || def),
+        ...meta
+      } as BotDisplay;
+    });
+  }, [userConfigs]);
 
   const BOT_CATEGORIES = [
     { id: 'all', label: t('common.all') },
@@ -153,13 +158,13 @@ export default function BotMarketplacePage() {
   ];
 
   const filteredBots = useMemo(() => {
-    return BOTS_REGISTRY.filter(bot => {
+    return displayBots.filter(bot => {
       const matchesCat = activeCategory === 'all' || bot.category === activeCategory;
       const matchesSearch = bot.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             bot.desc.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCat && matchesSearch;
     });
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, displayBots]);
 
   return (
     <AuthedLayout 
@@ -219,22 +224,29 @@ export default function BotMarketplacePage() {
 
           {/* Bots Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredBots.map((bot) => (
+            {configsLoading ? (
+              <div className="col-span-2 py-32 flex flex-col items-center justify-center space-y-4">
+                <Loader2 className="w-8 h-8 text-[#0055FF] animate-spin" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Syncing Engine Configurations...</span>
+              </div>
+            ) : filteredBots.map((bot) => (
               <Card key={bot.id} className="bg-white border-[#E4E4E4] shadow-sm hover:border-[#0055FF] transition-all group overflow-hidden flex flex-col">
                 <div className="p-6 md:p-8 space-y-6 flex-grow">
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest">{bot.version}</span>
-                        <span className="px-1.5 py-0.5 bg-[#F7F7F5] border border-[#E4E4E4] text-[8px] font-bold uppercase text-[#6B7280]">{t('common.active')} Node</span>
+                        <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest">Version {bot.version}.0</span>
+                        <span className="px-1.5 py-0.5 bg-[#F7F7F5] border border-[#E4E4E4] text-[8px] font-bold uppercase text-[#6B7280]">{bot.enabled ? 'ACTIVE' : 'IDLE'} Node</span>
                       </div>
                       <h3 className="text-lg font-bold uppercase tracking-tight text-[#0A0A0A] group-hover:text-[#0055FF] transition-colors">{bot.name}</h3>
                     </div>
                     <button 
-                      onClick={() => setSelectedBot(bot)}
-                      className="text-[9px] font-bold text-[#0055FF] uppercase tracking-widest hover:underline flex items-center gap-1.5"
+                      onClick={() => setEditingBot(bot)}
+                      className="p-2 border border-[#E4E4E4] bg-white text-[#6B7280] hover:text-[#0055FF] hover:border-[#0055FF] transition-all shadow-sm flex items-center gap-2"
+                      title="Modify Configuration"
                     >
-                      <Info className="w-3 h-3" /> Technical Specs
+                      <Settings2 className="w-4 h-4" />
+                      <span className="text-[9px] font-bold uppercase tracking-widest">Modify</span>
                     </button>
                   </div>
 
@@ -261,35 +273,27 @@ export default function BotMarketplacePage() {
                 <div className="px-6 py-4 bg-[#F7F7F5] border-t border-[#E4E4E4] flex justify-between items-center">
                   <div className="flex items-center gap-4">
                      <div className="flex flex-col">
-                        <span className="text-[8px] font-bold text-[#6B7280] uppercase">{t('bots.minimumAmount')}</span>
-                        <span className="text-[10px] font-mono font-bold">${bot.minStake} USD</span>
+                        <span className="text-[8px] font-bold text-[#6B7280] uppercase">Risk Cap</span>
+                        <span className="text-[10px] font-mono font-bold">{bot.riskPercent}%</span>
                      </div>
                      <div className="flex flex-col">
-                        <span className="text-[8px] font-bold text-[#6B7280] uppercase">Risk level</span>
+                        <span className="text-[8px] font-bold text-[#6B7280] uppercase">Status</span>
                         <span className={cn(
                           "text-[10px] font-bold uppercase",
-                          bot.risk === 'Low' || bot.risk === 'Very Low' ? "text-[#16835B]" : 
-                          bot.risk === 'Medium' ? "text-[#C9A227]" : "text-[#C43D3D]"
-                        )}>{bot.risk}</span>
+                          bot.enabled ? "text-[#16835B]" : "text-[#6B7280]"
+                        )}>{bot.enabled ? 'Executing' : 'Standby'}</span>
                      </div>
                   </div>
-                  <button className="flex items-center gap-2 text-[10px] font-bold text-[#0055FF] uppercase tracking-widest hover:underline">
-                    {t('bots.startUsing')} <ArrowRight className="w-3.5 h-3.5" />
+                  <button 
+                    onClick={() => setSelectedBotMetadata(bot)}
+                    className="flex items-center gap-2 text-[10px] font-bold text-[#0055FF] uppercase tracking-widest hover:underline"
+                  >
+                    Technical Specs <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </Card>
             ))}
           </div>
-
-          {filteredBots.length === 0 && (
-            <div className="py-24 text-center space-y-4 border-2 border-dashed border-[#E4E4E4] bg-white">
-              <Layers className="w-12 h-12 text-[#E4E4E4] mx-auto" />
-              <div>
-                <h3 className="text-sm font-bold uppercase text-[#0A0A0A]">{t('bots.noBotsFound')}</h3>
-                <p className="text-[10px] text-[#6B7280] uppercase font-bold mt-1 tracking-widest">{t('bots.adjustSearch')}</p>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Policy Notice */}
@@ -307,24 +311,23 @@ export default function BotMarketplacePage() {
               {t('bots.reviewPolicy')}
            </Link>
         </div>
-
       </div>
 
-      {/* Bot Features Modal */}
-      {selectedBot && (
+      {/* Tech Specs Modal */}
+      {selectedBotMetadata && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-200">
           <Card className="w-full max-w-md bg-white border-[#E4E4E4] shadow-2xl relative overflow-hidden">
             <div className="p-6 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5]">
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-[#0055FF]" />
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">{selectedBot.name} Strategy</h3>
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">{selectedBotMetadata.name} Strategy</h3>
               </div>
-              <button onClick={() => setSelectedBot(null)} className="text-[#6B7280] hover:text-[#0A0A0A] transition-colors"><X className="w-5 h-5" /></button>
+              <button onClick={() => setSelectedBotMetadata(null)} className="text-[#6B7280] hover:text-[#0A0A0A] transition-colors"><X className="w-5 h-5" /></button>
             </div>
             
             <div className="p-8 space-y-6">
               <div className="space-y-4">
-                {selectedBot.features.map((feature, idx) => (
+                {selectedBotMetadata.features.map((feature: string, idx: number) => (
                   <div key={idx} className="flex items-start gap-3">
                     <div className="w-5 h-5 rounded-full bg-[#16835B]/10 flex items-center justify-center shrink-0 mt-0.5">
                       <Check className="w-3 h-3 text-[#16835B]" />
@@ -336,7 +339,7 @@ export default function BotMarketplacePage() {
 
               <div className="pt-6 border-t border-[#F7F7F5]">
                 <button 
-                  onClick={() => setSelectedBot(null)}
+                  onClick={() => setSelectedBotMetadata(null)}
                   className="w-full btn-institutional-primary py-4"
                 >
                   {t('common.dismiss')}
@@ -346,11 +349,21 @@ export default function BotMarketplacePage() {
 
             <div className="bg-[#F7F7F5] p-3 text-center border-t border-[#E4E4E4]">
                <span className="text-[8px] font-bold text-[#6B7280] uppercase tracking-[0.3em]">
-                 Strategy Engine Node &bull; {selectedBot.id.toUpperCase()}
+                 Strategy Engine Node &bull; {selectedBotMetadata.id.toUpperCase()}
                </span>
             </div>
           </Card>
         </div>
+      )}
+
+      {/* Modify Bot Modal */}
+      {editingBot && (
+        <ModifyBotModal 
+          bot={editingBot} 
+          isOpen={!!editingBot} 
+          onClose={() => setEditingBot(null)}
+          onUpdate={() => {}} // useCollection handles the live update
+        />
       )}
     </AuthedLayout>
   );

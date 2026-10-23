@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Varban Modify Bot AI Proposal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bot_id",
+    "summary",
+    "patch",
+    "warnings",
+    "assumptions",
+    "tests_to_run",
+    "requires_human_review",
+    "clarification_question"
+  ],
+  "properties": {
+    "bot_id": {
+      "type": "string",
+      "enum": [
+        "bm-liquidity-sweep",
+        "trend-continuation",
+        "breakout-retest",
+        "mean-reversion",
+        "momentum-scanner"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "patch": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field",
+          "value",
+          "reason"
+        ],
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "value": {},
+          "reason": {
+            "type": "string",
+            "maxLength": 300
+          }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 300
+      },
+      "maxItems": 10
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 300
+      },
+      "maxItems": 10
+    },
+    "tests_to_run": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 300
+      },
+      "maxItems": 20
+    },
+    "requires_human_review": {
+      "type": "boolean"
+    },
+    "clarification_question": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 500
+    }
+  }
+}
