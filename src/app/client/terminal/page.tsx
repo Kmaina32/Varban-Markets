@@ -2,37 +2,31 @@
 
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
- * 4-Panel Grid Architecture with Resizable Panels and full TradingView feature parity.
- * Mobile Overhaul: Left-side command drawer for trade settings, chart-dominant viewport.
+ * 4-Panel Grid Architecture with resizable portfolio manager.
+ * Optimized for Mobile: Left-side side command drawer for trade execution.
  */
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { 
   Menu, 
   X,
   ChevronDown,
   Clock as ClockIcon,
-  MousePointer2,
   TrendingUp,
-  Newspaper,
-  Layout,
-  Settings,
-  ShieldCheck,
-  Check,
+  TrendingDown,
   Activity,
-  Briefcase,
-  TrendingDown
+  ShieldCheck,
+  Sliders
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
 import { useUser, useFirestore, useDoc } from "@/firebase";
-import { doc, updateDoc } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
+import { doc, updateDoc } from "firebase/firestore";
 
 // Terminal Components
 import AuthedSidebar from "@/components/layout/AuthedSidebar";
@@ -42,19 +36,6 @@ import MarketSelector from "@/components/terminal/MarketSelector";
 import ExecutionTicket from "@/components/terminal/ExecutionTicket";
 import PortfolioManager from "@/components/terminal/PortfolioManager";
 import TerminalTutorial from "@/components/terminal/TerminalTutorial";
-import MarketNewsFeed from "@/components/dashboard/MarketNewsFeed";
-import LoadingOverlay from "@/components/shared/LoadingOverlay";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface Position {
   id: string;
@@ -77,40 +58,36 @@ const TIMEZONES = [
   { label: "UTC +08:00 (HKT)", value: "UTC+8" }
 ];
 
-function TerminalContent() {
-  const searchParams = useSearchParams();
-  const symbolParam = searchParams.get('symbol');
+export default function TerminalWorkspace() {
   const { user } = useUser();
   const db = useFirestore();
   const { formatNumber, locale, setLocale } = useTranslation();
 
+  // Profile data from Firestore
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
+  
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  // Mobile UI States
-  const [isExecutionOpen, setIsExecutionOpen] = useState(false);
-  const [isLedgerOpen, setIsLedgerOpen] = useState(false);
+  const [isTradeDrawerOpen, setIsTradeDrawerOpen] = useState(false);
+  const [preselectedSide, setPreselectedSide] = useState<'BUY' | 'SELL'>('BUY');
   
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
-  
-  const [activeRightTab, setActiveRightTab] = useState<'TRADE' | 'MARKET' | 'NEWS'>('TRADE');
 
   const [currentTime, setCurrentTime] = useState("");
-  const [activeTimezone, setActiveTimezone] = useState("UTC+0");
+  const activeTimezone = profile?.preferences?.timezone || "UTC+0";
 
-  const [activeInst, setActiveInst] = useState<Instrument>(
-    AVAILABLE_INSTRUMENTS.find(i => i.symbol === symbolParam) || AVAILABLE_INSTRUMENTS[0]
-  );
+  const [activeInst, setActiveInst] = useState<Instrument>(AVAILABLE_INSTRUMENTS[0]);
   const [marketData, setMarketData] = useState<Record<string, { price: number; percent: number }>>({});
   const [positions, setPositions] = useState<Position[]>([]);
+  
+  const [bottomPanelHeight, setBottomPanelHeight] = useState(250);
+  const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
     const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
     if (savedMode) setAccountMode(savedMode);
-    if (profile?.preferences?.timezone) setActiveTimezone(profile.preferences.timezone);
-  }, [profile]);
+  }, []);
 
   useEffect(() => {
     const updateTime = () => {
@@ -133,11 +110,8 @@ function TerminalContent() {
   }, [activeTimezone]);
 
   const handleTimezoneChange = async (val: string) => {
-    setActiveTimezone(val);
-    if (user?.uid && db) {
-      try {
-        await updateDoc(doc(db, "users", user.uid), { "preferences.timezone": val });
-      } catch (e) {}
+    if (user && db) {
+      await updateDoc(doc(db, "users", user.uid), { "preferences.timezone": val });
     }
   };
 
@@ -154,9 +128,22 @@ function TerminalContent() {
       } catch (err) {}
     };
     poll();
-    const interval = setInterval(poll, 4000);
+    const interval = setInterval(poll, 3000);
     return () => { active = false; clearInterval(interval); };
   }, [activeInst.symbol]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = Date.now();
+      setPositions(prev => prev.map(p => {
+        if (p.status === 'Open' && p.mode === 'DURATION' && now - p.timestamp > 18000) {
+          return { ...p, status: 'Closed' };
+        }
+        return p;
+      }));
+    }, 2000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleExecution = (params: any) => {
     const live = marketData[activeInst.symbol];
@@ -176,105 +163,100 @@ function TerminalContent() {
     };
 
     setPositions(prev => [newPos, ...prev]);
-    setIsExecutionOpen(false);
+    setIsTradeDrawerOpen(false);
   };
 
+  const startResizing = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  }, []);
+
+  const stopResizing = useCallback(() => setIsResizing(false), []);
+  const resize = useCallback((e: MouseEvent) => {
+    if (isResizing) {
+      const newHeight = window.innerHeight - e.clientY;
+      if (newHeight >= 150 && newHeight <= 600) setBottomPanelHeight(newHeight);
+    }
+  }, [isResizing]);
+
+  useEffect(() => {
+    window.addEventListener('mousemove', resize);
+    window.addEventListener('mouseup', stopResizing);
+    return () => { window.removeEventListener('mousemove', resize); window.removeEventListener('mouseup', stopResizing); };
+  }, [resize, stopResizing]);
+
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
+
+  const openDrawer = (side: 'BUY' | 'SELL') => {
+    setPreselectedSide(side);
+    setIsTradeDrawerOpen(true);
+  };
 
   return (
     <div className="flex h-[100dvh] min-h-0 w-full max-w-full flex-col overflow-hidden bg-white text-[#0A0A0A]">
       <TerminalTutorial />
 
-      {/* TERMINAL HEADER */}
-      <header className="h-14 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[600] px-2 lg:px-4">
+      <header className="h-14 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[100] px-2 lg:px-4">
         <div className="flex items-center space-x-2 lg:space-x-4">
           <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 lg:hidden text-[#0A0A0A]"><Menu className="w-5 h-5" /></button>
-          <Link href="/client/dashboard" className="hidden sm:block shrink-0">
-            <Image src="/assets/logo2.png" alt="Varban" width={80} height={20} className="w-auto object-contain" priority />
-          </Link>
-          <div className="h-6 w-px bg-[#E4E4E4] hidden sm:block"></div>
+          <Link href="/dashboard" className="hidden lg:block shrink-0"><Image src="/assets/logo2.png" alt="Varban" width={80} height={20} className="w-auto object-contain" priority /></Link>
+          <div className="h-6 w-px bg-[#E4E4E4] hidden lg:block"></div>
           
-          <div id="tour-market-select">
-            <MarketSelector 
-              activeSymbol={activeInst.symbol} 
-              onSelect={setActiveInst} 
-              livePrices={marketData} 
-            />
-          </div>
+          <MarketSelector 
+            activeSymbol={activeInst.symbol} 
+            onSelect={setActiveInst} 
+            livePrices={marketData} 
+          />
 
-          <div className="hidden lg:flex items-center space-x-6 px-4">
+          <div className="hidden lg:flex items-center space-x-8 px-6">
             <div className="flex flex-col">
-              <span className="text-[8px] font-bold uppercase text-[#6B7280]">Price Factor</span>
-              <span className={cn(
-                "text-xs font-mono font-bold transition-colors",
-                (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]"
-              )}>
-                {marketData[activeInst.symbol]?.price?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "---"}
-              </span>
+              <span className="text-[8px] font-bold uppercase text-[#6B7280]">24h High</span>
+              <span className="text-[11px] font-mono font-bold text-[#0A0A0A]">{(marketData[activeInst.symbol]?.price * 1.02).toLocaleString()}</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-[8px] font-bold uppercase text-[#6B7280]">24h Relative</span>
-              <span className={cn(
-                "text-xs font-mono font-bold transition-colors",
-                (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]"
-              )}>
-                {marketData[activeInst.symbol]?.percent !== undefined ? (marketData[activeInst.symbol].percent >= 0 ? '+' : '') + marketData[activeInst.symbol].percent + '%' : "---"}
-              </span>
+              <span className="text-[8px] font-bold uppercase text-[#6B7280]">24h Low</span>
+              <span className="text-[11px] font-mono font-bold text-[#0A0A0A]">{(marketData[activeInst.symbol]?.price * 0.98).toLocaleString()}</span>
             </div>
           </div>
         </div>
 
         <div className="flex items-center space-x-3 lg:space-x-8">
-          <div className="hidden xl:flex items-center bg-[#F7F7F5] border border-[#E4E4E4] p-1.5 pr-4 space-x-4">
+          <div className="hidden lg:flex items-center bg-[#F7F7F5] border border-[#E4E4E4] p-1.5 pr-4 space-x-4">
             <div className="flex items-center bg-white border border-[#E4E4E4] px-3 py-1 shadow-sm">
                <ClockIcon className="w-3 h-3 text-[#0055FF] mr-2" />
                <span className="text-sm font-mono font-bold text-[#0A0A0A] tracking-tighter">{currentTime}</span>
             </div>
             
             <div className="flex items-center space-x-3">
-              <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-widest text-[#0055FF] outline-none hover:opacity-70 transition-opacity">
-                  <span>{LANGUAGE_LABELS[locale]}</span>
-                  <ChevronDown className="w-2.5 h-2.5" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[140px]">
+              <div className="relative flex items-center group">
+                <select 
+                  value={locale}
+                  onChange={(e) => setLocale(e.target.value as LocaleCode)}
+                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#0055FF] outline-none cursor-pointer pr-3 z-10"
+                >
                   {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
-                    <DropdownMenuItem 
-                      key={code} 
-                      onClick={() => setLocale(code as LocaleCode)}
-                      className="flex items-center justify-between"
-                    >
-                      <span>{label}</span>
-                      {locale === code && <Check className="w-3 h-3 text-[#0055FF]" />}
-                    </DropdownMenuItem>
+                    <option key={code} value={code} className="bg-white text-[#0A0A0A]">{label}</option>
                   ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </select>
+                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#0055FF] pointer-events-none" />
+              </div>
               
               <div className="w-px h-3 bg-[#E4E4E4]"></div>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none hover:text-[#0A0A0A] transition-colors">
-                  <span>{TIMEZONES.find(t => t.value === activeTimezone)?.label || activeTimezone}</span>
-                  <ChevronDown className="w-2.5 h-2.5" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[180px]">
-                  {TIMEZONES.map(tz => (
-                    <DropdownMenuItem 
-                      key={tz.value} 
-                      onClick={() => handleTimezoneChange(tz.value)}
-                      className="flex items-center justify-between"
-                    >
-                      <span>{tz.label}</span>
-                      {activeTimezone === tz.value && <Check className="w-3 h-3 text-[#0055FF]" />}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div className="relative flex items-center group">
+                <select 
+                  value={activeTimezone}
+                  onChange={(e) => handleTimezoneChange(e.target.value)}
+                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none cursor-pointer pr-3 z-10"
+                >
+                  {TIMEZONES.map(tz => <option key={tz.value} value={tz.value} className="bg-white text-[#0A0A0A]">{tz.label}</option>)}
+                </select>
+                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
+              </div>
             </div>
           </div>
 
-          <div id="tour-mode" className="flex flex-col text-right">
+          <div className="flex flex-col text-right">
             <span className="text-[7px] lg:text-[8px] font-bold uppercase text-[#6B7280]">{accountMode} BALANCE</span>
             <span className={cn("text-[10px] lg:text-xs font-mono font-bold", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>
               ${formatNumber(activeBalance, { minimumFractionDigits: 2 })}
@@ -298,7 +280,7 @@ function TerminalContent() {
                   demoBalance={demoBalance} 
                   isOpen={isProfileDropdownOpen} 
                   onClose={() => setIsProfileDropdownOpen(false)} 
-                  onSelectMode={m => { setAccountMode(m); localStorage.setItem('varban_account_mode', m); window.dispatchEvent(new Event('varban_account_mode_changed')); }}
+                  onSelectMode={m => { setAccountMode(m); localStorage.setItem('varban_account_mode', m); }}
                 />
               </div>
             )}
@@ -310,210 +292,133 @@ function TerminalContent() {
         <AuthedSidebar className="hidden lg:flex" />
 
         <main className="flex min-h-0 min-w-0 w-full flex-1 overflow-hidden lg:ml-16">
-          {/* DESKTOP WORKSPACE */}
-          <ResizablePanelGroup direction="horizontal" className="hidden xl:flex flex-grow overflow-hidden">
-            <ResizablePanel defaultSize={75} minSize={40}>
-              <ResizablePanelGroup direction="vertical">
-                <ResizablePanel defaultSize={70} minSize={40}>
-                  <div id="tour-chart" className="h-full w-full bg-[#F7F7F5] relative">
-                    <TradingViewChart symbol={activeInst.symbol} />
-                  </div>
-                </ResizablePanel>
-                <ResizableHandle withHandle />
-                <ResizablePanel defaultSize={30} minSize={15}>
-                  <div className="h-full w-full flex flex-col shrink-0 relative">
-                    <PortfolioManager 
-                      positions={positions.filter(p => p.status === 'Open')}
-                      orders={[]}
-                      history={positions.filter(p => p.status === 'Closed')}
-                    />
-                  </div>
-                </ResizablePanel>
-              </ResizablePanelGroup>
-            </ResizablePanel>
-            
-            <ResizableHandle withHandle />
-            
-            <ResizablePanel defaultSize={25} minSize={20}>
-              <div className="h-full w-full border-l border-[#E4E4E4] shrink-0 bg-white shadow-xl relative z-40 flex flex-col overflow-hidden">
-                <div className="flex border-b border-[#E4E4E4] shrink-0">
-                   {[
-                     { id: 'TRADE', label: 'Order Ticket', icon: MousePointer2 },
-                     { id: 'MARKET', label: 'Market Data', icon: Layout },
-                     { id: 'NEWS', label: 'News Feed', icon: Newspaper }
-                   ].map(tab => (
-                     <button 
-                      key={tab.id}
-                      onClick={() => setActiveRightTab(tab.id as any)}
-                      className={cn(
-                        "flex-1 py-3 text-[8px] font-bold uppercase tracking-widest border-b-2 transition-all flex flex-col items-center gap-1",
-                        activeRightTab === tab.id ? "border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5" : "border-transparent text-[#6B7280] hover:bg-[#F7F7F5]"
-                      )}
-                     >
-                       <tab.icon className="w-3.5 h-3.5" />
-                       <span>{tab.label}</span>
-                     </button>
-                   ))}
-                </div>
-
-                <div className="flex-grow overflow-y-auto no-scrollbar p-0">
-                   {activeRightTab === 'TRADE' && (
-                     <div id="tour-settings" className="h-full">
-                        <ExecutionTicket 
-                          instrument={activeInst} 
-                          livePrice={marketData[activeInst.symbol]?.price}
-                          balance={activeBalance}
-                          accountMode={accountMode}
-                          onExecute={handleExecution}
-                        />
-                     </div>
-                   )}
-                   {activeRightTab === 'MARKET' && (
-                     <div className="p-6 space-y-8 animate-in fade-in duration-300">
-                        <section className="space-y-4">
-                           <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">Instrument Details</h3>
-                           <div className="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase text-[#6B7280]">
-                              <div><span className="block opacity-50 mb-1">Exchange</span> <span className="text-[#0A0A0A]">Varban Synthetic</span></div>
-                              <div><span className="block opacity-50 mb-1">Settlement</span> <span className="text-[#16835B]">Instant</span></div>
-                              <div><span className="block opacity-50 mb-1">Leverage</span> <span className="text-[#0A0A0A]">1:400</span></div>
-                              <div><span className="block opacity-50 mb-1">Market State</span> <span className="text-[#16835B]">Active</span></div>
-                           </div>
-                        </section>
-                        <section className="space-y-4 pt-4 border-t border-[#F7F7F5]">
-                           <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Technical Scorecard</h3>
-                           <div className="p-5 bg-white border border-[#E4E4E4] text-center space-y-3 shadow-sm">
-                              <div className="flex justify-between items-center text-[9px] font-bold text-[#6B7280]">
-                                 <span>OSCILLATORS</span>
-                                 <span className="text-[#0055FF]">BUY</span>
-                              </div>
-                              <div className="h-1.5 w-full bg-[#F7F7F5] relative overflow-hidden">
-                                 <div className="absolute inset-y-0 left-0 bg-[#0055FF] w-[75%]"></div>
-                              </div>
-                              <p className="text-[10px] font-bold uppercase text-[#0A0A0A]">Strong Momentum Detected</p>
-                           </div>
-                        </section>
-                     </div>
-                   )}
-                   {activeRightTab === 'NEWS' && (
-                     <div className="h-full">
-                        <MarketNewsFeed />
-                     </div>
-                   )}
-                </div>
-              </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
-
-          {/* MOBILE WORKSPACE */}
-          <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-hidden xl:hidden">
-            <div id="tour-chart-mobile" className="relative min-h-0 min-w-0 w-full flex-1 overflow-hidden bg-[#F7F7F5]">
+          <div className="flex-grow flex flex-col overflow-hidden">
+            {/* Desktop Chart Area */}
+            <div className="hidden lg:block flex-grow min-h-0 bg-[#F7F7F5] relative">
               <TradingViewChart symbol={activeInst.symbol} />
             </div>
-            
-            {/* MOBILE ACTION BAR */}
-            <div className="relative z-[110] flex h-[76px] w-full shrink-0 items-center gap-2 border-t border-[#E4E4E4] bg-white px-2 shadow-[0_-2px_15px_rgba(0,0,0,0.08)] sm:px-4">
-              <div className="flex-grow flex flex-col pl-1">
-                <span className="text-[8px] font-mono font-bold text-[#6B7280] uppercase tracking-tighter">{activeInst.symbol}</span>
-                <span className={cn("text-sm font-mono font-bold", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
-                  {marketData[activeInst.symbol]?.price?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "---"}
-                </span>
-              </div>
-              
-              <div className="flex gap-2 items-center">
-                <button 
-                  onClick={() => setIsLedgerOpen(true)}
-                  className="w-10 h-10 border border-[#E4E4E4] flex items-center justify-center text-[#6B7280] hover:bg-[#F7F7F5] transition-colors"
-                  title="Portfolio"
-                >
-                  <Briefcase className="w-4 h-4" />
-                </button>
-                <div className="flex gap-1">
-                  <button 
-                    onClick={() => setIsExecutionOpen(true)}
-                    className="px-4 py-2.5 bg-[#16835B] text-white text-[9px] font-bold uppercase tracking-widest shadow-md active:scale-95 transition-transform flex items-center gap-1.5"
-                  >
-                    <TrendingUp className="w-3 h-3" />
-                    BUY
-                  </button>
-                  <button 
-                    onClick={() => setIsExecutionOpen(true)}
-                    className="px-4 py-2.5 bg-[#C43D3D] text-white text-[9px] font-bold uppercase tracking-widest shadow-md active:scale-95 transition-transform flex items-center gap-1.5"
-                  >
-                    <TrendingDown className="w-3 h-3" />
-                    SELL
-                  </button>
-                </div>
+
+            {/* Mobile Chart Area */}
+            <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-hidden lg:hidden">
+              <div id="tour-chart-mobile" className="relative min-h-0 min-w-0 w-full flex-1 overflow-hidden bg-[#F7F7F5]">
+                <TradingViewChart symbol={activeInst.symbol} />
               </div>
             </div>
 
-            {/* MOBILE EXECUTION DRAWER (Left Side) */}
-            {isExecutionOpen && (
-              <div className="fixed inset-0 z-[700] flex">
-                <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsExecutionOpen(false)}></div>
-                <div className="relative w-[85%] max-w-[340px] bg-white animate-in slide-in-from-left duration-300 overflow-hidden flex flex-col shadow-2xl border-r border-[#E4E4E4]">
-                  <div className="p-4 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5] shrink-0">
-                    <div className="flex items-center gap-2">
-                      <Settings className="w-4 h-4 text-[#0055FF]" />
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Trade Settings</span>
-                    </div>
-                    <button onClick={() => setIsExecutionOpen(false)} className="p-1 text-[#6B7280] hover:text-[#0A0A0A]"><X className="w-5 h-5" /></button>
-                  </div>
-                  <div className="flex-grow overflow-y-auto no-scrollbar pb-10">
-                    <ExecutionTicket 
-                      instrument={activeInst} 
-                      livePrice={marketData[activeInst.symbol]?.price}
-                      balance={activeBalance}
-                      accountMode={accountMode}
-                      onExecute={handleExecution}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Desktop Ledger */}
+            <div 
+              style={{ height: `${bottomPanelHeight}px` }}
+              className="hidden lg:flex flex-col shrink-0 relative"
+            >
+              <div 
+                onMouseDown={startResizing}
+                className="absolute -top-1 left-0 right-0 h-1 cursor-row-resize z-50 hover:bg-[#0055FF]/40 transition-colors"
+              />
+              <PortfolioManager 
+                positions={positions.filter(p => p.status === 'Open')}
+                orders={[]}
+                history={positions.filter(p => p.status === 'Closed')}
+              />
+            </div>
+            
+            {/* Mobile Ledger (Compact) */}
+            <div className="lg:hidden h-24 shrink-0 bg-white border-t border-[#E4E4E4] overflow-hidden">
+              <PortfolioManager 
+                positions={positions.filter(p => p.status === 'Open')}
+                orders={[]}
+                history={positions.filter(p => p.status === 'Closed')}
+              />
+            </div>
+          </div>
 
-            {/* MOBILE LEDGER DRAWER (Bottom) */}
-            {isLedgerOpen && (
-              <div className="fixed inset-0 z-[700] flex flex-col justify-end">
-                <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsLedgerOpen(false)}></div>
-                <div className="relative h-[70vh] bg-white animate-in slide-in-from-bottom duration-300 rounded-t-2xl overflow-hidden flex flex-col shadow-2xl border-t border-[#E4E4E4]">
-                  <div className="h-1.5 w-12 bg-[#E4E4E4] rounded-full mx-auto mt-3 mb-1 shrink-0"></div>
-                  <div className="p-4 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5] shrink-0">
-                    <div className="flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-[#0055FF]" />
-                      <span className="text-[11px] font-bold uppercase tracking-widest text-[#0A0A0A]">Unified Ledger</span>
-                    </div>
-                    <button onClick={() => setIsLedgerOpen(false)} className="p-2 text-[#6B7280] hover:text-[#0A0A0A]"><X className="w-5 h-5" /></button>
-                  </div>
-                  <div className="flex-grow overflow-hidden">
-                    <PortfolioManager 
-                      positions={positions.filter(p => p.status === 'Open')}
-                      orders={[]}
-                      history={positions.filter(p => p.status === 'Closed')}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+          {/* Desktop Execution Panel */}
+          <div className="hidden lg:flex w-[340px] border-l border-[#E4E4E4] shrink-0 bg-white shadow-xl relative z-40">
+            <ExecutionTicket 
+              instrument={activeInst} 
+              livePrice={marketData[activeInst.symbol]?.price}
+              balance={activeBalance}
+              accountMode={accountMode}
+              onExecute={handleExecution}
+            />
           </div>
         </main>
       </div>
 
+      {/* MOBILE COMMAND BAR: BUY/SELL TRIGGERS */}
+      <div className="relative z-[110] flex h-[76px] w-full shrink-0 items-center gap-3 border-t border-[#E4E4E4] bg-white px-3 shadow-[0_-2px_15px_rgba(0,0,0,0.08)] sm:px-4 lg:hidden">
+        <div className="flex-grow flex flex-col justify-center min-w-0">
+           <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-mono font-bold text-[#6B7280] truncate">{activeInst.symbol}</span>
+              <span className={cn(
+                "text-[8px] font-bold uppercase",
+                (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]"
+              )}>
+                {(marketData[activeInst.symbol]?.percent || 0) >= 0 ? "+" : ""}{marketData[activeInst.symbol]?.percent || "0.00"}%
+              </span>
+           </div>
+           <span className={cn("text-sm font-mono font-bold tracking-tight", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
+              {marketData[activeInst.symbol]?.price?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "---"}
+           </span>
+        </div>
+        
+        <div className="flex gap-2 shrink-0">
+          <button 
+            onClick={() => openDrawer('SELL')}
+            className="px-6 py-3 bg-[#C43D3D] text-white text-[10px] font-bold uppercase tracking-widest shadow-md flex flex-col items-center justify-center leading-none"
+          >
+            <span className="mb-0.5">SELL</span>
+            <span className="text-[8px] opacity-60 font-mono">PUT</span>
+          </button>
+          <button 
+            onClick={() => openDrawer('BUY')}
+            className="px-6 py-3 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-widest shadow-md flex flex-col items-center justify-center leading-none"
+          >
+            <span className="mb-0.5">BUY</span>
+            <span className="text-[8px] opacity-60 font-mono">CALL</span>
+          </button>
+        </div>
+      </div>
+
+      {/* MOBILE LEFT COMMAND DRAWER (SETTINGS) */}
+      {isTradeDrawerOpen && (
+        <div className="fixed inset-0 z-[600] lg:hidden">
+          <div className="absolute inset-0 bg-[#0A0A0A]/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsTradeDrawerOpen(false)}></div>
+          <div className="absolute top-0 left-0 bottom-0 w-[85%] max-w-[340px] bg-white animate-in slide-in-from-left duration-300 flex flex-col shadow-2xl overflow-hidden">
+            <div className="p-4 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5] shrink-0">
+               <div className="flex items-center gap-2">
+                  <Sliders className="w-4 h-4 text-[#0055FF]" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Order Config: {activeInst.symbol}</span>
+               </div>
+               <button onClick={() => setIsTradeDrawerOpen(false)} className="p-1 text-[#6B7280] hover:text-[#0A0A0A]"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="flex-grow overflow-y-auto no-scrollbar">
+              <ExecutionTicket 
+                instrument={activeInst} 
+                livePrice={marketData[activeInst.symbol]?.price}
+                balance={activeBalance}
+                accountMode={accountMode}
+                onExecute={handleExecution}
+              />
+            </div>
+            <div className="p-4 bg-[#F7F7F5] border-t border-[#E4E4E4] shrink-0">
+               <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span className="text-[9px] font-bold uppercase text-[#6B7280]">Risk Engine Verified</span>
+               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MOBILE SIDEBAR NAVIGATION */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[800] lg:hidden">
-          <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+        <div className="fixed inset-0 z-[700] lg:hidden">
+          <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsMobileMenuOpen(false)}></div>
           <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white animate-in slide-in-from-left duration-300 shadow-2xl">
             <AuthedSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
           </div>
         </div>
       )}
     </div>
-  );
-}
-
-export default function TerminalWorkspace() {
-  return (
-    <Suspense fallback={<LoadingOverlay message="Synchronizing High-Speed Trading Node" />}>
-      <TerminalContent />
-    </Suspense>
   );
 }
