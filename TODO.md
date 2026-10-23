@@ -18,60 +18,49 @@
 - [x] **Left-Side Command Drawer**: Professional slide-in configuration drawer for mobile screens to reduce chart congestion.
 - [x] **Full-Page Ledger Drawer**: Integrated settlement archive and active exposure manager for mobile.
 - [x] **Advanced Charting**: Enabled side toolbar, drawing tools, and symbol switching within the TradingView Advanced Widget.
-- [ ] **One-Click Trading Toggle**: Needs a UI switch to bypass the "Risk Pre-Verification" confirmation dialog for high-frequency execution.
-- [ ] **Early Option Cashout**: The "Close" button in the portfolio manager needs to implement the 35% stake refund logic and mark positions as `earlyExit=true`.
+- [ ] **One-Click Trading Toggle**: Needs a UI switch to bypass the "Risk Pre-Verification" confirmation dialog.
+- [ ] **Early Option Cashout**: Implement 35% stake refund logic and mark positions as `earlyExit=true`.
 - [x] **Terminal Feature Tour**: Spotlight-driven tutorial system for high-speed execution modules.
-- [x] **Universal Clock**: Real-time clock with selectable timezone persistence (UTC-8 to UTC+8).
-- [x] **Resizable Layout**: Implemented professional resizable panels for chart, ledger, and utility sections using react-resizable-panels.
-
-### C. Watchlist & Portfolio (`/watchlist`, `/portfolio`)
-- [x] **Watchlist `Add Asset` Button**: Dynamic search modal to add new currency pairs/crypto to user's custom watchlist.
-- [x] **Watchlist `Remove Asset` Button**: Delete trigger to remove tracked instrument from the persistent registry.
-- [x] **Export Trade History**: `[ Export CSV ]` helper and download trigger on `/client/history` page.
-- [x] **Portfolio Visualization**: Real-time asset allocation and performance curve visualization.
+- [x] **Universal Clock**: Real-time clock with selectable timezone persistence.
+- [x] **Resizable Layout**: Implemented professional resizable panels for chart, ledger, and utility sections.
 
 ---
 
 ## 2. Unconnected & Missing Backend Features
 
 ### A. Real-Time Market Data Stream
-- [x] **Multi-Source Failover Proxy**: Secure server route with Coinbase CDP, Twelve Data, and Alpha Vantage failover nodes.
-- [ ] **WebSocket Data Connection**: Price updates currently rely on polling every 3 seconds (`fetchLivePrice`). Need a live WebSocket connection (e.g. Binance / Polygon.io WS) for sub-second chart ticks.
-- [ ] **Real Order Execution Matcher**: Option contract settlement is simulated client-side. Needs a server-side Cloud Function / backend cron worker for authoritative price verification and payout settlement.
+- [x] **Multi-Source Failover Proxy**: Secure server route with Coinbase CDP, Twelve Data, and Alpha Vantage nodes.
+- [ ] **WebSocket Data Connection**: Need a live WebSocket connection (e.g. Binance / Polygon.io WS) for sub-second chart ticks.
+- [ ] **Real Order Execution Matcher**: Needs a server-side Cloud Function for authoritative price verification.
 
 ### B. Global Accessibility & SEO
 - [x] **Multilingual Protocol**: Full i18n support for 5 global languages (EN, FR, ES, PT, ZH-CN).
-- [x] **SEO Metadata Matrix**: Granular metadata and sitelink optimization for all primary landing and auth nodes.
-- [x] **Institutional AI Assistant**: Localized, context-aware chatbot using Genkit, Gemini, and Bubble UI.
-- [x] **Sitemap & Robots**: Generated institutional SEO infrastructure.
+- [x] **SEO Metadata Matrix**: Granular metadata and sitelink optimization for all nodes.
+- [x] **Institutional AI Assistant**: Localized, context-aware chatbot using Genkit and Gemini.
 
-### C. Funding & Branding
+### C. Funding & Infrastructure
 - [x] **M-Pesa Express (Daraja API)**: Integrated real-time STK Push and callback listener for KES deposits.
-- [x] **Airtel Money (USSD Push)**: Integrated Airtel Kenya Collection API for USSD-driven mobile deposits.
-- [x] **Institutional Branding**: Deployed `pwa.png` favicon and integrated official M-Pesa, Airtel, MetaMask, and Crypto logos.
+- [x] **Airtel Money (USSD Push)**: Integrated Airtel Kenya Collection API for mobile deposits.
+- [ ] **IP Whitelisting**: Configure the Server IP Allowed List in the Daraja/Airtel portals using the diagnostic endpoint `/api/diag/my-ip`.
+- [x] **Institutional Branding**: Deployed `pwa.png` favicon and updated official gateway logos.
 - [x] **Transaction Receipts**: PDF generation engine for institutional settlement proof.
 
 ---
 
 ## 3. UI Component Library
 - [x] **High-Visibility Account Switch**: Refined haptic motion profile and color-coded state tracking (Real/Demo).
-- [x] **ShadCN Alert System**: Manually installed and themed for institutional use.
-- [x] **ShadCN Alert Dialog System**: Manually installed via @base-ui/react.
-- [x] **ShadCN Resizable System**: Integrated accessible panel management via react-resizable-panels.
-- [x] **TanStack Table v9**: Implemented high-performance data grid system across all ledgers.
-- [x] **Skeleton Shimmers**: High-fidelity placeholder loaders for client-side data synchronization.
-- [x] **Dependency Hardening**: Synchronized @base-ui/react and Radix versions to resolve environment installation failures.
+- [x] **TanStack Table v9**: High-performance data grid system across all ledgers.
+- [x] **Skeleton Shimmers**: High-fidelity placeholder loaders for data synchronization.
 
 ---
 
 ## 4. Prioritized Implementation Roadmap
 
-1. **Phase 1 (Identity & Core)**: [COMPLETED] Firebase migration, KYC upload, and security triggers.
-2. **Phase 2 (Administration)**: [COMPLETED] Admin withdrawal/deposit queues and user authority management.
+1. **Phase 1 (Identity & Core)**: [COMPLETED] Firebase migration and security triggers.
+2. **Phase 2 (Administration)**: [COMPLETED] Admin queues and user authority management.
 3. **Phase 3 (Workspace)**: [COMPLETED] Watchlist management, CSV export, and localized AI Assistant.
-4. **Phase 4 (Redesign & SEO)**: [COMPLETED] Institutional White design system, SEO metadata matrix, and System Registry documentation.
-5. **Phase 5 (Performance)**: [COMPLETED] Implement TanStack Table v9, resizable panels, and skeleton loaders.
-6. **Phase 6 (Infrastructure)**: [IN PROGRESS] M-Pesa & Airtel settlement listeners [DONE], Upgrade to real-time WebSockets, and server-side settlement workers.
-7. **Phase 7 (Native)**: Finalize Windows Native Application distribution and auto-update node.
+4. **Phase 4 (Redesign & SEO)**: [COMPLETED] Institutional White design system and SEO matrix.
+5. **Phase 5 (Performance)**: [COMPLETED] TanStack Table v9 and resizable panels.
+6. **Phase 6 (Infrastructure)**: [IN PROGRESS] Mobile Money settlement listeners [DONE], IP Whitelisting, and Server-side workers.
 
 *Status: Phase 6 - In Progress. Airtel Money and Universal Branding Overhaul Completed.*
