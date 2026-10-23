@@ -1,8 +1,9 @@
+
 'use client';
 
 /**
  * @fileOverview Client Crypto Remittance / Withdrawal Gateway.
- * Updated: Replaced black container background with Institutional White.
+ * Expanded with high-fidelity logo integration and institutional assets.
  */
 
 import { useState } from "react";
@@ -20,6 +21,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
+import { MarketIcon } from "@/components/MarketIcon";
 
 interface CryptoWithdrawOption {
   id: string;
@@ -54,7 +56,18 @@ const CRYPTO_WITHDRAW_NETWORKS: CryptoWithdrawOption[] = [
     feeUsd: 5.00,
     rate: 1.00,
     placeholder: "ERC-20 Address starting with 0x...",
-    iconColor: "text-[#627EEA]"
+    iconColor: "text-[#26A17B]"
+  },
+  {
+    id: "usdc-erc20",
+    name: "USD Coin",
+    symbol: "USDC",
+    network: "ERC-20",
+    minWithdraw: 50,
+    feeUsd: 5.00,
+    rate: 1.00,
+    placeholder: "ERC-20 Address starting with 0x...",
+    iconColor: "text-[#2775CA]"
   },
   {
     id: "btc",
@@ -82,12 +95,34 @@ const CRYPTO_WITHDRAW_NETWORKS: CryptoWithdrawOption[] = [
     id: "sol",
     name: "Solana",
     symbol: "SOL",
-    network: "Solana Network",
+    network: "Solana Mainnet",
     minWithdraw: 30,
     feeUsd: 0.50,
     rate: 145.00,
-    placeholder: "Solana Public Wallet Address...",
+    placeholder: "Solana Wallet Address...",
     iconColor: "text-[#14F195]"
+  },
+  {
+    id: "ltc",
+    name: "Litecoin",
+    symbol: "LTC",
+    network: "Litecoin Mainnet",
+    minWithdraw: 20,
+    feeUsd: 0.10,
+    rate: 85.00,
+    placeholder: "Litecoin Wallet Address...",
+    iconColor: "text-[#345D9D]"
+  },
+  {
+    id: "bnb",
+    name: "BNB",
+    symbol: "BNB",
+    network: "BSC (BEP-20)",
+    minWithdraw: 30,
+    feeUsd: 0.50,
+    rate: 590.00,
+    placeholder: "BEP-20 Address starting with 0x...",
+    iconColor: "text-[#F3BA2F]"
   }
 ];
 
@@ -189,7 +224,7 @@ export default function CryptoWithdrawForm() {
         <label className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider block">
           Select Crypto Payout Network
         </label>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
           {CRYPTO_WITHDRAW_NETWORKS.map((item) => (
             <button
               key={item.id}
@@ -199,21 +234,18 @@ export default function CryptoWithdrawForm() {
                 setToken(null);
               }}
               className={cn(
-                "p-3 border text-left flex flex-col justify-between transition-all",
+                "p-4 border text-left flex flex-col items-center justify-center gap-3 transition-all rounded-none",
                 selectedNetwork.id === item.id 
                   ? "bg-[#0A0A0A] text-white border-[#0A0A0A] shadow-md" 
                   : "bg-white text-[#0A0A0A] border-[#E4E4E4] hover:bg-[#F7F7F5]"
               )}
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className={cn("font-bold text-xs font-mono", selectedNetwork.id === item.id ? "text-white" : item.iconColor)}>
+              <MarketIcon symbol={item.symbol} size="sm" />
+              <div className="text-center">
+                <span className={cn("font-bold text-[11px] font-mono block", selectedNetwork.id === item.id ? "text-white" : "text-[#0A0A0A]")}>
                   {item.symbol}
                 </span>
-                {selectedNetwork.id === item.id && <Check className="w-3.5 h-3.5 text-[#16835B]" />}
-              </div>
-              <div>
-                <span className="text-[10px] font-bold block truncate">{item.name}</span>
-                <span className={cn("text-[8px] uppercase tracking-wider block truncate", selectedNetwork.id === item.id ? "text-[#9CA3AF]" : "text-[#6B7280]")}>
+                <span className={cn("text-[7px] uppercase tracking-widest block truncate", selectedNetwork.id === item.id ? "text-white/40" : "text-[#6B7280]")}>
                   {item.network}
                 </span>
               </div>
@@ -258,7 +290,7 @@ export default function CryptoWithdrawForm() {
                 placeholder={selectedNetwork.placeholder}
                 value={walletAddress}
                 onChange={(e) => setWalletAddress(e.target.value)}
-                className="w-full bg-white border border-[#E4E4E4] p-4 text-xs font-mono font-bold focus:outline-none focus:border-[#0055FF] text-[#0A0A0A]"
+                className="w-full bg-white border border-[#E4E4E4] p-4 text-xs font-mono font-bold focus:outline-none focus:border-[#0A0A0A] text-[#0A0A0A]"
                 required
               />
             </div>
