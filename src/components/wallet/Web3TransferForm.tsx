@@ -135,7 +135,7 @@ export default function Web3TransferForm() {
             <p className="text-[10px] text-[#6B7280] font-bold uppercase tracking-tight">Direct MetaMask Protocol</p>
           </div>
         </div>
-        {!isConnected ? (
+        {!isConnected && (
           <button 
             onClick={login}
             className="px-8 py-3 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0055FF] transition-all flex items-center gap-2 shadow-lg"
@@ -143,11 +143,6 @@ export default function Web3TransferForm() {
             <MetaMaskIcon className="w-4 h-4" />
             Connect MetaMask
           </button>
-        ) : (
-          <div className="flex items-center gap-2 px-4 py-2 bg-[#16835B]/10 border border-[#16835B] rounded-none">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#16835B] animate-pulse"></div>
-            <span className="text-[10px] font-bold text-[#16835B] uppercase tracking-widest">Node Linked</span>
-          </div>
         )}
       </div>
 
