@@ -4,6 +4,7 @@
  * @fileOverview Institutional Multi-Asset Trading Terminal.
  * 4-Panel Grid Architecture with Resizable Panels and full TradingView feature parity.
  * Mobile Overhaul: Implements a drawer-based command system for high-fidelity mobile UX.
+ * Layout Fix: Optimized viewport sizing and flex overflow handling for mobile stability.
  */
 
 import { useState, useEffect, useCallback, Suspense, use } from "react";
@@ -184,7 +185,7 @@ function TerminalContent() {
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
   return (
-    <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
+    <div className="flex h-[100dvh] min-h-0 w-full max-w-full flex-col overflow-hidden bg-white text-[#0A0A0A]">
       <TerminalTutorial />
 
       {/* TERMINAL HEADER */}
@@ -308,10 +309,10 @@ function TerminalContent() {
         </div>
       </header>
 
-      <div className="flex-grow flex overflow-hidden relative">
+      <div className="relative flex min-h-0 min-w-0 w-full flex-1 overflow-hidden">
         <AuthedSidebar className="hidden lg:flex" />
 
-        <main className="flex-grow flex lg:ml-16 overflow-hidden">
+        <main className="flex min-h-0 min-w-0 w-full flex-1 overflow-hidden lg:ml-16">
           {/* DESKTOP WORKSPACE - Using xl breakpoint for desktop focus */}
           <ResizablePanelGroup direction="horizontal" className="hidden xl:flex flex-grow overflow-hidden">
             <ResizablePanel defaultSize={75} minSize={40}>
@@ -407,13 +408,13 @@ function TerminalContent() {
           </ResizablePanelGroup>
 
           {/* MOBILE WORKSPACE - Hidden on Large/Desktop screens */}
-          <div className="flex xl:hidden flex-grow flex-col overflow-hidden w-full relative">
-            <div id="tour-chart-mobile" className="flex-grow min-h-0 bg-[#F7F7F5] relative">
+          <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-hidden xl:hidden">
+            <div id="tour-chart-mobile" className="relative min-h-0 min-w-0 w-full flex-1 overflow-hidden bg-[#F7F7F5]">
               <TradingViewChart symbol={activeInst.symbol} />
             </div>
             
             {/* MOBILE ACTION BAR */}
-            <div className="h-20 bg-white border-t border-[#E4E4E4] flex items-center px-4 gap-4 shrink-0 z-[110] shadow-[0_-2px_15px_rgba(0,0,0,0.08)]">
+            <div className="relative z-[110] flex h-[76px] w-full shrink-0 items-center gap-3 border-t border-[#E4E4E4] bg-white px-3 shadow-[0_-2px_15px_rgba(0,0,0,0.08)] sm:px-4">
               <div className="flex-grow flex flex-col">
                 <span className="text-[9px] font-mono font-bold text-[#6B7280] uppercase tracking-tighter">{activeInst.symbol}</span>
                 <span className={cn("text-base font-mono font-bold", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
