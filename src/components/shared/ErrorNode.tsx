@@ -26,7 +26,6 @@ export default function ErrorNode({ error, reset, context = "System" }: ErrorNod
             <div className="w-20 h-20 bg-white border border-[#E4E4E4] rounded-full flex items-center justify-center shadow-xl">
               <ShieldAlert className="w-10 h-10 text-[#C43D3D]" />
             </div>
-            <div className="absolute top-0 right-[40%] w-3 h-3 bg-[#C43D3D] rounded-full animate-pulse border-2 border-white"></div>
           </div>
 
           <div className="space-y-3">
