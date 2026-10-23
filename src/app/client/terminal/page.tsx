@@ -3,7 +3,7 @@
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
  * 4-Panel Grid Architecture with Resizable Panels and full TradingView feature parity.
- * Updated: Fixed missing 'Activity' icon import and resolved Next.js 15 async prop warnings.
+ * Mobile Overhaul: Implements a drawer-based command system for high-fidelity mobile UX.
  */
 
 import { useState, useEffect, useCallback, Suspense, use } from "react";
@@ -23,7 +23,9 @@ import {
   Settings,
   ShieldCheck,
   Check,
-  Activity
+  Activity,
+  Briefcase,
+  ArrowUpRight
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
@@ -86,7 +88,11 @@ function TerminalContent() {
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isTradeDrawerOpen, setIsTradeDrawerOpen] = useState(false);
+  
+  // Mobile UI States
+  const [isExecutionOpen, setIsExecutionOpen] = useState(false);
+  const [isLedgerOpen, setIsLedgerOpen] = useState(false);
+  
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
   
@@ -171,7 +177,7 @@ function TerminalContent() {
     };
 
     setPositions(prev => [newPos, ...prev]);
-    setIsTradeDrawerOpen(false);
+    setIsExecutionOpen(false);
   };
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
@@ -180,6 +186,7 @@ function TerminalContent() {
     <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
       <TerminalTutorial />
 
+      {/* TERMINAL HEADER */}
       <header className="h-14 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[600] px-2 lg:px-4">
         <div className="flex items-center space-x-2 lg:space-x-4">
           <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 lg:hidden text-[#0A0A0A]"><Menu className="w-5 h-5" /></button>
@@ -304,7 +311,7 @@ function TerminalContent() {
         <AuthedSidebar className="hidden lg:flex" />
 
         <main className="flex-grow flex lg:ml-16 overflow-hidden">
-          {/* DESKTOP PANEL GROUP */}
+          {/* DESKTOP WORKSPACE */}
           <ResizablePanelGroup direction="horizontal" className="hidden lg:flex flex-grow overflow-hidden">
             <ResizablePanel defaultSize={75} minSize={40}>
               <ResizablePanelGroup direction="vertical">
@@ -398,69 +405,95 @@ function TerminalContent() {
             </ResizablePanel>
           </ResizablePanelGroup>
 
-          {/* MOBILE TERMINAL VIEW */}
-          <div className="flex lg:hidden flex-grow flex-col overflow-hidden w-full">
+          {/* MOBILE WORKSPACE overhaul */}
+          <div className="flex lg:hidden flex-grow flex-col overflow-hidden w-full relative">
             <div id="tour-chart-mobile" className="flex-grow min-h-0 bg-[#F7F7F5] relative">
               <TradingViewChart symbol={activeInst.symbol} />
             </div>
             
-            {/* MOBILE LEDGER OVERVIEW (Compact) */}
-            <div className="h-12 bg-white border-t border-[#E4E4E4] flex items-center justify-between px-4 shrink-0">
-               <div className="flex items-center gap-2">
-                  <Activity className="w-3.5 h-3.5 text-[#0055FF]" />
-                  <span className="text-[9px] font-bold uppercase text-[#0A0A0A]">Positions: {positions.filter(p => p.status === 'Open').length}</span>
-               </div>
-               <Link href="/client/portfolio" className="text-[9px] font-bold text-[#0055FF] uppercase tracking-widest underline underline-offset-4">Manage Portfolio</Link>
+            {/* MOBILE ACTION BAR */}
+            <div className="h-20 bg-white border-t border-[#E4E4E4] flex items-center px-4 gap-4 shrink-0 z-[110] shadow-[0_-2px_15px_rgba(0,0,0,0.08)]">
+              <div className="flex-grow flex flex-col">
+                <span className="text-[9px] font-mono font-bold text-[#6B7280] uppercase tracking-tighter">{activeInst.symbol}</span>
+                <span className={cn("text-base font-mono font-bold", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
+                  {marketData[activeInst.symbol]?.price?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "---"}
+                </span>
+              </div>
+              
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setIsLedgerOpen(true)}
+                  className="w-12 h-12 border border-[#E4E4E4] flex items-center justify-center text-[#6B7280] hover:bg-[#F7F7F5] transition-colors"
+                  title="Portfolio"
+                >
+                  <Briefcase className="w-5 h-5" />
+                </button>
+                <button 
+                  onClick={() => setIsExecutionOpen(true)}
+                  className="px-8 py-3 bg-[#0A0A0A] text-white text-[11px] font-bold uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-transform flex items-center gap-2"
+                >
+                  Execute <ChevronDown className="w-4 h-4 opacity-50" />
+                </button>
+              </div>
             </div>
+
+            {/* MOBILE EXECUTION DRAWER */}
+            {isExecutionOpen && (
+              <div className="fixed inset-0 z-[700]">
+                <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsExecutionOpen(false)}></div>
+                <div className="absolute bottom-0 left-0 right-0 bg-white animate-in slide-in-from-bottom duration-300 rounded-t-2xl overflow-hidden max-h-[85vh] flex flex-col shadow-2xl border-t border-[#E4E4E4]">
+                  <div className="h-1.5 w-12 bg-[#E4E4E4] rounded-full mx-auto mt-3 mb-1 shrink-0"></div>
+                  <div className="p-4 border-b border-[#F7F7F5] flex justify-between items-center bg-white shrink-0">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-[#16835B] animate-pulse"></div>
+                      <span className="text-[11px] font-bold uppercase tracking-widest text-[#0A0A0A]">New Order: {activeInst.symbol}</span>
+                    </div>
+                    <button onClick={() => setIsExecutionOpen(false)} className="p-2 text-[#6B7280] hover:text-[#0A0A0A]"><X className="w-5 h-5" /></button>
+                  </div>
+                  <div className="flex-grow overflow-y-auto no-scrollbar pb-10">
+                    <ExecutionTicket 
+                      instrument={activeInst} 
+                      livePrice={marketData[activeInst.symbol]?.price}
+                      balance={activeBalance}
+                      accountMode={accountMode}
+                      onExecute={handleExecution}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* MOBILE LEDGER DRAWER */}
+            {isLedgerOpen && (
+              <div className="fixed inset-0 z-[700]">
+                <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsLedgerOpen(false)}></div>
+                <div className="absolute bottom-0 left-0 right-0 h-[70vh] bg-white animate-in slide-in-from-bottom duration-300 rounded-t-2xl overflow-hidden flex flex-col shadow-2xl border-t border-[#E4E4E4]">
+                  <div className="h-1.5 w-12 bg-[#E4E4E4] rounded-full mx-auto mt-3 mb-1 shrink-0"></div>
+                  <div className="p-4 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5] shrink-0">
+                    <div className="flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-[#0055FF]" />
+                      <span className="text-[11px] font-bold uppercase tracking-widest text-[#0A0A0A]">Unified Ledger</span>
+                    </div>
+                    <button onClick={() => setIsLedgerOpen(false)} className="p-2 text-[#6B7280] hover:text-[#0A0A0A]"><X className="w-5 h-5" /></button>
+                  </div>
+                  <div className="flex-grow overflow-hidden">
+                    <PortfolioManager 
+                      positions={positions.filter(p => p.status === 'Open')}
+                      orders={[]}
+                      history={positions.filter(p => p.status === 'Closed')}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </main>
       </div>
 
-      {/* MOBILE ACTION BAR */}
-      <div className="lg:hidden h-16 border-t border-[#E4E4E4] bg-white flex items-center px-4 gap-3 shrink-0 z-[110] shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
-        <div className="flex-grow flex flex-col">
-           <span className="text-[9px] font-mono font-bold text-[#6B7280] uppercase">{activeInst.symbol}</span>
-           <span className={cn("text-sm font-mono font-bold", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
-              {marketData[activeInst.symbol]?.price?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "---"}
-           </span>
-        </div>
-        <button 
-          onClick={() => setIsTradeDrawerOpen(true)}
-          className="px-10 py-3 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 shadow-lg active:scale-95 transition-transform"
-        >
-          Execute <ChevronDown className="w-3.5 h-3.5 opacity-50" />
-        </button>
-      </div>
-
-      {/* MOBILE TRADE DRAWER */}
-      {isTradeDrawerOpen && (
-        <div className="fixed inset-0 z-[700] lg:hidden">
-          <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsTradeDrawerOpen(false)}></div>
-          <div className="absolute bottom-0 left-0 right-0 bg-white animate-in slide-in-from-bottom duration-300 rounded-t-xl overflow-hidden max-h-[90vh] flex flex-col shadow-2xl border-t border-[#E4E4E4]">
-            <div className="p-4 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5] shrink-0">
-               <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#16835B] animate-pulse"></div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Market Order: {activeInst.symbol}</span>
-               </div>
-               <button onClick={() => setIsTradeDrawerOpen(false)} className="p-1.5 bg-white border border-[#E4E4E4] rounded-full shadow-sm"><X className="w-4 h-4 text-[#6B7280]" /></button>
-            </div>
-            <div className="flex-grow overflow-y-auto no-scrollbar">
-              <ExecutionTicket 
-                instrument={activeInst} 
-                livePrice={marketData[activeInst.symbol]?.price}
-                balance={activeBalance}
-                accountMode={accountMode}
-                onExecute={handleExecution}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[400] lg:hidden">
+        <div className="fixed inset-0 z-[800] lg:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
-          <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white animate-in slide-in-from-left duration-300">
+          <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white animate-in slide-in-from-left duration-300 shadow-2xl">
             <AuthedSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
           </div>
         </div>
