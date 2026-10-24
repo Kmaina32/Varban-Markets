@@ -8,7 +8,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import AuthedLayout from "@/components/layout/AuthedLayout";
+import AuthedLayout from "@/components/layout/AdaptiveLayout";
 import { Card } from "@/components/ui/card";
 import { 
   ArrowLeft, 
@@ -38,7 +38,7 @@ export default function NewsReportPage({ params }: { params: Promise<{ id: strin
 
   if (loading) {
     return (
-      <AuthedLayout title="Intelligence Analysis" subtitle="Synchronizing Report...">
+      <AuthedLayout ownHeading title="Intelligence Analysis" subtitle="Synchronizing Report...">
         <div className="flex flex-col items-center justify-center py-32 space-y-4">
           <Loader2 className="w-8 h-8 text-[#0055FF] animate-spin" />
           <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">
@@ -51,7 +51,7 @@ export default function NewsReportPage({ params }: { params: Promise<{ id: strin
 
   if (!article) {
     return (
-      <AuthedLayout title="Analysis Failed" subtitle="Document Registry Error">
+      <AuthedLayout ownHeading title="Analysis Failed" subtitle="Document Registry Error">
         <Card className="max-w-2xl mx-auto p-12 text-center border-dashed border-2 bg-white">
           <ShieldCheck className="w-12 h-12 text-[#E4E4E4] mx-auto mb-4 opacity-20" />
           <h2 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A]">Record Not Found</h2>
@@ -70,7 +70,7 @@ export default function NewsReportPage({ params }: { params: Promise<{ id: strin
   }
 
   return (
-    <AuthedLayout 
+    <AuthedLayout ownHeading 
       title="Intelligence Report" 
       subtitle={`Impact Analysis: ${article.uuid.substring(0, 8).toUpperCase()}`}
     >

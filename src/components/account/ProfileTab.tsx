@@ -368,7 +368,7 @@ export default function ProfileTab() {
           <div className="p-4 flex items-start gap-3">
             <Globe className="w-4 h-4 text-[#6B7280] shrink-0 mt-0.5" />
             <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
-              All registration data is processed according to Saint Lucia jurisdiction laws and protected by TLS 1.3 encryption.
+              All registration data is processed according to applicable Seychelles laws and protected by TLS 1.3 encryption.
             </p>
           </div>
         </div>

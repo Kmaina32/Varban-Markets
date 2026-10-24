@@ -1,15 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { Mail, ShieldCheck, MapPin, Phone, Send, Check } from "lucide-react";
+import { Mail, ShieldCheck, MapPin, Send, Check } from "lucide-react";
 import { useUser, useFirestore } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
+import { useCompanyProfile } from "@/app/lib/use-company";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function ContactPage() {
   const { user } = useUser();
   const db = useFirestore();
   const { t } = useTranslation();
+  const company = useCompanyProfile();
 
   const [submitted, setSubmitted] = useState(false);
   const [status, setStatus] = useState("idle");
@@ -60,9 +62,9 @@ export default function ContactPage() {
 
             <div className="space-y-8">
               {[
-                { icon: Mail, title: "Email", detail: "support@varbanmarkets.com" },
-                { icon: Phone, title: "Phone Line", detail: "+1 758 452 9122" },
-                { icon: MapPin, title: "Saint Lucia Headquarters", detail: "Rodney Bayside Building, Rodney Bay, Gros Islet, Saint Lucia" }
+                { icon: Mail, title: "Email", detail: company.supportEmail },
+                { icon: MapPin, title: `${company.registeredOffice.label} (${company.registeredOffice.country})`, detail: company.registeredOffice.address },
+                { icon: MapPin, title: `${company.ukOffice.label} (${company.ukOffice.city})`, detail: company.ukOffice.address }
               ].map((item, idx) => (
                 <div key={idx} className="flex items-start space-x-4">
                   <item.icon className="w-5 h-5 text-[#0055FF] shrink-0 mt-1" />

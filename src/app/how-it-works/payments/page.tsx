@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/app/lib/utils";
+import { FundingAndWithdrawals, VerificationSteps, FeesSummary, RiskWarningBlock } from "@/components/marketing/InfoBlocks";
+import { CompanyInfoBlock } from "@/components/marketing/CompanyInfoBlock";
 
 export default function PaymentsPage() {
   const steps = [
@@ -138,7 +140,7 @@ export default function PaymentsPage() {
             {[
               { icon: Database, title: "Segregated accounts", desc: "We keep funds in segregated accounts in multiple tier-1 banks to ensure top security." },
               { icon: Lock, title: "Secure transactions", desc: "Your withdrawals are protected by one-time password (OTP) verification methods." },
-              { icon: Shield, title: "PCI DSS certified", desc: "We have successfully passed PCI DSS compliance requirements for cardholder data security." },
+              { icon: Shield, title: "Gateway-processed cards", desc: "Card payments are processed through the Paystack payment gateway." },
               { icon: CreditCard, title: "3D Secure payments", desc: "We provide 3D Secure payments for all major credit cards such as Visa and Mastercard." }
             ].map((pillar, i) => (
               <Card key={i} className="p-8 bg-white border-[#E4E4E4] space-y-4 shadow-sm hover:border-[#0055FF] transition-all group">
@@ -216,6 +218,15 @@ export default function PaymentsPage() {
         </div>
       </section>
 
+      {/* Payment details (English-only copy) */}
+      <section className="max-w-5xl mx-auto px-6 mt-16 space-y-8">
+        <FundingAndWithdrawals />
+        <VerificationSteps />
+        <FeesSummary />
+        <RiskWarningBlock />
+        <CompanyInfoBlock />
+      </section>
+
       {/* 5. CTA BANNER */}
       <section className="max-w-7xl mx-auto px-6 mt-12">
         <div className="bg-[#0A0A0A] text-white p-12 md:p-20 flex flex-col md:flex-row justify-between items-center gap-12 shadow-2xl relative overflow-hidden">
@@ -225,7 +236,7 @@ export default function PaymentsPage() {
               Ready to trade? <br /> Fund your wallet.
             </h2>
             <p className="text-xs md:text-sm text-[#94A3B8] leading-relaxed max-w-md uppercase tracking-widest font-bold">
-              Join thousands of traders using our secure, low-latency infrastructure for high-volume execution.
+              Open an account, verify your identity and fund your wallet to start trading.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 relative z-10 w-full md:w-auto">
@@ -242,10 +253,10 @@ export default function PaymentsPage() {
       {/* DISCLAIMERS */}
       <div className="max-w-7xl mx-auto px-6 mt-12 space-y-4">
         <p className="text-[9px] text-[#6B7280] uppercase leading-relaxed font-bold">
-          ¹ Instant withdrawals are available 24/7. However, the time it takes for funds to reach your account depends on your payment provider's processing speed.
+          ¹ Processing time depends on the method you choose and on your payment provider or blockchain network.
         </p>
         <p className="text-[9px] text-[#6B7280] uppercase leading-relaxed font-bold">
-          ² Varban Markets does not charge any deposit or withdrawal fees. Your payment provider, intermediary bank, or network may apply its own transaction fees.
+          ² Withdrawal fees and currency conversion charges are listed on the Fees & Charges page. Your payment provider, intermediary bank or network may also apply its own fees.
         </p>
       </div>
     </div>

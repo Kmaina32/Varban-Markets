@@ -41,6 +41,20 @@ service cloud.firestore {
       allow write: if true; // Internal proxy handles write verification
     }
 
+    // Public company profile (legal entity, offices, registration details).
+    // Anyone may read it; only administrators may change it.
+    match /site_profile/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Company certificates and regulatory documents. The public can read only
+    // those an administrator has marked as published.
+    match /certificates/{certId} {
+      allow read: if resource.data.visible == true || isAdmin();
+      allow write: if isAdmin();
+    }
+
     // Platform Configuration Authority
     match /settings/{settingId} {
       allow read: if request.auth != null;

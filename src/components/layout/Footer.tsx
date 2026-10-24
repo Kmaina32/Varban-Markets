@@ -10,11 +10,31 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "@/app/lib/i18n-context";
+import { useCompanyProfile } from "@/app/lib/use-company";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const pathname = usePathname();
   const { t } = useTranslation();
+  const company = useCompanyProfile();
+
+  // Legal text is composed from the live company profile. Registration and
+  // regulator sentences appear only once an admin has published real values.
+  const fill = (tpl: string, vars: Record<string, string>) =>
+    Object.entries(vars).reduce((acc, [k, v]) => acc.split(`{${k}}`).join(v), tpl);
+  const legalVars = {
+    legalName: company.legalName,
+    registeredOffice: company.registeredOffice.address,
+    ukOffice: company.ukOffice.address,
+    registrationNumber: company.registrationNumber,
+    regulator: company.regulator,
+    licenseNumber: company.licenseNumber,
+  };
+  const companyInfoText = [
+    fill(t('landing.footer.disclosures.companyInfo'), legalVars),
+    company.registrationNumber ? fill(t('landing.footer.disclosures.registrationLine'), legalVars) : '',
+    company.regulator && company.licenseNumber ? fill(t('landing.footer.disclosures.regulatedLine'), legalVars) : '',
+  ].filter(Boolean).join(' ');
   
   // STRICT: Hide on any authenticated workspace path or auth funnel
   const isStrict = pathname?.startsWith('/client') || 
@@ -40,7 +60,7 @@ export default function Footer() {
               />
             </div>
             <p className="text-[10px] text-[#6B7280] uppercase tracking-widest font-bold leading-relaxed max-w-xs">
-              Varban Markets Ltd. <br />
+              {company.legalName}. <br />
               {t('landing.footer.disclosures.authNotice')}
             </p>
           </div>
@@ -80,7 +100,7 @@ export default function Footer() {
 
         <div className="pt-10 border-t border-[#E4E4E4] space-y-6 text-[10px] text-[#6B7280] leading-relaxed max-w-5xl text-justify">
           <p>
-            {t('landing.footer.disclosures.companyInfo')}
+            {companyInfoText}
           </p>
           
           <p>

@@ -14,8 +14,6 @@ export default function robots(): MetadataRoute.Robots {
         '/admin/', 
         '/client/', 
         '/api/',
-        '/_next/',
-        '/static/'
       ],
     },
     sitemap: 'https://varbanmarkets.com/sitemap.xml',

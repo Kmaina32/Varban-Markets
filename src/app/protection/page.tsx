@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/app/lib/utils";
+import { VerificationSteps, FundingAndWithdrawals, RiskWarningBlock } from "@/components/marketing/InfoBlocks";
+import { CompanyInfoBlock } from "@/components/marketing/CompanyInfoBlock";
 
 export default function ClientProtectionPage() {
   const platformProtections = [
@@ -58,8 +60,8 @@ export default function ClientProtectionPage() {
       icon: Activity
     },
     {
-      title: "Segregated accounts",
-      desc: "We safeguard your funds by holding them strictly separate from company capital in Tier-1 international banking institutions.",
+      title: "Transaction records",
+      desc: "Deposits and withdrawals are recorded as transactions in your account so you can review them at any time in your wallet.",
       icon: Database
     },
     {
@@ -68,8 +70,8 @@ export default function ClientProtectionPage() {
       icon: Lock
     },
     {
-      title: "PCI DSS compliance",
-      desc: "We are fully audited and adhere to PCI DSS standards, ensuring card data security through regular vulnerability scans.",
+      title: "Card data handled by the gateway",
+      desc: "Card payments are entered on the Paystack gateway, so card details are processed by the payment provider rather than typed into Varban pages.",
       icon: FileCheck
     }
   ];
@@ -81,7 +83,7 @@ export default function ClientProtectionPage() {
         <div className="absolute inset-0 z-0">
           <Image 
             src="https://picsum.photos/seed/protection_banner/1920/800" 
-            alt="Security Architecture" 
+            alt="Padlock over a secure trading account dashboard" 
             fill 
             className="object-cover opacity-60 grayscale" 
             priority
@@ -121,7 +123,7 @@ export default function ClientProtectionPage() {
               <div className="p-6 bg-white border border-[#E4E4E4] border-l-4 border-l-[#0055FF]">
                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] mb-3">Your Trusted Broker</h4>
                  <p className="text-[11px] text-[#6B7280] leading-relaxed uppercase font-bold tracking-tight">
-                    As a licensed and regulated leading global broker, we offer multiple account security options to protect your domain.
+                    Varban Markets Ltd is registered in Seychelles with an office in the United Kingdom. We offer multiple account security options to protect your domain.
                  </p>
               </div>
            </div>
@@ -182,7 +184,7 @@ export default function ClientProtectionPage() {
           <div className="relative aspect-video lg:aspect-square bg-[#0A0A0A] overflow-hidden border border-[#E4E4E4] shadow-2xl">
             <Image 
               src="https://picsum.photos/seed/varban_secure_pay/800/800" 
-              alt="Payment Security" 
+              alt="Secure card and crypto payment options for funding a trading wallet" 
               fill 
               className="object-cover opacity-50 grayscale transition-transform duration-1000 hover:scale-105" 
               data-ai-hint="credit card protection"
@@ -205,7 +207,7 @@ export default function ClientProtectionPage() {
              <div className="relative aspect-video rounded-none overflow-hidden border border-[#E4E4E4] shadow-2xl">
                 <Image 
                   src="https://picsum.photos/seed/varban_trade_risk/800/600" 
-                  alt="Trading Protection" 
+                  alt="Trader reviewing risk figures before confirming an order" 
                   fill 
                   className="object-cover"
                   data-ai-hint="trading screen"
@@ -279,6 +281,13 @@ export default function ClientProtectionPage() {
             ))}
           </div>
         </div>
+      </section>
+
+      <section className="max-w-5xl mx-auto px-6 mt-16 space-y-8">
+        <VerificationSteps />
+        <FundingAndWithdrawals />
+        <RiskWarningBlock />
+        <CompanyInfoBlock />
       </section>
 
       {/* 6. CTA BANNER */}

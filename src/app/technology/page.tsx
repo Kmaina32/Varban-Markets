@@ -1,3 +1,5 @@
+import { HowTradingWorks, RiskWarningBlock } from "@/components/marketing/InfoBlocks";
+import { CompanyInfoBlock } from "@/components/marketing/CompanyInfoBlock";
 import Link from "next/link";
 import Image from "next/image";
 import placeholderImages from "@/app/lib/placeholder-images.json";
@@ -10,7 +12,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: "Technology & Infrastructure | Performance Architecture",
-  description: "Explore the low-latency infrastructure powering Varban Markets. From deterministic execution engines to multi-node price aggregation and institutional data server protocols.",
+  description: "Explore the low-latency infrastructure powering Varban Markets. See how our execution engine, price aggregation and data infrastructure work.",
   alternates: {
     canonical: '/technology',
   },
@@ -55,15 +57,15 @@ export default function TechnologyArchitecturePage() {
         <div className="mb-16 relative aspect-video bg-[#0A0A0A] border border-[#E4E4E4] shadow-2xl overflow-hidden group">
           <Image 
             src={placeholderImages.mt5_hero.url} 
-            alt="MetaTrader 5 Integration" 
+            alt="Varban Markets web trading terminal with price chart and order ticket" 
             fill 
             className="object-cover opacity-60 transition-transform duration-[2000ms] group-hover:scale-110"
             data-ai-hint={placeholderImages.mt5_hero.hint}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
           <div className="absolute bottom-8 left-8">
-             <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.4em] block mb-1">Advanced Trading Nodes</span>
-             <h3 className="text-xl font-bold text-white uppercase tracking-tight">MetaTrader 5 Native Integration</h3>
+             <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.4em] block mb-1">Web Trading Terminal</span>
+             <h3 className="text-xl font-bold text-white uppercase tracking-tight">Charts, Order Ticket and Wallet</h3>
           </div>
         </div>
 
@@ -114,10 +116,16 @@ export default function TechnologyArchitecturePage() {
           </div>
         </div>
 
+        <div className="mt-16 space-y-8">
+          <HowTradingWorks />
+          <RiskWarningBlock />
+          <CompanyInfoBlock />
+        </div>
+
         {/* Bottom Footer Notice */}
         <div className="mt-20 pt-8 border-t border-[#E4E4E4] text-center">
           <p className="text-[10px] text-[#6B7280] uppercase tracking-widest font-bold">
-            Varban Markets Ltd &bull; Rodney Bay, Saint Lucia
+            Varban Markets Ltd &bull; Seychelles &bull; London, United Kingdom
           </p>
         </div>
 

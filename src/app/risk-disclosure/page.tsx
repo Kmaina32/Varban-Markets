@@ -8,7 +8,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: "Risk Disclosure | Regulatory Notice",
-  description: "Critical risk warning for Varban Markets traders. Understand the implications of derivative trading and high-volatility synthetic markets in the Saint Lucia jurisdiction.",
+  description: "Critical risk warning for Varban Markets traders. Read the key risks of leveraged derivative and synthetic market trading with Varban Markets, a company registered in Seychelles, before you open an account.",
   alternates: {
     canonical: '/risk-disclosure',
   },
@@ -32,7 +32,7 @@ export default function PublicRiskDisclosurePage() {
           </div>
           <h1 className="text-3xl font-bold uppercase tracking-tight text-[#0A0A0A]">Risk Warning</h1>
           <p className="text-xs text-[#6B7280] mt-2 font-mono uppercase">
-            Effective: January 1, 2026. Saint Lucia Jurisdiction.
+            Effective: January 1, 2026. Seychelles Jurisdiction.
           </p>
         </div>
 
@@ -58,7 +58,7 @@ export default function PublicRiskDisclosurePage() {
               Electronic Acceptance Notice
             </p>
             <p className="text-[11px] leading-relaxed">
-              By opening an account on varbanmarkets.com, you confirm that you have read and agreed to this Risk Warning. This notice is provided according to Saint Lucia laws for electronic financial transactions.
+              By opening an account on varbanmarkets.com, you confirm that you have read and agreed to this Risk Warning. This notice is provided according to the laws of Seychelles for electronic financial transactions.
             </p>
           </div>
 

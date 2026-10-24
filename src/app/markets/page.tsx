@@ -8,7 +8,7 @@ import MarketsClient from './MarketsClient';
 
 export const metadata: Metadata = {
   title: "Global Market Registry | Live Asset Pricing",
-  description: "Explore Varban Markets global registry. Real-time pricing for Forex, Crypto, Equities, and Commodities with deep institutional liquidity and millisecond execution.",
+  description: "Explore Varban Markets global registry. Browse live pricing across forex, crypto, equities and commodities, and open any market to view its chart and trade.",
   alternates: {
     canonical: '/markets',
   },

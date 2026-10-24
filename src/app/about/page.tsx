@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CompanyInfoBlock } from "@/components/marketing/CompanyInfoBlock";
 import { Shield, Cpu, Database, Zap, Globe, Users, Target, Award, ArrowRight } from "lucide-react";
 
 /**
@@ -8,13 +9,16 @@ import { Shield, Cpu, Database, Zap, Globe, Users, Target, Award, ArrowRight } f
 
 export const metadata = {
   title: "About Varban Markets | Institutional Profile",
-  description: "Learn about the technology, leadership, and regulatory framework of Varban Markets. Our mission is to democratize high-speed derivative trading through deterministic execution.",
+  description: "Learn about Varban Markets, a company registered in Seychelles with an office in London, and our mission to make high-speed derivative trading accessible.",
+  alternates: {
+    canonical: '/about',
+  },
 };
 
 export default function AboutOverviewPage() {
   const navTabs = [
     { label: "Company Overview", href: "/about", active: true },
-    { label: "Licenses & Security", href: "/about/licenses", active: false },
+    { label: "Registration & Security", href: "/about/licenses", active: false },
     { label: "Careers & Culture", href: "/about/careers", active: false },
     { label: "Press & News", href: "/about/press", active: false },
     { label: "Contact & Support", href: "/about/contact", active: false },
@@ -106,11 +110,15 @@ export default function AboutOverviewPage() {
           </div>
         </div>
 
+        <div className="mb-12">
+          <CompanyInfoBlock />
+        </div>
+
         {/* Footer Navigation Switcher */}
         <div className="flex justify-between items-center text-xs">
           <span className="text-[#6B7280]">About Page 1 of 5</span>
           <Link href="/about/licenses" className="font-bold text-[#0055FF] hover:underline flex items-center gap-1">
-            <span>Next: Regulatory Licenses & Security</span>
+            <span>Next: Company Registration & Security</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>

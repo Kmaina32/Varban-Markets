@@ -2,6 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { Check, ShieldCheck, Zap, Globe, Table as TableIcon, Info, Clock, AlertTriangle } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { AccountTypesBlock, FeesSummary, RiskWarningBlock, InfoCtas } from "@/components/marketing/InfoBlocks";
+import { CompanyInfoBlock } from "@/components/marketing/CompanyInfoBlock";
 import {
   Table,
   TableBody,
@@ -67,7 +69,7 @@ export default function StandardAccountsPage() {
         <div className="absolute inset-0 z-0">
           <Image 
             src="https://picsum.photos/seed/standard_banner/1920/800" 
-            alt="Standard Accounts" 
+            alt="City skyline representing Varban Markets Standard trading accounts" 
             fill 
             className="object-cover opacity-50 grayscale" 
             priority
@@ -224,14 +226,22 @@ export default function StandardAccountsPage() {
           </div>
         </div>
 
+        <div className="mt-20 space-y-8">
+          <AccountTypesBlock />
+          <FeesSummary />
+          <RiskWarningBlock />
+          <CompanyInfoBlock />
+        </div>
+
         {/* CTA Footer */}
         <div className="mt-20 p-12 bg-white border border-[#E4E4E4] text-center space-y-6 shadow-sm">
           <ShieldCheck className="w-12 h-12 text-[#0055FF] mx-auto" />
           <h3 className="text-xl font-bold uppercase tracking-tight">Ready to trade the Standard?</h3>
-          <p className="text-xs text-[#6B7280] max-w-md mx-auto uppercase font-bold tracking-widest">Join over 450,000 active traders using the industry benchmark for execution and security.</p>
+          <p className="text-xs text-[#6B7280] max-w-md mx-auto uppercase font-bold tracking-widest">Open an account, or practise first on a demo account.</p>
           <div className="pt-4">
             <Link href="/register" className="btn-institutional-primary px-16 py-4">Start Trading Now</Link>
           </div>
+          <InfoCtas className="justify-center" />
         </div>
       </div>
     </div>

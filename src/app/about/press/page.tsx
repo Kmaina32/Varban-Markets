@@ -4,7 +4,7 @@ import { Newspaper, Download, Calendar, ArrowRight, ArrowLeft } from "lucide-rea
 export default function AboutPressPage() {
   const navTabs = [
     { label: "Company Overview", href: "/about", active: false },
-    { label: "Licenses & Security", href: "/about/licenses", active: false },
+    { label: "Registration & Security", href: "/about/licenses", active: false },
     { label: "Careers & Culture", href: "/about/careers", active: false },
     { label: "Press & News", href: "/about/press", active: true },
     { label: "Contact & Support", href: "/about/contact", active: false },

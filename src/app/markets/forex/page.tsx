@@ -21,7 +21,7 @@ import {
   BarChart2,
   Play
 } from 'lucide-react';
-import AuthedLayout from "@/components/layout/AuthedLayout";
+import AuthedLayout from "@/components/layout/AdaptiveLayout";
 import { Card } from "@/components/ui/card";
 import {
   Table,
@@ -49,7 +49,7 @@ export default function ForexMarketPage() {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
   return (
-    <AuthedLayout title="Forex Markets" subtitle="Global Currency Pair Registry">
+    <AuthedLayout ownHeading title="Forex Markets" subtitle="Global Currency Pair Registry">
       <div className="space-y-0 pb-20">
         
         {/* HERO SECTION */}

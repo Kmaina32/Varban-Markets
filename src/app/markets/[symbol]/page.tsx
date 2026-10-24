@@ -13,7 +13,7 @@ import { AVAILABLE_INSTRUMENTS } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
 import { ArrowLeft, Check, ShieldAlert, LogIn, TrendingUp, Sliders } from "lucide-react";
 import { TradingViewChart } from "@/components/terminal/TradingViewChart";
-import AuthedLayout from "@/components/layout/AuthedLayout";
+import AuthedLayout from "@/components/layout/AdaptiveLayout";
 import { useUser } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { MarketIcon } from "@/components/MarketIcon";

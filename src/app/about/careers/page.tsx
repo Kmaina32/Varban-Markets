@@ -4,7 +4,7 @@ import { Users, Briefcase, Zap, Heart, CheckCircle2, ArrowRight, ArrowLeft } fro
 export default function AboutCareersPage() {
   const navTabs = [
     { label: "Company Overview", href: "/about", active: false },
-    { label: "Licenses & Security", href: "/about/licenses", active: false },
+    { label: "Registration & Security", href: "/about/licenses", active: false },
     { label: "Careers & Culture", href: "/about/careers", active: true },
     { label: "Press & News", href: "/about/press", active: false },
     { label: "Contact & Support", href: "/about/contact", active: false },
@@ -12,9 +12,9 @@ export default function AboutCareersPage() {
 
   const positions = [
     { title: "Senior Low-Latency Rust / C++ Engineer", department: "Core Execution Engine", location: "London / Remote", type: "Full-Time" },
-    { title: "Lead Full-Stack Next.js Developer", department: "Trading Systems Frontend", location: "New York / Remote", type: "Full-Time" },
-    { title: "Quantitative Risk & Pricing Analyst", department: "Derivatives Analytics", location: "Singapore / Remote", type: "Full-Time" },
-    { title: "Global Compliance & AML Officer", department: "Legal & Regulatory", location: "Nairobi / Hybrid", type: "Full-Time" },
+    { title: "Lead Full-Stack Next.js Developer", department: "Trading Systems Frontend", location: "Seychelles / Remote", type: "Full-Time" },
+    { title: "Quantitative Risk & Pricing Analyst", department: "Derivatives Analytics", location: "London / Remote", type: "Full-Time" },
+    { title: "Global Compliance & AML Officer", department: "Legal & Regulatory", location: "London / Hybrid", type: "Full-Time" },
     { title: "24/7 Technical Support Specialist", department: "Client Operations", location: "Remote Global", type: "Full-Time" },
   ];
 
@@ -109,7 +109,7 @@ export default function AboutCareersPage() {
         <div className="flex justify-between items-center text-xs">
           <Link href="/about/licenses" className="font-bold text-[#6B7280] hover:text-[#0A0A0A] flex items-center gap-1">
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Prev: Licenses & Security</span>
+            <span>Prev: Registration & Security</span>
           </Link>
           <span className="text-[#6B7280]">About Page 3 of 5</span>
           <Link href="/about/press" className="font-bold text-[#0055FF] hover:underline flex items-center gap-1">

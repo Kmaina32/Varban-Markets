@@ -93,7 +93,7 @@ export default function NotFound() {
         {/* Institutional Watermark */}
         <div className="pt-12">
           <p className="text-[8px] font-bold text-[#D1D5DB] uppercase tracking-[0.3em]">
-            Varban Institutional Node &bull; Rodney Bay, Saint Lucia
+            Varban Institutional Node &bull; Seychelles &bull; London, United Kingdom
           </p>
         </div>
 

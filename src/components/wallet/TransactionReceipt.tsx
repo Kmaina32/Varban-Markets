@@ -86,7 +86,7 @@ export const TransactionReceipt: React.FC<TransactionReceiptProps> = ({ transact
       <div className="text-center space-y-2 pt-4 border-t border-black border-dotted">
         <p className="text-[9px] font-bold uppercase tracking-wider">Varban Markets Ltd.</p>
         <p className="text-[8px] text-[#6B7280] leading-relaxed uppercase">
-          Rodney Bay, Saint Lucia<br />
+          Registered Office: Seychelles<br />
           Deterministic Execution & Settlement<br />
           Total Financial Integrity Verified
         </p>

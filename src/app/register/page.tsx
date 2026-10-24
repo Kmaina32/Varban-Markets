@@ -12,6 +12,9 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Create Account | Join Varban Markets",
   description: "Open a professional trading account with Varban Markets. Access global derivatives and synthetic markets with deterministic execution and deep liquidity.",
+  alternates: {
+    canonical: '/register',
+  },
 };
 
 export default function RegisterPage() {

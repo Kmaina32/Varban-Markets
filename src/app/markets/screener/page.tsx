@@ -1,6 +1,6 @@
 'use client';
 
-import AuthedLayout from "@/components/layout/AuthedLayout";
+import AuthedLayout from "@/components/layout/AdaptiveLayout";
 import { Card } from "@/components/ui/card";
 import { Filter, BarChart4, ShieldCheck } from "lucide-react";
 import MarketScreener from "@/components/tradingview/MarketScreener";

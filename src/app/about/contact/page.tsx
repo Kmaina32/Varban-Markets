@@ -8,17 +8,19 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Mail, Phone, MapPin, MessageSquare, Clock, ArrowLeft, CheckCircle2, X, Send, ShieldCheck } from "lucide-react";
+import { Mail, MapPin, MessageSquare, Clock, ArrowLeft, CheckCircle2, X, Send, ShieldCheck } from "lucide-react";
 import { useUser, useFirestore } from "@/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/app/lib/utils";
+import { useCompanyProfile } from "@/app/lib/use-company";
 
 export default function AboutContactPage() {
   const { user } = useUser();
   const db = useFirestore();
   const { t } = useTranslation();
+  const company = useCompanyProfile();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState<{ show: boolean; ref: string }>({ show: false, ref: "" });
@@ -31,18 +33,17 @@ export default function AboutContactPage() {
 
   const navTabs = [
     { label: "Company Overview", href: "/about", active: false },
-    { label: "Licenses & Security", href: "/about/licenses", active: false },
+    { label: "Registration & Security", href: "/about/licenses", active: false },
     { label: "Careers & Culture", href: "/about/careers", active: false },
     { label: "Press & News", href: "/about/press", active: false },
     { label: "Contact & Support", href: "/about/contact", active: true },
   ];
 
-  const offices = [
-    { city: "Saint Lucia (Global HQ)", address: "Rodney Bayside Building, Rodney Bay, Gros Islet, Saint Lucia", phone: "+1 758 452 9122", email: "support@varbanmarkets.com" },
-    { city: "London", address: "25 Bank Street, Canary Wharf, London E14 5JP, United Kingdom", phone: "+44 (0) 20 7946 0912", email: "support@varbanmarkets.com" },
-    { city: "Singapore", address: "8 Marina View, #22-01 Asia Square Tower 1, Singapore 018960", phone: "+65 6789 0123", email: "support@varbanmarkets.com" },
-    { city: "Nairobi", address: "Delta Corner Towers, Ring Road Westlands, Nairobi, Kenya", phone: "+254 700 000 000", email: "support@varbanmarkets.com" },
-  ];
+  const offices = [company.registeredOffice, company.ukOffice].map((o) => ({
+    city: `${o.label} \u2014 ${o.city ? o.city + ", " : ""}${o.country}`,
+    address: o.address,
+    email: o.email || company.supportEmail,
+  }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,10 +149,6 @@ export default function AboutContactPage() {
                 </div>
                 <p className="text-xs text-[#6B7280] leading-relaxed">{office.address}</p>
                 <div className="pt-2 border-t border-[#E4E4E4] space-y-1 font-mono text-[10px] text-[#0A0A0A]">
-                  <div className="flex items-center space-x-2">
-                    <Phone className="w-3 h-3 text-[#6B7280]" />
-                    <span>{office.phone}</span>
-                  </div>
                   <div className="flex items-center space-x-2">
                     <Mail className="w-3 h-3 text-[#6B7280]" />
                     <span>{office.email}</span>

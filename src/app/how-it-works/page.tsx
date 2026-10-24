@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Metadata } from 'next';
+import { WhatIsVarban, HowTradingWorks, FeesSummary, RiskWarningBlock, InfoCtas } from "@/components/marketing/InfoBlocks";
+import { CompanyInfoBlock } from "@/components/marketing/CompanyInfoBlock";
 
 /**
  * @fileOverview Educational Roadmap of the Trading Lifecycle.
@@ -18,7 +20,7 @@ export default function HowItWorksPage() {
   const steps = [
     { num: "01", title: "Create Your Account", text: "Complete the registration process and verify your identity to access full trading capabilities." },
     { num: "02", title: "Fund Your Wallet", text: "Deposit funds using our secure banking or digital asset payment channels." },
-    { num: "03", title: "Select a Market", text: "Browse our range of synthetic indices, commodities, and currency pairs." },
+    { num: "03", title: "Select a Market", text: "Browse forex pairs, crypto, equities, indices and commodities." },
     { num: "04", title: "Configure Your Trade", text: "Set your trade direction, stake amount, and contract duration." },
     { num: "05", title: "Review Risk and Return", text: "Review the potential payout and maximum risk before confirming your order." },
     { num: "06", title: "Place Your Trade", text: "Confirm your order to initiate execution on our matching engine." },
@@ -55,6 +57,14 @@ export default function HowItWorksPage() {
           ))}
         </div>
 
+        <div className="mt-12 space-y-8">
+          <WhatIsVarban />
+          <HowTradingWorks />
+          <FeesSummary />
+          <RiskWarningBlock />
+          <CompanyInfoBlock />
+        </div>
+
         <div className="bg-white border border-[#E4E4E4] p-8 text-center mt-12 space-y-4">
           <h4 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">Ready to Start Trading?</h4>
           <p className="text-xs text-[#6B7280] max-w-md mx-auto">
@@ -63,6 +73,7 @@ export default function HowItWorksPage() {
           <Link href="/register" className="btn-institutional-primary">
             Create Account
           </Link>
+          <InfoCtas className="justify-center pt-2" />
         </div>
 
       </div>

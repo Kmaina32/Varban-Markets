@@ -79,7 +79,7 @@ export default function ComplaintsPage() {
               3. Final Decision
             </h2>
             <p>
-              If you are not happy with our first answer, you can ask for your case to be reviewed by a senior manager. Their decision is final within our platform, according to Saint Lucia law.
+              If you are not happy with our first answer, you can ask for your case to be reviewed by a senior manager. Their decision is final within our platform, according to the laws of Seychelles.
             </p>
           </section>
 

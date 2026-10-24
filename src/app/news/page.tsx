@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import AuthedLayout from "@/components/layout/AuthedLayout";
+import AuthedLayout from "@/components/layout/AdaptiveLayout";
 import { Card } from "@/components/ui/card";
 import { 
   Newspaper, 
@@ -109,7 +109,7 @@ export default function NewsHubPage() {
   ];
 
   return (
-    <AuthedLayout 
+    <AuthedLayout ownHeading 
       title={t('nav.news')} 
       subtitle="Institutional Market Intelligence Hub"
     >

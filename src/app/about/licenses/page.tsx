@@ -1,19 +1,15 @@
 import Link from "next/link";
+import { CompanyInfoBlock } from "@/components/marketing/CompanyInfoBlock";
+import { CertificatesSection } from "@/components/marketing/CertificatesSection";
 import { ShieldCheck, Lock, Database, FileCheck, CheckCircle2, ArrowRight, ArrowLeft } from "lucide-react";
 
 export default function AboutLicensesPage() {
   const navTabs = [
     { label: "Company Overview", href: "/about", active: false },
-    { label: "Licenses & Security", href: "/about/licenses", active: true },
+    { label: "Registration & Security", href: "/about/licenses", active: true },
     { label: "Careers & Culture", href: "/about/careers", active: false },
     { label: "Press & News", href: "/about/press", active: false },
     { label: "Contact & Support", href: "/about/contact", active: false },
-  ];
-
-  const licenses = [
-    { jurisdiction: "Financial Services Authority (FSA)", refNo: "FSA-REG-892410-VM", status: "Active Licensed Entity", details: "Authorized for multi-asset synthetic derivative settlement and digital asset brokerage services." },
-    { jurisdiction: "International Financial Services Commission (IFSC)", refNo: "IFSC/60/491/TS/26", status: "Active License", details: "Authorized international financial broker specializing in algorithmic execution and risk management." },
-    { jurisdiction: "Crypto Asset Regulatory Authority (CARA)", refNo: "CARA-VASP-2025-04", status: "Registered VASP", details: "Virtual Asset Service Provider clearance for digital asset wallet custody and cross-border crypto settlement." },
   ];
 
   return (
@@ -27,10 +23,10 @@ export default function AboutLicensesPage() {
             <span>About Suite &mdash; 2 of 5</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-tight text-[#0A0A0A]">
-            Regulatory Licenses & Security
+            Company Registration & Security
           </h1>
           <p className="text-xs text-[#6B7280] mt-3 leading-relaxed max-w-3xl">
-            Varban Markets operates under rigorous regulatory oversight, maintaining segregated tier-1 bank custody accounts, cold wallet storage architecture, and continuous auditing.
+            Varban Markets Ltd is registered in Seychelles and maintains an office in the United Kingdom. This page lists our company details, the certificates and regulatory documents we have published, and how client funds and data are protected.
           </p>
         </div>
 
@@ -51,27 +47,10 @@ export default function AboutLicensesPage() {
           ))}
         </div>
 
-        {/* Regulatory Licenses */}
-        <div className="bg-white border border-[#E4E4E4] p-8 md:p-12 space-y-8 mb-12 shadow-sm">
-          <div>
-            <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest block mb-1">Authorization & Oversight</span>
-            <h2 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A]">Global Regulatory Framework</h2>
-          </div>
-
-          <div className="space-y-4">
-            {licenses.map((lic, idx) => (
-              <div key={idx} className="p-6 border border-[#E4E4E4] bg-[#F7F7F5] space-y-2">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">{lic.jurisdiction}</h3>
-                  <span className="px-2 py-0.5 bg-[#16835B]/10 text-[#16835B] border border-[#16835B] text-[9px] font-bold uppercase">
-                    {lic.status}
-                  </span>
-                </div>
-                <span className="text-[10px] font-mono text-[#6B7280] block">License Reference: {lic.refNo}</span>
-                <p className="text-xs text-[#6B7280] leading-relaxed pt-1">{lic.details}</p>
-              </div>
-            ))}
-          </div>
+        {/* Company registration and published certificates (live from the admin-managed profile) */}
+        <div className="space-y-8 mb-12">
+          <CompanyInfoBlock />
+          <CertificatesSection />
         </div>
 
         {/* Security Infrastructure Pillars */}

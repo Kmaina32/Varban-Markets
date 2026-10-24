@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from "react";
-import AuthedLayout from "@/components/layout/AuthedLayout";
+import AuthedLayout from "@/components/layout/AdaptiveLayout";
 import { Card } from "@/components/ui/card";
 import { Coins, Globe, Info } from "lucide-react";
 import MarketHeatmap from "@/components/tradingview/MarketHeatmap";

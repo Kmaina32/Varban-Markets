@@ -1,7 +1,7 @@
 
 "use client";
 
-import AuthedLayout from "@/components/layout/AuthedLayout";
+import AuthedLayout from "@/components/layout/AdaptiveLayout";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -27,7 +27,7 @@ export default function VaultsDocPage() {
           <div className="space-y-6">
             <h3 className="text-xs font-bold uppercase tracking-widest text-[#0055FF] border-b border-[#E4E4E4] pb-2">Paystack Gateway (Fiat)</h3>
             <div className="space-y-4 text-[11px] text-[#6B7280] leading-relaxed">
-              <p>Fiat deposits are processed through the PCI-DSS compliant Paystack protocol. Supported currencies include USD, NGN, GHS, ZAR, and KES.</p>
+              <p>Fiat deposits are processed through the Paystack payment gateway. Supported currencies include USD, NGN, GHS, ZAR, and KES.</p>
               <ul className="list-disc pl-4 space-y-2">
                 <li><strong>Clearance:</strong> Instant upon gateway confirmation.</li>
                 <li><strong>Verification:</strong> Required for deposits exceeding $2,000 USD cumulative.</li>

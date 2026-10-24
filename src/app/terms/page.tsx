@@ -24,7 +24,7 @@ export default function TermsPage() {
             Terms of Service
           </h1>
           <p className="text-xs text-[#6B7280] mt-3 leading-relaxed max-w-3xl font-mono uppercase">
-            Operated by Varban Markets Ltd. Registered and governed by the laws of Saint Lucia.
+            Operated by Varban Markets Ltd. Registered in Seychelles and governed by the laws of Seychelles.
           </p>
         </div>
 
@@ -78,7 +78,7 @@ export default function TermsPage() {
               4. Electronic Agreements
             </h2>
             <p>
-              By creating an account, you agree to these terms electronically. According to Saint Lucia law, this electronic agreement is as legally binding as a physical contract.
+              By creating an account, you agree to these terms electronically. Under the laws of Seychelles, this electronic agreement is as legally binding as a physical contract.
             </p>
           </section>
 
@@ -103,7 +103,7 @@ export default function TermsPage() {
           <div className="pt-10 border-t border-[#E4E4E4] flex flex-col md:flex-row justify-between items-center gap-6">
             <div>
               <span className="text-[10px] font-bold uppercase text-[#0A0A0A] block">Governing Law</span>
-              <span className="text-[9px] text-[#6B7280] uppercase tracking-widest">Saint Lucia Jurisdiction</span>
+              <span className="text-[9px] text-[#6B7280] uppercase tracking-widest">Seychelles Jurisdiction</span>
             </div>
             <Link href="/terms/privacy" className="px-8 py-3 bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0A0A0A] transition-colors border border-[#0055FF]">
               Next: Privacy Policy

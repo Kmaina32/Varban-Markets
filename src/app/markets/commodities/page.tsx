@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/table";
 import { useUser, useFirestore, useCollection } from "@/firebase";
 import { doc, setDoc, deleteDoc, collection } from "firebase/firestore";
-import AuthedLayout from "@/components/layout/AuthedLayout";
+import AuthedLayout from "@/components/layout/AdaptiveLayout";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { MarketIcon } from "@/components/MarketIcon";
 import placeholderImages from "@/app/lib/placeholder-images.json";
@@ -112,7 +112,7 @@ export default function CommoditiesMarketPage() {
   }, [commodityInstruments]);
 
   return (
-    <AuthedLayout title="Commodities" subtitle="Global Metals & Energy Registry">
+    <AuthedLayout ownHeading title="Commodities" subtitle="Global Metals & Energy Registry">
       <div className="space-y-0 pb-20">
         
         {/* HIGH-FIDELITY REFERENCE HERO */}
