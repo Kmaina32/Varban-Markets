@@ -8,6 +8,7 @@ import { Web3AuthProvider } from "@/app/lib/web3-context";
 import CookieConsent from "@/components/layout/CookieConsent";
 import ChatSupport from "@/components/ChatSupport";
 import Script from 'next/script';
+import { Analytics } from '@vercel/analytics/next';
 
 export const viewport: Viewport = {
   themeColor: '#0A0A0A',
@@ -89,6 +90,7 @@ export default function RootLayout({
             </Web3AuthProvider>
           </I18nProvider>
         </FirebaseProvider>
+        <Analytics />
       </body>
     </html>
   );
