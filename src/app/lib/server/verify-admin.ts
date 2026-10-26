@@ -25,10 +25,13 @@ export class AuthError extends Error {
 export interface VerifiedUser {
   uid: string;
   email: string;
+  emailVerified: boolean;
+  idToken: string;
   isAdmin: boolean;
 }
 
-export async function verifyAdmin(req: NextRequest): Promise<VerifiedUser> {
+/** Validate the caller's Firebase ID token (any signed-in user). */
+export async function verifyUser(req: NextRequest): Promise<VerifiedUser> {
   const header = req.headers.get("authorization") || "";
   const match = header.match(/^Bearer\s+(.+)$/i);
   if (!match) throw new AuthError("Authentication required.", 401);
@@ -53,21 +56,31 @@ export async function verifyAdmin(req: NextRequest): Promise<VerifiedUser> {
   const account = payload?.users?.[0];
   if (!account?.localId) throw new AuthError("Invalid or expired session.", 401);
 
-  const uid: string = account.localId;
-  const email: string = String(account.email || "").toLowerCase();
+  return {
+    uid: account.localId,
+    email: String(account.email || "").toLowerCase(),
+    emailVerified: !!account.emailVerified,
+    idToken,
+    isAdmin: false,
+  };
+}
 
-  let isAdmin = !!account.emailVerified && SUPER_ADMIN_EMAILS.includes(email);
+/** Validate the token AND confirm administrator authority. */
+export async function verifyAdmin(req: NextRequest): Promise<VerifiedUser> {
+  const user = await verifyUser(req);
+
+  let isAdmin = user.emailVerified && SUPER_ADMIN_EMAILS.includes(user.email);
   if (!isAdmin) {
     const res = await fetch(
-      `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/users/${uid}`,
-      { headers: { Authorization: `Bearer ${idToken}` }, cache: "no-store" }
-    );
-    if (res.ok) {
+      `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/users/${user.uid}`,
+      { headers: { Authorization: `Bearer ${user.idToken}` }, cache: "no-store" }
+    ).catch(() => null);
+    if (res && res.ok) {
       const doc = await res.json();
       isAdmin = doc?.fields?.status?.mapValue?.fields?.role?.stringValue === "Admin";
     }
   }
 
   if (!isAdmin) throw new AuthError("Administrator access required.", 403);
-  return { uid, email, isAdmin };
+  return { ...user, isAdmin: true };
 }

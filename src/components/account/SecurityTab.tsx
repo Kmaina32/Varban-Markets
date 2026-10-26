@@ -5,8 +5,9 @@
  * Hardened against Firebase null database references to prevent runtime crashes.
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Key, Shield, Laptop, AlertTriangle, Loader2 } from 'lucide-react';
+import { PASSWORD_POLICY } from '@/app/lib/password-policy';
 import { Card } from '@/components/ui/card';
 import { useUser, useFirestore, useCollection, useAuth, useDoc } from '@/firebase';
 import { collection, query, orderBy, limit, getDocs, deleteDoc, doc, setDoc } from 'firebase/firestore';
@@ -22,6 +23,10 @@ export default function SecurityTab() {
   const { formatDate } = useTranslation();
   
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
+  const [needsUpgrade, setNeedsUpgrade] = useState(false);
+  useEffect(() => {
+    try { setNeedsUpgrade(sessionStorage.getItem('varban_password_upgrade') === '1'); } catch {}
+  }, []);
   const [isRevoking, setIsRevoking] = useState(false);
   const [isProvisioning, setIsProvisioning] = useState(false);
   
@@ -43,6 +48,8 @@ export default function SecurityTab() {
     if (!auth || !user?.email) return;
     try {
       await sendPasswordResetEmail(auth, user.email);
+      try { sessionStorage.removeItem('varban_password_upgrade'); } catch {}
+      setNeedsUpgrade(false);
       setDialog({
         status: 'success',
         title: 'Reset link dispatched',
@@ -129,6 +136,15 @@ export default function SecurityTab() {
             <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Security Credentials</h3>
           </div>
           <div className="space-y-4">
+            {needsUpgrade && (
+              <div role="alert" className="flex items-start gap-3 p-4 border border-[#C9A227] bg-[#C9A227]/5 text-[10px] font-bold uppercase leading-relaxed text-[#8a6d10]">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>
+                  Your password does not meet our current policy ({PASSWORD_POLICY.minLength}+ characters with upper and lower case,
+                  a number and a special character). Send yourself a reset link below and choose a stronger password.
+                </span>
+              </div>
+            )}
             <div>
               <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-2">Password Sync</span>
               <button 

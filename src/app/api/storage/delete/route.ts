@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DeleteObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { r2Client, R2_BUCKET_NAME } from "@/app/lib/r2-service";
+import { verifyAdmin, AuthError } from "@/app/lib/server/verify-admin";
 
 /**
  * @fileOverview Institutional Storage Deletion Module.
@@ -9,6 +10,7 @@ import { r2Client, R2_BUCKET_NAME } from "@/app/lib/r2-service";
 
 export async function POST(req: NextRequest) {
   try {
+    await verifyAdmin(req);
     const { path, isFolder } = await req.json();
 
     if (!path) return NextResponse.json({ error: "Path required" }, { status: 400 });
@@ -40,6 +42,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
 
   } catch (error: any) {
+    if (error instanceof AuthError) return NextResponse.json({ error: error.message }, { status: error.status });
     console.error("[Storage Delete API] Failure:", error);
     return NextResponse.json({ error: "Internal Storage Failure", details: error.message }, { status: 500 });
   }

@@ -3,11 +3,12 @@
 import React, { useState, useEffect, useMemo } from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
-import { Search, ShieldCheck, X, Check, Loader2 } from "lucide-react";
-import { useFirestore } from "@/firebase";
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import { Search, Loader2 } from "lucide-react";
+import { useFirestore, useUser } from "@/firebase";
+import { collection, getDocs } from "firebase/firestore";
+import KycReviewPanel from "@/components/admin/KycReviewPanel";
+import { getProfileGaps } from "@/app/lib/profile-completion";
 import { cn } from "@/app/lib/utils";
-import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
 
 const toMillis = (ts: any): number => {
   try {
@@ -21,18 +22,13 @@ const toMillis = (ts: any): number => {
 
 export default function AdminKycApprovalsPage() {
   const db = useFirestore();
+  const { user: adminUser } = useUser();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('Pending');
   const [searchQuery, setSearchQuery] = useState('');
   const [inspectUser, setInspectUser] = useState<any | null>(null);
   
-  const [dialog, setDialog] = useState<{ status: DialogStatus; title: string; message: string }>({
-    status: null,
-    title: '',
-    message: ''
-  });
-
   const loadEntities = async () => {
     if (!db) return;
     setLoading(true);
@@ -47,6 +43,8 @@ export default function AdminKycApprovalsPage() {
           country: x.profile?.country || "",
           verification_status: x.status?.verificationStatus || "Not Verified",
           created: toMillis(x.profile?.createdAt) || toMillis(x.status?.createdAt),
+          incomplete: getProfileGaps(x).length,
+          data: x,
         };
       }).sort((a, b) => b.created - a.created);
       setUsers(rows);
@@ -61,21 +59,10 @@ export default function AdminKycApprovalsPage() {
     loadEntities();
   }, [db]);
 
-  const handleUpdateStatus = async (userId: string, status: string) => {
-    try {
-      if (!db) throw new Error('no db');
-      await updateDoc(doc(db, 'users', userId), { 'status.verificationStatus': status });
-      
-      setDialog({ 
-        status: 'success', 
-        title: 'Audit Finalized', 
-        message: `Entity state successfully updated to ${status}.` 
-      });
-      setInspectUser(null);
-      await loadEntities();
-    } catch (e) {
-      setDialog({ status: 'error', title: 'Transmission Error', message: 'Failed to synchronize decision with core node.' });
-    }
+  // The review panel saves the decision itself (status, reason, notification, audit log).
+  // Here we only refresh the row so the list reflects it.
+  const onDecided = (uid: string, status: "Verified" | "Rejected") => {
+    setUsers(prev => prev.map(u => (u.id === uid ? { ...u, verification_status: status, data: { ...u.data, status: { ...(u.data?.status || {}), verificationStatus: status } } } : u)));
   };
 
   const filteredUsers = useMemo(() => {
@@ -99,14 +86,8 @@ export default function AdminKycApprovalsPage() {
 
   return (
     <AuthedLayout title="KYC Approvals" subtitle="Institutional Identity Verification Desk">
-      <div className="space-y-6">
-        <StatusDialog 
-          status={dialog.status} 
-          title={dialog.title} 
-          message={dialog.message} 
-          onClose={() => setDialog({ ...dialog, status: null })} 
-        />
-
+      <div className={cn("grid gap-6 items-start", inspectUser ? "lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)]" : "grid-cols-1")}>
+      <div className="space-y-6 min-w-0">
         <Card className="p-4 bg-white border-[#E4E4E4] flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
           <div className="flex gap-2 w-full md:w-auto">
             {['All', 'Pending', 'Verified', 'Rejected'].map(f => (
@@ -158,6 +139,7 @@ export default function AdminKycApprovalsPage() {
                   <tr key={u.id} className="hover:bg-[#F7F7F5] transition-colors">
                     <td className="p-4">
                       <span className="font-bold block text-[#0A0A0A]">{u.full_name || "Unnamed Entity"}</span>
+                      {u.incomplete > 0 && <span className="text-[9px] font-bold uppercase text-[#C43D3D]">Profile incomplete</span>}
                       <span className="text-[9px] text-[#6B7280] font-mono">{u.id.slice(0, 12).toUpperCase()}</span>
                     </td>
                     <td className="p-4 font-mono text-[#6B7280] lowercase">{u.email}</td>
@@ -171,7 +153,7 @@ export default function AdminKycApprovalsPage() {
                         onClick={() => setInspectUser(u)} 
                         className="text-[9px] font-bold uppercase tracking-widest text-[#0055FF] underline decoration-2 underline-offset-4"
                       >
-                        Inspect Evidence
+                        Review Evidence
                       </button>
                     </td>
                   </tr>
@@ -183,60 +165,16 @@ export default function AdminKycApprovalsPage() {
       </div>
 
       {inspectUser && (
-        <div className="fixed inset-0 z-[400] bg-[#0A0A0A]/60 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-300">
-          <Card className="bg-white w-full max-w-xl shadow-2xl relative overflow-hidden">
-            <div className="p-5 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5]">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-[#0055FF]" />
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Manual Audit Node</h3>
-              </div>
-              <button onClick={() => setInspectUser(null)} className="text-[#6B7280] hover:text-[#0A0A0A] transition-colors"><X className="w-5 h-5" /></button>
-            </div>
-            
-            <div className="p-8 space-y-8">
-              <div className="grid grid-cols-2 gap-8">
-                <div>
-                  <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-1.5">Subject Identity</span>
-                  <p className="text-sm font-bold text-[#0A0A0A]">{inspectUser.full_name}</p>
-                  <p className="text-[10px] text-[#6B7280] font-mono">{inspectUser.email}</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-1.5">Origin Domain</span>
-                  <p className="text-xs font-bold uppercase text-[#0A0A0A]">{inspectUser.country || "GLOBAL"}</p>
-                </div>
-              </div>
-
-              <div className="p-6 bg-[#F7F7F5] border-l-4 border-l-[#0055FF] space-y-3">
-                 <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#0A0A0A]">Audit Evidence Check</h4>
-                 <p className="text-[11px] text-[#6B7280] leading-relaxed font-medium">
-                   Verify that the provided government identification matches the entity name exactly. Check for document integrity and expiration dates.
-                 </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <button 
-                  onClick={() => handleUpdateStatus(inspectUser.id, 'Verified')}
-                  className="py-4 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#0A0A0A] transition-all shadow-md flex items-center justify-center gap-2"
-                >
-                  <Check className="w-4 h-4" /> Approve Entity
-                </button>
-                <button 
-                  onClick={() => handleUpdateStatus(inspectUser.id, 'Rejected')}
-                  className="py-4 bg-white border border-[#C43D3D] text-[#C43D3D] text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#C43D3D] hover:text-white transition-all shadow-sm"
-                >
-                  Reject & Flag
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-[#F7F7F5] p-3 text-center border-t border-[#E4E4E4]">
-               <span className="text-[8px] font-bold text-[#6B7280] uppercase tracking-[0.3em]">
-                 All audit decisions are logged in the immutable security ledger.
-               </span>
-            </div>
-          </Card>
-        </div>
+        <KycReviewPanel
+          key={inspectUser.id}
+          db={db}
+          admin={adminUser}
+          target={{ id: inspectUser.id, data: inspectUser.data }}
+          onClose={() => setInspectUser(null)}
+          onDecided={onDecided}
+        />
       )}
+      </div>
     </AuthedLayout>
   );
 }

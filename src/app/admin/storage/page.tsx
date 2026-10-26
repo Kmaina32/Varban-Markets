@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useMemo } from "react";
+import { authFetch } from "@/app/lib/auth-fetch";
 import AuthedLayout from "@/components/layout/AuthedLayout";
 import { Card } from "@/components/ui/card";
 import { 
@@ -26,7 +27,7 @@ import {
   ExternalLink,
   Database
 } from "lucide-react";
-import { useCollection, useFirestore } from "@/firebase";
+import { useCollection, useFirestore, useUser } from "@/firebase";
 import { collection, query, where, limit } from "firebase/firestore";
 import { cn } from "@/app/lib/utils";
 
@@ -41,6 +42,7 @@ interface R2Item {
 
 export default function AdminStorageManager() {
   const db = useFirestore();
+  const { user } = useUser();
   const [currentPrefix, setCurrentPrefix] = useState("");
   const [items, setItems] = useState<{ folders: R2Item[], files: R2Item[] }>({ folders: [], files: [] });
   const [isLoading, setIsLoading] = useState(true);
@@ -64,7 +66,7 @@ export default function AdminStorageManager() {
   const loadListing = async (prefix: string) => {
     setIsLoading(true);
     try {
-      const resp = await fetch('/api/storage/list', {
+      const resp = await authFetch(user, '/api/storage/list', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prefix })
@@ -104,7 +106,7 @@ export default function AdminStorageManager() {
       : (newPathBase ? `${newPathBase}/${renamingItem.newName}` : renamingItem.newName);
 
     try {
-      const resp = await fetch('/api/storage/rename', {
+      const resp = await authFetch(user, '/api/storage/rename', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -129,7 +131,7 @@ export default function AdminStorageManager() {
     if (!window.confirm(`Confirm permanent deletion of ${item.name}?`)) return;
     setIsProcessing(true);
     try {
-      const resp = await fetch('/api/storage/delete', {
+      const resp = await authFetch(user, '/api/storage/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -292,7 +294,7 @@ export default function AdminStorageManager() {
                           <div className="flex items-center justify-center space-x-2">
                             <button 
                               onClick={async () => {
-                                const resp = await fetch('/api/storage/view-url', {
+                                const resp = await authFetch(user, '/api/storage/view-url', {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ storageKey: file.key })

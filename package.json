@@ -9,7 +9,8 @@
     "lint": "next lint",
     "export": "next build && next export",
     "desktop:dev": "npm run dev & cd desktop-app && npm start",
-    "desktop:build": "npm run export && cd desktop-app && npm run dist"
+    "desktop:build": "npm run export && cd desktop-app && npm run dist",
+    "test:rules": "npx --yes firebase-tools@13 emulators:exec --only firestore --project rules-test \"node --test tests/rules/\""
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.712.0",
@@ -21,6 +22,7 @@
     "@simplewebauthn/browser": "^13.1.1",
     "@simplewebauthn/server": "^13.1.1",
     "@tanstack/react-table": "^9.0.0-beta.0",
+    "@vladmandic/face-api": "1.7.15",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "firebase": "^11.4.0",
@@ -43,6 +45,7 @@
     }
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "4.0.1",
     "@types/node": "^22.13.9",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",

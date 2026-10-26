@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { r2Client, R2_BUCKET_NAME } from "@/app/lib/r2-service";
+import { verifyAdmin, AuthError } from "@/app/lib/server/verify-admin";
 
 /**
  * @fileOverview Institutional Storage Listing API.
@@ -10,6 +11,7 @@ import { r2Client, R2_BUCKET_NAME } from "@/app/lib/r2-service";
 
 export async function POST(req: NextRequest) {
   try {
+    await verifyAdmin(req);
     const body = await req.json().catch(() => ({}));
     const prefix = body.prefix || "";
 
@@ -48,6 +50,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ folders, files });
 
   } catch (error: any) {
+    if (error instanceof AuthError) return NextResponse.json({ error: error.message }, { status: error.status });
     console.error("[Storage List API] Failure:", error);
     // Return empty state instead of 500 to prevent UI crashes
     return NextResponse.json({ 

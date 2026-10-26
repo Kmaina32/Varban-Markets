@@ -1,80 +1,115 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Determine if the requesting entity holds Root Administrative Authority
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Administrator authority: a VERIFIED super-admin email, or users/{uid}.status.role == 'Admin'.
+    // (An unverified email must never grant admin: anyone can sign up with an address they do not own.)
     function isAdmin() {
-      return request.auth != null && (
-        request.auth.token.email == 'macos8388@gmail.com' || 
-        request.auth.token.email == 'gmaina4242@gmail.com' ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin')
+      return signedIn() && (
+        (request.auth.token.email_verified == true && (
+          request.auth.token.email == 'macos8388@gmail.com' ||
+          request.auth.token.email == 'gmaina4242@gmail.com')) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('status', {}).get('role', '') == 'Admin')
       );
     }
 
-    // User Profile & Sub-collection Protocols
+    // --- Users --------------------------------------------------------------
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      allow read, write: if isAdmin();
+      allow read: if isOwner(userId) || isAdmin();
 
-      match /{allSubcollections=**} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
-        allow read, write: if isAdmin();
+      // A new account always starts as an unverified Trader with an empty balance.
+      allow create: if isOwner(userId)
+        && request.resource.data.get('status', {}).get('role', 'Trader') == 'Trader'
+        && request.resource.data.get('status', {}).get('verificationStatus', 'Not Verified') == 'Not Verified'
+        && request.resource.data.get('balance', 0) == 0
+        && request.resource.data.get('equity', 0) == 0;
+
+      // Owners may edit their own profile data, but may NOT change `status`
+      // (role / verification) or a top-level `role`, with one exception: submitting
+      // KYC evidence moves verificationStatus to 'Pending' (from 'Not Verified' or 'Rejected').
+      // Only administrators can verify, reject, or change roles.
+      allow update: if isOwner(userId)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])
+        && (
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status'])
+          || (
+            request.resource.data.get('status', {}).diff(resource.data.get('status', {}))
+              .affectedKeys().hasOnly(['verificationStatus', 'kycSubmittedAt'])
+            && request.resource.data.status.verificationStatus == 'Pending'
+            && resource.data.get('status', {}).get('verificationStatus', 'Not Verified') in ['Not Verified', 'Rejected']
+          )
+        );
+
+      allow update, delete: if isAdmin();
+
+      // Identity evidence: owners can add their own pending submissions and read them;
+      // only administrators can change a submission's status or remove it.
+      match /kyc_submissions/{submissionId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId)
+          && request.resource.data.status == 'Pending'
+          && request.resource.data.storageKey.matches('users/' + userId + '/kyc/.*');
+        allow update, delete: if isAdmin();
+      }
+
+      // Other per-user data keeps owner + admin access.
+      match /{sub}/{docId} {
+        allow read, write: if (isOwner(userId) || isAdmin())
+          && sub in ['transactions', 'positions', 'watchlist', 'notifications', 'sessions', 'passkeys', 'bots'];
       }
     }
 
-    // Global Inbox for Support
+    // --- Public / shared content --------------------------------------------
     match /contact_messages/{msgId} {
       allow create: if true;
       allow read, write: if isAdmin();
     }
 
-    // Platform Intelligence Articles
     match /articles/{articleId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Intelligence News Cache for In-App Reading
     match /news_cache/{cacheId} {
       allow read: if true;
       allow write: if true; // Internal proxy handles write verification
     }
 
     // Public company profile (legal entity, offices, registration details).
-    // Anyone may read it; only administrators may change it.
     match /site_profile/{docId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Company certificates and regulatory documents. The public can read only
-    // those an administrator has marked as published.
+    // Company certificates: the public can read only those an administrator has published.
     match /certificates/{certId} {
       allow read: if resource.data.visible == true || isAdmin();
       allow write: if isAdmin();
     }
 
-    // Platform Configuration Authority
     match /settings/{settingId} {
-      allow read: if request.auth != null;
+      allow read: if signedIn();
       allow write: if isAdmin();
     }
 
-    // Global Ledger Auditing (Collection Group Queries)
+    // --- Admin auditing (collection-group reads) -----------------------------
     match /{path=**}/transactions/{txId} {
       allow read: if isAdmin();
     }
-    
+
     match /{path=**}/positions/{posId} {
       allow read: if isAdmin();
     }
 
-    match /{path=**}/sessions/{sessId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Admin Activity Logging
     match /adminLogs/{logId} {
       allow create: if isAdmin();
       allow read: if isAdmin();

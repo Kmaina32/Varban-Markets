@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { initializeFirebase } from "@/firebase";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { evaluatePassword } from "@/app/lib/password-policy";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import placeholderImages from "@/app/lib/placeholder-images.json";
 import { Eye, EyeOff, Loader2, ArrowLeft, AlertCircle, Check } from "lucide-react";
@@ -119,10 +120,18 @@ export default function LoginPage() {
       }
       
       await signInWithEmailAndPassword(auth, email.trim(), password);
-      
+
+      // Password policy upgrade: accounts created before the policy may use a weaker
+      // password. Let them in, but send them to Security to set a compliant one.
+      let destination = "/client/dashboard";
+      if (!evaluatePassword(password).valid) {
+        try { sessionStorage.setItem("varban_password_upgrade", "1"); } catch {}
+        destination = "/client/account?tab=security";
+      }
+
       setSuccess(true);
       setTimeout(() => {
-        router.push("/client/dashboard");
+        router.push(destination);
       }, 1500);
 
     } catch (err: any) {

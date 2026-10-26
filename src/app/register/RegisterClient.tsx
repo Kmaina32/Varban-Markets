@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { initializeFirebase } from "@/firebase";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { Check as CheckIcon, Circle as CircleIcon } from "lucide-react";
+import { evaluatePassword, checkWithFirebase, isPasswordPolicyError } from "@/app/lib/password-policy";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { 
   Check, 
@@ -58,14 +60,9 @@ export default function RegisterClient() {
     performGeoLookup();
   }, []);
 
-  const passwordValidators = [
-    { label: "Between 8-15 characters", test: (p: string) => p.length >= 8 && p.length <= 15 },
-    { label: "At least one upper and one lower case letter", test: (p: string) => /[a-z]/.test(p) && /[A-Z]/.test(p) },
-    { label: "At least one number", test: (p: string) => /[0-9]/.test(p) },
-    { label: "At least one special character", test: (p: string) => /[^A-Za-z0-9]/.test(p) }
-  ];
-
-  const isPasswordValid = passwordValidators.every(v => v.test(formData.password));
+  // Single shared policy (src/app/lib/password-policy.ts) mirrors the Firebase console setting.
+  const passwordPolicy = evaluatePassword(formData.password);
+  const isPasswordValid = passwordPolicy.valid;
   const passwordsMatch = formData.password === formData.confirmPassword && formData.confirmPassword.length > 0;
   
   const canSubmit = isPasswordValid && passwordsMatch && formData.isNotUSCitizen && !loading && !googleLoading && formData.firstName && formData.lastName && formData.email;
@@ -154,6 +151,15 @@ export default function RegisterClient() {
         throw new Error("Security Handshake Interrupted: Unable to verify session integrity.");
       }
       
+      // Ask Firebase to validate against the console policy first (best effort),
+      // so the user gets a precise message instead of a generic failure.
+      const policyCheck = await checkWithFirebase(auth, formData.password);
+      if (!policyCheck.ok) {
+        setError(policyCheck.message || "Your password does not meet the password policy.");
+        setLoading(false);
+        return;
+      }
+
       const { user } = await createUserWithEmailAndPassword(auth, formData.email.trim(), formData.password);
 
       await setDoc(doc(db, "users", user.uid), {
@@ -186,7 +192,13 @@ export default function RegisterClient() {
       
       router.push("/client/dashboard");
     } catch (err: any) {
-      setError(err.message || "Registration failed.");
+      if (isPasswordPolicyError(err)) {
+        setError("Your password does not meet the password policy. Check the requirements below and try again.");
+      } else if (String(err?.code || err?.message || "").includes("auth/email-already-in-use")) {
+        setError("An account with this email already exists. Try signing in instead.");
+      } else {
+        setError(err.message || "Registration failed.");
+      }
       setLoading(false);
     }
   };
@@ -300,6 +312,9 @@ export default function RegisterClient() {
                     <input
                       type={showPassword ? "text" : "password"}
                       value={formData.password}
+                      autoComplete="new-password"
+                      aria-describedby="password-requirements"
+                      maxLength={128}
                       onChange={(e) => setFormData({...formData, password: e.target.value})}
                       className="w-full p-3.5 bg-white border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] pr-10"
                       placeholder="••••••••"
@@ -319,6 +334,8 @@ export default function RegisterClient() {
                   <input
                     type="password"
                     value={formData.confirmPassword}
+                    autoComplete="new-password"
+                    maxLength={128}
                     onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
                     className={cn(
                       "w-full p-3.5 bg-white border text-sm outline-none transition-all",
@@ -329,6 +346,15 @@ export default function RegisterClient() {
                   />
                 </div>
               </div>
+
+              <ul id="password-requirements" aria-live="polite" className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 -mt-2">
+                {passwordPolicy.checks.map((c) => (
+                  <li key={c.id} className={cn("flex items-center gap-2 text-[11px] font-medium", c.met ? "text-[#16835B]" : "text-[#6B7280]")}>
+                    {c.met ? <CheckIcon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" /> : <CircleIcon className="w-3 h-3 shrink-0" aria-hidden="true" />}
+                    <span>{c.label}<span className="sr-only">{c.met ? " (met)" : " (not met yet)"}</span></span>
+                  </li>
+                ))}
+              </ul>
 
               <div className="space-y-2">
                 <button 

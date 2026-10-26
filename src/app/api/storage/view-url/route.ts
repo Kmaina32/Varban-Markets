@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { r2Client, R2_BUCKET_NAME } from "@/app/lib/r2-service";
+import { verifyAdmin, AuthError } from "@/app/lib/server/verify-admin";
 
 /**
  * @fileOverview Authorized View URL Generator for R2 Storage.
@@ -11,6 +12,7 @@ import { r2Client, R2_BUCKET_NAME } from "@/app/lib/r2-service";
 
 export async function POST(req: NextRequest) {
   try {
+    await verifyAdmin(req);
     const { storageKey } = await req.json();
 
     if (!storageKey) {
@@ -28,6 +30,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ viewUrl });
 
   } catch (error: any) {
+    if (error instanceof AuthError) return NextResponse.json({ error: error.message }, { status: error.status });
     console.error("Storage Access Failure:", error);
     return NextResponse.json({ 
       error: "Internal Storage Failure", 
