@@ -412,6 +412,11 @@ export default function RegisterClient() {
               Already have an account? Sign in
             </Link>
           </div>
+          <p className="mt-6 text-center text-[9px] leading-relaxed text-[#6B7280]">
+            Protected by reCAPTCHA. Google&apos;s{" "}
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline">Privacy Policy</a>{" "}and{" "}
+            <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline">Terms of Service</a> apply.
+          </p>
         </div>
       </main>
     </div>

@@ -272,6 +272,12 @@ export default function LoginPage() {
             </form>
           </div>
 
+          <p className="mt-6 text-[9px] leading-relaxed text-[#6B7280]">
+            Protected by reCAPTCHA. Google&apos;s{" "}
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline">Privacy Policy</a>{" "}and{" "}
+            <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline">Terms of Service</a> apply.
+          </p>
+
           <div className="mt-10 pt-6 border-t border-[#E4E4E4] text-center">
             <span className="text-[11px] text-[#6B7280] uppercase tracking-wide">{t('auth.newToPlatform')} </span>
             <Link href="/register" className="text-[11px] font-bold text-[#0A0A0A] uppercase tracking-widest underline decoration-[#0055FF] decoration-2 underline-offset-4 ml-1">{t('auth.createAccount')}</Link>

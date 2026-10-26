@@ -147,3 +147,6 @@
     cursor: not-allowed;
   }
 }
+/* reCAPTCHA badge is hidden on auth, authed and admin routes (see RecaptchaBadgeControl).
+   Forms there carry the required Google attribution text instead. */
+html[data-hide-recaptcha] .grecaptcha-badge { visibility: hidden !important; }

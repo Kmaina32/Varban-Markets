@@ -7,6 +7,7 @@ import { I18nProvider } from "@/app/lib/i18n-context";
 import CookieConsent from "@/components/layout/CookieConsent";
 import ChatSupport from "@/components/ChatSupport";
 import Script from 'next/script';
+import RecaptchaBadgeControl from "@/components/layout/RecaptchaBadgeControl";
 
 export const metadata: Metadata = {
   title: {
@@ -125,6 +126,7 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col bg-[#F7F7F5] overflow-x-hidden">
         <FirebaseProvider>
           <I18nProvider>
+            <RecaptchaBadgeControl />
             <Navbar />
             <main className="flex-grow flex flex-col">
               {children}
