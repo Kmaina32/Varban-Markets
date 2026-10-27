@@ -1,5 +1,4 @@
-
-'use server';
+'use client';
 
 /**
  * @fileOverview Institutional Phone Verification Module.
@@ -8,7 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Phone, CheckCircle2, ShieldCheck, Loader2, Smartphone, ArrowRight, AlertTriangle } from 'lucide-react';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser } from '@/firebase';
 import { authFetch } from '@/app/lib/auth-fetch';
 import { cn } from '@/app/lib/utils';
 
