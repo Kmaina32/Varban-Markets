@@ -109,7 +109,16 @@ export default function ChatSupport() {
     setIsLoading(true);
 
     try {
-      // 1. Log User Message to Firestore
+      // 1. Ensure parent document exists FIRST so sub-collection rules pass
+      await setDoc(doc(db, "conversations", sessionId), {
+        userId: user.uid,
+        userName: user.displayName || user.email?.split('@')[0] || "Trader",
+        lastMessage: currentInput || "Transmitted an image for analysis.",
+        updatedAt: serverTimestamp(),
+        status: convData?.status || 'ai'
+      }, { merge: true });
+
+      // 2. Log User Message to Firestore
       await addDoc(collection(db, `conversations/${sessionId}/messages`), {
         role: 'user',
         content: currentInput || "Transmitted an image for analysis.",
@@ -117,17 +126,9 @@ export default function ChatSupport() {
         timestamp: serverTimestamp()
       });
 
-      await setDoc(doc(db, "conversations", sessionId), {
-        userId: user.uid,
-        userName: user.displayName || user.email?.split('@')[0] || "Trader",
-        lastMessage: currentInput || "Analyzed Image",
-        updatedAt: serverTimestamp(),
-        status: convData?.status || 'ai'
-      }, { merge: true });
-
-      // 2. Conditional AI Response (Only if not in Human Mode)
+      // 3. Conditional AI Response (Only if not in Human Mode)
       if (convData?.status !== 'human') {
-        const history = remoteMessages.map(m => ({ role: m.role, content: m.content }));
+        const history = remoteMessages?.map(m => ({ role: m.role, content: m.content })) || [];
         const response = await supportChat({ 
           message: currentInput || "Please analyze this image.", 
           locale, 
@@ -142,6 +143,12 @@ export default function ChatSupport() {
           content: response || "I encountered a synchronization error.",
           timestamp: serverTimestamp()
         });
+
+        // Update the last message preview
+        await setDoc(doc(db, "conversations", sessionId), {
+          lastMessage: response || "Error response",
+          updatedAt: serverTimestamp()
+        }, { merge: true });
       }
     } catch (error) {
       console.error("AI Node Failure:", error);
@@ -160,10 +167,10 @@ export default function ChatSupport() {
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "fixed bottom-6 right-6 w-14 h-14 bg-[#0A0A0A] text-white flex items-center justify-center shadow-xl z-[150] rounded-full transition-all duration-300 hover:scale-110 cursor-pointer",
-          isOpen && "bg-[#0055FF] rotate-90"
+          isOpen && "hidden"
         )}
       >
-        {isOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
+        <MessageSquare className="w-6 h-6" />
       </div>
 
       {isOpen && (
@@ -213,7 +220,7 @@ export default function ChatSupport() {
                     <div className="flex flex-col items-center justify-center py-6 opacity-30">
                       <Sparkles className="w-4 h-4 mb-2" />
                       <span className="text-[8px] font-bold text-[#6B7280] uppercase tracking-[0.3em]">
-                        Session Established {startTime}
+                        Secure Session Active
                       </span>
                     </div>
 
@@ -245,7 +252,7 @@ export default function ChatSupport() {
                             )}
                             <Bubble align={msg.role === 'user' ? 'end' : 'start'} variant={msg.role === 'user' ? 'tinted' : 'default'}>
                               <BubbleContent className={cn(
-                                "font-medium text-[14px] sm:text-[14px]", 
+                                "font-medium text-[14px]", 
                                 msg.role === 'model' && "bg-[#0A0A0A] border-none text-white shadow-lg"
                               )}>
                                 {msg.content}
@@ -263,7 +270,7 @@ export default function ChatSupport() {
                     
                     {isLoading && (
                       <div className="px-14 py-4 italic font-bold tracking-[0.2em] uppercase text-[9px] text-[#0055FF] animate-pulse">
-                         Analyzing Protocol...
+                         Thinking...
                       </div>
                     )}
                   </MessageScrollerContent>
@@ -303,7 +310,7 @@ export default function ChatSupport() {
                   type="button"
                   disabled={isLoading || !user}
                   onClick={() => fileInputRef.current?.click()}
-                  className="text-[#6B7280] hover:text-[#0055FF] p-2 transition-all"
+                  className="text-[#6B7280] hover:text-[#0A0A0A] p-2 transition-all"
                   title="Upload Image"
                 >
                   <Paperclip className="w-5 h-5" />
@@ -326,7 +333,7 @@ export default function ChatSupport() {
             </form>
             
             <div className="flex items-center justify-between px-1">
-               <span className="text-[8px] font-bold text-[#D1D5DB] uppercase tracking-[0.2em]">Institutional Safety Layer</span>
+               <span className="text-[8px] font-bold text-[#D1D5DB] uppercase tracking-[0.2em]">Secure Support</span>
                <div className="flex items-center gap-1">
                   <ShieldAlert className="w-2.5 h-2.5 text-[#16835B]" />
                   <span className="text-[8px] font-bold text-[#16835B] uppercase">Audited</span>

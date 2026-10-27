@@ -42,18 +42,21 @@ service cloud.firestore {
 
       match /{sub}/{docId} {
         allow read, write: if (isOwner(userId) || isAdmin())
-          && sub in ['transactions', 'positions', 'watchlist', 'notifications', 'sessions', 'passkeys', 'bots'];
+          && sub in ['transactions', 'positions', 'watchlist', 'notifications', 'sessions', 'passkeys', 'bots', 'kyc_submissions'];
       }
     }
 
     // --- AI Conversations ---------------------------------------------------
     match /conversations/{convId} {
-      allow read, write: if isAdmin();
-      allow read, create, update: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin();
       
       match /messages/{msgId} {
-        allow read, write: if isAdmin();
-        allow read, create: if signedIn() && get(/databases/$(database)/documents/conversations/$(convId)).data.userId == request.auth.uid;
+        allow read: if isAdmin() || (signedIn() && get(/databases/$(database)/documents/conversations/$(convId)).data.userId == request.auth.uid);
+        allow create: if isAdmin() || (signedIn() && get(/databases/$(database)/documents/conversations/$(convId)).data.userId == request.auth.uid);
+        allow update, delete: if isAdmin();
       }
     }
 
@@ -91,6 +94,11 @@ service cloud.firestore {
 
     match /settings/{settingId} {
       allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /certificates/{docId} {
+      allow read: if true;
       allow write: if isAdmin();
     }
 
