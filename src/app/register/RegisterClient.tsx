@@ -5,11 +5,10 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { initializeFirebase } from "@/firebase";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { Check as CheckIcon, Circle as CircleIcon } from "lucide-react";
+import { Check as CheckIcon, Circle as CircleIcon, Check } from "lucide-react";
 import { evaluatePassword, checkWithFirebase, isPasswordPolicyError } from "@/app/lib/password-policy";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { 
-  Check, 
   ChevronDown, 
   Eye, 
   EyeOff, 
@@ -18,23 +17,27 @@ import {
   Info,
   AlertCircle
 } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { COUNTRIES } from "@/app/lib/countries";
 import { detectLocation } from "@/app/lib/geolocation-service";
 import { cn } from "@/app/lib/utils";
+import { useTranslation } from "@/app/lib/i18n-context";
 
 /**
  * @fileOverview Onboarding Workspace (Firebase).
- * Updated for /client redirection and sign-up method conflict handling.
+ * Updated with full-screen "Setting up your account" transition node.
  */
 
 export default function RegisterClient() {
   const router = useRouter();
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const { auth, db } = initializeFirebase();
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
   
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showPartnerCode, setShowPartnerCode] = useState(false);
@@ -126,7 +129,8 @@ export default function RegisterClient() {
         });
       }
 
-      router.push("/client/dashboard");
+      setSuccess(true);
+      setTimeout(() => router.push("/client/dashboard"), 1500);
     } catch (err: any) {
       setError(err.message || "Google Handshake Failed.");
       setGoogleLoading(false);
@@ -187,7 +191,8 @@ export default function RegisterClient() {
         }
       });
       
-      router.push("/client/dashboard");
+      setSuccess(true);
+      setTimeout(() => router.push("/client/dashboard"), 1500);
     } catch (err: any) {
       let msg = err?.message || "Registration failed.";
       const errCode = err?.code || "";
@@ -206,7 +211,24 @@ export default function RegisterClient() {
   };
 
   return (
-    <div className="bg-[#F7F7F5] min-h-screen flex flex-col">
+    <div className="bg-[#F7F7F5] min-h-screen flex flex-col relative">
+      {/* INSTITUTIONAL SUCCESS OVERLAY */}
+      {success && (
+        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#F7F7F5]/90 backdrop-blur-md animate-in fade-in duration-500">
+          <Card className="bg-white border-[#E4E4E4] w-full max-w-md shadow-2xl p-10 md:p-12 text-center space-y-6 animate-in zoom-in-95 duration-300 rounded-none border-b-4 border-b-[#0055FF]">
+            <div className="flex justify-center">
+              <Loader2 className="w-12 h-12 text-[#0055FF] animate-spin stroke-[2px]" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Setting up your account</h2>
+              <p className="text-[10px] text-[#6B7280] leading-relaxed uppercase tracking-[0.2em] font-bold">
+                Initializing trading environment and security nodes...
+              </p>
+            </div>
+          </Card>
+        </div>
+      )}
+
       <header className="bg-white border-b border-[#E4E4E4] h-16 flex items-center px-4 md:px-8 justify-between shrink-0">
         <Link href="/" className="flex items-center">
           <img src="/assets/logo2.png" alt="Varban" className="h-5 w-auto object-contain" />
@@ -232,7 +254,7 @@ export default function RegisterClient() {
 
             <button
               onClick={handleGoogleRegister}
-              disabled={googleLoading || loading}
+              disabled={googleLoading || loading || success}
               className="w-full py-4 border border-[#E4E4E4] bg-white text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-[#F7F7F5] transition-all"
             >
               {googleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
@@ -391,7 +413,7 @@ export default function RegisterClient() {
 
               <button
                 type="submit"
-                disabled={!canSubmit}
+                disabled={!canSubmit || loading || googleLoading || success}
                 className={cn(
                   "w-full py-4 text-xs font-bold uppercase tracking-[0.2em] transition-all duration-300 shadow-lg",
                   canSubmit 
