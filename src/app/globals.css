@@ -1,3 +1,4 @@
+
 @import "tailwindcss";
 
 @theme {
@@ -24,6 +25,16 @@
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+
+  --color-brand-black: #0A0A0A;
+  --color-brand-charcoal: #141414;
+  --color-brand-border: #E4E4E4;
+  --color-brand-muted: #6B7280;
+  --color-brand-green: #16835B;
+  --color-brand-red: #C43D3D;
+  --color-brand-blue: #0055FF;
+  --color-brand-white: #FFFFFF;
+  --color-brand-offwhite: #F7F7F5;
 }
 
 @layer base {

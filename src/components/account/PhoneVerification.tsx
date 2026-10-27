@@ -1,3 +1,4 @@
+
 'use client';
 
 /**
@@ -82,7 +83,7 @@ export default function PhoneVerification({ currentPhone, isVerified: initialVer
 
   if (isVerified) {
     return (
-      <div className="p-5 border border-[#16835B] bg-[#16835B]/5 flex items-center justify-between">
+      <div className="p-5 border border-[#16835B] bg-[#16835B]/5 flex items-center justify-between rounded-xl">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-[#16835B] flex items-center justify-center text-white">
             <CheckCircle2 className="w-5 h-5" />
@@ -110,13 +111,13 @@ export default function PhoneVerification({ currentPhone, isVerified: initialVer
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   placeholder="+44 7000 000000"
-                  className="w-full p-3 pl-10 border border-[#E4E4E4] text-xs font-mono outline-none focus:border-[#0055FF] bg-white"
+                  className="w-full p-3 pl-10 border border-[#E4E4E4] text-xs font-mono outline-none focus:border-[#0055FF] bg-white rounded-xl"
                 />
               </div>
               <button 
                 onClick={handleSendOtp}
                 disabled={loading || !phoneNumber}
-                className="px-6 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0055FF] disabled:opacity-40 transition-all shadow-sm"
+                className="px-6 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0055FF] disabled:opacity-40 transition-all shadow-sm rounded-xl"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify"}
               </button>
@@ -128,7 +129,7 @@ export default function PhoneVerification({ currentPhone, isVerified: initialVer
         </div>
       ) : (
         <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-          <div className="p-4 bg-[#0055FF]/5 border border-[#0055FF]/20 flex items-center justify-between">
+          <div className="p-4 bg-[#0055FF]/5 border border-[#0055FF]/20 flex items-center justify-between rounded-xl">
             <span className="text-[10px] font-bold text-[#0055FF] uppercase">Token sent to {phoneNumber}</span>
             <button 
               onClick={() => setOtpSent(false)} 
@@ -145,13 +146,13 @@ export default function PhoneVerification({ currentPhone, isVerified: initialVer
                 value={otpCode}
                 onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 placeholder="000000"
-                className="flex-grow p-4 border-2 border-[#0A0A0A] text-2xl font-mono font-bold tracking-[0.5em] text-center outline-none"
+                className="flex-grow p-4 border-2 border-[#0A0A0A] text-2xl font-mono font-bold tracking-[0.5em] text-center outline-none rounded-xl bg-[#F7F7F5]"
                 maxLength={6}
               />
               <button 
                 onClick={handleVerifyOtp}
                 disabled={loading || otpCode.length < 6}
-                className="px-8 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0A0A0A] disabled:opacity-40 transition-all shadow-lg"
+                className="px-8 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0A0A0A] disabled:opacity-40 transition-all shadow-lg rounded-xl"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirm"}
               </button>
@@ -172,7 +173,7 @@ export default function PhoneVerification({ currentPhone, isVerified: initialVer
       )}
 
       {error && (
-        <div className="p-3 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[9px] font-bold text-[#C43D3D] uppercase flex items-center gap-2">
+        <div className="p-3 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[9px] font-bold text-[#C43D3D] uppercase flex items-center gap-2 rounded-xl">
           <AlertTriangle className="w-3.5 h-3.5" />
           <span>{error}</span>
         </div>
