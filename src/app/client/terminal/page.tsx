@@ -1,10 +1,8 @@
-
 'use client';
 
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
- * High-precision gateway that serves Desktop or Mobile specific layouts.
- * Default Primary Market: BTC/USD.
+ * Integrated with specialized Synthetic Index charting and execution logic.
  */
 
 import { useState, useEffect, Suspense, useMemo } from "react";
@@ -27,45 +25,24 @@ import { doc, updateDoc } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
+import { useSyntheticFeed } from "@/app/lib/synthetic/use-synthetic-feed";
 
 // Terminal Components
 import AuthedSidebar from "@/components/layout/AuthedSidebar";
 import ProfileDropdown from "@/components/layout/ProfileDropdown";
 import { TradingViewChart } from "@/components/terminal/TradingViewChart";
+import SyntheticChart from "@/components/terminal/SyntheticChart";
 import MarketSelector from "@/components/terminal/MarketSelector";
 import ExecutionTicket from "@/components/terminal/ExecutionTicket";
 import PortfolioManager from "@/components/terminal/PortfolioManager";
-import TerminalTutorial from "@/components/terminal/TerminalTutorial";
-import LoadingOverlay from "@/components/shared/LoadingOverlay";
 import DigitStats from "@/components/terminal/DigitStats";
-import DerivedTradeControls from "@/components/terminal/DerivedTradeControls";
 import MobileTerminal from "@/components/terminal/MobileTerminal";
+import LoadingOverlay from "@/components/shared/LoadingOverlay";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-
-interface Position {
-  id: string;
-  instrument: string;
-  vector: string;
-  entryPrice: number;
-  stake: number;
-  duration?: string;
-  status: "Open" | "Closed";
-  timestamp: number;
-  isDemo: boolean;
-  mode: string;
-}
-
-const TIMEZONES = [
-  { label: "UTC +00:00 (GMT)", value: "UTC+0" },
-  { label: "UTC -08:00 (PT)", value: "UTC-8" },
-  { label: "UTC -05:00 (ET)", value: "UTC-5" },
-  { label: "UTC +01:00 (CET)", value: "UTC+1" },
-  { label: "UTC +08:00 (HKT)", value: "UTC+8" }
-];
 
 function TerminalContent() {
   const searchParams = useSearchParams();
@@ -93,12 +70,12 @@ function TerminalContent() {
     return AVAILABLE_INSTRUMENTS[0]; // BTC/USD is primary
   });
 
+  const isDerived = activeInst.category === 'Synthetic Indices';
+  const { ticks, lastTick, loading: syntheticLoading } = useSyntheticFeed(isDerived ? activeInst.symbol : "", activeInst.tickMs);
+  
   const [marketData, setMarketData] = useState<Record<string, { price: number; percent: number }>>({});
-  const [positions, setPositions] = useState<Position[]>([]);
+  const [positions, setPositions] = useState<any[]>([]);
 
-  const isDerivedMarket = activeInst.category === 'Synthetic Indices';
-
-  // Responsive Layout Switcher (Strict xl breakpoint 1280px)
   useEffect(() => {
     const handleResize = () => setIsMobileViewport(window.innerWidth < 1280);
     handleResize();
@@ -109,6 +86,14 @@ function TerminalContent() {
   useEffect(() => {
     const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
     if (savedMode) setAccountMode(savedMode);
+    
+    const handleBalanceUpdate = () => {
+      const saved = localStorage.getItem('varban_practice_balance');
+      if (saved) setDemoBalance(parseFloat(saved));
+    };
+    window.addEventListener('varban_balance_update', handleBalanceUpdate);
+    handleBalanceUpdate();
+    return () => window.removeEventListener('varban_balance_update', handleBalanceUpdate);
   }, []);
 
   useEffect(() => {
@@ -129,6 +114,16 @@ function TerminalContent() {
   }, [activeTimezone]);
 
   useEffect(() => {
+    if (isDerived) {
+      if (lastTick) {
+        setMarketData(prev => ({
+          ...prev,
+          [activeInst.symbol]: { price: lastTick.price, percent: 0 }
+        }));
+      }
+      return;
+    }
+
     let active = true;
     const poll = async () => {
       try {
@@ -143,22 +138,21 @@ function TerminalContent() {
     poll();
     const interval = setInterval(poll, 4000);
     return () => { active = false; clearInterval(interval); };
-  }, [activeInst.symbol]);
+  }, [activeInst.symbol, isDerived, lastTick]);
 
   const handleExecution = (params: any) => {
     const live = marketData[activeInst.symbol];
-    if (!live || !user) return;
-    const newPos: Position = {
+    if (!live) return;
+    const newPos = {
       id: `VRB-${Math.random().toString(36).substring(7).toUpperCase()}`,
       instrument: activeInst.symbol,
       vector: params.side,
       entryPrice: live.price,
       stake: params.amount,
-      mode: params.mode,
-      duration: params.duration,
       status: "Open",
       timestamp: Date.now(),
       isDemo: accountMode === 'DEMO',
+      ...params
     };
     setPositions(prev => [newPos, ...prev]);
   };
@@ -178,8 +172,6 @@ function TerminalContent() {
 
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
-      <TerminalTutorial />
-
       <header className="h-14 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[100] px-4">
         <div className="flex items-center space-x-4">
           <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 xl:hidden text-[#0A0A0A]"><Menu className="w-5 h-5" /></button>
@@ -260,7 +252,11 @@ function TerminalContent() {
               <ResizablePanelGroup direction="vertical">
                 <ResizablePanel defaultSize={70} minSize={30}>
                   <div className="h-full w-full bg-[#F7F7F5] relative">
-                    <TradingViewChart symbol={activeInst.symbol} />
+                    {isDerived ? (
+                      <SyntheticChart ticks={ticks} loading={syntheticLoading} />
+                    ) : (
+                      <TradingViewChart symbol={activeInst.symbol} />
+                    )}
                   </div>
                 </ResizablePanel>
                 <ResizableHandle withHandle />
@@ -283,7 +279,7 @@ function TerminalContent() {
                 <div className="flex border-b border-[#E4E4E4] shrink-0">
                    {[
                      { id: 'TRADE', label: 'Order Ticket', icon: MousePointer2 },
-                     { id: 'STATS', label: isDerivedMarket ? 'Digit Stats' : 'Market Data', icon: isDerivedMarket ? BarChart2 : Layout }
+                     { id: 'STATS', label: isDerived ? 'Digit Stats' : 'Market Data', icon: isDerived ? BarChart2 : Layout }
                    ].map(tab => (
                      <button 
                       key={tab.id}
@@ -310,7 +306,7 @@ function TerminalContent() {
                       />
                    )}
                    {activeRightTab === 'STATS' && (
-                      isDerivedMarket ? (
+                      isDerived ? (
                         <DigitStats symbol={activeInst.symbol} livePrice={marketData[activeInst.symbol]?.price} />
                       ) : (
                         <div className="p-6 space-y-6">
