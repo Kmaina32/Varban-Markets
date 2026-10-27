@@ -3,7 +3,7 @@
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
  * Refined 2-Panel Sidebar Architecture with high-fidelity execution node.
- * Optimization: Execution components hidden from main mobile screen; restricted to drawer.
+ * Optimization: Execution components hidden from main screen on Mobile and Tablet (XL breakpoint).
  */
 
 import { useState, useEffect, Suspense, useMemo } from "react";
@@ -289,8 +289,8 @@ function TerminalContent() {
         <AuthedSidebar className="hidden lg:flex" />
 
         <main className="flex-grow flex lg:ml-16 overflow-hidden">
-          {/* DESKTOP WORKSPACE */}
-          <ResizablePanelGroup direction="horizontal" className="hidden lg:flex flex-grow overflow-hidden">
+          {/* DESKTOP WORKSPACE (XL ONLY for 3-column) */}
+          <ResizablePanelGroup direction="horizontal" className="hidden xl:flex flex-grow overflow-hidden">
             <ResizablePanel defaultSize={75} minSize={40}>
               <ResizablePanelGroup direction="vertical">
                 <ResizablePanel defaultSize={70} minSize={30}>
@@ -381,8 +381,8 @@ function TerminalContent() {
             </ResizablePanel>
           </ResizablePanelGroup>
 
-          {/* MOBILE MAIN SCREEN - NO EXECUTION TICKET HERE */}
-          <div className="flex lg:hidden flex-grow flex-col overflow-hidden">
+          {/* MOBILE & TABLET MAIN SCREEN - FOCUSED CHART (HIDDEN RIGHT PANEL) */}
+          <div className="flex xl:hidden flex-grow flex-col overflow-hidden">
             <div id="tour-chart-mobile" className="flex-grow min-h-0 bg-[#F7F7F5] relative">
               <TradingViewChart symbol={activeInst.symbol} />
             </div>
@@ -390,8 +390,8 @@ function TerminalContent() {
         </main>
       </div>
 
-      {/* MOBILE BOTTOM ACTION BAR */}
-      <div className="lg:hidden h-16 border-t border-[#E4E4E4] bg-white flex items-center px-4 gap-3 shrink-0 z-[110]">
+      {/* MOBILE & TABLET BOTTOM ACTION BAR */}
+      <div className="xl:hidden h-16 border-t border-[#E4E4E4] bg-white flex items-center px-4 gap-3 shrink-0 z-[110]">
         <div className="flex-grow flex flex-col">
            <span className="text-[10px] font-mono font-bold text-[#6B7280]">{activeInst.symbol}</span>
            <span className={cn("text-xs font-mono font-bold", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
@@ -406,9 +406,9 @@ function TerminalContent() {
         </button>
       </div>
 
-      {/* MOBILE EXECUTION DRAWER - THE ONLY PLACE FOR THE TICKET ON MOBILE */}
+      {/* MOBILE & TABLET EXECUTION DRAWER */}
       {isTradeDrawerOpen && (
-        <div className="fixed inset-0 z-[500] lg:hidden">
+        <div className="fixed inset-0 z-[500] xl:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsTradeDrawerOpen(false)}></div>
           <div className="absolute bottom-0 left-0 right-0 bg-white animate-in slide-in-from-bottom duration-300 rounded-t-xl overflow-hidden h-[90vh] flex flex-col shadow-2xl">
             <div className="flex border-b border-[#E4E4E4] bg-[#F7F7F5] shrink-0">
