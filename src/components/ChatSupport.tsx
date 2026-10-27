@@ -1,13 +1,31 @@
 'use client';
 
 /**
- * @fileOverview Varban Assistant Chatbot.
- * Adheres strictly to the Institutional Chat pattern using Message Scroller and Bubbles.
+ * @fileOverview Refined Varban Assistant AI.
+ * Persists history to Firestore for Admin monitoring and takeover.
+ * Enhanced: Side-drawer mode, Image upload, and Higher visibility font.
  */
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
-import { X, Send, Loader2, MessageSquare, ChevronDown, GripVertical, Copy, RotateCcw } from 'lucide-react';
+import Link from 'next/link';
+import { 
+  X, 
+  Send, 
+  Loader2, 
+  MessageSquare, 
+  ChevronDown, 
+  GripVertical, 
+  Copy, 
+  RotateCcw, 
+  Sparkles,
+  Maximize2,
+  Minimize2,
+  Image as ImageIcon,
+  Paperclip,
+  ShieldAlert,
+  Lock
+} from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import { supportChat } from '@/ai/flows/support-chat-flow';
 import { useTranslation } from '@/app/lib/i18n-context';
@@ -27,307 +45,292 @@ import {
   MessageScrollerProvider, 
   MessageScrollerViewport 
 } from '@/components/ui/message-scroller';
-import { Button } from '@/components/ui/button';
-
-interface ChatMessage {
-  id: string;
-  role: 'user' | 'model';
-  content: string;
-}
+import { useUser, useFirestore, useDoc, useCollection } from '@/firebase';
+import { 
+  doc, 
+  setDoc, 
+  addDoc, 
+  collection, 
+  serverTimestamp, 
+  query, 
+  orderBy, 
+  limit 
+} from 'firebase/firestore';
 
 export default function ChatSupport() {
   const pathname = usePathname();
   const { t, locale } = useTranslation();
+  const { user } = useUser();
+  const db = useFirestore();
   
-  // Chat State
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [startTime, setStartTime] = useState('');
+  const [selectedImage, setSelectedAsset] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Drag & Position State
-  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragStart] = useState<{ x: number; y: number } | null>(null);
-  const [hasMoved, setHasMoved] = useState(false);
-
-  // Initialize localized starter
-  useEffect(() => {
-    setMessages([
-      { id: 'starter', role: 'model', content: t('chat.starter') }
-    ]);
-  }, [locale, t]);
+  // Firestore Sync
+  const sessionId = useMemo(() => user?.uid ? `sess_${user.uid}` : null, [user?.uid]);
+  const { data: convData } = useDoc<any>(db, sessionId ? `conversations/${sessionId}` : null);
+  
+  const messagesQuery = useMemo(() => {
+    if (!db || !sessionId) return null;
+    return query(collection(db, `conversations/${sessionId}/messages`), orderBy('timestamp', 'asc'), limit(50));
+  }, [db, sessionId]);
+  
+  const { data: remoteMessages } = useCollection<any>(messagesQuery);
 
   useEffect(() => {
     const now = new Date();
     setStartTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   }, []);
 
-  // DRAG LOGIC
-  const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    
-    const currentX = position?.x ?? window.innerWidth - 80;
-    const currentY = position?.y ?? window.innerHeight - 80;
-
-    setDragStart({
-      x: clientX - currentX,
-      y: clientY - currentY
-    });
-    setHasMoved(false);
-  };
-
-  const handleMouseMove = useCallback((e: MouseEvent | TouchEvent) => {
-    if (!dragOffset) return;
-    
-    const clientX = 'touches' in e ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX;
-    const clientY = 'touches' in e ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY;
-    
-    const newX = clientX - dragOffset.x;
-    const newY = clientY - dragOffset.y;
-
-    const boundedX = Math.max(10, Math.min(window.innerWidth - 64, newX));
-    const boundedY = Math.max(10, Math.min(window.innerHeight - 64, newY));
-
-    if (!hasMoved && (Math.abs(newX - (position?.x ?? 0)) > 5 || Math.abs(newY - (position?.y ?? 0)) > 5)) {
-      setHasMoved(true);
-      setIsDragging(true);
-    }
-
-    setPosition({ x: boundedX, y: boundedY });
-  }, [dragOffset, hasMoved, position]);
-
-  const handleMouseUp = useCallback(() => {
-    if (dragOffset && isDragging) {
-      if (position) {
-        const snapX = position.x < window.innerWidth / 2 ? 24 : window.innerWidth - 80;
-        setPosition({ x: snapX, y: position.y });
-      }
-    }
-    
-    setDragStart(null);
-    setTimeout(() => setIsDragging(false), 50);
-  }, [dragOffset, isDragging, position]);
-
-  useEffect(() => {
-    if (dragOffset) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-      window.addEventListener('touchmove', handleMouseMove, { passive: false });
-      window.addEventListener('touchend', handleMouseUp);
-    }
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('touchmove', handleMouseMove);
-      window.removeEventListener('touchend', handleMouseUp);
-    };
-  }, [dragOffset, handleMouseMove, handleMouseUp]);
-
-  const handleTriggerClick = () => {
-    if (!isDragging) {
-      setIsOpen(!isOpen);
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedAsset(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if ((!input.trim() && !selectedImage) || isLoading || !db || !user || !sessionId) return;
 
-    const userMessage: ChatMessage = { 
-      id: Date.now().toString(), 
-      role: 'user', 
-      content: input.trim() 
-    };
-    
-    setMessages(prev => [...prev, userMessage]);
     const currentInput = input.trim();
+    const currentImage = selectedImage;
     setInput('');
+    setSelectedAsset(null);
     setIsLoading(true);
 
     try {
-      const history = messages.map(m => ({
-        role: m.role,
-        content: m.content
-      }));
-      
-      const response = await supportChat({
-        message: currentInput,
-        locale,
-        history
+      // 1. Log User Message to Firestore
+      await addDoc(collection(db, `conversations/${sessionId}/messages`), {
+        role: 'user',
+        content: currentInput || "Transmitted an image for analysis.",
+        hasImage: !!currentImage,
+        timestamp: serverTimestamp()
       });
 
-      setMessages(prev => [...prev, { 
-        id: (Date.now() + 1).toString(),
-        role: 'model', 
-        content: response || "Handshake error." 
-      }]);
+      await setDoc(doc(db, "conversations", sessionId), {
+        userId: user.uid,
+        userName: user.displayName || user.email?.split('@')[0] || "Trader",
+        lastMessage: currentInput || "Analyzed Image",
+        updatedAt: serverTimestamp(),
+        status: convData?.status || 'ai'
+      }, { merge: true });
+
+      // 2. Conditional AI Response (Only if not in Human Mode)
+      if (convData?.status !== 'human') {
+        const history = remoteMessages.map(m => ({ role: m.role, content: m.content }));
+        const response = await supportChat({ 
+          message: currentInput || "Please analyze this image.", 
+          locale, 
+          history,
+          photoDataUri: currentImage || undefined,
+          userId: user.uid,
+          userEmail: user.email || ""
+        });
+        
+        await addDoc(collection(db, `conversations/${sessionId}/messages`), {
+          role: 'model',
+          content: response || "I encountered a synchronization error.",
+          timestamp: serverTimestamp()
+        });
+      }
     } catch (error) {
-      console.error("Assistant Error:", error);
-      setMessages(prev => [...prev, { 
-        id: 'error-' + Date.now(),
-        role: 'model', 
-        content: t('chat.error')
-      }]);
+      console.error("AI Node Failure:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCopy = (content: string) => {
-    navigator.clipboard.writeText(content);
-  };
-
   const isTerminal = pathname?.includes('/terminal');
-  if (isTerminal) return null;
-
-  const getWindowStyles = () => {
-    const isLeft = (position?.x ?? window.innerWidth) < window.innerWidth / 2;
-    const triggerX = position?.x ?? window.innerWidth - 80;
-    const triggerY = position?.y ?? window.innerHeight - 80;
-
-    return {
-      left: isLeft ? `${triggerX}px` : 'auto',
-      right: !isLeft ? `${window.innerWidth - triggerX - 56}px` : 'auto',
-      bottom: `${window.innerHeight - triggerY + 12}px`
-    };
-  };
+  const isAdmin = pathname?.startsWith('/admin');
+  if (isTerminal || isAdmin) return null;
 
   return (
     <>
       <div 
-        onMouseDown={handleMouseDown}
-        onTouchStart={handleMouseDown}
-        onClick={handleTriggerClick}
-        style={position ? { left: `${position.x}px`, top: `${position.y}px` } : { bottom: '24px', right: '24px' }}
+        onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "fixed w-14 h-14 bg-[#0055FF] text-white flex items-center justify-center shadow-xl z-[150] rounded-full transition-shadow duration-200 cursor-grab active:cursor-grabbing group",
-          isDragging && "shadow-2xl scale-110",
-          !dragOffset && "transition-all duration-300 ease-out"
+          "fixed bottom-6 right-6 w-14 h-14 bg-[#0A0A0A] text-white flex items-center justify-center shadow-xl z-[150] rounded-full transition-all duration-300 hover:scale-110 cursor-pointer",
+          isOpen && "bg-[#0055FF] rotate-90"
         )}
       >
-        {isOpen ? <ChevronDown className="w-7 h-7" /> : <MessageSquare className="w-6 h-6" />}
-        <div className="absolute -top-1 -left-1 opacity-0 group-hover:opacity-100 transition-opacity">
-           <GripVertical className="w-3 h-3 text-white/40" />
-        </div>
+        {isOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
       </div>
 
       {isOpen && (
-        <div 
-          style={getWindowStyles()}
-          className={cn(
-            "fixed w-80 sm:w-[420px] h-[600px] bg-white border border-[#E4E4E4] shadow-2xl z-[140] flex flex-col animate-in slide-in-from-bottom-4 duration-300 rounded-none overflow-hidden",
-            (position?.x ?? window.innerWidth) < window.innerWidth / 2 ? "origin-bottom-left" : "origin-bottom-right"
-          )}
-        >
+        <div className={cn(
+          "fixed bg-white border-[#E4E4E4] shadow-2xl z-[140] flex flex-col animate-in duration-300 rounded-none overflow-hidden",
+          isExpanded 
+            ? "inset-y-0 right-0 w-full sm:w-[480px] border-l slide-in-from-right" 
+            : "bottom-24 right-6 w-80 sm:w-[420px] h-[600px] border slide-in-from-bottom-4 origin-bottom-right"
+        )}>
+          {/* Header */}
           <div className="p-4 border-b border-[#F7F7F5] bg-white flex justify-between items-center shrink-0">
-            <div className="flex items-center gap-2">
-               <div className="w-2 h-2 rounded-full bg-[#16835B] animate-pulse"></div>
-               <h3 className="text-[10px] font-bold text-[#0A0A0A] uppercase tracking-widest">{t('chat.title')}</h3>
+            <div className="flex items-center gap-3">
+               <div className="relative">
+                  <div className="w-8 h-8 rounded-full bg-[#F7F7F5] border border-[#E4E4E4] overflow-hidden">
+                    <img src="/assets/pwa.png" alt="Icon" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-[#16835B] rounded-full border-2 border-white"></div>
+               </div>
+               <div>
+                  <h3 className="text-[10px] font-bold text-[#0A0A0A] uppercase tracking-widest leading-none mb-1">Varban Assistant</h3>
+                  <span className={cn(
+                    "text-[8px] font-bold uppercase tracking-tighter",
+                    convData?.status === 'human' ? "text-[#0055FF]" : "text-[#16835B]"
+                  )}>
+                    {convData?.status === 'human' ? "Support Desk Connected" : "AI Node Operational"}
+                  </span>
+               </div>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-[#6B7280] hover:text-[#0A0A0A] transition-colors"><X className="w-5 h-5" /></button>
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={() => setIsExpanded(!isExpanded)} 
+                className="p-1.5 text-[#6B7280] hover:text-[#0A0A0A] transition-colors"
+                title={isExpanded ? "Collapse" : "Expand to Side Drawer"}
+              >
+                {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              </button>
+              <button onClick={() => setIsOpen(false)} className="p-1.5 text-[#6B7280] hover:text-[#0A0A0A]"><X className="w-4 h-4" /></button>
+            </div>
           </div>
 
+          {/* Messages */}
           <div className="flex-grow overflow-hidden bg-white">
             <MessageScrollerProvider autoScroll>
               <MessageScroller>
                 <MessageScrollerViewport className="px-0">
                   <MessageScrollerContent>
-                    <div className="flex items-center justify-center py-4 opacity-50">
-                      <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">
-                        {t('chat.started')} {startTime}
+                    <div className="flex flex-col items-center justify-center py-6 opacity-30">
+                      <Sparkles className="w-4 h-4 mb-2" />
+                      <span className="text-[8px] font-bold text-[#6B7280] uppercase tracking-[0.3em]">
+                        Session Established {startTime}
                       </span>
                     </div>
 
-                    {messages.map((msg) => (
-                      <MessageScrollerItem 
-                        key={msg.id} 
-                        messageId={msg.id} 
-                        scrollAnchor={msg.role === 'user'}
-                      >
+                    {!user && (
+                      <div className="p-8 text-center space-y-4">
+                        <Lock className="w-8 h-8 text-[#E4E4E4] mx-auto" />
+                        <p className="text-[11px] text-[#6B7280] uppercase font-bold leading-relaxed">
+                          Identification required for personalized assistance. Please sign in to activate the support conduit.
+                        </p>
+                        <Link href="/login" className="btn-institutional-primary inline-flex">Sign In</Link>
+                      </div>
+                    )}
+
+                    {remoteMessages?.map((msg: any, idx: number) => (
+                      <MessageScrollerItem key={idx}>
                         <Message align={msg.role === 'user' ? 'end' : 'start'}>
                           {msg.role === 'model' && (
                             <MessageAvatar>
-                              <div className="w-8 h-8 rounded-none bg-[#0A0A0A] border border-[#E4E4E4] flex items-center justify-center overflow-hidden">
-                                <img src="https://picsum.photos/seed/varbanbot/60/60" alt="Bot" className="w-full h-full object-cover" />
+                              <div className="w-8 h-8 rounded-full bg-white border border-[#E4E4E4] overflow-hidden">
+                                <img src="/assets/pwa.png" alt="Bot" className="w-full h-full object-cover" />
                               </div>
                             </MessageAvatar>
                           )}
                           <MessageContent>
                             {msg.role === 'model' && (
-                              <MessageHeader>Varban Assistant</MessageHeader>
+                              <MessageHeader className="mb-2">
+                                {msg.isAdmin ? 'Technical Desk' : 'Varban Assistant'}
+                              </MessageHeader>
                             )}
-                            {msg.role === 'user' ? (
-                              <Bubble align="end" variant="muted">
-                                <BubbleContent>{msg.content}</BubbleContent>
-                              </Bubble>
-                            ) : (
-                              <div className="px-1 text-[11px] leading-relaxed text-[#333333]">
+                            <Bubble align={msg.role === 'user' ? 'end' : 'start'} variant={msg.role === 'user' ? 'tinted' : 'default'}>
+                              <BubbleContent className={cn(
+                                "font-medium text-[14px] sm:text-[14px]", 
+                                msg.role === 'model' && "bg-[#0A0A0A] border-none text-white shadow-lg"
+                              )}>
                                 {msg.content}
-                                <MessageFooter>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    className="h-7 w-7 p-0"
-                                    onClick={() => handleCopy(msg.content)}
-                                  >
-                                    <Copy className="h-3 w-3" />
-                                  </Button>
-                                </MessageFooter>
-                              </div>
-                            )}
+                                {msg.hasImage && (
+                                  <div className="mt-2 pt-2 border-t border-black/10 flex items-center gap-2 text-[10px] uppercase font-bold">
+                                     <ImageIcon className="w-3 h-3" /> Image Attachment Included
+                                  </div>
+                                )}
+                              </BubbleContent>
+                            </Bubble>
                           </MessageContent>
                         </Message>
                       </MessageScrollerItem>
                     ))}
                     
                     {isLoading && (
-                      <MessageScrollerItem messageId="loading">
-                        <Message align="start">
-                          <MessageAvatar>
-                            <div className="w-8 h-8 bg-[#F3F4F6] border border-[#E4E4E4] flex items-center justify-center">
-                              <Loader2 className="w-4 h-4 text-[#0055FF] animate-spin" />
-                            </div>
-                          </MessageAvatar>
-                          <MessageContent>
-                            <div className="italic font-bold tracking-widest uppercase text-[9px] text-[#6B7280] px-1 py-2">
-                                {t('chat.typing')}
-                            </div>
-                          </MessageContent>
-                        </Message>
-                      </MessageScrollerItem>
+                      <div className="px-14 py-4 italic font-bold tracking-[0.2em] uppercase text-[9px] text-[#0055FF] animate-pulse">
+                         Analyzing Protocol...
+                      </div>
                     )}
                   </MessageScrollerContent>
                 </MessageScrollerViewport>
-                <MessageScrollerButton />
               </MessageScroller>
             </MessageScrollerProvider>
           </div>
 
-          <div className="p-4 border-t border-[#F7F7F5] bg-white shrink-0">
+          {/* Input Area */}
+          <div className="p-4 border-t border-[#F7F7F5] bg-white shrink-0 space-y-3">
+            {selectedImage && (
+              <div className="flex items-center gap-2 p-2 bg-[#F7F7F5] border border-[#E4E4E4] animate-in slide-in-from-bottom-1">
+                 <div className="relative w-10 h-10 border border-[#D1D5DB] overflow-hidden">
+                    <img src={selectedImage} alt="Preview" className="w-full h-full object-cover" />
+                    <button 
+                      onClick={() => setSelectedAsset(null)}
+                      className="absolute top-0 right-0 bg-black/60 text-white p-0.5"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                 </div>
+                 <span className="text-[9px] font-bold uppercase text-[#6B7280]">Image Ready for Analysis</span>
+              </div>
+            )}
+
             <form onSubmit={handleSend} className="relative">
               <input 
                 type="text" 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={t('chat.placeholder')}
-                disabled={isLoading}
-                className="w-full border border-[#0A0A0A] p-4 pr-12 text-xs focus:outline-none placeholder:text-[#6B7280] bg-white shadow-sm"
+                placeholder={user ? "Transmit message..." : "Identification Locked"}
+                disabled={isLoading || !user}
+                className="w-full border-2 border-[#0A0A0A] p-5 pr-24 text-[14px] font-medium focus:outline-none focus:border-[#0055FF] placeholder:text-[#6B7280] bg-white"
               />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                <button 
+                  type="button"
+                  disabled={isLoading || !user}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-[#6B7280] hover:text-[#0055FF] p-2 transition-all"
+                  title="Upload Image"
+                >
+                  <Paperclip className="w-5 h-5" />
+                </button>
                 <button 
                   type="submit" 
-                  disabled={!input.trim() || isLoading}
-                  className="text-[#0055FF] disabled:opacity-20 hover:text-[#0A0A0A] transition-colors p-2"
+                  disabled={(!input.trim() && !selectedImage) || isLoading || !user}
+                  className="text-[#0055FF] disabled:opacity-20 hover:text-[#0A0A0A] transition-all p-2"
                 >
-                  <Send className="w-5 h-5" />
+                  <Send className="w-6 h-6" />
                 </button>
               </div>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleImageUpload} 
+                accept="image/*" 
+                className="hidden" 
+              />
             </form>
-            <div className="mt-2 text-center">
-               <span className="text-[8px] font-bold text-[#D1D5DB] uppercase tracking-[0.2em]">Institutional Intelligence Node</span>
+            
+            <div className="flex items-center justify-between px-1">
+               <span className="text-[8px] font-bold text-[#D1D5DB] uppercase tracking-[0.2em]">Institutional Safety Layer</span>
+               <div className="flex items-center gap-1">
+                  <ShieldAlert className="w-2.5 h-2.5 text-[#16835B]" />
+                  <span className="text-[8px] font-bold text-[#16835B] uppercase">Audited</span>
+               </div>
             </div>
           </div>
         </div>

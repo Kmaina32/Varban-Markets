@@ -1,52 +1,90 @@
 # VARBAN MARKETS — INSTITUTIONAL SYSTEM DOCUMENTATION
 
-## PLATFORM OVERVIEW
-Varban Markets is a professional electronic trading protocol engineered for advanced derivatives and synthetic markets. The workspace utilizes a high-precision institutional design system tuned for deterministic results and total financial integrity.
+<div align="center">
+  <img src="https://6000-firebase-studio-1780910772033.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev/assets/logo2.png" alt="Varban Markets Logo" width="300" />
+  <p><em>Professional electronic trading protocol for advanced derivatives and synthetic markets.</em></p>
+</div>
 
 ---
 
-## 1. CORE ARCHITECTURE MATRIX
+## 1. CORE TECHNOLOGY MATRIX
 
-### A. IDENTITY & DATA INFRASTRUCTURE (GOOGLE FIREBASE)
-*   **Authentication**: Secure session management using Firebase Auth, featuring Google OAuth 2.0 and reCAPTCHA Enterprise protection.
-*   **Institutional Ledger (Firestore)**: Real-time synchronization of trader metadata, open positions, and financial history using Cloud Firestore.
-*   **Multi-Node Sync**: Real-time listeners ensure sub-second updates across the Trading Terminal and Portfolio Dashboard.
+### A. FRAMEWORK & LANGUAGES
+<div align="left">
+  <img src="https://skillicons.dev/icons?i=nextjs,react,ts,tailwind,html,css" alt="Tech Stack Icons" />
+</div>
 
-### B. ADVANCED CHARTING (TRADINGVIEW)
-*   **Pro Widget**: Integration of the TradingView Advanced Charting Widget for institutional analysis.
-*   **Tools & Indicators**: Full support for RSI, EMA, Bollinger Bands, and professional drawing tools.
+*   **Frontend**: Next.js 15 (App Router) with React 19.
+*   **Styling**: Tailwind CSS & ShadCN UI components.
+*   **Language**: TypeScript (Strict Institutional Protocol).
 
-### C. MULTI-SOURCE MARKET DATA FAILOVER
-*   **Primary Feed**: Twelve Data (Institutional API).
-*   **Tier-1 Nodes**: Coinbase CDP Integration for high-precision major assets (BTC, ETH, SOL).
-*   **Fail-Safe Chain**: Alpha Vantage (Forex/Stocks) and Finnhub (Global Equities).
+### B. INFRASTRUCTURE NODES
+<div align="left">
+  <img src="https://skillicons.dev/icons?i=firebase,gcp,cloudflare" alt="Infrastructure Icons" />
+</div>
 
-### D. GLOBAL ACCESSIBILITY (i18n)
-*   **5-Language Protocol**: Full platform localization for English, French, Spanish, Portuguese, and Simplified Chinese (zh-CN).
-*   **Multilingual AI**: Localized AI Assistant capable of responding in the user's active locale.
+*   **Identity & Ledger**: <img src="https://cdn.simpleicons.org/firebase/FFCA28" width="16" /> **Google Firebase** (Auth & Real-time Firestore).
+*   **Storage**: <img src="https://cdn.simpleicons.org/cloudflare/F38020" width="16" /> **Cloudflare R2** (S3 Compatible KYC Storage).
+*   **Intelligence**: <img src="https://cdn.simpleicons.org/google/4285F4" width="16" /> **Google Gemini 1.5** via **Genkit 1.x**.
 
-### E. SEARCH ENGINE OPTIMIZATION (SEO)
-*   **Metadata Matrix**: Granular SEO tags for all primary marketing and auth nodes (Sign In, Register, Markets, About).
-*   **Sitelink Optimization**: Descriptive titles and descriptions designed for high-authority search result presentation.
+### C. SECURITY & VERIFICATION
+<div align="left">
+  <img src="https://cdn.simpleicons.org/twilio/F22F46" width="40" height="40" alt="Twilio" />
+  <img src="https://cdn.simpleicons.org/google/4285F4" width="40" height="40" alt="Google" />
+</div>
 
----
-
-## 2. RECENT FEATURE DEPLOYMENTS
-- **Google OAuth 2.0**: Integrated "Continue with Google" for instant login and registration.
-- **Manual Sign-Up Hardening**: Added mandatory Password Confirmation and real-time validation.
-- **Institutional SEO**: Implemented unique metadata across all public and restricted routes.
-- **System Registry**: Created `SYSTEM_PAGES.md` for comprehensive route tracking and i18n analysis.
+*   **SMS Gateway**: **Twilio Verify** (Real-time OTP Handshake).
+*   **Bot Protection**: **Google reCAPTCHA Enterprise**.
+*   **Biometrics**: **WebAuthn / Passkeys** for native hardware security.
 
 ---
 
-## 3. PRODUCTION STATUS TRACKER
-- [x] **Institutional White Design System**: High-contrast, minimalist UI with brand-blue accents.
-- [x] **Firebase Migration**: Core identity and financial ledger synchronized via Firestore.
-- [x] **Google reCAPTCHA Enterprise**: Bot prevention active on login and registration nodes.
-- [x] **Google OAuth 2.0**: Social sign-in and registration fully integrated.
-- [x] **Universal Localization**: 100% translation coverage for 5 global languages across key modules.
-- [x] **Multilingual AI Assistant**: Context-aware chatbot with localized response logic.
-- [x] **SEO Matrix**: High-authority metadata for all primary platform entry points.
+## 2. FINANCIAL PROTOCOLS & DATA
+
+### A. PAYMENT GATEWAYS
+<div align="left">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/1/15/M-PESA_LOGO-01.svg" width="60" alt="M-Pesa" />
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Airtel_logo.svg/1024px-Airtel_logo.svg.png" width="60" alt="Airtel Money" />
+  <img src="https://cdn.simpleicons.org/paystack/09A5DB" width="120" alt="Paystack" />
+</div>
+
+*   **Mobile Money**: Safaricom M-Pesa (STK Push) & Airtel Money Kenya (USSD Push).
+*   **Fiat Gateway**: Paystack (PCI-DSS Level 1 Secure).
+*   **Settlement**: Real-time Firestore ledger synchronization.
+
+### B. MARKET DATA & CHARTING
+<div align="left">
+  <img src="https://cdn.simpleicons.org/tradingview/2962FF" width="40" height="40" alt="TradingView" />
+  <img src="https://cdn.simpleicons.org/binance/F3BA2F" width="40" height="40" alt="Binance" />
+  <img src="https://cdn.simpleicons.org/coinbase/0052FF" width="40" height="40" alt="Coinbase" />
+</div>
+
+*   **Charting**: **TradingView Pro Widget** (Advanced indicators & drawings).
+*   **Primary Feed**: Twelve Data & Alpha Vantage.
+*   **Failover Chain**: Coinbase CDP, Binance Public, and Finnhub SME.
 
 ---
-*Operational Ledger Status: Finalized, Synchronized & Build Optimized.*
+
+## 3. LOCALIZATION PROTOCOL
+The platform is 100% localized for the following international markets:
+
+| Locale | Language | Region |
+|--------|----------|--------|
+| `en` | <img src="https://flagcdn.io/w20/gb.png" /> English | Global |
+| `fr` | <img src="https://flagcdn.io/w20/fr.png" /> Français | Europe / Africa |
+| `es` | <img src="https://flagcdn.io/w20/es.png" /> Español | LatAm / Spain |
+| `pt` | <img src="https://flagcdn.io/w20/pt.png" /> Português | Brazil / Portugal |
+| `zh-CN` | <img src="https://flagcdn.io/w20/cn.png" /> 简体中文 | East Asia |
+
+---
+
+## 4. PRODUCTION STATUS TRACKER
+- [x] **Institutional White Design System**: High-contrast, minimalist UI.
+- [x] **Firebase Core Integration**: Identity and financial ledger synchronized.
+- [x] **Twilio OTP Node**: Live SMS verification active for Kenyan gateways.
+- [x] **Consolidated Wallet**: M-Pesa, Airtel Money, and Paystack fully wired.
+- [x] **Market Intelligence Hub**: Real-time headlines and automated analysis.
+- [x] **5-Language Matrix**: Universal localization coverage.
+
+---
+*Operational Ledger Status: Synchronized & Verified.*

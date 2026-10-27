@@ -53,6 +53,31 @@
     font-style: normal !important;
   }
 
+  /* Institutional Scrollbar Customization */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #F7F7F5;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #E4E4E4;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #D1D5DB;
+  }
+
+  /* Support for Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #E4E4E4 #F7F7F5;
+  }
+
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));

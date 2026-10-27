@@ -2,13 +2,12 @@
 
 /**
  * @fileOverview KYC verification flow: gate -> document details -> ID upload ->
- * liveness selfie -> review & submit. Files go to storage through an
- * authenticated presigned URL; the submission is a Firestore doc the rules
- * validate, then users/{uid}.status.verificationStatus moves to 'Pending'.
+ * liveness selfie -> review & submit. 
  */
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { ShieldCheck, FileText, Camera, Loader2, AlertCircle, CheckCircle2, RefreshCw, Upload } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { useUser, useDoc, useFirestore } from '@/firebase';
@@ -16,8 +15,20 @@ import { doc, updateDoc, collection, addDoc, getDocs, query, orderBy, limit } fr
 import { cn } from '@/app/lib/utils';
 import { authFetch } from '@/app/lib/auth-fetch';
 import { getProfileGaps } from '@/app/lib/profile-completion';
-import CameraCaptureModal from './CameraCaptureModal';
 import type { LivenessResult } from './LivenessCapture';
+
+// Dynamic import for the camera component to prevent face-api critical dependency warnings
+const CameraCaptureModal = dynamic(() => import('./CameraCaptureModal'), {
+  ssr: false,
+  loading: () => (
+    <div className="fixed inset-0 z-[600] bg-black/80 flex items-center justify-center p-4">
+      <div className="bg-white p-8 text-center space-y-4">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto text-[#0055FF]" />
+        <p className="text-xs font-bold uppercase tracking-widest">Initializing Secure Camera...</p>
+      </div>
+    </div>
+  )
+});
 
 type DocType = 'passport' | 'national_id' | 'drivers_license';
 type SlotId = 'front' | 'back' | 'selfie';
@@ -83,7 +94,6 @@ export default function KycTab() {
 
   useEffect(() => () => { urlsRef.current.forEach((u) => URL.revokeObjectURL(u)); }, []);
 
-  // Date of the latest submission (for Pending / Verified / Rejected display)
   useEffect(() => {
     if (!db || !user || status === 'Not Verified') return;
     let cancelled = false;
@@ -106,29 +116,15 @@ export default function KycTab() {
     const f = file instanceof File ? file : new File([file], name, { type: file.type || 'image/jpeg' });
     setUpload(slot, { status: 'uploading' });
     try {
-      let resp: Response;
-      try {
-        resp = await authFetch(user, '/api/storage/presigned-url', {
-          method: 'POST',
-          body: JSON.stringify({ fileName: f.name, fileType: f.type, fileSize: f.size, purpose: 'kyc' }),
-        });
-      } catch {
-        throw new Error('Network problem while preparing the upload. Check your connection and retry.');
-      }
-      if (!resp.ok) {
-        let msg = '';
-        try { msg = (await resp.json())?.error || ''; } catch { /* ignore */ }
-        if (resp.status === 401) msg = 'Your session has expired. Please sign in again, then retry.';
-        throw new Error(msg || `The server rejected the upload request (${resp.status}).`);
-      }
+      let resp = await authFetch(user, '/api/storage/presigned-url', {
+        method: 'POST',
+        body: JSON.stringify({ fileName: f.name, fileType: f.type, fileSize: f.size, purpose: 'kyc' }),
+      });
+      if (!resp.ok) throw new Error((await resp.json())?.error || 'Could not prepare the upload.');
+      
       const { uploadUrl, key } = await resp.json();
-      let put: Response;
-      try {
-        put = await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': f.type }, body: f });
-      } catch {
-        throw new Error('Network problem while uploading the file. Check your connection and retry.');
-      }
-      if (!put.ok) throw new Error(`Storage refused the file (${put.status}). Please retry.`);
+      let put = await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': f.type }, body: f });
+      if (!put.ok) throw new Error(`Storage refused the file.`);
       setUpload(slot, { status: 'done', key });
     } catch (e: any) {
       setUpload(slot, { status: 'error', error: e?.message || 'Upload failed.' });
@@ -172,39 +168,29 @@ export default function KycTab() {
     setSubmitError('');
     const now = new Date().toISOString();
     try {
-      let id = submissionId;
-      if (!id) {
-        const ref = await addDoc(collection(db, `users/${user.uid}/kyc_submissions`), {
-          status: 'Pending',
-          documentType: docType,
-          documentCountry: country.trim(),
-          documentNumber: docNumber.trim(),
-          storageKey: uploads.front.key,
-          backKey: needsBack ? uploads.back.key ?? null : null,
-          selfieKey: uploads.selfie.key,
-          faceCheck: { source: 'browser', ...faceCheck, checkedAt: now },
-          createdAt: now,
-        });
-        id = ref.id;
-        setSubmissionId(id);
-      }
+      await addDoc(collection(db, `users/${user.uid}/kyc_submissions`), {
+        status: 'Pending',
+        documentType: docType,
+        documentCountry: country.trim(),
+        documentNumber: docNumber.trim(),
+        storageKey: uploads.front.key,
+        backKey: needsBack ? uploads.back.key ?? null : null,
+        selfieKey: uploads.selfie.key,
+        faceCheck: { source: 'browser', ...faceCheck, checkedAt: now },
+        createdAt: now,
+      });
       await updateDoc(doc(db, 'users', user.uid), {
         'status.verificationStatus': 'Pending',
         'status.kycSubmittedAt': now,
       });
       setDone(true);
     } catch (e: any) {
-      setSubmitError(
-        e?.code === 'permission-denied'
-          ? 'We could not save your submission (permission denied). Make sure your status allows a new submission, then try again.'
-          : 'We could not save your submission. Your uploaded files are kept; press Submit again.'
-      );
+      setSubmitError('The decision could not be saved. Please try again.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  // ---------- render helpers ----------
   const UploadSlot = ({ slot, label }: { slot: 'front' | 'back'; label: string }) => {
     const u = uploads[slot];
     const f = files[slot];
@@ -232,13 +218,13 @@ export default function KycTab() {
         )}
         {u.status === 'error' && (
           <div className="space-y-2">
-            <p className="text-[11px] text-[#C43D3D] font-bold flex items-start gap-2"><AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />{label} failed: {u.error}</p>
-            {f && <button type="button" onClick={() => retry(slot)} className={btnCls}><RefreshCw className="w-3.5 h-3.5" />Retry this file</button>}
+            <p className="text-[11px] text-[#C43D3D] font-bold flex items-start gap-2"><AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />{u.error}</p>
+            {f && <button type="button" onClick={() => retry(slot)} className={btnCls}><RefreshCw className="w-3.5 h-3.5" />Retry</button>}
           </div>
         )}
         <label className={cn(btnCls, 'cursor-pointer', u.status === 'uploading' && 'opacity-40 pointer-events-none')}>
           <Upload className="w-3.5 h-3.5" />
-          <span>{f ? 'Choose a different file' : 'Choose file'}</span>
+          <span>{f ? 'Change file' : 'Choose file'}</span>
           <input
             type="file"
             className="hidden"
@@ -246,7 +232,6 @@ export default function KycTab() {
             onChange={(e) => { pickDoc(slot, e.target.files?.[0]); e.target.value = ''; }}
           />
         </label>
-        <p className="text-[10px] text-[#6B7280]">JPG, PNG, WebP or PDF, up to 10 MB.</p>
       </div>
     );
   };
@@ -269,17 +254,14 @@ export default function KycTab() {
     body = <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-[#6B7280]" /></div>;
   } else if (done || status === 'Pending' || status === 'Verified') {
     body = (
-      <div className="space-y-3">
-        <p className="text-sm text-[#0A0A0A] leading-relaxed">
+      <div className="space-y-3 text-center py-8">
+        <CheckCircle2 className="w-12 h-12 text-[#16835B] mx-auto mb-4" />
+        <h4 className="text-lg font-bold uppercase tracking-tight text-[#0A0A0A]">Verification Pending</h4>
+        <p className="text-xs text-[#6B7280] leading-relaxed max-w-sm mx-auto">
           {status === 'Verified'
             ? 'Your identity is verified. No further action is needed.'
             : 'Thank you, your documents have been sent. Someone on our team will review them and we will update your status here.'}
         </p>
-        {(latest || done) && (
-          <p className="text-[11px] text-[#6B7280] font-bold uppercase tracking-wider">
-            Latest submission: {(latest ?? new Date()).toLocaleString()}
-          </p>
-        )}
       </div>
     );
   } else if (gaps.length > 0) {
@@ -296,55 +278,49 @@ export default function KycTab() {
   } else {
     body = (
       <div className="space-y-6">
-        {status === 'Rejected' && (
-          <div className="p-4 border border-[#C43D3D] bg-[#C43D3D]/5 text-[12px] space-y-1">
-            <p className="font-bold text-[#C43D3D]">Your last submission was rejected.</p>
-            {profile?.status?.kycRejectionReason && <p>Reason: {profile.status.kycRejectionReason}</p>}
-            {latest && <p className="text-[#6B7280]">Submitted {latest.toLocaleString()}. You can submit again below.</p>}
-          </div>
-        )}
-
-        <ol className="flex gap-2 text-[10px] font-bold uppercase tracking-widest overflow-x-auto">
+        <ol className="flex gap-2 text-[10px] font-bold uppercase tracking-widest overflow-x-auto no-scrollbar">
           {STEPS.map((s, i) => (
-            <li key={s} className={cn('px-3 py-2 border whitespace-nowrap', i === step ? 'border-[#0055FF] text-[#0055FF]' : i < step ? 'border-[#16835B] text-[#16835B]' : 'border-[#E4E4E4] text-[#6B7280]')}>
+            <li key={s} className={cn('px-4 py-2 border whitespace-nowrap', i === step ? 'border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5' : i < step ? 'border-[#16835B] text-[#16835B]' : 'border-[#E4E4E4] text-[#6B7280]')}>
               {i + 1}. {s}
             </li>
           ))}
         </ol>
 
         {step === 0 && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {DOC_TYPES.map((d) => (
                 <button
                   key={d.id}
                   type="button"
                   onClick={() => setDocType(d.id)}
-                  className={cn('py-3 border text-[11px] font-bold uppercase tracking-widest', docType === d.id ? 'border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5' : 'border-[#E4E4E4]')}
+                  className={cn('py-3 border text-[10px] font-bold uppercase tracking-widest transition-all', docType === d.id ? 'border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5' : 'border-[#E4E4E4] hover:bg-[#F7F7F5]')}
                 >
                   {d.label}
                 </button>
               ))}
             </div>
-            <label className="block space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Issuing country</span>
-              <input className={inputCls} value={country} onChange={(e) => setCountry(e.target.value)} placeholder="e.g. Kenya" />
-            </label>
-            <label className="block space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Document number</span>
-              <input className={inputCls} value={docNumber} onChange={(e) => setDocNumber(e.target.value)} placeholder="As printed on the document" />
-            </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="block space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Issuing country</span>
+                <input className={inputCls} value={country} onChange={(e) => setCountry(e.target.value)} placeholder="e.g. Kenya" />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Document number</span>
+                <input className={inputCls} value={docNumber} onChange={(e) => setDocNumber(e.target.value)} placeholder="As printed on the document" />
+              </label>
+            </div>
             <button disabled={!detailsOk} onClick={() => setStep(1)} className={primaryCls}>Continue</button>
           </div>
         )}
 
         {step === 1 && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <UploadSlot slot="front" label={docType === 'passport' ? 'Photo page' : 'ID front'} />
               {needsBack && <UploadSlot slot="back" label="ID back" />}
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-4 border-t border-[#F7F7F5]">
               <button onClick={() => setStep(0)} className={btnCls}>Back</button>
               <button disabled={!docsOk} onClick={() => setStep(2)} className={primaryCls}>Continue</button>
             </div>
@@ -352,53 +328,45 @@ export default function KycTab() {
         )}
 
         {step === 2 && (
-          <div className="space-y-4">
-            <p className="text-[12px] text-[#6B7280] leading-relaxed">
-              Take a live selfie. You will be asked to blink and turn your head. These checks run on your device and help our reviewer; a person on our team still reviews every submission.
+          <div className="space-y-6">
+            <p className="text-xs text-[#6B7280] leading-relaxed uppercase font-bold tracking-tight bg-[#F7F7F5] p-4 border-l-4 border-[#0055FF]">
+              Start the live biometric handshake. You will be asked to blink and turn your head to verify your identity in real-time.
             </p>
             {selfieUrl && (
-              <div className="flex items-center gap-4">
-                <img src={selfieUrl} alt="Your selfie" className="w-24 h-24 object-cover border border-[#E4E4E4]" />
-                <div className="text-[11px] space-y-1">
-                  {uploads.selfie.status === 'uploading' && <p className="text-[#0055FF] font-bold flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Uploading...</p>}
-                  {uploads.selfie.status === 'done' && <p className="text-[#16835B] font-bold flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5" />Uploaded</p>}
-                  {faceCheck?.livenessSkipped && <p className="text-[#6B7280]">Live check skipped; the reviewer will be told.</p>}
-                  {uploads.selfie.status === 'error' && (
-                    <>
-                      <p className="text-[#C43D3D] font-bold">Selfie failed: {uploads.selfie.error}</p>
-                      <button type="button" onClick={() => retry('selfie')} className={btnCls}><RefreshCw className="w-3.5 h-3.5" />Retry this file</button>
-                    </>
-                  )}
+              <div className="flex items-center gap-6 p-4 border border-[#16835B] bg-[#16835B]/5">
+                <img src={selfieUrl} alt="Selfie" className="w-20 h-20 object-cover border border-[#E4E4E4]" />
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#16835B] flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Biometric Capture Ready</span>
                 </div>
               </div>
             )}
-            <button onClick={() => setCameraOpen(true)} className={btnCls}>
-              <Camera className="w-3.5 h-3.5" />{selfieUrl ? 'Retake selfie' : 'Start selfie check'}
+            <button onClick={() => setCameraOpen(true)} className={cn(btnCls, "w-full py-4 bg-[#0A0A0A] text-white hover:bg-[#0055FF]")}>
+              <Camera className="w-4 h-4 mr-2" />{selfieUrl ? 'Recapture Biometrics' : 'Initialize Selfie Check'}
             </button>
             <div className="flex gap-3">
               <button onClick={() => setStep(1)} className={btnCls}>Back</button>
-              <button disabled={!selfieOk} onClick={() => setStep(3)} className={primaryCls}>Continue</button>
+              <button disabled={!selfieOk} onClick={() => setStep(3)} className={primaryCls}>Review Submission</button>
             </div>
           </div>
         )}
 
         {step === 3 && (
-          <div className="space-y-4">
-            <dl className="text-[12px] grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
-              <dt className="text-[#6B7280]">Document</dt><dd className="font-bold">{DOC_TYPES.find((d) => d.id === docType)?.label}</dd>
-              <dt className="text-[#6B7280]">Country</dt><dd className="font-bold">{country}</dd>
-              <dt className="text-[#6B7280]">Number</dt><dd className="font-bold">{docNumber}</dd>
-              <dt className="text-[#6B7280]">Front</dt><dd className="truncate">{files.front?.name}</dd>
-              {needsBack && <><dt className="text-[#6B7280]">Back</dt><dd className="truncate">{files.back?.name}</dd></>}
-              <dt className="text-[#6B7280]">Selfie</dt>
-              <dd>{faceCheck?.livenessSkipped ? 'Uploaded photo (live check skipped)' : 'Live check completed'}</dd>
-            </dl>
-            <p className="text-[11px] text-[#6B7280]">A person on our team reviews every submission.</p>
-            {submitError && <p className="text-[12px] text-[#C43D3D] font-bold">{submitError}</p>}
+          <div className="space-y-6">
+            <div className="bg-[#F7F7F5] border border-[#E4E4E4] p-6 space-y-4">
+               <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0A0A0A] border-b border-[#E4E4E4] pb-2">Transmission Summary</h4>
+               <dl className="grid grid-cols-2 gap-y-4 text-[10px] font-bold uppercase tracking-widest">
+                  <div className="space-y-1"><dt className="text-[#6B7280]">Document</dt><dd className="text-[#0A0A0A]">{docType}</dd></div>
+                  <div className="space-y-1"><dt className="text-[#6B7280]">Country</dt><dd className="text-[#0A0A0A]">{country}</dd></div>
+                  <div className="space-y-1"><dt className="text-[#6B7280]">Doc Reference</dt><dd className="text-[#0A0A0A] font-mono">{docNumber}</dd></div>
+                  <div className="space-y-1"><dt className="text-[#6B7280]">Selfie Mode</dt><dd className="text-[#16835B]">{faceCheck?.livenessSkipped ? 'UPLOAD' : 'LIVE BIOMETRIC'}</dd></div>
+               </dl>
+            </div>
+            {submitError && <div className="p-3 bg-[#C43D3D]/5 border border-[#C43D3D] text-[10px] font-bold uppercase text-[#C43D3D]">{submitError}</div>}
             <div className="flex gap-3">
               <button onClick={() => setStep(2)} disabled={submitting} className={btnCls}>Back</button>
-              <button onClick={submit} disabled={submitting || !docsOk || !selfieOk} className={primaryCls}>
-                {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}Submit for review
+              <button onClick={submit} disabled={submitting || !docsOk || !selfieOk} className={cn(primaryCls, "flex-grow py-4")}>
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Transmit Verification Package"}
               </button>
             </div>
           </div>
@@ -408,13 +376,13 @@ export default function KycTab() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <CameraCaptureModal isOpen={cameraOpen} onClose={() => setCameraOpen(false)} onCapture={onSelfie} />
-      <Card className="p-5 sm:p-8 bg-white border-[#E4E4E4] space-y-6 shadow-sm">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-[#F7F7F5]">
+    <div className="max-w-3xl mx-auto">
+      {cameraOpen && <CameraCaptureModal isOpen={cameraOpen} onClose={() => setCameraOpen(false)} onCapture={onSelfie} />}
+      <Card className="p-8 bg-white border-[#E4E4E4] shadow-sm space-y-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[#F7F7F5] pb-6">
           <div>
             <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A0A0A]">Identity Verification</h3>
-            <p className="text-[11px] text-[#6B7280] mt-1 uppercase font-bold tracking-wider">ID document and a live selfie</p>
+            <p className="text-[11px] text-[#6B7280] mt-1 uppercase font-bold tracking-wider">Regulatory Compliance & Fund Safety</p>
           </div>
           {statusBadge}
         </div>

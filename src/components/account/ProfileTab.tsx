@@ -1,13 +1,12 @@
 'use client';
 
 /**
- * @fileOverview Profile Management Tab .
- * Features expanded Address and Investor Profile sections.
- * Enforces mandatory data fields for regulatory compliance.
+ * @fileOverview Profile Management Tab.
+ * Enforces mandatory data fields and integrated SMS OTP verification.
  */
 
 import React, { useState, useEffect } from 'react';
-import { User, Camera, Loader2, ShieldAlert, MapPin, Briefcase, Globe, Info } from 'lucide-react';
+import { User, Loader2, Info, MapPin, Briefcase, Globe, Smartphone, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { COUNTRIES } from '@/app/lib/countries';
 import { cn } from '@/app/lib/utils';
@@ -15,6 +14,7 @@ import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { getProfileGaps, ageFromDate, isValidPhone, MIN_AGE_YEARS, ProfileGap } from '@/app/lib/profile-completion';
 import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
+import { authFetch } from '@/app/lib/auth-fetch';
 
 const todayMinusYears = (years: number) => {
   const d = new Date();
@@ -26,7 +26,6 @@ const todayMinusYears = (years: number) => {
 interface ProfileTabProps {
   /** Show the "Please fill in the missing details" banner (used by the completion gate page). */
   showGateBanner?: boolean;
-  /** Called after a valid save instead of showing the success dialog. */
   onCompleted?: () => void;
 }
 
@@ -34,12 +33,19 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
   const { user } = useUser();
   const db = useFirestore();
   
-  const [profile, setProfile] = useState<any>(null);
+  const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [storedGaps, setStoredGaps] = useState<ProfileGap[]>([]);
   
+  // OTP State
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+
   const [dialog, setDialog] = useState<{ status: DialogStatus; title: string; message: string }>({
     status: null,
     title: '',
@@ -53,13 +59,11 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
     dateOfBirth: "",
     country: "", 
     dialCode: "+44",
-    // Address Information
     addressLine1: "",
     addressLine2: "",
     city: "",
     state: "",
     zipCode: "",
-    // Investor Profile
     accountPurpose: "",
     originFunds: "",
     netWorth: "",
@@ -76,13 +80,16 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
       try {
         const snap = await getDoc(doc(db, 'users', user.uid));
         const data: any = snap.exists() ? snap.data() : null;
+        setProfileData(data);
+        setIsPhoneVerified(!!data?.status?.phoneVerified);
         setStoredGaps(getProfileGaps(data));
+        
         if (data) {
           const p = data?.profile ?? {};
           const inv = data?.investor ?? {};
-          setProfile({ profile_completed: !!p?.profileCompleted });
           const rawPhone: string = typeof p?.phone === 'string' ? p.phone : "";
           const phoneParts = rawPhone.split(' ');
+          
           setForm({
             firstName: p?.firstName || "",
             lastName: p?.lastName || "",
@@ -115,11 +122,15 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
   }, [user?.uid, db]);
 
   const cleanPhone = `${form.dialCode} ${form.phone}`.trim();
+  
   const formDoc = {
     profile: {
       firstName: form.firstName, lastName: form.lastName, dateOfBirth: form.dateOfBirth,
       phone: cleanPhone, country: form.country, addressLine1: form.addressLine1,
       city: form.city, zipCode: form.zipCode,
+    },
+    status: {
+      phoneVerified: isPhoneVerified
     },
     investor: {
       accountPurpose: form.accountPurpose, employmentStatus: form.employmentStatus,
@@ -127,9 +138,11 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
       netWorth: form.netWorth, originFunds: form.originFunds,
     },
   };
+
   const formGaps = getProfileGaps(formDoc);
   const gapKeys = new Set(formGaps.map(g => g.key));
   const dobAge = ageFromDate(form.dateOfBirth);
+
   const fieldError = (key: string): string | null => {
     if (!submitted || !gapKeys.has(key)) return null;
     if (key === 'dateOfBirth') {
@@ -137,13 +150,58 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
       return `You must be at least ${MIN_AGE_YEARS} years old`;
     }
     if (key === 'phone') return isValidPhone(cleanPhone) ? null : 'Enter a valid phone number (7-14 digits)';
+    if (key === 'phoneVerified') return isPhoneVerified ? null : 'SMS verification required';
     return 'This field is required';
   };
+
   const errText = (key: string) => {
     const msg = fieldError(key);
-    return msg ? <p role="alert" className="text-[9px] font-bold uppercase text-[#C43D3D]">{msg}</p> : null;
+    return msg ? <p role="alert" className="text-[9px] font-bold uppercase text-[#C43D3D] mt-1">{msg}</p> : null;
   };
+
   const errBorder = (key: string) => (fieldError(key) ? ' !border-[#C43D3D]' : '');
+
+  // OTP Handlers
+  const handleSendOtp = async () => {
+    if (!form.phone || otpLoading) return;
+    setOtpLoading(true);
+    setOtpError(null);
+
+    try {
+      const resp = await authFetch(user, '/api/auth/otp/send', {
+        method: 'POST',
+        body: JSON.stringify({ phoneNumber: cleanPhone })
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error);
+      setOtpSent(true);
+    } catch (err: any) {
+      setOtpError(err.message || 'Verification transmission failed.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otpCode || otpLoading) return;
+    setOtpLoading(true);
+    setOtpError(null);
+
+    try {
+      const resp = await authFetch(user, '/api/auth/otp/verify', {
+        method: 'POST',
+        body: JSON.stringify({ phoneNumber: cleanPhone, code: otpCode })
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error);
+      setIsPhoneVerified(true);
+      setOtpSent(false);
+    } catch (err: any) {
+      setOtpError('Invalid code. Access denied.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -172,6 +230,10 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
           profileCompleted: true,
           completedAt: nowIso
         },
+        status: {
+          phoneVerified: true,
+          phoneVerifiedAt: nowIso
+        },
         investor: {
           accountPurpose: form.accountPurpose,
           originFunds: form.originFunds,
@@ -184,8 +246,6 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
         }
       }, { merge: true });
 
-      setProfile((prev: any) => ({ ...prev, profile_completed: true }));
-      setStoredGaps([]);
       if (onCompleted) {
         onCompleted();
       } else {
@@ -198,8 +258,8 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
     } catch (err: any) {
       setDialog({
         status: 'error',
-        title: 'Validation Error',
-        message: err.message || 'Failed to synchronize registration data. Please verify all mandatory fields.'
+        title: 'Transmission Failure',
+        message: err.message || 'Failed to synchronize registration data.'
       });
     } finally {
       setIsSaving(false);
@@ -222,7 +282,7 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
         onClose={() => setDialog({ ...dialog, status: null })} 
       />
 
-      {(showGateBanner || (submitted && formGaps.length > 0)) && (showGateBanner ? storedGaps.length > 0 || formGaps.length > 0 : true) && (
+      {(showGateBanner || (submitted && formGaps.length > 0)) && (
         <div className="mb-6 flex items-start gap-3 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20" role="status">
           <Info className="w-4 h-4 text-[#C43D3D] shrink-0 mt-0.5" />
           <div className="space-y-1">
@@ -266,15 +326,71 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
                 {errText('dateOfBirth')}
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[9px] font-bold uppercase text-[#6B7280]">Phone Number</label>
-                <div className="flex gap-2">
-                  <select value={form.dialCode} onChange={e => setForm({...form, dialCode: e.target.value})} className="p-3 border border-[#E4E4E4] text-xs bg-[#F7F7F5] outline-none">
-                    {COUNTRIES.map(c => <option key={c.code} value={c.dial_code}>{c.flag} {c.dial_code}</option>)}
-                  </select>
-                  <input value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} className={`flex-grow p-3 border border-[#E4E4E4] text-xs font-mono outline-none focus:border-[#0055FF] bg-white${errBorder('phone')}`} inputMode="tel" autoComplete="tel-national" />
+              {/* PHONE & OTP FLOW */}
+              <div className="space-y-4 pt-4 border-t border-[#F7F7F5]">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold uppercase text-[#6B7280]">Phone Number (SMS Verification Required)</label>
+                  {isPhoneVerified ? (
+                    <div className="flex items-center justify-between p-3 bg-[#16835B]/5 border border-[#16835B]/30">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle2 className="w-4 h-4 text-[#16835B]" />
+                        <span className="text-xs font-mono font-bold">{cleanPhone}</span>
+                      </div>
+                      <span className="text-[8px] font-bold uppercase text-[#16835B] bg-white px-2 py-0.5 border border-[#16835B]">Verified</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex gap-2">
+                        <select value={form.dialCode} onChange={e => setForm({...form, dialCode: e.target.value})} className="p-3 border border-[#E4E4E4] text-xs bg-[#F7F7F5] outline-none">
+                          {COUNTRIES.map(c => <option key={c.code} value={c.dial_code}>{c.flag} {c.dial_code}</option>)}
+                        </select>
+                        <input value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} className={`flex-grow p-3 border border-[#E4E4E4] text-xs font-mono outline-none focus:border-[#0055FF] bg-white${errBorder('phone')}`} placeholder="700000000" />
+                        <button 
+                          type="button"
+                          onClick={handleSendOtp}
+                          disabled={otpLoading || !isValidPhone(cleanPhone) || otpSent}
+                          className="px-6 bg-[#0055FF] text-white text-[10px] font-bold hover:bg-[#0044cc] disabled:opacity-40"
+                        >
+                          {otpLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Verify"}
+                        </button>
+                      </div>
+                      
+                      {otpSent && (
+                        <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] space-y-4 animate-in slide-in-from-top-2">
+                           <div className="flex justify-between items-center">
+                              <span className="text-[9px] font-bold uppercase text-[#0055FF]">Enter 6-Digit Code</span>
+                              <button type="button" onClick={() => setOtpSent(false)} className="text-[9px] font-bold uppercase underline text-[#6B7280]">Change Number</button>
+                           </div>
+                           <div className="flex gap-2">
+                              <input 
+                                value={otpCode}
+                                onChange={e => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                className="flex-grow p-3 border-2 border-[#0A0A0A] text-center font-mono font-bold tracking-[0.5em] text-lg outline-none"
+                                maxLength={6}
+                                placeholder="000000"
+                              />
+                              <button 
+                                type="button"
+                                onClick={handleVerifyOtp}
+                                disabled={otpLoading || otpCode.length < 6}
+                                className="px-8 bg-[#16835B] text-white text-[9px] font-bold uppercase tracking-widest hover:bg-[#12704d]"
+                              >
+                                Confirm
+                              </button>
+                           </div>
+                        </div>
+                      )}
+
+                      {otpError && (
+                        <div className="flex items-center gap-2 p-2 bg-[#C43D3D]/5 text-[#C43D3D] text-[9px] font-bold uppercase">
+                          <AlertTriangle className="w-3 h-3" />
+                          <span>{otpError}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {errText('phoneVerified')}
                 </div>
-                {errText('phone')}
               </div>
             </Card>
 
@@ -287,13 +403,9 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2 space-y-1">
-                  <label className="text-[9px] font-bold uppercase text-[#6B7280]">Address Line 1</label>
-                  <input value={form.addressLine1} onChange={e => setForm({...form, addressLine1: e.target.value})} className={`w-full p-3 border border-[#E4E4E4] text-xs font-bold bg-[#F7F7F5] outline-none focus:border-[#0A0A0A]${errBorder('addressLine1')}`} placeholder="Street address or P.O. Box" />
+                  <label className="text-[9px] font-bold uppercase text-[#6B7280]">Street Address</label>
+                  <input value={form.addressLine1} onChange={e => setForm({...form, addressLine1: e.target.value})} className={`w-full p-3 border border-[#E4E4E4] text-xs font-bold bg-[#F7F7F5] outline-none focus:border-[#0A0A0A]${errBorder('addressLine1')}`} />
                   {errText('addressLine1')}
-                </div>
-                <div className="md:col-span-2 space-y-1">
-                  <label className="text-[9px] font-bold uppercase text-[#6B7280]">Address Line 2 (Optional)</label>
-                  <input value={form.addressLine2} onChange={e => setForm({...form, addressLine2: e.target.value})} className="w-full p-3 border border-[#E4E4E4] text-xs font-bold bg-[#F7F7F5] outline-none focus:border-[#0A0A0A]" placeholder="Apartment, suite, unit, etc." />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[9px] font-bold uppercase text-[#6B7280]">Town / City</label>
@@ -301,15 +413,11 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
                   {errText('city')}
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[9px] font-bold uppercase text-[#6B7280]">Province / State (Optional)</label>
-                  <input value={form.state} onChange={e => setForm({...form, state: e.target.value})} className="w-full p-3 border border-[#E4E4E4] text-xs font-bold bg-[#F7F7F5] outline-none focus:border-[#0A0A0A]" />
-                </div>
-                <div className="space-y-1">
                   <label className="text-[9px] font-bold uppercase text-[#6B7280]">Postal / Zip Code</label>
                   <input value={form.zipCode} onChange={e => setForm({...form, zipCode: e.target.value})} className={`w-full p-3 border border-[#E4E4E4] text-xs font-mono font-bold bg-[#F7F7F5] outline-none focus:border-[#0A0A0A]${errBorder('zipCode')}`} />
                   {errText('zipCode')}
                 </div>
-                <div className="space-y-1">
+                <div className="col-span-full space-y-1">
                   <label className="text-[9px] font-bold uppercase text-[#6B7280]">Country of Residence</label>
                   <select value={form.country} onChange={e => setForm({...form, country: e.target.value})} className={`w-full p-3 border border-[#E4E4E4] text-xs font-bold uppercase bg-white outline-none${errBorder('country')}`}>
                     <option value="" disabled>Select...</option>
@@ -335,20 +443,10 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
                     <option>Portfolio Diversification</option>
                     <option>Speculative Trading</option>
                     <option>Hedging</option>
-                    <option>Savings</option>
                   </select>
                   {errText('accountPurpose')}
                 </div>
                 
-                <div className="space-y-1">
-                  <label className="text-[9px] font-bold uppercase text-[#6B7280]">Expected Country of Origin and Destination of Funds</label>
-                  <select value={form.originFunds} onChange={e => setForm({...form, originFunds: e.target.value})} className={`w-full p-3 border border-[#E4E4E4] text-xs font-bold bg-[#F7F7F5] outline-none${errBorder('originFunds')}`}>
-                    <option value="" disabled>Select...</option>
-                    {COUNTRIES.map(c => <option key={c.code} value={c.name}>{c.name}</option>)}
-                  </select>
-                  {errText('originFunds')}
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[9px] font-bold uppercase text-[#6B7280]">Estimated net worth</label>
@@ -356,121 +454,62 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
                     <option value="" disabled>Select...</option>
                       <option>Less than $10,000</option>
                       <option>$10,000 - $50,000</option>
-                      <option>$50,000 - $100,000</option>
                       <option>Over $100,000</option>
                     </select>
-                  {errText('netWorth')}
+                    {errText('netWorth')}
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[9px] font-bold uppercase text-[#6B7280]">Estimated annual income</label>
+                    <label className="text-[9px] font-bold uppercase text-[#6B7280]">Annual income</label>
                     <select value={form.annualIncome} onChange={e => setForm({...form, annualIncome: e.target.value})} className={`w-full p-3 border border-[#E4E4E4] text-xs font-bold bg-[#F7F7F5] outline-none${errBorder('annualIncome')}`}>
                     <option value="" disabled>Select...</option>
                       <option>Less than $10,000</option>
-                      <option>$10,000 - $50,000</option>
-                      <option>$50,000 - $100,000</option>
                       <option>Over $100,000</option>
                     </select>
-                  {errText('annualIncome')}
+                    {errText('annualIncome')}
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[9px] font-bold uppercase text-[#6B7280]">Anticipated dollar amount to trade with us within the next 12 months</label>
-                  <select value={form.tradeForecast} onChange={e => setForm({...form, tradeForecast: e.target.value})} className="w-full p-3 border border-[#E4E4E4] text-xs font-bold bg-[#F7F7F5] outline-none">
+                  <label className="text-[9px] font-bold uppercase text-[#6B7280]">Employment Status</label>
+                  <select value={form.employmentStatus} onChange={e => setForm({...form, employmentStatus: e.target.value})} className={`w-full p-3 border border-[#E4E4E4] text-xs font-bold bg-[#F7F7F5] outline-none${errBorder('employmentStatus')}`}>
                     <option value="" disabled>Select...</option>
-                    <option>$0 - $5,000</option>
-                    <option>$5,000 - $25,000</option>
-                    <option>$25,000 - $100,000</option>
-                    <option>Over $100,000</option>
+                    <option>Employed</option>
+                    <option>Self-Employed</option>
+                    <option>Unemployed</option>
                   </select>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-bold uppercase text-[#6B7280]">Education</label>
-                    <select value={form.education} onChange={e => setForm({...form, education: e.target.value})} className="w-full p-3 border border-[#E4E4E4] text-xs font-bold bg-[#F7F7F5] outline-none">
-                    <option value="" disabled>Select...</option>
-                      <option>Secondary Education</option>
-                      <option>Bachelor's Degree / Diploma</option>
-                      <option>Master's / PhD</option>
-                      <option>Professional Qualification</option>
-                    </select>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-bold uppercase text-[#6B7280]">Employment Status</label>
-                    <select value={form.employmentStatus} onChange={e => setForm({...form, employmentStatus: e.target.value})} className={`w-full p-3 border border-[#E4E4E4] text-xs font-bold bg-[#F7F7F5] outline-none${errBorder('employmentStatus')}`}>
-                    <option value="" disabled>Select...</option>
-                      <option>Employed</option>
-                      <option>Self-Employed</option>
-                      <option>Retired</option>
-                      <option>Student</option>
-                      <option>Unemployed</option>
-                    </select>
                   {errText('employmentStatus')}
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[9px] font-bold uppercase text-[#6B7280]">Source of Income / Wealth</label>
-                  <select value={form.sourceWealth} onChange={e => setForm({...form, sourceWealth: e.target.value})} className={`w-full p-3 border border-[#E4E4E4] text-xs font-bold bg-[#F7F7F5] outline-none${errBorder('sourceWealth')}`}>
-                    <option value="" disabled>Select...</option>
-                    <option>Employment Salary</option>
-                    <option>Business Revenue</option>
-                    <option>Investments / Dividends</option>
-                    <option>Inheritance / Gift</option>
-                    <option>Savings</option>
-                  </select>
-                  {errText('sourceWealth')}
                 </div>
               </div>
             </Card>
 
-            <button type="submit" disabled={isSaving} className="w-full py-4 bg-[#0055FF] text-white text-sm font-bold hover:bg-[#0044cc] transition-colors disabled:opacity-50 shadow-sm">
+            <button 
+              type="submit" 
+              disabled={isSaving || !isPhoneVerified} 
+              className={cn(
+                "w-full py-4 text-sm font-bold shadow-sm transition-colors",
+                isPhoneVerified ? "bg-[#0055FF] text-white hover:bg-[#0044cc]" : "bg-[#F3F4F6] text-[#D1D5DB] cursor-not-allowed border border-[#E4E4E4]"
+              )}
+            >
               {isSaving ? "Saving..." : "Save and continue"}
             </button>
           </form>
         </div>
 
         <div className="lg:col-span-4 space-y-6">
-          <Card className="p-6 bg-white border-[#E4E4E4] border-l-4 border-l-[#0055FF] shadow-sm space-y-6">
+          <Card className="p-6 bg-white border border-[#E4E4E4] border-l-4 border-l-[#0055FF] shadow-sm space-y-4">
             <div className="flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-[#0055FF]" />
-              <span className="text-[10px] font-bold uppercase text-[#0A0A0A] tracking-widest">Your progress</span>
+              <Smartphone className="w-5 h-5 text-[#0055FF]" />
+              <span className="text-sm font-bold text-[#0A0A0A]">Verify your phone</span>
             </div>
-            
-            <div className="space-y-4">
-              <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4]">
-                <span className="text-[8px] uppercase text-[#6B7280] block mb-1">Account status</span>
-                <p className="text-[10px] font-bold uppercase text-[#0A0A0A]">
-                  {profile?.profile_completed ? "All details provided" : "Details still needed"}
-                </p>
-              </div>
-
-              {!profile?.profile_completed && (
-                <div className="flex items-start gap-3 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20">
-                  <Info className="w-4 h-4 text-[#C43D3D] shrink-0" />
-                  <p className="text-[9px] text-[#C43D3D] uppercase font-bold leading-relaxed">
-                    You can only trade with real money once your details, address and ID check are done.
-                  </p>
-                </div>
-              )}
-            </div>
-          </Card>
-
-          <Card className="p-6 bg-[#F7F7F5] border border-[#E4E4E4] space-y-4">
-             <h4 className="text-[10px] font-bold uppercase text-[#0A0A0A] tracking-widest">Communication</h4>
-             <p className="text-[9px] text-[#6B7280] leading-relaxed uppercase font-bold">
-               Manage your marketing and security notification preferences from the Alerts center. You can unsubscribe from non-critical broadcasts at any time.
-             </p>
-             <button className="text-[9px] font-bold text-[#0055FF] uppercase tracking-widest underline decoration-2 underline-offset-4">Open Subscriptions Center</button>
-          </Card>
-
-          <div className="p-4 flex items-start gap-3">
-            <Globe className="w-4 h-4 text-[#6B7280] shrink-0 mt-0.5" />
-            <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
-              Your information is kept private, handled under Seychelles law and sent over an encrypted connection.
+            <p className="text-xs text-[#6B7280] leading-relaxed">
+              We need to confirm your mobile number by text message. It helps keep your account safe and lets us send you trade alerts.
             </p>
-          </div>
+            {!isPhoneVerified && (
+              <div className="p-3 bg-[#0055FF]/5 border border-[#0055FF]/30 text-xs font-bold text-[#0055FF]">
+                Waiting for you to enter the text message code
+              </div>
+            )}
+          </Card>
         </div>
       </div>
     </div>
