@@ -12,16 +12,27 @@ import { cn } from "@/app/lib/utils"
 
 const DropdownMenu = Menu.Root
 
+export interface DropdownMenuTriggerProps
+  extends React.ComponentPropsWithoutRef<typeof Menu.Trigger> {
+  asChild?: boolean;
+}
+
 const DropdownMenuTrigger = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentPropsWithoutRef<typeof Menu.Trigger>
->(({ className, ...props }, ref) => (
-  <Menu.Trigger
-    ref={ref}
-    className={cn("outline-none", className)}
-    {...props}
-  />
-))
+  DropdownMenuTriggerProps
+>(({ className, asChild, children, render, ...props }, ref) => {
+  const triggerRender = asChild && React.isValidElement(children) ? children : render;
+  return (
+    <Menu.Trigger
+      ref={ref}
+      render={triggerRender}
+      className={cn("outline-none", className)}
+      {...props}
+    >
+      {triggerRender ? null : children}
+    </Menu.Trigger>
+  );
+})
 DropdownMenuTrigger.displayName = "DropdownMenuTrigger"
 
 const DropdownMenuPortal = Menu.Portal

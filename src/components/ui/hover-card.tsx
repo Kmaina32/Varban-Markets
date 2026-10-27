@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Institutional Hover Card component.
- * Standardized for consistent asChild prop merging.
+ * Standardized for consistent asChild prop merging with Base UI PreviewCard.
  */
 
 import * as React from "react"
@@ -11,16 +11,27 @@ import { cn } from "@/app/lib/utils"
 
 const HoverCard = PreviewCard.Root
 
+export interface HoverCardTriggerProps
+  extends React.ComponentPropsWithoutRef<typeof PreviewCard.Trigger> {
+  asChild?: boolean;
+}
+
 const HoverCardTrigger = React.forwardRef<
   HTMLElement,
-  React.ComponentPropsWithoutRef<typeof PreviewCard.Trigger>
->(({ className, ...props }, ref) => (
-  <PreviewCard.Trigger
-    ref={ref}
-    className={cn("outline-none cursor-pointer", className)}
-    {...props}
-  />
-))
+  HoverCardTriggerProps
+>(({ className, asChild, children, render, ...props }, ref) => {
+  const triggerRender = asChild && React.isValidElement(children) ? children : render;
+  return (
+    <PreviewCard.Trigger
+      ref={ref}
+      render={triggerRender}
+      className={cn("outline-none cursor-pointer", className)}
+      {...props}
+    >
+      {triggerRender ? null : children}
+    </PreviewCard.Trigger>
+  );
+})
 HoverCardTrigger.displayName = "HoverCardTrigger"
 
 const HoverCardPortal = PreviewCard.Portal
