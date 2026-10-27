@@ -2,11 +2,11 @@
 
 /**
  * @fileOverview Institutional Hover Card component.
- * Refined for ref-forwarding and stable layout.
+ * Standardized for consistent asChild prop merging.
  */
 
 import * as React from "react"
-import { PreviewCard } from "@base-ui/react"
+import { PreviewCard } from "@base-ui/react/preview-card"
 import { cn } from "@/app/lib/utils"
 
 const HoverCard = PreviewCard.Root

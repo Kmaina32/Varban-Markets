@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Institutional Dropdown Menu component.
- * Refined to use namespaced subpath imports for stable resolution in Base UI 1.0 Beta.
+ * Standardized for consistent asChild prop merging.
  */
 
 import * as React from "react"
@@ -14,23 +14,14 @@ const DropdownMenu = Menu.Root
 
 const DropdownMenuTrigger = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentPropsWithoutRef<typeof Menu.Trigger> & { render?: React.ReactElement }
->(({ className, render, children, ...props }, ref) => {
-  if (render) {
-    return (
-      <Menu.Trigger ref={ref} className={className} render={render} {...props} />
-    )
-  }
-  return (
-    <Menu.Trigger
-      ref={ref}
-      className={cn("outline-none", className)}
-      {...props}
-    >
-      {children}
-    </Menu.Trigger>
-  )
-})
+  React.ComponentPropsWithoutRef<typeof Menu.Trigger>
+>(({ className, ...props }, ref) => (
+  <Menu.Trigger
+    ref={ref}
+    className={cn("outline-none", className)}
+    {...props}
+  />
+))
 DropdownMenuTrigger.displayName = "DropdownMenuTrigger"
 
 const DropdownMenuPortal = Menu.Portal

@@ -7,15 +7,14 @@
 
 import * as React from "react";
 import AuthedLayout from "@/components/layout/AuthedLayout";
-import { Download, AlertCircle, FileSpreadsheet } from "lucide-react";
+import { Download, AlertCircle, SlidersHorizontal } from "lucide-react";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { useFirestore } from "@/firebase";
 import { collectionGroup, collection, getDocs } from "firebase/firestore";
 import { DataTable } from "@/components/ui/data-table";
-import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import { type DataTableFeatures } from "@/components/ui/data-table-features";
 import { cn } from "@/app/lib/utils";
-
 
 const toMillis = (ts: any): number => {
   try {
@@ -26,12 +25,6 @@ const toMillis = (ts: any): number => {
     return isNaN(d.getTime()) ? 0 : d.getTime();
   } catch { return 0; }
 };
-
-const toDateSafe = (ts: any): Date | null => {
-  const ms = toMillis(ts);
-  return ms ? new Date(ms) : null;
-};
-
 
 type Transaction = {
   id: string;

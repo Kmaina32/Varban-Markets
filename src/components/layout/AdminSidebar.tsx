@@ -42,7 +42,7 @@ export default function AdminSidebar({ onLinkClick, className, isMobile = false 
 
   const renderItems = () => items.map((item) => {
     const isActive = pathname === item.href;
-    const linkContent = (
+    const linkElement = (
       <Link
         href={item.href}
         onClick={onLinkClick}
@@ -63,11 +63,13 @@ export default function AdminSidebar({ onLinkClick, className, isMobile = false 
       </Link>
     );
 
-    if (isMobile) return <div key={item.href}>{linkContent}</div>;
+    if (isMobile) return <div key={item.href}>{linkElement}</div>;
 
     return (
       <HoverCard key={item.href}>
-        <HoverCardTrigger render={linkContent} />
+        <HoverCardTrigger asChild>
+          {linkElement}
+        </HoverCardTrigger>
         <HoverCardContent side="right" align="center" sideOffset={10}>
           <div className="space-y-1.5">
             <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#0055FF]">{item.label}</h4>

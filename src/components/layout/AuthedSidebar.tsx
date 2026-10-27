@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Monitor, Globe, Briefcase, Target, 
   FileText, Clock, Star, Wallet, User, Bell, ShieldAlert,
   Share2, Newspaper, HelpCircle, Mail, LogOut, Cpu,
-  BarChart4, Calendar, Layers, Zap
+  BarChart4, Calendar, Layers, Zap, ArrowLeftRight
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -93,7 +93,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
   const renderItem = (item: any) => {
     const isActive = pathname === item.href || (item.href !== '/client/dashboard' && pathname?.startsWith(item.href));
     
-    const content = (
+    const linkElement = (
       <Link
         href={item.href}
         onClick={onLinkClick}
@@ -114,12 +114,12 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
       </Link>
     );
 
-    if (isMobile) return <div key={item.href}>{content}</div>;
+    if (isMobile) return <div key={item.href}>{linkElement}</div>;
 
     return (
       <HoverCard key={item.href}>
         <HoverCardTrigger asChild>
-          {content}
+          {linkElement}
         </HoverCardTrigger>
         <HoverCardContent side="right" className="w-56">
           <div className="space-y-1">
@@ -135,7 +135,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
 
   return (
     <aside className={cn(
-      isMobile ? "flex flex-col h-full" : "group absolute left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-[#E4E4E4] flex flex-col transition-all duration-300 z-[200] overflow-hidden no-scrollbar",
+      isMobile ? "flex flex-col h-full bg-white" : "group absolute left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-[#E4E4E4] flex flex-col transition-all duration-300 z-[200] overflow-hidden no-scrollbar",
       className
     )}>
       <nav className="flex-grow py-6 space-y-8 overflow-y-auto no-scrollbar">
