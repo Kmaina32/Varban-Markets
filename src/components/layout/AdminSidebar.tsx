@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShieldAlert, Users, FileSpreadsheet, Database, ArrowLeftRight, Settings, Inbox, ArrowDownCircle, ArrowUpCircle, ShieldCheck, Newspaper, Shield, Server, FileCheck } from "lucide-react";
+import { 
+  ShieldAlert, Users, FileSpreadsheet, Database, ArrowLeftRight, Settings, 
+  Inbox, ArrowDownCircle, ArrowUpCircle, ShieldCheck, Newspaper, 
+  Shield, Server, FileCheck, Sparkles 
+} from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import {
   HoverCard,
@@ -21,6 +25,7 @@ export default function AdminSidebar({ onLinkClick, className, isMobile = false 
 
   const items = [
     { label: "Oversight Node", href: "/admin", icon: ShieldAlert, description: "Global platform metrics and registration feed." },
+    { label: "AI Command", href: "/admin/ai", icon: Sparkles, description: "Manage AI settings and view/takeover live conversations." },
     { label: "User Directory", href: "/admin/users", icon: Users, description: "Entity directory and role authority management." },
     { label: "KYC Approvals", href: "/admin/kyc-approvals", icon: ShieldCheck, description: "Manual audit desk for verification evidence." },
     { label: "Intelligence Desk", href: "/admin/articles", icon: Newspaper, description: "Author proprietary briefings and market strategies." },
