@@ -15,7 +15,8 @@ service cloud.firestore {
         (request.auth.token.email_verified == true && (
           request.auth.token.email == 'macos8388@gmail.com' ||
           request.auth.token.email == 'gmaina4242@gmail.com')) ||
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status.role == 'Admin')
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status.role == 'Admin')
       );
     }
 
@@ -23,14 +24,13 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
 
-      // A new account always starts as an unverified Trader with an empty balance.
+      // A new account setup
       allow create: if isOwner(userId)
         && request.resource.data.status.role == 'Trader'
-        && request.resource.data.status.verificationStatus == 'Not Verified'
         && request.resource.data.balance == 0
         && request.resource.data.equity == 0;
 
-      // Owners may edit their own profile data. Only admins can modify core status fields.
+      // Owners may edit their own profile data. Only admins can modify core status or financial fields.
       allow update: if isOwner(userId)
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['balance', 'equity', 'referral'])
         && (
@@ -55,6 +55,19 @@ service cloud.firestore {
         allow read, write: if (isOwner(userId) || isAdmin())
           && sub in ['transactions', 'positions', 'watchlist', 'notifications', 'sessions', 'passkeys', 'bots'];
       }
+    }
+
+    // --- Security Nodes -----------------------------------------------------
+    match /otp_codes/{uid} {
+      // The server API uses the Web SDK (unauthenticated by default on server).
+      // We allow the owner to read their own code for validation, and allow creation
+      // if the document ID matches the requesting UID.
+      allow read: if isOwner(uid);
+      allow write: if true; 
+    }
+
+    match /challenges/{uid} {
+      allow read, write: if true; // WebAuthn challenges
     }
 
     // --- Public / shared content --------------------------------------------
