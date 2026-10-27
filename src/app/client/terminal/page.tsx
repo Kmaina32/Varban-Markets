@@ -1,10 +1,10 @@
+
 'use client';
 
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
- * Refined 2-Panel Sidebar Architecture with high-fidelity execution node.
- * Optimization: Execution components hidden from main screen on Mobile and Tablet (XL breakpoint).
- * Sidebar: Strictly removed from Mobile and Tablet screens (hidden until XL breakpoint).
+ * High-precision gateway that serves Desktop or Mobile specific layouts.
+ * Default Primary Market: BTC/USD.
  */
 
 import { useState, useEffect, Suspense, useMemo } from "react";
@@ -13,16 +13,11 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { 
   Menu, 
-  X,
   ChevronDown,
   Clock as ClockIcon,
   MousePointer2,
-  TrendingUp,
   Layout,
   Globe,
-  Settings,
-  ShieldCheck,
-  Zap,
   BarChart2
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
@@ -44,6 +39,7 @@ import TerminalTutorial from "@/components/terminal/TerminalTutorial";
 import LoadingOverlay from "@/components/shared/LoadingOverlay";
 import DigitStats from "@/components/terminal/DigitStats";
 import DerivedTradeControls from "@/components/terminal/DerivedTradeControls";
+import MobileTerminal from "@/components/terminal/MobileTerminal";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -81,11 +77,10 @@ function TerminalContent() {
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isTradeDrawerOpen, setIsTradeDrawerOpen] = useState(false);
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
-  
   const [activeRightTab, setActiveRightTab] = useState<'TRADE' | 'STATS'>('TRADE');
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
 
   const [currentTime, setCurrentTime] = useState("");
   const activeTimezone = profile?.preferences?.timezone || "UTC+0";
@@ -95,13 +90,21 @@ function TerminalContent() {
       const found = AVAILABLE_INSTRUMENTS.find(i => i.symbol === symbolParam);
       if (found) return found;
     }
-    return AVAILABLE_INSTRUMENTS[0]; // BTC/USD is first
+    return AVAILABLE_INSTRUMENTS[0]; // BTC/USD is primary
   });
 
   const [marketData, setMarketData] = useState<Record<string, { price: number; percent: number }>>({});
   const [positions, setPositions] = useState<Position[]>([]);
 
   const isDerivedMarket = activeInst.category === 'Synthetic Indices';
+
+  // Responsive Layout Switcher (Strict xl breakpoint 1280px)
+  useEffect(() => {
+    const handleResize = () => setIsMobileViewport(window.innerWidth < 1280);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
@@ -116,25 +119,14 @@ function TerminalContent() {
       else if (activeTimezone === "UTC-5") offset = -5;
       else if (activeTimezone === "UTC+1") offset = 1;
       else if (activeTimezone === "UTC+8") offset = 8;
-      
       const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
       const nd = new Date(utc + (3600000 * offset));
-      
       setCurrentTime(nd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }));
     };
-
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, [activeTimezone]);
-
-  const handleTimezoneChange = async (val: string) => {
-    if (user?.uid && db) {
-      try {
-        await updateDoc(doc(db, "users", user.uid), { "preferences.timezone": val });
-      } catch (e) {}
-    }
-  };
 
   useEffect(() => {
     let active = true;
@@ -156,7 +148,6 @@ function TerminalContent() {
   const handleExecution = (params: any) => {
     const live = marketData[activeInst.symbol];
     if (!live || !user) return;
-
     const newPos: Position = {
       id: `VRB-${Math.random().toString(36).substring(7).toUpperCase()}`,
       instrument: activeInst.symbol,
@@ -169,10 +160,19 @@ function TerminalContent() {
       timestamp: Date.now(),
       isDemo: accountMode === 'DEMO',
     };
-
     setPositions(prev => [newPos, ...prev]);
-    setIsTradeDrawerOpen(false);
   };
+
+  if (isMobileViewport) {
+    return (
+      <MobileTerminal 
+        activeInst={activeInst} 
+        onSelect={setActiveInst} 
+        livePrices={marketData} 
+        positions={positions} 
+      />
+    );
+  }
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
@@ -180,128 +180,90 @@ function TerminalContent() {
     <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
       <TerminalTutorial />
 
-      <header className="h-14 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[100] px-2 lg:px-4">
-        <div className="flex items-center space-x-2 lg:space-x-4">
+      <header className="h-14 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[100] px-4">
+        <div className="flex items-center space-x-4">
           <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 xl:hidden text-[#0A0A0A]"><Menu className="w-5 h-5" /></button>
-          <Link href="/client/dashboard" className="hidden sm:block shrink-0">
+          <Link href="/client/dashboard" className="shrink-0">
             <Image src="/assets/logo2.png" alt="Varban" width={80} height={20} className="w-auto object-contain" priority />
           </Link>
-          <div className="h-6 w-px bg-[#E4E4E4] hidden sm:block"></div>
+          <div className="h-6 w-px bg-[#E4E4E4]"></div>
           
-          <div id="tour-market-select">
-            <MarketSelector 
-              activeSymbol={activeInst.symbol} 
-              onSelect={setActiveInst} 
-              livePrices={marketData} 
-            />
-          </div>
+          <MarketSelector 
+            activeSymbol={activeInst.symbol} 
+            onSelect={setActiveInst} 
+            livePrices={marketData} 
+          />
 
           <div className="hidden lg:flex items-center space-x-6 px-4">
             <div className="flex flex-col">
               <span className="text-[8px] font-bold uppercase text-[#6B7280]">Price Factor</span>
-              <span className={cn(
-                "text-xs font-mono font-bold transition-colors",
-                (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]"
-              )}>
+              <span className={cn("text-xs font-mono font-bold transition-colors", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
                 {marketData[activeInst.symbol]?.price?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "---"}
-              </span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[8px] font-bold uppercase text-[#6B7280]">24h Relative</span>
-              <span className={cn(
-                "text-xs font-mono font-bold transition-colors",
-                (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]"
-              )}>
-                {marketData[activeInst.symbol]?.percent !== undefined ? (marketData[activeInst.symbol].percent >= 0 ? '+' : '') + marketData[activeInst.symbol].percent + '%' : "---"}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center space-x-3 lg:space-x-8">
+        <div className="flex items-center space-x-8">
           <div className="hidden xl:flex items-center bg-[#F7F7F5] border border-[#E4E4E4] p-1.5 pr-4 space-x-4">
             <div className="flex items-center bg-white border border-[#E4E4E4] px-3 py-1 shadow-sm">
                <ClockIcon className="w-3 h-3 text-[#0055FF] mr-2" />
                <span className="text-sm font-mono font-bold text-[#0A0A0A] tracking-tighter">{currentTime}</span>
             </div>
-            
             <div className="flex items-center space-x-3">
               <div className="relative flex items-center group">
                 <select 
                   value={locale}
                   onChange={(e) => setLocale(e.target.value as LocaleCode)}
-                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#0A0A0A] outline-none cursor-pointer pr-3 z-10"
+                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#0055FF] outline-none cursor-pointer pr-3"
                 >
                   {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
                     <option key={code} value={code} className="bg-white text-[#0A0A0A]">{label}</option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
-              </div>
-              
-              <div className="w-px h-3 bg-[#E4E4E4]"></div>
-
-              <div className="relative flex items-center group">
-                <select 
-                  value={activeTimezone}
-                  onChange={(e) => handleTimezoneChange(e.target.value)}
-                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#6B7280] outline-none cursor-pointer pr-3 z-10"
-                >
-                  {TIMEZONES.map(tz => <option key={tz.value} value={tz.value} className="bg-white text-[#0A0A0A]">{tz.label}</option>)}
-                </select>
-                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
+                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#0055FF] pointer-events-none" />
               </div>
             </div>
           </div>
 
-          <div id="tour-mode" className="flex flex-col text-right">
-            <span className="text-[7px] lg:text-[8px] font-bold uppercase text-[#6B7280]">{accountMode} BALANCE</span>
-            <span className={cn("text-[10px] lg:text-xs font-mono font-bold", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>
+          <div className="flex flex-col text-right">
+            <span className="text-[8px] font-bold uppercase text-[#6B7280]">{accountMode} BALANCE</span>
+            <span className={cn("text-xs font-mono font-bold", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>
               ${formatNumber(activeBalance, { minimumFractionDigits: 2 })}
             </span>
           </div>
           
-          <div className="relative">
-            <button 
-              onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-              className="w-8 h-8 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs shadow-sm hover:ring-2 ring-[#0055FF]/20 overflow-hidden"
-            >
-              {profile?.profile?.photoUrl ? <img src={profile.profile.photoUrl} className="w-full h-full object-cover" /> : user?.email?.substring(0,2).toUpperCase()}
-            </button>
-            
-            {isProfileDropdownOpen && (
-              <div className="absolute right-0 top-full pt-2">
-                <ProfileDropdown 
-                  user={user} 
-                  profile={profile} 
-                  accountMode={accountMode} 
-                  demoBalance={demoBalance} 
-                  isOpen={isProfileDropdownOpen} 
-                  onClose={() => setIsProfileDropdownOpen(false)} 
-                  onSelectMode={m => { setAccountMode(m); localStorage.setItem('varban_account_mode', m); window.dispatchEvent(new Event('varban_account_mode_changed')); }}
-                />
-              </div>
-            )}
-          </div>
+          <button 
+            onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+            className="w-8 h-8 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs overflow-hidden"
+          >
+            {profile?.profile?.photoUrl ? <img src={profile.profile.photoUrl} className="w-full h-full object-cover" /> : user?.email?.substring(0,2).toUpperCase()}
+          </button>
+          
+          <ProfileDropdown 
+            user={user} 
+            profile={profile} 
+            accountMode={accountMode} 
+            demoBalance={demoBalance} 
+            isOpen={isProfileDropdownOpen} 
+            onClose={() => setIsProfileDropdownOpen(false)} 
+            onSelectMode={m => { setAccountMode(m); localStorage.setItem('varban_account_mode', m); window.dispatchEvent(new Event('varban_account_mode_changed')); }}
+          />
         </div>
       </header>
 
       <div className="flex-grow flex overflow-hidden relative">
         <AuthedSidebar className="hidden xl:flex" />
-
         <main className="flex-grow flex xl:ml-16 overflow-hidden">
-          {/* DESKTOP WORKSPACE (XL ONLY for 3-column) */}
-          <ResizablePanelGroup direction="horizontal" className="hidden xl:flex flex-grow overflow-hidden">
+          <ResizablePanelGroup direction="horizontal" className="flex-grow overflow-hidden">
             <ResizablePanel defaultSize={75} minSize={40}>
               <ResizablePanelGroup direction="vertical">
                 <ResizablePanel defaultSize={70} minSize={30}>
-                  <div id="tour-chart" className="h-full w-full bg-[#F7F7F5] relative">
+                  <div className="h-full w-full bg-[#F7F7F5] relative">
                     <TradingViewChart symbol={activeInst.symbol} />
                   </div>
                 </ResizablePanel>
-                
                 <ResizableHandle withHandle />
-
                 <ResizablePanel defaultSize={30} minSize={10}>
                   <div className="h-full w-full flex flex-col shrink-0 relative">
                     <PortfolioManager 
@@ -317,7 +279,7 @@ function TerminalContent() {
             <ResizableHandle withHandle />
             
             <ResizablePanel defaultSize={25} minSize={20}>
-              <div className="h-full w-full border-l border-[#E4E4E4] shrink-0 bg-white shadow-xl relative z-40 flex flex-col overflow-hidden">
+              <div className="h-full w-full border-l border-[#E4E4E4] bg-white flex flex-col overflow-hidden">
                 <div className="flex border-b border-[#E4E4E4] shrink-0">
                    {[
                      { id: 'TRADE', label: 'Order Ticket', icon: MousePointer2 },
@@ -339,146 +301,32 @@ function TerminalContent() {
 
                 <div className="flex-grow overflow-y-auto no-scrollbar">
                    {activeRightTab === 'TRADE' && (
-                     <div id="tour-settings" className="h-full">
-                        {isDerivedMarket ? (
-                          <DerivedTradeControls 
-                            instrument={activeInst} 
-                            livePrice={marketData[activeInst.symbol]?.price}
-                            balance={activeBalance}
-                            onExecute={handleExecution}
-                          />
-                        ) : (
-                          <ExecutionTicket 
-                            instrument={activeInst} 
-                            livePrice={marketData[activeInst.symbol]?.price}
-                            balance={activeBalance}
-                            onExecute={handleExecution}
-                            accountMode={accountMode}
-                          />
-                        )}
-                     </div>
+                      <ExecutionTicket 
+                        instrument={activeInst} 
+                        livePrice={marketData[activeInst.symbol]?.price}
+                        balance={activeBalance}
+                        onExecute={handleExecution}
+                        accountMode={accountMode}
+                      />
                    )}
                    {activeRightTab === 'STATS' && (
-                     <div className="h-full">
-                        {isDerivedMarket ? (
-                          <DigitStats symbol={activeInst.symbol} livePrice={marketData[activeInst.symbol]?.price} />
-                        ) : (
-                          <div className="p-6 space-y-8 animate-in fade-in duration-300">
-                             <section className="space-y-4">
-                                <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">Instrument Details</h3>
-                                <div className="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase text-[#6B7280]">
-                                   <div><span className="block opacity-50 mb-1">Exchange</span> <span className="text-[#0A0A0A]">Varban Markets</span></div>
-                                   <div><span className="block opacity-50 mb-1">Settlement</span> <span className="text-[#16835B]">Instant</span></div>
-                                   <div><span className="block opacity-50 mb-1">Leverage</span> <span className="text-[#0A0A0A]">1:400</span></div>
-                                   <div><span className="block opacity-50 mb-1">Market State</span> <span className="text-[#16835B]">Active</span></div>
-                                </div>
-                             </section>
-                          </div>
-                        )}
-                     </div>
+                      isDerivedMarket ? (
+                        <DigitStats symbol={activeInst.symbol} livePrice={marketData[activeInst.symbol]?.price} />
+                      ) : (
+                        <div className="p-6 space-y-6">
+                           <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">Technical Analysis</h3>
+                           <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] text-[9px] uppercase font-bold text-[#6B7280]">
+                              Live market telemetry is synchronized with the Varban global relay.
+                           </div>
+                        </div>
+                      )
                    )}
                 </div>
               </div>
             </ResizablePanel>
           </ResizablePanelGroup>
-
-          {/* MOBILE & TABLET MAIN SCREEN - FOCUSED CHART (HIDDEN RIGHT PANEL) */}
-          <div className="flex xl:hidden flex-grow flex-col overflow-hidden">
-            <div id="tour-chart-mobile" className="flex-grow min-h-0 bg-[#F7F7F5] relative">
-              <TradingViewChart symbol={activeInst.symbol} />
-            </div>
-          </div>
         </main>
       </div>
-
-      {/* MOBILE & TABLET BOTTOM ACTION BAR */}
-      <div className="xl:hidden h-16 border-t border-[#E4E4E4] bg-white flex items-center px-4 gap-3 shrink-0 z-[110]">
-        <div className="flex-grow flex flex-col">
-           <span className="text-[10px] font-mono font-bold text-[#6B7280]">{activeInst.symbol}</span>
-           <span className={cn("text-xs font-mono font-bold", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
-              {marketData[activeInst.symbol]?.price?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "---"}
-           </span>
-        </div>
-        <button 
-          onClick={() => setIsTradeDrawerOpen(true)}
-          className="px-8 py-3 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"
-        >
-          Execute <ChevronDown className="w-3.5 h-3.5" />
-        </button>
-      </div>
-
-      {/* MOBILE & TABLET EXECUTION DRAWER */}
-      {isTradeDrawerOpen && (
-        <div className="fixed inset-0 z-[500] xl:hidden">
-          <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsTradeDrawerOpen(false)}></div>
-          <div className="absolute bottom-0 left-0 right-0 bg-white animate-in slide-in-from-bottom duration-300 rounded-t-xl overflow-hidden h-[90vh] flex flex-col shadow-2xl">
-            <div className="flex border-b border-[#E4E4E4] bg-[#F7F7F5] shrink-0">
-               {[
-                 { id: 'TRADE', label: 'Order Ticket', icon: MousePointer2 },
-                 { id: 'STATS', label: isDerivedMarket ? 'Digit Stats' : 'Market Data', icon: isDerivedMarket ? BarChart2 : Layout }
-               ].map(tab => (
-                 <button 
-                  key={tab.id}
-                  onClick={() => setActiveRightTab(tab.id as any)}
-                  className={cn(
-                    "flex-1 py-4 text-[9px] font-bold uppercase tracking-widest border-b-2 transition-all flex flex-col items-center gap-1",
-                    activeRightTab === tab.id ? "border-[#0055FF] text-[#0055FF] bg-white" : "border-transparent text-[#6B7280]"
-                  )}
-                 >
-                   <tab.icon className="w-4 h-4" />
-                   <span>{tab.label}</span>
-                 </button>
-               ))}
-               <button 
-                 onClick={() => setIsTradeDrawerOpen(false)} 
-                 className="px-6 border-l border-[#E4E4E4] text-[#6B7280] hover:text-[#0A0A0A]"
-               >
-                 <X className="w-5 h-5" />
-               </button>
-            </div>
-
-            <div className="flex-grow overflow-y-auto no-scrollbar pb-12">
-               {activeRightTab === 'TRADE' && (
-                  isDerivedMarket ? (
-                    <DerivedTradeControls 
-                      instrument={activeInst} 
-                      livePrice={marketData[activeInst.symbol]?.price}
-                      balance={activeBalance}
-                      onExecute={handleExecution}
-                    />
-                  ) : (
-                    <ExecutionTicket 
-                      instrument={activeInst} 
-                      livePrice={marketData[activeInst.symbol]?.price}
-                      balance={activeBalance}
-                      onExecute={handleExecution}
-                      accountMode={accountMode}
-                    />
-                  )
-               )}
-               {activeRightTab === 'STATS' && (
-                 <div className="h-full bg-white">
-                    {isDerivedMarket ? (
-                      <DigitStats symbol={activeInst.symbol} livePrice={marketData[activeInst.symbol]?.price} />
-                    ) : (
-                      <div className="p-8 space-y-8 animate-in fade-in duration-300">
-                         <section className="space-y-4">
-                            <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">Instrument Details</h3>
-                            <div className="grid grid-cols-2 gap-6 text-[10px] font-bold uppercase text-[#6B7280]">
-                               <div><span className="block opacity-50 mb-1">Exchange</span> <span className="text-[#0A0A0A]">Varban Markets</span></div>
-                               <div><span className="block opacity-50 mb-1">Settlement</span> <span className="text-[#16835B]">Instant</span></div>
-                               <div><span className="block opacity-50 mb-1">Leverage</span> <span className="text-[#0A0A0A]">1:400</span></div>
-                               <div><span className="block opacity-50 mb-1">Market State</span> <span className="text-[#16835B]">Active</span></div>
-                            </div>
-                         </section>
-                      </div>
-                    )}
-                 </div>
-               )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[400] xl:hidden">
