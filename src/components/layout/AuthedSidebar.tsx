@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Monitor, Globe, Briefcase, Target, 
   FileText, Clock, Star, Wallet, User, Bell, ShieldAlert,
   Share2, Newspaper, HelpCircle, Mail, LogOut, Cpu,
-  BarChart4, Calendar, Layers, Zap, ArrowLeftRight
+  BarChart4, Calendar, Layers, Zap, ArrowLeftRight, RefreshCcw
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -57,6 +57,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     {
       title: "TRADE",
       items: [
+        { label: "Exchange", href: "/client/exchange", icon: RefreshCcw, description: "Direct asset conversion and swaps." },
         { label: "Standard Hub", href: "/client/terminal", icon: Monitor, description: "Forex, Crypto and Equities terminal." },
         { label: "Derived Hub", href: "/client/derived-terminal", icon: Zap, description: "Volatility and Synthetic indices hub." },
         { label: t('nav.bots'), href: "/client/bots", icon: Cpu, description: "Automated trading tools and algorithms." },
@@ -93,42 +94,38 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
   const renderItem = (item: any) => {
     const isActive = pathname === item.href || (item.href !== '/client/dashboard' && pathname?.startsWith(item.href));
     
-    const linkElement = (
-      <Link
-        href={item.href}
-        onClick={onLinkClick}
-        className={cn(
-          "flex items-center h-12 px-5 text-[10px] font-bold uppercase tracking-widest transition-all border-l-2 whitespace-nowrap",
-          isActive 
-            ? "text-[#0055FF] bg-[#0055FF]/5 border-[#0055FF]" 
-            : "text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5] border-transparent"
-        )}
-      >
-        <item.icon className={cn("w-4 h-4 shrink-0", isActive ? "text-[#0055FF]" : "text-[#6B7280]")} />
-        <span className={cn(
-          "ml-6 transition-all duration-300",
-          !isMobile && "opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto"
-        )}>
-          {item.label}
-        </span>
-      </Link>
-    );
-
-    if (isMobile) return <div key={item.href}>{linkElement}</div>;
-
     return (
-      <HoverCard key={item.href}>
+      <HoverCard key={item.href} openDelay={0} closeDelay={0}>
         <HoverCardTrigger asChild>
-          {linkElement}
+          <Link
+            href={item.href}
+            onClick={onLinkClick}
+            className={cn(
+              "flex items-center h-12 px-5 text-[10px] font-bold uppercase tracking-widest transition-all border-l-2 whitespace-nowrap",
+              isActive 
+                ? "text-[#0055FF] bg-[#0055FF]/5 border-[#0055FF]" 
+                : "text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5] border-transparent"
+            )}
+          >
+            <item.icon className={cn("w-4 h-4 shrink-0", isActive ? "text-[#0055FF]" : "text-[#6B7280]")} />
+            <span className={cn(
+              "ml-6 transition-all duration-300",
+              !isMobile && "opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto"
+            )}>
+              {item.label}
+            </span>
+          </Link>
         </HoverCardTrigger>
-        <HoverCardContent side="right" className="w-56">
-          <div className="space-y-1">
-            <h4 className="text-[10px] font-bold uppercase text-[#0A0A0A]">{item.label}</h4>
-            <p className="text-[9px] text-[#6B7280] leading-relaxed uppercase font-bold tracking-tight">
-              {item.description}
-            </p>
-          </div>
-        </HoverCardContent>
+        {!isMobile && (
+          <HoverCardContent side="right" className="w-56 p-4">
+            <div className="space-y-1">
+              <h4 className="text-[10px] font-bold uppercase text-[#0A0A0A]">{item.label}</h4>
+              <p className="text-[9px] text-[#6B7280] leading-relaxed uppercase font-bold tracking-tight">
+                {item.description}
+              </p>
+            </div>
+          </HoverCardContent>
+        )}
       </HoverCard>
     );
   };
