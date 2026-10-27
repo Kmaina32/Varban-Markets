@@ -1,3 +1,4 @@
+
 'use client';
 
 /**
@@ -16,7 +17,7 @@ interface PhoneVerificationProps {
   isVerified?: boolean;
 }
 
-export default function PhoneVerification({ currentPhone, isVerified: initialVerified }: PhoneVerificationProps) {
+const PhoneVerification = ({ currentPhone, isVerified: initialVerified }: PhoneVerificationProps) => {
   const { user } = useUser();
   const [phoneNumber, setPhoneNumber] = useState(currentPhone || '');
   const [isVerified, setIsVerified] = useState(initialVerified);
@@ -179,4 +180,6 @@ export default function PhoneVerification({ currentPhone, isVerified: initialVer
       )}
     </div>
   );
-}
+};
+
+export default PhoneVerification;
