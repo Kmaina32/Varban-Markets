@@ -1,12 +1,13 @@
 'use client';
 
 /**
- * @fileOverview Institutional Synthetic Charting Node.
- * Tuned for sub-second tick visualization using Lightweight Charts.
+ * @fileOverview Custom Institutional Synthetic Charting Node.
+ * Replaces TradingView for derived markets with a high-performance tick-line visualizer.
+ * Matched to the user-provided dark-themed reference.
  */
 
 import React, { useEffect, useRef } from 'react';
-import { createChart, IChartApi, ISeriesApi, ColorType } from 'lightweight-charts';
+import { createChart, IChartApi, ISeriesApi, ColorType, LineStyle } from 'lightweight-charts';
 import { Tick } from '@/app/lib/synthetic/use-synthetic-feed';
 
 interface SyntheticChartProps {
@@ -24,30 +25,51 @@ export default function SyntheticChart({ ticks, loading }: SyntheticChartProps) 
 
     const chart = createChart(containerRef.current, {
       layout: {
-        background: { type: ColorType.Solid, color: '#ffffff' },
-        textColor: '#6B7280',
+        background: { type: ColorType.Solid, color: '#131722' },
+        textColor: '#D1D4DC',
         fontFamily: 'Inter, sans-serif',
       },
       grid: {
-        vertLines: { color: '#F3F4F6' },
-        horzLines: { color: '#F3F4F6' },
+        vertLines: { color: 'rgba(42, 46, 57, 0.5)' },
+        horzLines: { color: 'rgba(42, 46, 57, 0.5)' },
       },
       width: containerRef.current.clientWidth,
       height: containerRef.current.clientHeight,
       timeScale: {
         timeVisible: true,
         secondsVisible: true,
-        borderColor: '#E4E4E4',
+        borderColor: '#2A2E39',
+        rightOffset: 12,
+        barSpacing: 15,
       },
       rightPriceScale: {
-        borderColor: '#E4E4E4',
-        scaleMargins: { top: 0.2, bottom: 0.2 },
+        borderColor: '#2A2E39',
+        scaleMargins: { top: 0.1, bottom: 0.1 },
+        autoScale: true,
+      },
+      crosshair: {
+        vertLine: {
+          color: '#758696',
+          width: 1,
+          style: LineStyle.SparseDotted,
+          labelBackgroundColor: '#131722',
+        },
+        horzLine: {
+          color: '#758696',
+          width: 1,
+          style: LineStyle.SparseDotted,
+          labelBackgroundColor: '#131722',
+        },
       },
     });
 
     const lineSeries = chart.addLineSeries({
-      color: '#0055FF',
+      color: '#FFFFFF',
       lineWidth: 2,
+      crosshairMarkerVisible: true,
+      lastValueVisible: true,
+      priceLineVisible: true,
+      priceLineColor: '#758696',
       priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
     });
 
@@ -56,7 +78,10 @@ export default function SyntheticChart({ ticks, loading }: SyntheticChartProps) 
 
     const handleResize = () => {
       if (containerRef.current) {
-        chart.applyOptions({ width: containerRef.current.clientWidth, height: containerRef.current.clientHeight });
+        chart.applyOptions({ 
+          width: containerRef.current.clientWidth, 
+          height: containerRef.current.clientHeight 
+        });
       }
     };
 
@@ -78,10 +103,10 @@ export default function SyntheticChart({ ticks, loading }: SyntheticChartProps) 
   }, [ticks]);
 
   return (
-    <div className="w-full h-full relative bg-white">
+    <div className="w-full h-full relative bg-[#131722]">
       {loading && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 backdrop-blur-[1px]">
-          <div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin" />
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#131722]/80 backdrop-blur-[1px]">
+          <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
         </div>
       )}
       <div ref={containerRef} className="w-full h-full" />

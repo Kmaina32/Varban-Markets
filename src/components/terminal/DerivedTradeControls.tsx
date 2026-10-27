@@ -1,15 +1,17 @@
 'use client';
 
 /**
- * @fileOverview Specialized Derived/Synthetic Trade Controls.
- * Handles Rise/Fall and Even/Odd contracts with deterministic settlement.
+ * @fileOverview High-Fidelity Derived Markets Execution Panel.
+ * Matched precisely to the reference screenshot.
+ * Implements Rise/Fall with integrated payout calculations.
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Instrument } from '@/app/lib/instruments';
 import { cn } from '@/app/lib/utils';
-import { ArrowUpRight, ArrowDownLeft, ShieldCheck, Zap, Info } from 'lucide-react';
-import { getPracticeBalance, updatePracticeBalance } from '@/app/lib/demo-wallet';
+import { ChevronRight, Info, Plus, Minus } from 'lucide-react';
+import { useTranslation } from '@/app/lib/i18n-context';
+import { Switch } from '@/components/ui/switch';
 
 interface DerivedTradeControlsProps {
   instrument: Instrument;
@@ -19,146 +21,101 @@ interface DerivedTradeControlsProps {
 }
 
 export default function DerivedTradeControls({ instrument, livePrice, balance, onExecute }: DerivedTradeControlsProps) {
-  const [activeMode, setActiveMode] = useState<'EVEN_ODD' | 'RISE_FALL'>('EVEN_ODD');
-  const [stake, setStake] = useState<number>(10);
-  const [duration, setDuration] = useState<number>(1); // Ticks
+  const { formatNumber } = useTranslation();
+  const [side, setSide] = useState<'RISE' | 'FALL'>('RISE');
+  const [duration, setDuration] = useState<number>(5);
+  const [stake, setStake] = useState<number>(2);
+  const [allowEquals, setAllowEquals] = useState(false);
 
-  const PayoutRatio = activeMode === 'EVEN_ODD' ? 0.96 : 0.85;
-  const potentialReturn = (stake * (1 + PayoutRatio)).toFixed(2);
-
-  const handleTrade = (side: string) => {
-    if (stake > balance) {
-      alert("Insufficient practice funds.");
-      return;
-    }
-
-    // Deduct stake
-    updatePracticeBalance(-stake);
-
-    onExecute({
-      symbol: instrument.symbol,
-      side,
-      mode: 'SYNTHETIC',
-      amount: stake,
-      derivedMode: activeMode,
-      durationTicks: duration,
-      entryPrice: livePrice,
-      payoutMultiplier: 1 + PayoutRatio
-    });
-  };
+  // Payout calculation: (1 - houseMargin) / prob
+  // With 4% margin and ~50% prob, multiplier is roughly 1.9x
+  const payoutMultiplier = allowEquals ? 1.85 : 1.90;
+  const potentialPayout = (stake * payoutMultiplier).toFixed(2);
 
   return (
-    <div className="h-full flex flex-col bg-white">
-      <div className="flex bg-[#F7F7F5] border-b border-[#E4E4E4] p-1 shrink-0">
-        <button 
-          onClick={() => setActiveMode('EVEN_ODD')}
-          className={cn(
-            "flex-1 py-2.5 text-[9px] font-bold uppercase tracking-widest transition-all",
-            activeMode === 'EVEN_ODD' ? "bg-white text-[#0055FF] shadow-sm" : "text-[#6B7280] hover:text-[#0A0A0A]"
-          )}
-        >
-          Even / Odd
+    <div className="flex flex-col h-full bg-[#131722] text-white">
+      <div className="flex-grow p-6 space-y-6 overflow-y-auto no-scrollbar">
+        
+        {/* Help Link */}
+        <button className="flex items-center gap-2 text-[11px] font-medium text-[#D1D4DC] hover:text-white transition-colors group">
+          <span>How to trade Rise/Fall?</span>
+          <ChevronRight className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100" />
         </button>
-        <button 
-          onClick={() => setActiveMode('RISE_FALL')}
-          className={cn(
-            "flex-1 py-2.5 text-[9px] font-bold uppercase tracking-widest transition-all",
-            activeMode === 'RISE_FALL' ? "bg-white text-[#0055FF] shadow-sm" : "text-[#6B7280] hover:text-[#0A0A0A]"
-          )}
-        >
-          Rise / Fall
-        </button>
-      </div>
 
-      <div className="flex-grow overflow-y-auto no-scrollbar p-6 space-y-8">
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block">Duration (Ticks)</label>
-            <div className="grid grid-cols-4 gap-1.5">
-               {[1, 5, 10, 20].map(d => (
-                 <button 
-                  key={d}
-                  onClick={() => setDuration(d)}
-                  className={cn(
-                    "py-2.5 text-[10px] font-bold border transition-all",
-                    duration === d ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-[#F7F7F5] text-[#6B7280] border-[#E4E4E4]"
-                  )}
-                 >
-                   {d}T
-                 </button>
-               ))}
-            </div>
-          </div>
+        {/* Direction Toggle */}
+        <div className="p-1 bg-[#1E222D] rounded-lg flex">
+          <button
+            onClick={() => setSide('RISE')}
+            className={cn(
+              "flex-1 py-3 text-[11px] font-bold uppercase tracking-widest rounded-md transition-all",
+              side === 'RISE' ? "bg-[#31363F] text-[#00A015] shadow-lg" : "text-[#6B7280]"
+            )}
+          >
+            Rise
+          </button>
+          <button
+            onClick={() => setSide('FALL')}
+            className={cn(
+              "flex-1 py-3 text-[11px] font-bold uppercase tracking-widest rounded-md transition-all",
+              side === 'FALL' ? "bg-[#31363F] text-[#FF444F] shadow-lg" : "text-[#6B7280]"
+            )}
+          >
+            Fall
+          </button>
+        </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between items-end">
-              <label className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">Stake (USD)</label>
-              <span className="text-[9px] text-[#6B7280] font-mono">Min: $1.00</span>
-            </div>
+        {/* Duration Input */}
+        <div className="space-y-2">
+          <label className="text-[10px] font-bold uppercase text-[#6B7280] tracking-widest px-1">Duration</label>
+          <div className="relative group">
             <input 
-              type="number"
-              value={stake}
-              onChange={(e) => setStake(Number(e.target.value))}
-              className="w-full p-4 bg-[#F7F7F5] border border-[#E4E4E4] font-mono text-3xl font-bold focus:border-[#0055FF] outline-none"
+              type="text" 
+              readOnly 
+              value={`${duration} ticks`} 
+              className="w-full bg-[#1E222D] border border-transparent group-hover:border-[#31363F] p-4 text-sm font-bold outline-none cursor-pointer"
             />
           </div>
+        </div>
 
-          <div className="p-5 bg-[#0055FF]/5 border border-[#0055FF]/10 space-y-3">
-            <div className="flex justify-between items-center text-[10px] font-bold uppercase">
-              <span className="text-[#6B7280]">Payout Ratio</span>
-              <span className="text-[#16835B]">{(PayoutRatio * 100).toFixed(0)}%</span>
-            </div>
-            <div className="flex justify-between items-center border-t border-[#0055FF]/10 pt-3 text-[11px] font-bold uppercase tracking-widest">
-              <span className="text-[#0A0A0A]">Total Payout</span>
-              <span className="text-[#16835B] font-mono">${potentialReturn}</span>
-            </div>
+        {/* Stake Input */}
+        <div className="space-y-2">
+          <label className="text-[10px] font-bold uppercase text-[#6B7280] tracking-widest px-1">Stake</label>
+          <div className="relative group">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[#6B7280] font-bold">$</span>
+            <input 
+              type="number" 
+              value={stake}
+              onChange={(e) => setStake(Number(e.target.value))}
+              className="w-full bg-[#1E222D] border border-transparent group-hover:border-[#31363F] p-4 pl-7 text-sm font-mono font-bold outline-none"
+            />
           </div>
         </div>
 
-        <div className="space-y-4">
-          {activeMode === 'EVEN_ODD' ? (
-            <div className="grid grid-cols-2 gap-4">
-              <button 
-                onClick={() => handleTrade('EVEN')}
-                className="group py-12 border-2 border-[#16835B] bg-white hover:bg-[#16835B] transition-all flex flex-col items-center justify-center space-y-2 shadow-lg active:scale-[0.98]"
-              >
-                <span className="text-sm font-bold uppercase tracking-[0.2em] text-[#0A0A0A] group-hover:text-white">Even</span>
-                <span className="text-[8px] font-mono font-bold text-[#16835B] group-hover:text-white/80">0, 2, 4, 6, 8</span>
-              </button>
-              <button 
-                onClick={() => handleTrade('ODD')}
-                className="group py-12 border-2 border-[#C43D3D] bg-white hover:bg-[#C43D3D] transition-all flex flex-col items-center justify-center space-y-2 shadow-lg active:scale-[0.98]"
-              >
-                <span className="text-sm font-bold uppercase tracking-[0.2em] text-[#0A0A0A] group-hover:text-white">Odd</span>
-                <span className="text-[8px] font-mono font-bold text-[#C43D3D] group-hover:text-white/80">1, 3, 5, 7, 9</span>
-              </button>
+        {/* Allow Equals Toggle */}
+        <div className="flex items-center justify-between px-1 py-2">
+          <div className="flex items-center gap-2 border-b border-[#6B7280] border-dotted cursor-help group relative">
+            <span className="text-[11px] font-bold text-[#D1D4DC]">Allow equals</span>
+            <div className="absolute bottom-full left-0 mb-2 w-48 p-2 bg-[#1E222D] border border-[#31363F] text-[9px] hidden group-hover:block z-50">
+              Win if exit price equals entry price. Payout adjusted accordingly.
             </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-4">
-              <button 
-                onClick={() => handleTrade('RISE')}
-                className="group py-12 border-2 border-[#16835B] bg-white hover:bg-[#16835B] transition-all flex flex-col items-center justify-center space-y-2 shadow-lg active:scale-[0.98]"
-              >
-                <ArrowUpRight className="w-6 h-6 text-[#16835B] group-hover:text-white" />
-                <span className="text-sm font-bold uppercase tracking-[0.2em] text-[#0A0A0A] group-hover:text-white">Rise</span>
-              </button>
-              <button 
-                onClick={() => handleTrade('FALL')}
-                className="group py-12 border-2 border-[#C43D3D] bg-white hover:bg-[#C43D3D] transition-all flex flex-col items-center justify-center space-y-2 shadow-lg active:scale-[0.98]"
-              >
-                <ArrowDownLeft className="w-6 h-6 text-[#C43D3D] group-hover:text-white" />
-                <span className="text-sm font-bold uppercase tracking-[0.2em] text-[#0A0A0A] group-hover:text-white">Fall</span>
-              </button>
-            </div>
-          )}
+          </div>
+          <Switch 
+            checked={allowEquals} 
+            onCheckedChange={setAllowEquals} 
+            className="data-[state=checked]:bg-[#00A015] data-[state=unchecked]:bg-[#31363F]"
+          />
         </div>
+      </div>
 
-        <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-start gap-3">
-           <ShieldCheck className="w-4 h-4 text-[#16835B] shrink-0 mt-0.5" />
-           <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
-             Deterministic settlement active. Your stake is protected by the Varban matching node v4.2.
-           </p>
-        </div>
+      {/* Execution Footer */}
+      <div className="p-6 shrink-0 bg-[#131722] border-t border-[#1E222D]">
+        <button
+          onClick={() => onExecute({ side, stake, duration, allowEquals })}
+          className="w-full py-4 bg-[#00A015] hover:bg-[#008F12] text-white rounded-lg shadow-xl transition-all active:scale-[0.98] flex flex-col items-center justify-center"
+        >
+          <span className="text-sm font-bold uppercase tracking-widest">Buy</span>
+          <span className="text-[10px] font-medium text-white/80">Payout ${potentialPayout}</span>
+        </button>
       </div>
     </div>
   );
