@@ -2,11 +2,12 @@
 
 /**
  * @fileOverview Institutional Market Selector.
- * Categorized instrument browsing with real-time price highlights.
+ * Updated: Matches reference design with transparent background, 
+ * Blue titles, and Green subtitles for Synthetic indices.
  */
 
 import React, { useState, useMemo } from 'react';
-import { Search, Star, Globe, TrendingUp, TrendingDown, ChevronDown } from 'lucide-react';
+import { Search, ChevronDown } from 'lucide-react';
 import { AVAILABLE_INSTRUMENTS, Instrument } from '@/app/lib/instruments';
 import { MarketIcon } from '@/components/MarketIcon';
 import { cn } from '@/app/lib/utils';
@@ -37,19 +38,39 @@ export default function MarketSelector({ activeSymbol, onSelect, livePrices }: M
     });
   }, [selectedCat, search]);
 
+  const isSynthetic = activeInst.category === 'Synthetic Indices';
+  const volNumber = activeInst.symbol.replace(/\D/g, '');
+
   return (
-    <div className="relative">
+    <div className="relative flex items-center">
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-4 h-14 px-4 bg-white border-r border-[#E4E4E4] hover:bg-[#F7F7F5] transition-colors group min-w-[240px]"
+        className="flex items-center space-x-3 h-14 bg-transparent hover:bg-[#F7F7F5]/50 transition-colors group min-w-[200px]"
       >
-        <MarketIcon symbol={activeInst.symbol} size="sm" />
+        {isSynthetic ? (
+          <div className="w-8 h-8 rounded-full bg-[#16835B] flex items-center justify-center shadow-sm shrink-0">
+            <span className="text-[10px] font-bold text-white font-mono">{volNumber || '10'}</span>
+          </div>
+        ) : (
+          <MarketIcon symbol={activeInst.symbol} size="sm" />
+        )}
+        
         <div className="text-left flex-grow">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold text-[#0A0A0A]">{activeInst.symbol}</span>
+          <div className="flex items-center gap-1">
+            <span className={cn(
+              "text-[10px] font-bold uppercase tracking-widest block leading-none",
+              isSynthetic ? "text-[#0055FF]" : "text-[#0A0A0A]"
+            )}>
+              {isSynthetic ? `${activeInst.name}` : activeInst.symbol}
+            </span>
             <ChevronDown className={cn("w-3 h-3 text-[#6B7280] transition-transform", isOpen && "rotate-180")} />
           </div>
-          <span className="text-[9px] text-[#6B7280] uppercase font-bold tracking-tight block">{activeInst.name}</span>
+          <span className={cn(
+            "text-[8px] font-bold uppercase tracking-widest block mt-1",
+            isSynthetic ? "text-[#16835B]" : "text-[#6B7280]"
+          )}>
+            {isSynthetic ? "Synthetic Node v4.2" : activeInst.name}
+          </span>
         </div>
       </button>
 
@@ -97,7 +118,7 @@ export default function MarketSelector({ activeSymbol, onSelect, livePrices }: M
                   <div className="flex items-center gap-4">
                     <MarketIcon symbol={inst.symbol} size="sm" />
                     <div className="text-left">
-                      <span className="text-xs font-mono font-bold text-[#0A0A0A] group-hover:text-[#0055FF] transition-colors">{inst.symbol}</span>
+                      <span className="text-xs font-mono font-bold text-[#0A0A0A] group-hover:text-[#0055FF] transition-colors uppercase">{inst.symbol}</span>
                       <span className="text-[9px] text-[#6B7280] uppercase block">{inst.name}</span>
                     </div>
                   </div>

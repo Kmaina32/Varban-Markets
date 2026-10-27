@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Institutional Derived Markets Terminal (White Theme).
- * Updated: Volatility icons now display index numbers instead of icons.
+ * Updated: Integrated standard MarketSelector with refined reference design.
  */
 
 import { useState, useEffect, Suspense, useMemo } from "react";
@@ -107,9 +107,6 @@ function DerivedTerminalContent() {
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
-  // Extract Volatility Number for Icon
-  const volNumber = activeInst.symbol.replace(/\D/g, '');
-
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
       {/* Standard Branded Header */}
@@ -119,20 +116,16 @@ function DerivedTerminalContent() {
           
           <Link href="/client/dashboard" className="shrink-0 flex items-center gap-4">
             <Image src="/assets/logo2.png" alt="Varban" width={95} height={22} className="w-auto object-contain" priority />
-            <div className="h-6 w-px bg-[#E4E4E4] hidden md:block"></div>
           </Link>
 
-          <div className="hidden md:flex items-center gap-3">
-             <div className="w-8 h-8 rounded-full bg-[#16835B] flex items-center justify-center shadow-sm">
-                <span className="text-[10px] font-bold text-white font-mono">{volNumber || 'V'}</span>
-             </div>
-             <div className="flex flex-col">
-                <div className="flex items-center gap-2 cursor-pointer group">
-                   <span className="text-[11px] font-bold uppercase tracking-widest group-hover:text-[#0055FF] transition-colors">{activeInst.name}</span>
-                   <ChevronDown className="w-3 h-3 text-[#6B7280]" />
-                </div>
-                <span className="text-[8px] font-bold text-[#16835B] uppercase tracking-widest">Synthetic Node v4.2</span>
-             </div>
+          <div className="h-8 w-px bg-[#E4E4E4] hidden md:block mx-4"></div>
+
+          <div className="hidden md:block">
+            <MarketSelector 
+              activeSymbol={activeInst.symbol} 
+              onSelect={setActiveInst} 
+              livePrices={{ [activeInst.symbol]: { price: lastTick?.price || 0, percent: 0 } }} 
+            />
           </div>
         </div>
 
