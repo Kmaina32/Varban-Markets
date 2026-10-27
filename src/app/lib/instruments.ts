@@ -11,6 +11,41 @@ export interface Instrument {
 }
 
 export const AVAILABLE_INSTRUMENTS: Instrument[] = [
+  // CRYPTO (BTC/USD IS NOW PRIMARY)
+  {
+    symbol: "BTC/USD",
+    name: "Bitcoin / US Dollar",
+    category: "Crypto",
+    status: "Open",
+    marketType: "Digital Derivative",
+    minStake: 50,
+    maxStake: 50000,
+    durationOptions: ["1m", "5m", "15m", "1h", "1D"],
+    settlementMethod: "Index Liquidity Weighting"
+  },
+  {
+    symbol: "ETH/USD",
+    name: "Ethereum / US Dollar",
+    category: "Crypto",
+    status: "Open",
+    marketType: "Digital Derivative",
+    minStake: 20,
+    maxStake: 50000,
+    durationOptions: ["5m", "30m", "1h", "1D"],
+    settlementMethod: "Index Liquidity Weighting"
+  },
+  {
+    symbol: "SOL/USD",
+    name: "Solana / US Dollar",
+    category: "Crypto",
+    status: "Open",
+    marketType: "Digital Derivative",
+    minStake: 10,
+    maxStake: 25000,
+    durationOptions: ["1m", "5m", "15m", "1h"],
+    settlementMethod: "Index Liquidity Weighting"
+  },
+
   // SYNTHETIC INDICES
   {
     symbol: "V10",
@@ -66,41 +101,6 @@ export const AVAILABLE_INSTRUMENTS: Instrument[] = [
     maxStake: 5000,
     durationOptions: ["1m", "5m", "15m", "1h"],
     settlementMethod: "Deterministic Algorithm"
-  },
-
-  // CRYPTO
-  {
-    symbol: "BTC/USD",
-    name: "Bitcoin / US Dollar",
-    category: "Crypto",
-    status: "Open",
-    marketType: "Digital Derivative",
-    minStake: 50,
-    maxStake: 50000,
-    durationOptions: ["1m", "5m", "15m", "1h", "1D"],
-    settlementMethod: "Index Liquidity Weighting"
-  },
-  {
-    symbol: "ETH/USD",
-    name: "Ethereum / US Dollar",
-    category: "Crypto",
-    status: "Open",
-    marketType: "Digital Derivative",
-    minStake: 20,
-    maxStake: 50000,
-    durationOptions: ["5m", "30m", "1h", "1D"],
-    settlementMethod: "Index Liquidity Weighting"
-  },
-  {
-    symbol: "SOL/USD",
-    name: "Solana / US Dollar",
-    category: "Crypto",
-    status: "Open",
-    marketType: "Digital Derivative",
-    minStake: 10,
-    maxStake: 25000,
-    durationOptions: ["1m", "5m", "15m", "1h"],
-    settlementMethod: "Index Liquidity Weighting"
   },
 
   // FOREX

@@ -3,6 +3,7 @@
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
  * Refined 2-Panel Sidebar Architecture with high-fidelity execution node.
+ * Updated: BTC/USD as default primary market.
  */
 
 import { useState, useEffect, Suspense, useMemo } from "react";
@@ -87,9 +88,15 @@ function TerminalContent() {
   const [currentTime, setCurrentTime] = useState("");
   const activeTimezone = profile?.preferences?.timezone || "UTC+0";
 
-  const [activeInst, setActiveInst] = useState<Instrument>(
-    AVAILABLE_INSTRUMENTS.find(i => i.symbol === symbolParam) || AVAILABLE_INSTRUMENTS[0]
-  );
+  // BTC/USD as Primary Default
+  const [activeInst, setActiveInst] = useState<Instrument>(() => {
+    if (symbolParam) {
+      const found = AVAILABLE_INSTRUMENTS.find(i => i.symbol === symbolParam);
+      if (found) return found;
+    }
+    return AVAILABLE_INSTRUMENTS.find(i => i.symbol === 'BTC/USD') || AVAILABLE_INSTRUMENTS[0];
+  });
+
   const [marketData, setMarketData] = useState<Record<string, { price: number; percent: number }>>({});
   const [positions, setPositions] = useState<Position[]>([]);
 
@@ -364,6 +371,7 @@ function TerminalContent() {
             </ResizablePanel>
           </ResizablePanelGroup>
 
+          {/* MOBILE TERMINAL VIEW */}
           <div className="flex lg:hidden flex-grow flex-col overflow-hidden">
             <div id="tour-chart-mobile" className="flex-grow min-h-0 bg-[#F7F7F5] relative">
               <TradingViewChart symbol={activeInst.symbol} />
@@ -372,6 +380,7 @@ function TerminalContent() {
         </main>
       </div>
 
+      {/* MOBILE BOTTOM ACTION BAR */}
       <div className="lg:hidden h-16 border-t border-[#E4E4E4] bg-white flex items-center px-4 gap-3 shrink-0 z-[110]">
         <div className="flex-grow flex flex-col">
            <span className="text-[10px] font-mono font-bold text-[#6B7280]">{activeInst.symbol}</span>
@@ -387,15 +396,19 @@ function TerminalContent() {
         </button>
       </div>
 
+      {/* MOBILE EXECUTION DRAWER */}
       {isTradeDrawerOpen && (
         <div className="fixed inset-0 z-[500] lg:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsTradeDrawerOpen(false)}></div>
-          <div className="absolute bottom-0 left-0 right-0 bg-white animate-in slide-in-from-bottom duration-300 rounded-t-xl overflow-hidden max-h-[90vh] flex flex-col shadow-2xl">
+          <div className="absolute bottom-0 left-0 right-0 bg-white animate-in slide-in-from-bottom duration-300 rounded-t-xl overflow-hidden max-h-[90vh] flex flex-col shadow-2xl border-t-4 border-t-[#0055FF]">
             <div className="p-4 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5]">
-               <span className="text-[10px] font-bold uppercase tracking-widest">Execute: {activeInst.symbol}</span>
-               <button onClick={() => setIsTradeDrawerOpen(false)} className="p-1"><X className="w-5 h-5" /></button>
+               <div className="flex flex-col">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Execution: {activeInst.symbol}</span>
+                  <span className="text-[8px] font-bold text-[#6B7280] uppercase tracking-tighter">Order Ticket Node</span>
+               </div>
+               <button onClick={() => setIsTradeDrawerOpen(false)} className="p-2 bg-white border border-[#E4E4E4] rounded-full shadow-sm"><X className="w-4 h-4 text-[#0A0A0A]" /></button>
             </div>
-            <div className="flex-grow overflow-y-auto">
+            <div className="flex-grow overflow-y-auto no-scrollbar">
               <ExecutionTicket 
                 instrument={activeInst} 
                 livePrice={marketData[activeInst.symbol]?.price}
