@@ -110,7 +110,7 @@ export default function WalletClient() {
       </div>
 
       <div className="max-w-6xl mx-auto space-y-6">
-        <div id="tour-fund-nav" className="flex border-b border-[#E4E4E4] bg-white sticky top-[-1px] z-20 shadow-sm overflow-x-auto no-scrollbar">
+        <div id="tour-fund-nav" className="flex border-b border-[#E4E4E4] bg-white sticky top-[-1px] z-20 shadow-sm overflow-x-auto no-scrollbar rounded-xl">
           {[
             { id: 'overview', label: 'Overview', icon: Wallet },
             { id: 'deposit', label: t('wallet.deposit'), icon: ArrowDownCircle },
@@ -133,8 +133,8 @@ export default function WalletClient() {
                       <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block mb-1">{accountMode === 'REAL' ? t('wallet.liquidBalance') : t('wallet.practiceAllocation')}</span>
                       <h2 className={cn("text-4xl font-mono font-bold tracking-tight", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>{profileLoading ? "..." : `$${formatNumber(activeBalance, { minimumFractionDigits: 2 })}`}</h2>
                       <div className="mt-6 flex gap-4">
-                        <button onClick={() => handleTabChange('deposit')} className="px-5 py-2.5 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0055FF] transition-all flex items-center gap-2"><ArrowDownLeft className="w-3 h-3 text-[#16835B]" /> {t('wallet.deposit')}</button>
-                        <button onClick={() => handleTabChange('withdraw')} className="px-5 py-2.5 bg-white border border-[#E4E4E4] text-[#0A0A0A] text-[10px] font-bold uppercase tracking-widest hover:bg-[#F7F7F5] transition-all flex items-center gap-2"><ArrowUpRight className="w-3 h-3 text-[#0055FF]" /> {t('wallet.withdraw')}</button>
+                        <button onClick={() => handleTabChange('deposit')} className="px-5 py-2.5 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0055FF] transition-all flex items-center gap-2 rounded-xl"><ArrowDownLeft className="w-3 h-3 text-[#16835B]" /> {t('wallet.deposit')}</button>
+                        <button onClick={() => handleTabChange('withdraw')} className="px-5 py-2.5 bg-white border border-[#E4E4E4] text-[#0A0A0A] text-[10px] font-bold uppercase tracking-widest hover:bg-[#F7F7F5] transition-all flex items-center gap-2 rounded-xl"><ArrowUpRight className="w-3 h-3 text-[#0055FF]" /> {t('wallet.withdraw')}</button>
                       </div>
                     </div>
                     <Wallet className="w-12 h-12 text-[#E4E4E4]" />
@@ -188,12 +188,12 @@ export default function WalletClient() {
                           <td className="p-4">{tx.type}</td>
                           <td className="p-4 text-right">${formatNumber(tx.amount || 0, { minimumFractionDigits: 2 })}</td>
                           <td className="p-4 text-center">
-                             <span className={cn("px-2 py-0.5 border text-[9px] font-bold uppercase", tx.status === 'Confirmed' ? "border-[#16835B] text-[#16835B]" : "border-[#C9A227] text-[#C9A227]")}>
+                             <span className={cn("px-2 py-0.5 border text-[9px] font-bold uppercase rounded-lg", tx.status === 'Confirmed' ? "border-[#16835B] text-[#16835B]" : "border-[#C9A227] text-[#C9A227]")}>
                                {tx.status}
                              </span>
                           </td>
                           <td className="p-4 text-center">
-                            <button onClick={() => handleDownloadReceipt(tx)} disabled={isDownloadingReceipt} className="p-1.5 border border-[#E4E4E4] bg-white opacity-0 group-hover:opacity-100 transition-all">
+                            <button onClick={() => handleDownloadReceipt(tx)} disabled={isDownloadingReceipt} className="p-1.5 border border-[#E4E4E4] bg-white opacity-0 group-hover:opacity-100 transition-all rounded-lg">
                               <Download className="w-3.5 h-3.5" />
                             </button>
                           </td>
@@ -206,7 +206,7 @@ export default function WalletClient() {
             </div>
           )}
         </div>
-        <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-start gap-3"><Shield className="w-4 h-4 text-[#C9A227] shrink-0 mt-0.5" /><p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">{t('wallet.transparencyNotice')}</p></div>
+        <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex items-start gap-3 rounded-2xl"><Shield className="w-4 h-4 text-[#C9A227] shrink-0 mt-0.5" /><p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">{t('wallet.transparencyNotice')}</p></div>
       </div>
     </AuthedLayout>
   );

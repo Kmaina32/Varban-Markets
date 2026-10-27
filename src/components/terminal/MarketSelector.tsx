@@ -54,8 +54,8 @@ export default function MarketSelector({ activeSymbol, onSelect, livePrices }: M
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 w-[450px] bg-white border border-[#E4E4E4] shadow-2xl z-[600] animate-in fade-in slide-in-from-top-1 duration-200">
-          <div className="p-4 border-b border-[#E4E4E4] space-y-4">
+        <div className="absolute top-full left-0 w-[450px] bg-white border border-[#E4E4E4] shadow-2xl z-[600] animate-in fade-in slide-in-from-top-1 duration-200 rounded-2xl overflow-hidden mt-2">
+          <div className="p-4 border-b border-[#E4E4E4] space-y-4 bg-white">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]" />
               <input 
@@ -63,7 +63,7 @@ export default function MarketSelector({ activeSymbol, onSelect, livePrices }: M
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search ticker or asset name..."
-                className="w-full pl-10 pr-4 py-2 bg-[#F7F7F5] border border-[#E4E4E4] text-xs focus:outline-none focus:border-[#0055FF]"
+                className="w-full pl-10 pr-4 py-2.5 bg-[#F7F7F5] border border-[#E4E4E4] text-xs focus:outline-none focus:border-[#0055FF] rounded-xl"
               />
             </div>
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
@@ -72,7 +72,7 @@ export default function MarketSelector({ activeSymbol, onSelect, livePrices }: M
                   key={cat}
                   onClick={() => setSelectedCat(cat)}
                   className={cn(
-                    "px-3 py-1 text-[9px] font-bold uppercase tracking-widest border transition-all whitespace-nowrap",
+                    "px-3 py-1 text-[9px] font-bold uppercase tracking-widest border transition-all whitespace-nowrap rounded-lg",
                     selectedCat === cat ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white text-[#6B7280] border-[#E4E4E4] hover:bg-[#F7F7F5]"
                   )}
                 >
@@ -82,7 +82,7 @@ export default function MarketSelector({ activeSymbol, onSelect, livePrices }: M
             </div>
           </div>
 
-          <div className="max-h-[400px] overflow-y-auto no-scrollbar divide-y divide-[#F7F7F5]">
+          <div className="max-h-[400px] overflow-y-auto no-scrollbar divide-y divide-[#F7F7F5] bg-white">
             {filtered.map(inst => {
               const live = livePrices[inst.symbol];
               return (

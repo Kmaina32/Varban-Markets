@@ -23,7 +23,7 @@
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
-    --radius: 0rem;
+    --radius: 1.25rem;
   }
 
   * {
@@ -57,11 +57,11 @@
 
 @layer components {
   .btn-institutional-primary {
-    @apply inline-flex items-center justify-center bg-[#0A0A0A] text-white font-bold text-[10px] uppercase tracking-widest px-6 py-3.5 transition-all border border-[#0A0A0A] hover:bg-[#0055FF] hover:border-[#0055FF] disabled:opacity-40;
+    @apply inline-flex items-center justify-center bg-[#0A0A0A] text-white font-bold text-[10px] uppercase tracking-widest px-6 py-3.5 transition-all border border-[#0A0A0A] hover:bg-[#0055FF] hover:border-[#0055FF] rounded-xl disabled:opacity-40;
   }
   
   .btn-institutional-secondary {
-    @apply inline-flex items-center justify-center bg-white text-[#0A0A0A] font-bold text-[10px] uppercase tracking-widest px-6 py-3.5 transition-all border border-[#E4E4E4] hover:bg-[#F7F7F5] disabled:opacity-40;
+    @apply inline-flex items-center justify-center bg-white text-[#0A0A0A] font-bold text-[10px] uppercase tracking-widest px-6 py-3.5 transition-all border border-[#E4E4E4] hover:bg-[#F7F7F5] rounded-xl disabled:opacity-40;
   }
 }
 

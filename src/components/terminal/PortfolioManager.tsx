@@ -39,7 +39,7 @@ export default function PortfolioManager({ positions, orders, history, loading }
   ];
 
   return (
-    <div className="h-full flex flex-col bg-white border-t border-[#E4E4E4] shadow-[0_-4px_12px_rgba(0,0,0,0.03)] overflow-hidden">
+    <div className="h-full flex flex-col bg-white border-t border-[#E4E4E4] shadow-[0_-4px_12px_rgba(0,0,0,0.03)] overflow-hidden rounded-t-2xl">
       <div className="flex border-b border-[#E4E4E4] bg-[#F7F7F5] shrink-0 sticky top-0 z-20 overflow-x-auto no-scrollbar">
         {tabs.map(tab => (
           <button
@@ -101,7 +101,7 @@ export default function PortfolioManager({ positions, orders, history, loading }
                     <td className="p-4 font-bold text-[#0A0A0A]">{pos.instrument}</td>
                     <td className="p-4">
                       <span className={cn(
-                        "px-2 py-0.5 border text-[9px] font-bold uppercase",
+                        "px-2 py-0.5 border text-[9px] font-bold uppercase rounded-lg",
                         pos.vector === 'BUY' ? "border-[#16835B] text-[#16835B] bg-[#16835B]/5" : "border-[#C43D3D] text-[#C43D3D] bg-[#C43D3D]/5"
                       )}>
                         {pos.vector}
@@ -117,8 +117,8 @@ export default function PortfolioManager({ positions, orders, history, loading }
                     <td className="p-4 text-right font-bold text-[#16835B]">+$0.00</td>
                     <td className="p-4 text-center">
                       <div className="flex items-center justify-center space-x-2">
-                        <button className="p-2 border border-[#E4E4E4] bg-white text-[#6B7280] hover:text-[#0055FF] transition-colors shadow-sm" title="Modify Order"><Settings2 className="w-3.5 h-3.5" /></button>
-                        <button className="p-2 border border-[#E4E4E4] bg-white text-[#C43D3D] hover:bg-[#C43D3D] hover:text-white transition-colors shadow-sm" title="Close Position"><XCircle className="w-3.5 h-3.5" /></button>
+                        <button className="p-2 border border-[#E4E4E4] bg-white text-[#6B7280] hover:text-[#0055FF] transition-colors shadow-sm rounded-lg" title="Modify Order"><Settings2 className="w-3.5 h-3.5" /></button>
+                        <button className="p-2 border border-[#E4E4E4] bg-white text-[#C43D3D] hover:bg-[#C43D3D] hover:text-white transition-colors shadow-sm rounded-lg" title="Close Position"><XCircle className="w-3.5 h-3.5" /></button>
                       </div>
                     </td>
                   </tr>

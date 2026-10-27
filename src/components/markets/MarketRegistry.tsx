@@ -112,7 +112,7 @@ export default function MarketRegistry({ variant }: { variant: "public" | "clien
         </div>
       )}
 
-      <Card className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-[#E4E4E4] rounded-none bg-white shadow-sm">
+      <Card className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-[#E4E4E4] bg-white shadow-sm">
         <div className="flex flex-wrap gap-2">
           {categories.map((cat) => (
             <Button
@@ -134,12 +134,12 @@ export default function MarketRegistry({ variant }: { variant: "public" | "clien
             placeholder="Filter registry..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs pl-9 pr-3 py-2.5 bg-[#F7F7F5] border border-[#E4E4E4] rounded-none focus:outline-none focus:border-[#0A0A0A]"
+            className="w-full text-xs pl-9 pr-3 py-2.5 bg-[#F7F7F5] border border-[#E4E4E4] rounded-xl focus:outline-none focus:border-[#0A0A0A]"
           />
         </div>
       </Card>
 
-      <Card className="border-[#E4E4E4] overflow-hidden rounded-none shadow-sm">
+      <Card className="border-[#E4E4E4] overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader className="bg-[#F7F7F5]">
@@ -193,14 +193,14 @@ export default function MarketRegistry({ variant }: { variant: "public" | "clien
                     </TableCell>
                     <TableCell className="text-center">
                       <span className={cn(
-                        "text-[8px] font-bold uppercase px-2 py-0.5 border",
+                        "text-[8px] font-bold uppercase px-2 py-0.5 border rounded-lg",
                         status === 'Open' ? "border-[#16835B] text-[#16835B] bg-[#16835B]/5" : "border-[#6B7280] text-[#6B7280] bg-[#F7F7F5]"
                       )}>
                         {status}
                       </span>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Button asChild size="sm" variant="brand" className="h-8 px-5 rounded-none">
+                      <Button asChild size="sm" variant="brand" className="h-8 px-5">
                         <Link href={user || variant === "client" ? `/client/terminal?symbol=${encodeURIComponent(inst.symbol)}` : '/login'}>
                           <span className="text-[9px] font-bold uppercase tracking-widest">Trade Terminal</span>
                           <Sliders className="ml-2 w-3 h-3" />
