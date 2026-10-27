@@ -2,12 +2,12 @@
 
 /**
  * @fileOverview Institutional Derived Markets Terminal (Dark Mode).
- * Matched to high-fidelity reference screenshot for synthetic markets.
+ * High-fidelity workspace for specialized synthetic markets.
  */
 
 import { useState, useEffect, Suspense, useMemo } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "next/image";
 import { useSearchParams } from "next/navigation";
 import { 
   Menu, 
@@ -17,13 +17,19 @@ import {
   MousePointer2,
   Settings2,
   X,
-  Target
+  Target,
+  Plus,
+  Minus,
+  Activity,
+  History,
+  ShieldCheck,
+  Zap,
+  Globe
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
-import { useUser, useFirestore, useDoc } from "@/firebase";
+import { useUser, useDoc, useFirestore } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
-import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
 import { useSyntheticFeed } from "@/app/lib/synthetic/use-synthetic-feed";
 
 // Components
@@ -70,7 +76,7 @@ function DerivedTerminalContent() {
     return derivedInstruments[0];
   });
 
-  const { ticks, lastTick, loading: syntheticLoading } = useSyntheticFeed(activeInst.symbol, activeInst.tickMs);
+  const { ticks, lastTick, loading: syntheticLoading } = useSyntheticFeed(activeInst.symbol, 1000);
 
   useEffect(() => {
     const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
@@ -106,37 +112,44 @@ function DerivedTerminalContent() {
 
   return (
     <div className="flex flex-col h-screen bg-[#0B0E11] overflow-hidden text-white">
-      {/* Dark Header */}
-      <header className="h-14 border-b border-[#1E222D] bg-[#131722] flex items-center justify-between shrink-0 z-[100] px-4">
-        <div className="flex items-center space-x-4">
-          <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 xl:hidden text-white"><Menu className="w-5 h-5" /></button>
-          <div className="flex items-center gap-3">
-             <div className="w-8 h-8 rounded-full bg-[#00A015] flex items-center justify-center">
-                <Target className="w-4 h-4 text-white" />
+      {/* Dark Institutional Header */}
+      <header className="h-16 border-b border-[#1E222D] bg-[#131722] flex items-center justify-between shrink-0 z-[100] px-6 shadow-2xl">
+        <div className="flex items-center space-x-6">
+          <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 xl:hidden text-white hover:text-[#0055FF] transition-colors"><Menu className="w-6 h-6" /></button>
+          
+          <div className="flex items-center gap-4">
+             <div className="w-10 h-10 rounded-lg bg-[#00A015] flex items-center justify-center shadow-lg shadow-[#00A015]/20">
+                <Zap className="w-5 h-5 text-white" />
              </div>
              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                   <span className="text-xs font-bold uppercase tracking-tight">{activeInst.name}</span>
-                   <ChevronDown className="w-3 h-3 text-[#6B7280]" />
+                <div className="flex items-center gap-2 cursor-pointer group">
+                   <span className="text-sm font-bold uppercase tracking-tight group-hover:text-[#0055FF] transition-colors">{activeInst.name}</span>
+                   <ChevronDown className="w-4 h-4 text-[#6B7280] group-hover:text-white transition-transform" />
                 </div>
-                <span className="text-[10px] font-mono text-[#6B7280]">Rise/Fall</span>
+                <div className="flex items-center gap-2">
+                   <div className="w-1.5 h-1.5 rounded-full bg-[#16835B] animate-pulse"></div>
+                   <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">Synthetic Node Active</span>
+                </div>
              </div>
           </div>
         </div>
 
         <div className="flex items-center space-x-8">
-          <div className="hidden xl:flex items-center gap-6">
-            <div className="flex flex-col text-right">
-              <span className="text-[8px] font-bold uppercase text-[#6B7280]">{accountMode} account</span>
-              <span className={cn("text-xs font-mono font-bold", accountMode === 'REAL' ? "text-[#00A015]" : "text-white")}>
-                {formatNumber(activeBalance, { minimumFractionDigits: 2 })} USD
-              </span>
-            </div>
+          <div className="hidden xl:flex items-center bg-[#1E222D] border border-[#31363F] px-4 py-1.5 gap-4">
+             <ClockIcon className="w-3.5 h-3.5 text-[#0055FF]" />
+             <span className="text-sm font-mono font-bold text-white tracking-tighter">{currentTime}</span>
+          </div>
+
+          <div className="flex flex-col text-right">
+            <span className="text-[9px] font-bold uppercase text-[#6B7280] tracking-widest">{accountMode} BALANCE</span>
+            <span className={cn("text-sm font-mono font-bold", accountMode === 'REAL' ? "text-[#16835B]" : "text-[#0055FF]")}>
+              ${formatNumber(activeBalance, { minimumFractionDigits: 2 })} USD
+            </span>
           </div>
           
           <button 
             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-            className="w-8 h-8 rounded-full bg-[#31363F] text-white flex items-center justify-center font-bold text-xs overflow-hidden border border-[#1E222D]"
+            className="w-10 h-10 rounded-full bg-[#31363F] text-white flex items-center justify-center font-bold text-xs overflow-hidden border border-[#1E222D] shadow-xl hover:border-[#0055FF] transition-all"
           >
             {profile?.profile?.photoUrl ? <img src={profile.profile.photoUrl} className="w-full h-full object-cover" /> : user?.email?.substring(0,2).toUpperCase()}
           </button>
@@ -164,15 +177,19 @@ function DerivedTerminalContent() {
                   <div className="h-full w-full bg-[#131722] relative">
                     <SyntheticChart ticks={ticks} loading={syntheticLoading} />
                     
-                    {/* Floating Zoom Controls as seen in image */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center bg-[#1E222D] border border-[#31363F] rounded-full px-2 py-1 gap-2 shadow-2xl">
-                       <button className="p-1 hover:text-[#00A015] transition-colors"><Minus className="w-4 h-4" /></button>
-                       <div className="w-px h-3 bg-[#31363F]"></div>
-                       <button className="p-1 hover:text-[#00A015] transition-colors"><Plus className="w-4 h-4" /></button>
+                    {/* Floating Zoom Node */}
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center bg-[#1E222D]/90 backdrop-blur-md border border-[#31363F] rounded-full px-3 py-1.5 gap-4 shadow-2xl z-50">
+                       <button className="p-2 text-[#D1D4DC] hover:text-[#0055FF] transition-colors"><Minus className="w-5 h-5" /></button>
+                       <div className="w-px h-4 bg-[#31363F]"></div>
+                       <button className="p-2 text-[#D1D4DC] hover:text-[#0055FF] transition-colors"><Plus className="w-5 h-5" /></button>
+                    </div>
+
+                    <div className="absolute top-8 left-8 pointer-events-none opacity-20 select-none">
+                       <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-white">Matching Node Operational &bull; Varban Algorithm v4.2</span>
                     </div>
                   </div>
                 </ResizablePanel>
-                <ResizableHandle className="bg-[#1E222D]" />
+                <ResizableHandle className="bg-[#1E222D] h-1.5" />
                 <ResizablePanel defaultSize={30} minSize={10}>
                   <div className="h-full bg-[#0B0E11] border-t border-[#1E222D]">
                     <PortfolioManager positions={[]} orders={[]} history={[]} />
@@ -181,7 +198,7 @@ function DerivedTerminalContent() {
               </ResizablePanelGroup>
             </ResizablePanel>
             
-            <ResizableHandle className="bg-[#1E222D]" />
+            <ResizableHandle className="bg-[#1E222D] w-1.5" />
             
             <ResizablePanel defaultSize={25} minSize={20}>
               <div className="h-full w-full border-l border-[#1E222D] bg-[#131722] flex flex-col overflow-hidden">
@@ -194,11 +211,11 @@ function DerivedTerminalContent() {
                       key={tab.id}
                       onClick={() => setActiveRightTab(tab.id as any)}
                       className={cn(
-                        "flex-1 py-3 text-[9px] font-bold uppercase tracking-widest border-b-2 transition-all flex items-center justify-center gap-2",
-                        activeRightTab === tab.id ? "border-white text-white" : "border-transparent text-[#6B7280] hover:bg-[#1E222D]"
+                        "flex-1 py-5 text-[10px] font-bold uppercase tracking-[0.25em] border-b-2 transition-all flex items-center justify-center gap-2",
+                        activeRightTab === tab.id ? "border-white text-white bg-white/5" : "border-transparent text-[#6B7280] hover:bg-[#1E222D]"
                       )}
                      >
-                       <tab.icon className="w-3.5 h-3.5" />
+                       <tab.icon className="w-4 h-4" />
                        <span>{tab.label}</span>
                      </button>
                    ))}
@@ -225,7 +242,7 @@ function DerivedTerminalContent() {
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[400] xl:hidden">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
-          <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-[#131722] animate-in slide-in-from-left duration-300">
+          <div className="absolute left-0 top-0 bottom-0 w-[300px] bg-[#131722] animate-in slide-in-from-left duration-300 shadow-2xl">
             <AuthedSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
           </div>
         </div>
@@ -241,5 +258,3 @@ export default function DerivedTerminalPage() {
     </Suspense>
   );
 }
-
-import { Plus, Minus } from "lucide-react";
