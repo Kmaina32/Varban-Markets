@@ -34,6 +34,7 @@ export function isValidPhone(stored: string): boolean {
 /** Returns the list of things still missing; empty means complete. */
 export function getProfileGaps(userDoc: any): ProfileGap[] {
   const p = userDoc?.profile ?? {};
+  const status = userDoc?.status ?? {};
   const inv = userDoc?.investor ?? {};
   const gaps: ProfileGap[] = [];
   const need = (ok: boolean, key: string, label: string) => { if (!ok) gaps.push({ key, label }); };
@@ -43,6 +44,7 @@ export function getProfileGaps(userDoc: any): ProfileGap[] {
   const age = ageFromDate(text(p.dateOfBirth));
   need(age !== null && age >= MIN_AGE_YEARS, "dateOfBirth", `Date of birth (you must be ${MIN_AGE_YEARS}+)`);
   need(isValidPhone(text(p.phone)), "phone", "Phone number");
+  need(!!status.phoneVerified, "phoneVerified", "SMS Phone Verification");
   need(!!text(p.country), "country", "Country of residence");
   need(!!text(p.addressLine1), "addressLine1", "Street address");
   need(!!text(p.city), "city", "City");
