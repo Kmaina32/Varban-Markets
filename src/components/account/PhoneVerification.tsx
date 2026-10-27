@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -7,7 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Phone, CheckCircle2, ShieldCheck, Loader2, Smartphone, ArrowRight, AlertTriangle } from 'lucide-react';
+import { Smartphone, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { authFetch } from '@/app/lib/auth-fetch';
 import { cn } from '@/app/lib/utils';
@@ -17,7 +16,7 @@ interface PhoneVerificationProps {
   isVerified?: boolean;
 }
 
-const PhoneVerification = ({ currentPhone, isVerified: initialVerified }: PhoneVerificationProps) => {
+export default function PhoneVerification({ currentPhone, isVerified: initialVerified }: PhoneVerificationProps) {
   const { user } = useUser();
   const [phoneNumber, setPhoneNumber] = useState(currentPhone || '');
   const [isVerified, setIsVerified] = useState(initialVerified);
@@ -180,6 +179,4 @@ const PhoneVerification = ({ currentPhone, isVerified: initialVerified }: PhoneV
       )}
     </div>
   );
-};
-
-export default PhoneVerification;
+}
