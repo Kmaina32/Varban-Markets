@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
- * 4-Panel Grid Architecture with specialized Synthetic Hub for derived markets.
+ * 2-Panel Dynamic Sidebar Architecture for Execution and Analysis.
  */
 
 import { useState, useEffect, Suspense, useMemo } from "react";
@@ -16,7 +16,6 @@ import {
   Clock as ClockIcon,
   MousePointer2,
   TrendingUp,
-  Newspaper,
   Layout,
   Globe,
   Settings,
@@ -40,7 +39,6 @@ import MarketSelector from "@/components/terminal/MarketSelector";
 import ExecutionTicket from "@/components/terminal/ExecutionTicket";
 import PortfolioManager from "@/components/terminal/PortfolioManager";
 import TerminalTutorial from "@/components/terminal/TerminalTutorial";
-import MarketNewsFeed from "@/components/dashboard/MarketNewsFeed";
 import LoadingOverlay from "@/components/shared/LoadingOverlay";
 import DigitStats from "@/components/terminal/DigitStats";
 import {
@@ -84,7 +82,7 @@ function TerminalContent() {
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
   
-  const [activeRightTab, setActiveRightTab] = useState<'TRADE' | 'STATS' | 'NEWS'>('TRADE');
+  const [activeRightTab, setActiveRightTab] = useState<'TRADE' | 'STATS'>('TRADE');
 
   const [currentTime, setCurrentTime] = useState("");
   const activeTimezone = profile?.preferences?.timezone || "UTC+0";
@@ -315,8 +313,7 @@ function TerminalContent() {
                 <div className="flex border-b border-[#E4E4E4] shrink-0">
                    {[
                      { id: 'TRADE', label: 'Order Ticket', icon: MousePointer2 },
-                     { id: 'STATS', label: isDerivedMarket ? 'Digit Stats' : 'Market Data', icon: isDerivedMarket ? BarChart2 : Layout },
-                     { id: 'NEWS', label: 'News Feed', icon: Newspaper }
+                     { id: 'STATS', label: isDerivedMarket ? 'Digit Stats' : 'Market Data', icon: isDerivedMarket ? BarChart2 : Layout }
                    ].map(tab => (
                      <button 
                       key={tab.id}
@@ -361,11 +358,6 @@ function TerminalContent() {
                              </section>
                           </div>
                         )}
-                     </div>
-                   )}
-                   {activeRightTab === 'NEWS' && (
-                     <div className="h-full">
-                        <MarketNewsFeed />
                      </div>
                    )}
                 </div>
