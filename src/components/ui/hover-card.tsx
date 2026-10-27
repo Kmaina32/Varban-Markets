@@ -12,21 +12,14 @@ import { cn } from "@/app/lib/utils"
 /* ---------- HoverCard (Root wrapper) ---------- */
 
 export interface HoverCardProps
-  extends React.ComponentPropsWithoutRef<typeof PreviewCard.Root> {
-  /** Radix-style alias – mapped to Base UI's `delay` prop. */
+  extends Omit<React.ComponentPropsWithoutRef<typeof PreviewCard.Root>, 'delay' | 'closeDelay'> {
+  /** Radix-style alias – silently ignored; Base UI controls delay internally. */
   openDelay?: number;
-  /** Radix-style alias – mapped to Base UI's `closeDelay` prop. */
   closeDelay?: number;
 }
 
-function HoverCard({ openDelay, closeDelay, delay, ...props }: HoverCardProps) {
-  return (
-    <PreviewCard.Root
-      delay={openDelay ?? delay}
-      closeDelay={closeDelay}
-      {...props}
-    />
-  );
+function HoverCard({ openDelay, closeDelay, ...props }: HoverCardProps) {
+  return <PreviewCard.Root {...props} />;
 }
 
 /* ---------- HoverCardTrigger ---------- */
@@ -60,7 +53,7 @@ const HoverCardPortal = PreviewCard.Portal
 
 const HoverCardContent = React.forwardRef<
   React.ElementRef<typeof PreviewCard.Popup>,
-  React.ComponentPropsWithoutRef<typeof PreviewCard.Popup> & { 
+  React.ComponentPropsWithoutRef<typeof PreviewCard.Popup> & {
     sideOffset?: number;
     side?: "top" | "bottom" | "left" | "right";
     align?: "start" | "center" | "end";
