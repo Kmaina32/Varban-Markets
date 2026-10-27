@@ -2,10 +2,10 @@
 
 /**
  * @fileOverview Last Digit Statistics Visualizer.
- * Displays 0-9 digit frequency for synthetic markets.
+ * Displays 0-9 digit frequency matrix for synthetic markets.
  */
 
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { cn } from '@/app/lib/utils';
 import { ShieldCheck } from 'lucide-react';
 
@@ -18,19 +18,15 @@ export default function DigitStats({ symbol, livePrice }: DigitStatsProps) {
   const [stats, setStats] = useState<number[]>([]);
   const [lastDigit, setLastDigit] = useState<number | null>(null);
 
-  // Initialize stats with some "historical" weights
   useEffect(() => {
     setStats(Array.from({ length: 10 }, () => Math.floor(Math.random() * 15) + 5));
   }, [symbol]);
 
-  // Update last digit based on incoming price
   useEffect(() => {
     if (livePrice !== null) {
       const priceStr = livePrice.toFixed(2);
       const digit = parseInt(priceStr.slice(-1));
       setLastDigit(digit);
-      
-      // Slightly increment the stat for the new digit to simulate live data
       setStats(prev => {
         const next = [...prev];
         next[digit] = (next[digit] || 0) + 0.2;
@@ -59,27 +55,16 @@ export default function DigitStats({ symbol, livePrice }: DigitStatsProps) {
           return (
             <div key={i} className="flex flex-col items-center space-y-2 relative">
               <div className="relative w-10 h-10 flex items-center justify-center">
-                {/* Red pointer for current tick */}
                 {isActive && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 animate-bounce">
                     <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[6px] border-t-[#C43D3D]"></div>
                   </div>
                 )}
                 
-                {/* SVG Progress Circle */}
                 <svg className="w-10 h-10 transform -rotate-90">
+                  <circle cx="20" cy="20" r="18" stroke="#F7F7F5" strokeWidth="2.5" fill="transparent" />
                   <circle
-                    cx="20"
-                    cy="20"
-                    r="18"
-                    stroke="#F7F7F5"
-                    strokeWidth="2.5"
-                    fill="transparent"
-                  />
-                  <circle
-                    cx="20"
-                    cy="20"
-                    r="18"
+                    cx="20" cy="20" r="18"
                     stroke={isMax ? "#16835B" : isMin ? "#C43D3D" : "#0A0A0A"}
                     strokeWidth="2.5"
                     strokeDasharray={113}
@@ -106,7 +91,7 @@ export default function DigitStats({ symbol, livePrice }: DigitStatsProps) {
         <div className="flex items-start gap-3 bg-[#F7F7F5] p-4 border border-[#E4E4E4]">
            <ShieldCheck className="w-4 h-4 text-[#16835B] shrink-0" />
            <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
-             Deterministic frequency analysis derived from the Varban matching engine. Data represents the previous 100 successful tick events.
+             Deterministic frequency analysis derived from the Varban matching engine.
            </p>
         </div>
       </div>

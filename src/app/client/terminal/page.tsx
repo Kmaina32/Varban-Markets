@@ -3,7 +3,7 @@
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
  * Refined 2-Panel Sidebar Architecture with high-fidelity execution node.
- * Updated: BTC/USD as default primary market.
+ * Optimization: Execution components hidden from main mobile screen; restricted to drawer.
  */
 
 import { useState, useEffect, Suspense, useMemo } from "react";
@@ -42,6 +42,7 @@ import PortfolioManager from "@/components/terminal/PortfolioManager";
 import TerminalTutorial from "@/components/terminal/TerminalTutorial";
 import LoadingOverlay from "@/components/shared/LoadingOverlay";
 import DigitStats from "@/components/terminal/DigitStats";
+import DerivedTradeControls from "@/components/terminal/DerivedTradeControls";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -88,13 +89,12 @@ function TerminalContent() {
   const [currentTime, setCurrentTime] = useState("");
   const activeTimezone = profile?.preferences?.timezone || "UTC+0";
 
-  // BTC/USD as Primary Default
   const [activeInst, setActiveInst] = useState<Instrument>(() => {
     if (symbolParam) {
       const found = AVAILABLE_INSTRUMENTS.find(i => i.symbol === symbolParam);
       if (found) return found;
     }
-    return AVAILABLE_INSTRUMENTS.find(i => i.symbol === 'BTC/USD') || AVAILABLE_INSTRUMENTS[0];
+    return AVAILABLE_INSTRUMENTS[0]; // BTC/USD is first
   });
 
   const [marketData, setMarketData] = useState<Record<string, { price: number; percent: number }>>({});
@@ -289,6 +289,7 @@ function TerminalContent() {
         <AuthedSidebar className="hidden lg:flex" />
 
         <main className="flex-grow flex lg:ml-16 overflow-hidden">
+          {/* DESKTOP WORKSPACE */}
           <ResizablePanelGroup direction="horizontal" className="hidden lg:flex flex-grow overflow-hidden">
             <ResizablePanel defaultSize={75} minSize={40}>
               <ResizablePanelGroup direction="vertical">
@@ -338,13 +339,22 @@ function TerminalContent() {
                 <div className="flex-grow overflow-y-auto no-scrollbar">
                    {activeRightTab === 'TRADE' && (
                      <div id="tour-settings" className="h-full">
-                        <ExecutionTicket 
-                          instrument={activeInst} 
-                          livePrice={marketData[activeInst.symbol]?.price}
-                          balance={activeBalance}
-                          accountMode={accountMode}
-                          onExecute={handleExecution}
-                        />
+                        {isDerivedMarket ? (
+                          <DerivedTradeControls 
+                            instrument={activeInst} 
+                            livePrice={marketData[activeInst.symbol]?.price}
+                            balance={activeBalance}
+                            onExecute={handleExecution}
+                          />
+                        ) : (
+                          <ExecutionTicket 
+                            instrument={activeInst} 
+                            livePrice={marketData[activeInst.symbol]?.price}
+                            balance={activeBalance}
+                            onExecute={handleExecution}
+                            accountMode={accountMode}
+                          />
+                        )}
                      </div>
                    )}
                    {activeRightTab === 'STATS' && (
@@ -371,7 +381,7 @@ function TerminalContent() {
             </ResizablePanel>
           </ResizablePanelGroup>
 
-          {/* MOBILE TERMINAL VIEW */}
+          {/* MOBILE MAIN SCREEN - NO EXECUTION TICKET HERE */}
           <div className="flex lg:hidden flex-grow flex-col overflow-hidden">
             <div id="tour-chart-mobile" className="flex-grow min-h-0 bg-[#F7F7F5] relative">
               <TradingViewChart symbol={activeInst.symbol} />
@@ -396,12 +406,11 @@ function TerminalContent() {
         </button>
       </div>
 
-      {/* MOBILE EXECUTION DRAWER */}
+      {/* MOBILE EXECUTION DRAWER - THE ONLY PLACE FOR THE TICKET ON MOBILE */}
       {isTradeDrawerOpen && (
         <div className="fixed inset-0 z-[500] lg:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsTradeDrawerOpen(false)}></div>
           <div className="absolute bottom-0 left-0 right-0 bg-white animate-in slide-in-from-bottom duration-300 rounded-t-xl overflow-hidden h-[90vh] flex flex-col shadow-2xl">
-            {/* Header with Tabs for Mobile */}
             <div className="flex border-b border-[#E4E4E4] bg-[#F7F7F5] shrink-0">
                {[
                  { id: 'TRADE', label: 'Order Ticket', icon: MousePointer2 },
@@ -429,13 +438,22 @@ function TerminalContent() {
 
             <div className="flex-grow overflow-y-auto no-scrollbar pb-12">
                {activeRightTab === 'TRADE' && (
-                  <ExecutionTicket 
-                    instrument={activeInst} 
-                    livePrice={marketData[activeInst.symbol]?.price}
-                    balance={activeBalance}
-                    accountMode={accountMode}
-                    onExecute={handleExecution}
-                  />
+                  isDerivedMarket ? (
+                    <DerivedTradeControls 
+                      instrument={activeInst} 
+                      livePrice={marketData[activeInst.symbol]?.price}
+                      balance={activeBalance}
+                      onExecute={handleExecution}
+                    />
+                  ) : (
+                    <ExecutionTicket 
+                      instrument={activeInst} 
+                      livePrice={marketData[activeInst.symbol]?.price}
+                      balance={activeBalance}
+                      onExecute={handleExecution}
+                      accountMode={accountMode}
+                    />
+                  )
                )}
                {activeRightTab === 'STATS' && (
                  <div className="h-full bg-white">
@@ -452,12 +470,6 @@ function TerminalContent() {
                                <div><span className="block opacity-50 mb-1">Market State</span> <span className="text-[#16835B]">Active</span></div>
                             </div>
                          </section>
-                         <div className="p-6 bg-[#F7F7F5] border border-[#E4E4E4] flex items-start gap-4">
-                           <ShieldCheck className="w-6 h-6 text-[#16835B] shrink-0" />
-                           <p className="text-[11px] leading-relaxed font-bold uppercase text-[#6B7280]">
-                             Trade execution nodes are synchronized with Tier-1 liquidity providers. Pricing accuracy is verified at the millisecond level.
-                           </p>
-                         </div>
                       </div>
                     )}
                  </div>

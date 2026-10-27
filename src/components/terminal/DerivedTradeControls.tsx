@@ -2,14 +2,13 @@
 
 /**
  * @fileOverview Specialized Derived/Synthetic Trade Controls.
- * High-speed Even/Odd and Rise/Fall execution ticket.
+ * High-speed Even/Odd and Rise/Fall execution ticket matching reference design.
  */
 
 import React, { useState } from 'react';
 import { Instrument } from '@/app/lib/instruments';
 import { cn } from '@/app/lib/utils';
-import { Zap, Calculator, Target, Clock, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
-import { useTranslation } from '@/app/lib/i18n-context';
+import { ArrowUpRight, ArrowDownLeft, Check } from 'lucide-react';
 
 interface DerivedTradeControlsProps {
   instrument: Instrument;
@@ -19,7 +18,6 @@ interface DerivedTradeControlsProps {
 }
 
 export default function DerivedTradeControls({ instrument, livePrice, balance, onExecute }: DerivedTradeControlsProps) {
-  const { formatNumber } = useTranslation();
   const [activeMode, setActiveMode] = useState<'EVEN_ODD' | 'RISE_FALL'>('EVEN_ODD');
   const [stake, setStake] = useState<number>(10);
   const [duration, setDuration] = useState<string>("1 tick");
@@ -39,7 +37,6 @@ export default function DerivedTradeControls({ instrument, livePrice, balance, o
 
   return (
     <div className="h-full flex flex-col bg-white">
-      {/* Mode Toggle */}
       <div className="flex bg-[#F7F7F5] border-b border-[#E4E4E4] p-1 shrink-0">
         <button 
           onClick={() => setActiveMode('EVEN_ODD')}
@@ -62,7 +59,6 @@ export default function DerivedTradeControls({ instrument, livePrice, balance, o
       </div>
 
       <div className="flex-grow overflow-y-auto no-scrollbar p-6 space-y-8">
-        {/* Settings */}
         <div className="space-y-4">
           <div className="space-y-2">
             <label className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest block">Contract Duration</label>
@@ -85,7 +81,7 @@ export default function DerivedTradeControls({ instrument, livePrice, balance, o
           <div className="space-y-2">
             <div className="flex justify-between items-end">
               <label className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">Stake (USD)</label>
-              <span className="text-[9px] text-[#6B7280] font-mono">Bal: ${balance.toLocaleString()}</span>
+              <span className="text-[9px] text-[#6B7280] font-mono">Available: ${balance.toLocaleString()}</span>
             </div>
             <input 
               type="number"
@@ -107,7 +103,6 @@ export default function DerivedTradeControls({ instrument, livePrice, balance, o
           </div>
         </div>
 
-        {/* Execution Area */}
         <div className="space-y-4">
           {activeMode === 'EVEN_ODD' ? (
             <div className="grid grid-cols-2 gap-4">
