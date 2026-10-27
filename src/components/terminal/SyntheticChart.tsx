@@ -2,8 +2,7 @@
 
 /**
  * @fileOverview Custom Institutional Synthetic Charting Node.
- * Replaces TradingView for derived markets with a high-performance tick-line visualizer.
- * Matched to the user-provided dark-themed reference.
+ * Updated to "Institutional White" theme to match the core workspace aesthetic.
  */
 
 import React, { useEffect, useRef } from 'react';
@@ -25,51 +24,51 @@ export default function SyntheticChart({ ticks, loading }: SyntheticChartProps) 
 
     const chart = createChart(containerRef.current, {
       layout: {
-        background: { type: ColorType.Solid, color: '#131722' },
-        textColor: '#D1D4DC',
+        background: { type: ColorType.Solid, color: '#FFFFFF' },
+        textColor: '#0A0A0A',
         fontFamily: 'Inter, sans-serif',
       },
       grid: {
-        vertLines: { color: 'rgba(42, 46, 57, 0.5)' },
-        horzLines: { color: 'rgba(42, 46, 57, 0.5)' },
+        vertLines: { color: '#F0F0F0' },
+        horzLines: { color: '#F0F0F0' },
       },
       width: containerRef.current.clientWidth,
       height: containerRef.current.clientHeight,
       timeScale: {
         timeVisible: true,
         secondsVisible: true,
-        borderColor: '#2A2E39',
+        borderColor: '#E4E4E4',
         rightOffset: 12,
         barSpacing: 15,
       },
       rightPriceScale: {
-        borderColor: '#2A2E39',
+        borderColor: '#E4E4E4',
         scaleMargins: { top: 0.1, bottom: 0.1 },
         autoScale: true,
       },
       crosshair: {
         vertLine: {
-          color: '#758696',
+          color: '#6B7280',
           width: 1,
           style: LineStyle.SparseDotted,
-          labelBackgroundColor: '#131722',
+          labelBackgroundColor: '#0A0A0A',
         },
         horzLine: {
-          color: '#758696',
+          color: '#6B7280',
           width: 1,
           style: LineStyle.SparseDotted,
-          labelBackgroundColor: '#131722',
+          labelBackgroundColor: '#0A0A0A',
         },
       },
     });
 
     const lineSeries = chart.addLineSeries({
-      color: '#FFFFFF',
+      color: '#0055FF', // Institutional Blue Line
       lineWidth: 2,
       crosshairMarkerVisible: true,
       lastValueVisible: true,
       priceLineVisible: true,
-      priceLineColor: '#758696',
+      priceLineColor: '#6B7280',
       priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
     });
 
@@ -103,10 +102,10 @@ export default function SyntheticChart({ ticks, loading }: SyntheticChartProps) 
   }, [ticks]);
 
   return (
-    <div className="w-full h-full relative bg-[#131722]">
+    <div className="w-full h-full relative bg-white">
       {loading && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#131722]/80 backdrop-blur-[1px]">
-          <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 backdrop-blur-[1px]">
+          <div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin" />
         </div>
       )}
       <div ref={containerRef} className="w-full h-full" />

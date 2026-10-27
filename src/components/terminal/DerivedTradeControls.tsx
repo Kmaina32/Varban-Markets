@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Institutional Derived Markets Execution Hub (Light Theme).
- * Supports Directional, Growth-based, and Digit-based trade categories.
+ * Updated: Primary execution button updated to Blue.
  */
 
 import React, { useState, useMemo } from 'react';
@@ -248,7 +248,7 @@ export default function DerivedTradeControls({ instrument, livePrice, balance, o
           ) : (
             <button
               onClick={() => onExecute({ type: activeType, side: 'BUY', stake, duration, prediction })}
-              className="w-full py-6 bg-[#0A0A0A] hover:bg-[#0055FF] text-white shadow-xl transition-all active:scale-[0.98] flex flex-col items-center justify-center group"
+              className="w-full py-6 bg-[#0055FF] hover:bg-[#0044cc] text-white shadow-xl transition-all active:scale-[0.98] flex flex-col items-center justify-center group"
             >
               <span className="text-sm font-bold uppercase tracking-[0.3em]">Purchase Contract</span>
               <span className="text-[11px] font-bold text-white/80 mt-1 uppercase tracking-widest">Potential Return ${estimatedPayout}</span>

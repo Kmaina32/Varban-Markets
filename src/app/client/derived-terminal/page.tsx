@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Institutional Derived Markets Terminal (White Theme).
- * Synchronized with standard terminal design architecture.
+ * Updated: Volatility icons now display index numbers instead of icons.
  */
 
 import { useState, useEffect, Suspense, useMemo } from "react";
@@ -107,6 +107,9 @@ function DerivedTerminalContent() {
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
+  // Extract Volatility Number for Icon
+  const volNumber = activeInst.symbol.replace(/\D/g, '');
+
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
       {/* Standard Branded Header */}
@@ -121,7 +124,7 @@ function DerivedTerminalContent() {
 
           <div className="hidden md:flex items-center gap-3">
              <div className="w-8 h-8 rounded-full bg-[#16835B] flex items-center justify-center shadow-sm">
-                <Zap className="w-4 h-4 text-white" />
+                <span className="text-[10px] font-bold text-white font-mono">{volNumber || 'V'}</span>
              </div>
              <div className="flex flex-col">
                 <div className="flex items-center gap-2 cursor-pointer group">
@@ -173,18 +176,18 @@ function DerivedTerminalContent() {
             <ResizablePanel defaultSize={75} minSize={40}>
               <ResizablePanelGroup direction="vertical">
                 <ResizablePanel defaultSize={70} minSize={30}>
-                  <div className="h-full w-full bg-[#131722] relative border-b border-[#E4E4E4]">
+                  <div className="h-full w-full bg-white relative border-b border-[#E4E4E4]">
                     <SyntheticChart ticks={ticks} loading={syntheticLoading} />
                     
                     {/* Floating Zoom Node */}
-                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center bg-[#1E222D]/90 backdrop-blur-md border border-[#31363F] rounded-full px-3 py-1.5 gap-4 shadow-2xl z-50">
-                       <button className="p-2 text-[#D1D4DC] hover:text-[#0055FF] transition-colors"><Minus className="w-5 h-5" /></button>
-                       <div className="w-px h-4 bg-[#31363F]"></div>
-                       <button className="p-2 text-[#D1D4DC] hover:text-[#0055FF] transition-colors"><Plus className="w-5 h-5" /></button>
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center bg-white/90 backdrop-blur-md border border-[#E4E4E4] rounded-full px-3 py-1.5 gap-4 shadow-2xl z-50">
+                       <button className="p-2 text-[#6B7280] hover:text-[#0055FF] transition-colors"><Minus className="w-5 h-5" /></button>
+                       <div className="w-px h-4 bg-[#E4E4E4]"></div>
+                       <button className="p-2 text-[#6B7280] hover:text-[#0055FF] transition-colors"><Plus className="w-5 h-5" /></button>
                     </div>
 
                     <div className="absolute top-8 left-8 pointer-events-none opacity-20 select-none">
-                       <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-white">Matching Node Operational &bull; Varban Algorithm v4.2</span>
+                       <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#0A0A0A]">Matching Node Operational &bull; Varban Algorithm v4.2</span>
                     </div>
                   </div>
                 </ResizablePanel>
