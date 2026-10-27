@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import twilio from 'twilio';
 import { verifyUser } from '@/app/lib/server/verify-admin';
@@ -12,7 +11,8 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
 
-const client = twilio(accountSid, authToken);
+// Initialize client only if credentials exist
+const client = accountSid && authToken ? twilio(accountSid, authToken) : null;
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,8 +24,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Phone number required' }, { status: 400 });
     }
 
-    if (!verifyServiceSid) {
-      throw new Error('Twilio Verify Service not configured');
+    if (!client || !verifyServiceSid) {
+      return NextResponse.json({ 
+        error: 'Twilio Verify Service not fully provisioned. Please check server environment variables.' 
+      }, { status: 400 });
     }
 
     // 2. Initiate Verification via Twilio

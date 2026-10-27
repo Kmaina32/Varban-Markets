@@ -1,20 +1,12 @@
 /**
  * @fileOverview Browser-side face helpers (liveness signals and face matching)
- * built on @vladmandic/face-api. Everything is loaded lazily so the library
- * and model weights are only downloaded when a KYC screen needs them.
+ * built on @vladmandic/face-api. 
  *
- * Trust model: these checks run in the user's browser, so on their own they
- * can be bypassed by a determined attacker. The user-side result (face found,
- * blink and head-turn seen) is stored as ADVISORY metadata. The decisive
- * comparison - selfie vs ID photo - is re-run by the administrator on the
- * admin's own device, and a human makes the final decision.
- *
- * Privacy: face descriptors are computed in memory and never stored.
+ * NOTE: This module is strictly client-side. The imports are handled dynamically
+ * within the functions to prevent Next.js build-time dependency extraction errors.
  */
 
-import type * as FaceApiTypes from "@vladmandic/face-api";
-
-export type FaceApi = typeof FaceApiTypes;
+export type FaceApi = any;
 
 const MODEL_URL = "/models/face-api";
 
@@ -22,20 +14,28 @@ const MODEL_URL = "/models/face-api";
 export const FACE_DISTANCE_STRONG = 0.5;
 export const FACE_DISTANCE_REVIEW = 0.6;
 
-let apiPromise: Promise<FaceApi> | null = null;
+let apiPromise: Promise<any> | null = null;
 let detectionReady: Promise<void> | null = null;
 let recognitionReady: Promise<void> | null = null;
 
-export function loadFaceApi(): Promise<FaceApi> {
+/**
+ * Loads the face-api library only in the browser.
+ */
+export async function loadFaceApi(): Promise<any> {
+  if (typeof window === 'undefined') return null;
+  
   if (!apiPromise) {
     apiPromise = import("@vladmandic/face-api").then(async (mod: any) => {
-      const api: FaceApi = mod.nets ? mod : mod.default;
+      // Handle various export patterns from the ESM bundle
+      const api = mod.nets ? mod : (mod.default?.nets ? mod.default : mod);
       const tf: any = api.tf;
-      try {
-        await tf.ready();
-      } catch {
-        await tf.setBackend("cpu");
-        await tf.ready();
+      if (tf) {
+        try {
+          await tf.ready();
+        } catch {
+          await tf.setBackend("cpu");
+          await tf.ready();
+        }
       }
       return api;
     });
@@ -44,27 +44,35 @@ export function loadFaceApi(): Promise<FaceApi> {
   return apiPromise;
 }
 
-/** Face detector + 68-point landmarks (about 0.5 MB): live capture and liveness. */
-export function loadDetectionModels(): Promise<void> {
+/** Face detector + 68-point landmarks: live capture and liveness. */
+export async function loadDetectionModels(): Promise<void> {
+  if (typeof window === 'undefined') return;
+
   if (!detectionReady) {
-    detectionReady = loadFaceApi().then(async (api) => {
+    detectionReady = (async () => {
+      const api = await loadFaceApi();
+      if (!api) return;
       await Promise.all([
         api.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
         api.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
       ]);
-    });
+    })();
     detectionReady.catch(() => { detectionReady = null; });
   }
   return detectionReady;
 }
 
-/** Face recognition network (about 6 MB): only needed for matching two photos. */
-export function loadRecognitionModel(): Promise<void> {
+/** Face recognition network: only needed for matching two photos. */
+export async function loadRecognitionModel(): Promise<void> {
+  if (typeof window === 'undefined') return;
+
   if (!recognitionReady) {
-    recognitionReady = loadDetectionModels().then(async () => {
+    recognitionReady = (async () => {
+      await loadDetectionModels();
       const api = await loadFaceApi();
+      if (!api) return;
       await api.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-    });
+    })();
     recognitionReady.catch(() => { recognitionReady = null; });
   }
   return recognitionReady;
@@ -80,9 +88,7 @@ export function eyeAspectRatio(eye: Pt[]): number {
 }
 
 /**
- * Horizontal nose position across the jaw, 0..1 in IMAGE coordinates
- * (0.5 = facing the camera). Camera previews are usually mirrored, so callers
- * should talk about "your left/right" using the mirrored value.
+ * Horizontal nose position across the jaw.
  */
 export function noseAcrossJaw(landmarks: { positions: Pt[] }): number {
   const pts = landmarks.positions;
@@ -94,19 +100,23 @@ export function noseAcrossJaw(landmarks: { positions: Pt[] }): number {
 }
 
 export interface LiveFrame {
-  found: number;            // number of faces seen
+  found: number;
   box?: { x: number; y: number; width: number; height: number };
-  ear?: number;             // averaged eye aspect ratio
-  yaw?: number;             // nose across jaw, 0..1 (image coordinates)
+  ear?: number;
+  yaw?: number;
 }
 
 export async function analyseFrame(input: HTMLVideoElement | HTMLCanvasElement | HTMLImageElement): Promise<LiveFrame> {
-  // Self-sufficient: the loader is cached, so this is free once the models are in memory.
+  if (typeof window === 'undefined') return { found: 0 };
+  
   await loadDetectionModels();
   const api = await loadFaceApi();
+  if (!api) return { found: 0 };
+
   const results = await api
     .detectAllFaces(input, new api.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }))
     .withFaceLandmarks();
+    
   if (results.length === 0) return { found: 0 };
   const best = results.reduce((a, b) => (a.detection.box.area >= b.detection.box.area ? a : b));
   const lm = best.landmarks;
@@ -115,16 +125,21 @@ export async function analyseFrame(input: HTMLVideoElement | HTMLCanvasElement |
   return { found: results.length, box: { x, y, width, height }, ear, yaw: noseAcrossJaw(lm) };
 }
 
-/** 128-number descriptor for the largest face in an image, or null if none/ambiguous. */
+/** 128-number descriptor for the largest face in an image. */
 export async function faceDescriptor(
   input: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement
 ): Promise<Float32Array | null> {
+  if (typeof window === 'undefined') return null;
+
   await loadRecognitionModel();
   const api = await loadFaceApi();
+  if (!api) return null;
+
   const results = await api
     .detectAllFaces(input, new api.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.3 }))
     .withFaceLandmarks()
     .withFaceDescriptors();
+    
   if (results.length === 0) return null;
   const best = results.reduce((a, b) => (a.detection.box.area >= b.detection.box.area ? a : b));
   return best.descriptor;
@@ -143,6 +158,7 @@ export function compareDescriptors(a: Float32Array, b: Float32Array): { distance
 /** Load an image Blob/URL into an <img> element for analysis. */
 export function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined') return reject();
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
