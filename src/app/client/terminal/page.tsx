@@ -229,13 +229,13 @@ function TerminalContent() {
                 <select 
                   value={locale}
                   onChange={(e) => setLocale(e.target.value as LocaleCode)}
-                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#0055FF] outline-none cursor-pointer pr-3 z-10"
+                  className="appearance-none bg-transparent text-[8px] font-bold uppercase tracking-widest text-[#0A0A0A] outline-none cursor-pointer pr-3 z-10"
                 >
                   {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
                     <option key={code} value={code} className="bg-white text-[#0A0A0A]">{label}</option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#0055FF] pointer-events-none" />
+                <ChevronDown className="absolute right-0 w-2.5 h-2.5 text-[#6B7280] pointer-events-none" />
               </div>
               
               <div className="w-px h-3 bg-[#E4E4E4]"></div>
@@ -400,22 +400,68 @@ function TerminalContent() {
       {isTradeDrawerOpen && (
         <div className="fixed inset-0 z-[500] lg:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsTradeDrawerOpen(false)}></div>
-          <div className="absolute bottom-0 left-0 right-0 bg-white animate-in slide-in-from-bottom duration-300 rounded-t-xl overflow-hidden max-h-[90vh] flex flex-col shadow-2xl border-t-4 border-t-[#0055FF]">
-            <div className="p-4 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5]">
-               <div className="flex flex-col">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Execution: {activeInst.symbol}</span>
-                  <span className="text-[8px] font-bold text-[#6B7280] uppercase tracking-tighter">Order Ticket Node</span>
-               </div>
-               <button onClick={() => setIsTradeDrawerOpen(false)} className="p-2 bg-white border border-[#E4E4E4] rounded-full shadow-sm"><X className="w-4 h-4 text-[#0A0A0A]" /></button>
+          <div className="absolute bottom-0 left-0 right-0 bg-white animate-in slide-in-from-bottom duration-300 rounded-t-xl overflow-hidden h-[90vh] flex flex-col shadow-2xl">
+            {/* Header with Tabs for Mobile */}
+            <div className="flex border-b border-[#E4E4E4] bg-[#F7F7F5] shrink-0">
+               {[
+                 { id: 'TRADE', label: 'Order Ticket', icon: MousePointer2 },
+                 { id: 'STATS', label: isDerivedMarket ? 'Digit Stats' : 'Market Data', icon: isDerivedMarket ? BarChart2 : Layout }
+               ].map(tab => (
+                 <button 
+                  key={tab.id}
+                  onClick={() => setActiveRightTab(tab.id as any)}
+                  className={cn(
+                    "flex-1 py-4 text-[9px] font-bold uppercase tracking-widest border-b-2 transition-all flex flex-col items-center gap-1",
+                    activeRightTab === tab.id ? "border-[#0055FF] text-[#0055FF] bg-white" : "border-transparent text-[#6B7280]"
+                  )}
+                 >
+                   <tab.icon className="w-4 h-4" />
+                   <span>{tab.label}</span>
+                 </button>
+               ))}
+               <button 
+                 onClick={() => setIsTradeDrawerOpen(false)} 
+                 className="px-6 border-l border-[#E4E4E4] text-[#6B7280] hover:text-[#0A0A0A]"
+               >
+                 <X className="w-5 h-5" />
+               </button>
             </div>
-            <div className="flex-grow overflow-y-auto no-scrollbar">
-              <ExecutionTicket 
-                instrument={activeInst} 
-                livePrice={marketData[activeInst.symbol]?.price}
-                balance={activeBalance}
-                accountMode={accountMode}
-                onExecute={handleExecution}
-              />
+
+            <div className="flex-grow overflow-y-auto no-scrollbar pb-12">
+               {activeRightTab === 'TRADE' && (
+                  <ExecutionTicket 
+                    instrument={activeInst} 
+                    livePrice={marketData[activeInst.symbol]?.price}
+                    balance={activeBalance}
+                    accountMode={accountMode}
+                    onExecute={handleExecution}
+                  />
+               )}
+               {activeRightTab === 'STATS' && (
+                 <div className="h-full bg-white">
+                    {isDerivedMarket ? (
+                      <DigitStats symbol={activeInst.symbol} livePrice={marketData[activeInst.symbol]?.price} />
+                    ) : (
+                      <div className="p-8 space-y-8 animate-in fade-in duration-300">
+                         <section className="space-y-4">
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">Instrument Details</h3>
+                            <div className="grid grid-cols-2 gap-6 text-[10px] font-bold uppercase text-[#6B7280]">
+                               <div><span className="block opacity-50 mb-1">Exchange</span> <span className="text-[#0A0A0A]">Varban Markets</span></div>
+                               <div><span className="block opacity-50 mb-1">Settlement</span> <span className="text-[#16835B]">Instant</span></div>
+                               <div><span className="block opacity-50 mb-1">Leverage</span> <span className="text-[#0A0A0A]">1:400</span></div>
+                               <div><span className="block opacity-50 mb-1">Market State</span> <span className="text-[#16835B]">Active</span></div>
+                            </div>
+                         </section>
+                         <div className="p-6 bg-[#F7F7F5] border border-[#E4E4E4] flex items-start gap-4">
+                           <ShieldCheck className="w-6 h-6 text-[#16835B] shrink-0" />
+                           <p className="text-[11px] leading-relaxed font-bold uppercase text-[#6B7280]">
+                             Trade execution nodes are synchronized with Tier-1 liquidity providers. Pricing accuracy is verified at the millisecond level.
+                           </p>
+                         </div>
+                      </div>
+                    )}
+                 </div>
+               )}
             </div>
           </div>
         </div>
