@@ -24,7 +24,7 @@ const todayMinusYears = (years: number) => {
 };
 
 interface ProfileTabProps {
-  /** Show the "Complete your profile to continue" banner (used by the completion gate page). */
+  /** Show the "Please fill in the missing details" banner (used by the completion gate page). */
   showGateBanner?: boolean;
   /** Called after a valid save instead of showing the success dialog. */
   onCompleted?: () => void;
@@ -191,8 +191,8 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
       } else {
         setDialog({
           status: 'success',
-          title: 'Registration Finalized',
-          message: 'Your profile has been successfully synchronized and validated. You now have full access to the trading terminal.'
+          title: 'Details saved',
+          message: 'Your details have been saved.'
         });
       }
     } catch (err: any) {
@@ -227,10 +227,10 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
           <Info className="w-4 h-4 text-[#C43D3D] shrink-0 mt-0.5" />
           <div className="space-y-1">
             <p className="text-[10px] font-bold uppercase text-[#C43D3D] tracking-widest">
-              {showGateBanner ? 'Complete your profile to continue' : 'Please fix the highlighted fields'}
+              {showGateBanner ? 'Please fill in the missing details' : 'Please fix the highlighted fields'}
             </p>
             <p className="text-[9px] text-[#C43D3D] uppercase font-bold leading-relaxed">
-              Remaining: {(submitted || !showGateBanner ? formGaps : storedGaps).map(g => g.label).join(', ')}
+              Still needed: {(submitted || !showGateBanner ? formGaps : storedGaps).map(g => g.label).join(', ')}
             </p>
           </div>
         </div>
@@ -425,8 +425,8 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
               </div>
             </Card>
 
-            <button type="submit" disabled={isSaving} className="w-full btn-institutional-primary py-5 text-xs tracking-[0.2em] shadow-xl">
-              {isSaving ? "SYNCHRONIZING..." : "Complete Registration"}
+            <button type="submit" disabled={isSaving} className="w-full py-4 bg-[#0055FF] text-white text-sm font-bold hover:bg-[#0044cc] transition-colors disabled:opacity-50 shadow-sm">
+              {isSaving ? "Saving..." : "Save and continue"}
             </button>
           </form>
         </div>
@@ -435,14 +435,14 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
           <Card className="p-6 bg-white border-[#E4E4E4] border-l-4 border-l-[#0055FF] shadow-sm space-y-6">
             <div className="flex items-center gap-2">
               <ShieldAlert className="w-4 h-4 text-[#0055FF]" />
-              <span className="text-[10px] font-bold uppercase text-[#0A0A0A] tracking-widest">Enforcement Status</span>
+              <span className="text-[10px] font-bold uppercase text-[#0A0A0A] tracking-widest">Your progress</span>
             </div>
             
             <div className="space-y-4">
               <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4]">
-                <span className="text-[8px] uppercase text-[#6B7280] block mb-1">Registration Level</span>
+                <span className="text-[8px] uppercase text-[#6B7280] block mb-1">Account status</span>
                 <p className="text-[10px] font-bold uppercase text-[#0A0A0A]">
-                  {profile?.profile_completed ? "Full Institutional Access" : "Pending Onboarding"}
+                  {profile?.profile_completed ? "All details provided" : "Details still needed"}
                 </p>
               </div>
 
@@ -450,7 +450,7 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
                 <div className="flex items-start gap-3 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20">
                   <Info className="w-4 h-4 text-[#C43D3D] shrink-0" />
                   <p className="text-[9px] text-[#C43D3D] uppercase font-bold leading-relaxed">
-                    Access to the Trade Terminal and Vault Funding is restricted until the Investor Profile is completed and synchronized.
+                    You can only trade with real money once your details, address and ID check are done.
                   </p>
                 </div>
               )}
@@ -468,7 +468,7 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
           <div className="p-4 flex items-start gap-3">
             <Globe className="w-4 h-4 text-[#6B7280] shrink-0 mt-0.5" />
             <p className="text-[9px] text-[#6B7280] uppercase font-bold leading-relaxed">
-              All registration data is processed according to applicable Seychelles laws and protected by TLS 1.3 encryption.
+              Your information is kept private, handled under Seychelles law and sent over an encrypted connection.
             </p>
           </div>
         </div>

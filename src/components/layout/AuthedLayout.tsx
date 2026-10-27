@@ -14,7 +14,7 @@ import { useEffect, useState, useMemo } from "react";
 import { cn } from "@/app/lib/utils";
 import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
 import { doc, updateDoc } from "firebase/firestore";
-import { getProfileGaps } from "@/app/lib/profile-completion";
+import OnboardingBanner from "@/components/onboarding/OnboardingBanner";
 
 const SUPER_ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
 
@@ -41,7 +41,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
   const pathname = usePathname();
   const router = useRouter();
   
-  const { data: profile, loading: profileLoading, error: profileError } =useDoc<any>(db, user ? `users/${user.uid}` : null);
+  const { data: profile, loading: profileLoading } =useDoc<any>(db, user ? `users/${user.uid}` : null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   
@@ -99,20 +99,6 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
     return isSuper || hasAdminRole;
   }, [user, profile]);
 
-  // Profile completion gate (client workspace only). useDoc reports loading=false
-  // for one render before it starts fetching, so require having seen loading=true
-  // for this uid before trusting the result.
-  const isClientPath = !!pathname?.startsWith('/client');
-  const [seenLoadingUid, setSeenLoadingUid] = useState<string | null>(null);
-  useEffect(() => {
-    if (user?.uid && profileLoading) setSeenLoadingUid(user.uid);
-  }, [user?.uid, profileLoading]);
-  const profileReady = !!user && !profileLoading && (!db || seenLoadingUid === user.uid);
-  const needsCompletion = useMemo(
-    () => !!user && profileReady && !profileError && !isAdmin && getProfileGaps(profile).length > 0,
-    [user, profileReady, profileError, isAdmin, profile]
-  );
-
   useEffect(() => {
     if (loading) return;
     if (!user && isStrict) {
@@ -121,17 +107,9 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
     if (user && isAdminPath && !isAdmin && !profileLoading) {
       router.replace('/client/dashboard');
     }
-    if (user && isClientPath && needsCompletion) {
-      router.replace(`/complete-profile?next=${encodeURIComponent(pathname || '/client/dashboard')}`);
-    }
-  }, [user, loading, profileLoading, isStrict, isAdminPath, isAdmin, isClientPath, needsCompletion, pathname, router]);
+  }, [user, loading, profileLoading, isStrict, isAdminPath, isAdmin, router]);
 
   if (loading || (isStrict && !user)) {
-    return <LoadingOverlay />;
-  }
-
-  // Keep content hidden while the profile loads or while redirecting to the gate.
-  if (isClientPath && user && (!profileReady || needsCompletion)) {
     return <LoadingOverlay />;
   }
 
@@ -195,7 +173,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
 
           <button 
             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)} 
-            className="w-8 h-8 rounded-full border border-[#E4E4E4] overflow-hidden bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs shadow-sm hover:border-[#0055FF] transition-all"
+            className="w-8 h-8 rounded-full border border-[#E4E4E4] overflow-hidden bg-[#0055FF] text-white flex items-center justify-center font-bold text-xs shadow-sm hover:border-[#0044cc] transition-all"
           >
             {profile?.photo_url ? (
               <img src={profile.photo_url} alt="Avatar" className="w-full h-full object-cover" />
@@ -222,6 +200,7 @@ export default function AuthedLayout({ children, title, subtitle, isTerminal = f
           />
         </div>
       </header>
+      <OnboardingBanner />
       <div className="flex flex-grow overflow-hidden relative">
         {isMobileMenuOpen && (
           <div className="fixed inset-0 z-[250] lg:hidden">

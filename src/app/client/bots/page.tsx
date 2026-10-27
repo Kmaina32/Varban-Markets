@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import { useTranslation } from '@/app/lib/i18n-context';
+import { useOnboarding } from '@/app/lib/use-onboarding';
 
 interface Bot {
   id: string;
@@ -120,6 +121,7 @@ const BOTS_REGISTRY: Bot[] = [
 
 export default function BotMarketplacePage() {
   const { t, formatNumber } = useTranslation();
+  const { canTrade } = useOnboarding();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBot, setSelectedBot] = useState<Bot | null>(null);
@@ -253,9 +255,15 @@ export default function BotMarketplacePage() {
                         )}>{bot.risk}</span>
                      </div>
                   </div>
-                  <button className="flex items-center gap-2 text-[10px] font-bold text-[#0055FF] uppercase tracking-widest hover:underline">
-                    {t('bots.startUsing')} <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                  {canTrade ? (
+                    <button className="flex items-center gap-2 text-[10px] font-bold text-[#0055FF] uppercase tracking-widest hover:underline">
+                      {t('bots.startUsing')} <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  ) : (
+                    <Link href="/client/complete-registration" className="flex items-center gap-2 text-[11px] font-bold text-[#0055FF] hover:underline">
+                      Finish setup to start <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  )}
                 </div>
               </Card>
             ))}

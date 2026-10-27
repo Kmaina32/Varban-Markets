@@ -127,7 +127,7 @@ export default function RegisterClient() {
         });
       }
 
-      router.push("/client/dashboard");
+      router.push("/client/complete-registration");
     } catch (err: any) {
       setError(err.message || "Google Handshake Failed.");
       setGoogleLoading(false);
@@ -190,7 +190,7 @@ export default function RegisterClient() {
         }
       });
       
-      router.push("/client/dashboard");
+      router.push("/client/complete-registration");
     } catch (err: any) {
       if (isPasswordPolicyError(err)) {
         setError("Your password does not meet the password policy. Check the requirements below and try again.");

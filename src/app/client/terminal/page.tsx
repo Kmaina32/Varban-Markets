@@ -36,6 +36,8 @@ import ProfileDropdown from "@/components/layout/ProfileDropdown";
 import { TradingViewChart } from "@/components/terminal/TradingViewChart";
 import MarketSelector from "@/components/terminal/MarketSelector";
 import ExecutionTicket from "@/components/terminal/ExecutionTicket";
+import TradingLock from "@/components/onboarding/TradingLock";
+import { useOnboarding } from "@/app/lib/use-onboarding";
 import PortfolioManager from "@/components/terminal/PortfolioManager";
 import TerminalTutorial from "@/components/terminal/TerminalTutorial";
 import MarketNewsFeed from "@/components/dashboard/MarketNewsFeed";
@@ -144,9 +146,13 @@ function TerminalContent() {
     return () => { active = false; clearInterval(interval); };
   }, [activeInst.symbol]);
 
+  const { canTrade } = useOnboarding();
+  // Real-money trading needs a finished setup; the demo account stays open for practice.
+  const tradingLocked = accountMode === 'REAL' && !canTrade;
+
   const handleExecution = (params: any) => {
     const live = marketData[activeInst.symbol];
-    if (!live || !user) return;
+    if (!live || !user || tradingLocked) return;
 
     const newPos: Position = {
       id: `VRB-${Math.random().toString(36).substring(7).toUpperCase()}`,
@@ -329,13 +335,14 @@ function TerminalContent() {
                 <div className="flex-grow overflow-y-auto no-scrollbar">
                    {activeRightTab === 'TRADE' && (
                      <div id="tour-settings" className="h-full">
+                        {tradingLocked ? <TradingLock /> : (
                         <ExecutionTicket 
                           instrument={activeInst} 
                           livePrice={marketData[activeInst.symbol]?.price}
                           balance={activeBalance}
                           accountMode={accountMode}
                           onExecute={handleExecution}
-                        />
+                        />)}
                      </div>
                    )}
                    {activeRightTab === 'MARKET' && (
@@ -406,13 +413,14 @@ function TerminalContent() {
                <button onClick={() => setIsTradeDrawerOpen(false)} className="p-1"><X className="w-5 h-5" /></button>
             </div>
             <div className="flex-grow overflow-y-auto">
+              {tradingLocked ? <TradingLock /> : (
               <ExecutionTicket 
                 instrument={activeInst} 
                 livePrice={marketData[activeInst.symbol]?.price}
                 balance={activeBalance}
                 accountMode={accountMode}
                 onExecute={handleExecution}
-              />
+              />)}
             </div>
           </div>
         </div>

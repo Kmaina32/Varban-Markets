@@ -37,7 +37,7 @@ const inputCls =
 const btnCls =
   'px-5 py-3 bg-white border border-[#E4E4E4] text-[10px] font-bold uppercase tracking-widest hover:border-[#0055FF] hover:text-[#0055FF] transition-all flex items-center justify-center gap-2 disabled:opacity-40';
 const primaryCls =
-  'px-6 py-3 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0055FF] transition-all flex items-center justify-center gap-2 disabled:opacity-40';
+  'px-6 py-3 bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0044cc] transition-all flex items-center justify-center gap-2 disabled:opacity-40';
 
 function validateFile(f: File): string | null {
   if (!ALLOWED.includes(f.type)) return 'Only JPG, PNG, WebP or PDF files are accepted.';
@@ -273,7 +273,7 @@ export default function KycTab() {
         <p className="text-sm text-[#0A0A0A] leading-relaxed">
           {status === 'Verified'
             ? 'Your identity is verified. No further action is needed.'
-            : 'Your documents were submitted. A person on our team reviews every submission; we will update your status here.'}
+            : 'Thank you, your documents have been sent. Someone on our team will review them and we will update your status here.'}
         </p>
         {(latest || done) && (
           <p className="text-[11px] text-[#6B7280] font-bold uppercase tracking-wider">
@@ -285,12 +285,12 @@ export default function KycTab() {
   } else if (gaps.length > 0) {
     body = (
       <div className="space-y-4">
-        <h4 className="text-sm font-bold">Complete your profile first</h4>
-        <p className="text-[12px] text-[#6B7280]">We need these details before you can upload identity documents:</p>
+        <h4 className="text-sm font-bold">Please fill in your details first</h4>
+        <p className="text-[12px] text-[#6B7280]">We need these before you can upload your ID:</p>
         <ul className="list-disc pl-5 text-[12px] space-y-1">
           {gaps.map((g) => <li key={g.key}>{g.label}</li>)}
         </ul>
-        <Link href="/complete-profile?next=/client/account" className={cn(primaryCls, 'inline-flex')}>Complete profile</Link>
+        <Link href="/client/complete-registration" className={cn(primaryCls, 'inline-flex')}>Fill in my details</Link>
       </div>
     );
   } else {
