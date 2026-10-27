@@ -1,3 +1,4 @@
+
 'use client';
 
 /**
@@ -6,7 +7,7 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Key, Shield, Laptop, AlertTriangle, Loader2 } from 'lucide-react';
+import { Key, Shield, Laptop, AlertTriangle, Loader2, Smartphone } from 'lucide-react';
 import { PASSWORD_POLICY } from '@/app/lib/password-policy';
 import { Card } from '@/components/ui/card';
 import { useUser, useFirestore, useCollection, useAuth, useDoc } from '@/firebase';
@@ -15,6 +16,7 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import { useTranslation } from '@/app/lib/i18n-context';
 import { cn } from '@/app/lib/utils';
 import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
+import PhoneVerification from './PhoneVerification';
 
 export default function SecurityTab() {
   const { user } = useUser();
@@ -36,7 +38,6 @@ export default function SecurityTab() {
     message: ''
   });
 
-  // Guard: Only create the query if db is active to prevent Firebase crashes
   const sessionsQuery = useMemo(() => {
     if (!db || !user) return null;
     return query(collection(db, `users/${user.uid}/sessions`), orderBy('lastActive', 'desc'), limit(10));
@@ -96,8 +97,18 @@ export default function SecurityTab() {
 
   const handleToggleMFA = async () => {
     if (!user || !db || isProvisioning) return;
-    setIsProvisioning(true);
     
+    // REQUIRE PHONE VERIFICATION FIRST
+    if (!profile?.status?.phoneVerified) {
+      setDialog({
+        status: 'warning',
+        title: 'Verification Required',
+        message: 'You must verify your phone number via SMS before activating Multi-Factor Authentication.'
+      });
+      return;
+    }
+
+    setIsProvisioning(true);
     try {
       const currentStatus = profile?.preferences?.mfaEnabled || false;
       await setDoc(doc(db, "users", user.uid), {
@@ -140,8 +151,7 @@ export default function SecurityTab() {
               <div role="alert" className="flex items-start gap-3 p-4 border border-[#C9A227] bg-[#C9A227]/5 text-[10px] font-bold uppercase leading-relaxed text-[#8a6d10]">
                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>
-                  Your password does not meet our current policy ({PASSWORD_POLICY.minLength}+ characters with upper and lower case,
-                  a number and a special character). Send yourself a reset link below and choose a stronger password.
+                  Your password does not meet our current policy ({PASSWORD_POLICY.minLength}+ characters). Update your credentials to maintain account integrity.
                 </span>
               </div>
             )}
@@ -162,33 +172,48 @@ export default function SecurityTab() {
 
         <Card className="p-8 bg-white border-[#E4E4E4] space-y-6 shadow-sm">
           <div className="flex items-center gap-3 border-b border-[#F7F7F5] pb-4">
-            <Shield className="w-5 h-5 text-[#16835B]" />
-            <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Two-Factor (2FA)</h3>
+            <Smartphone className="w-5 h-5 text-[#0055FF]" />
+            <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Identity Check (SMS)</h3>
           </div>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center p-4 border border-[#E4E4E4] bg-[#F7F7F5]">
-              <div>
-                <span className="text-[10px] font-bold uppercase block text-[#0A0A0A]">Multi-Factor Protocol</span>
-                <span className="text-[8px] text-[#6B7280] uppercase tracking-widest font-mono">Status Node</span>
-              </div>
-              <span className={cn(
-                "px-2 py-0.5 border text-[8px] font-bold uppercase tracking-widest",
-                mfaEnabled ? "bg-[#16835B]/10 text-[#16835B] border-[#16835B]" : "bg-[#6B7280]/10 text-[#6B7280] border-[#6B7280]"
-              )}>
-                {mfaEnabled ? 'ENABLED' : 'DISABLED'}
-              </span>
-            </div>
-            <button 
-              onClick={handleToggleMFA}
-              disabled={isProvisioning}
-              className="w-full py-4 bg-white border border-[#E4E4E4] text-[#0A0A0A] text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#F7F7F5] transition-all flex items-center justify-center gap-2 shadow-sm"
-            >
-              {isProvisioning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shield className="w-3.5 h-3.5 text-[#0055FF]" />}
-              <span>{mfaEnabled ? 'Deactivate Protection' : 'Provision 2FA Node'}</span>
-            </button>
-          </div>
+          <PhoneVerification 
+            currentPhone={profile?.profile?.phone} 
+            isVerified={profile?.status?.phoneVerified} 
+          />
         </Card>
       </div>
+
+      <Card className="p-8 bg-white border-[#E4E4E4] space-y-6 shadow-sm">
+        <div className="flex items-center gap-3 border-b border-[#F7F7F5] pb-4">
+          <Shield className="w-5 h-5 text-[#16835B]" />
+          <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Multi-Factor Authentication (2FA)</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+          <div className="md:col-span-8 space-y-2">
+            <p className="text-xs text-[#6B7280] leading-relaxed font-bold uppercase tracking-tight">
+              Activate Multi-Factor Authentication to protect your capital domain. 2FA is mandatory for all withdrawals exceeding $1,000 USD to ensure total financial integrity.
+            </p>
+          </div>
+          <div className="md:col-span-4 space-y-3">
+             <div className="flex justify-between items-center p-3 bg-[#F7F7F5] border border-[#E4E4E4]">
+                <span className="text-[9px] font-bold uppercase text-[#6B7280]">2FA Protocol</span>
+                <span className={cn(
+                  "px-2 py-0.5 border text-[8px] font-bold uppercase",
+                  mfaEnabled ? "bg-[#16835B]/10 text-[#16835B] border-[#16835B]" : "bg-[#6B7280]/10 text-[#6B7280] border-[#6B7280]"
+                )}>
+                  {mfaEnabled ? 'ACTIVE' : 'INACTIVE'}
+                </span>
+             </div>
+             <button 
+                onClick={handleToggleMFA}
+                disabled={isProvisioning}
+                className="w-full py-4 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#0055FF] transition-all flex items-center justify-center gap-2 shadow-lg"
+              >
+                {isProvisioning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shield className="w-3.5 h-3.5" />}
+                <span>{mfaEnabled ? 'Disable Protection' : 'Activate 2FA'}</span>
+              </button>
+          </div>
+        </div>
+      </Card>
 
       <Card className="bg-white border-[#E4E4E4] shadow-sm overflow-hidden">
         <div className="p-5 border-b border-[#F7F7F5] flex justify-between items-center bg-[#F7F7F5]">
@@ -215,9 +240,7 @@ export default function SecurityTab() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E4E4E4] text-[10px] font-mono">
-              {!db ? (
-                <tr><td colSpan={4} className="p-12 text-center text-[#6B7280] font-bold uppercase">Security Ledger Node Offline.</td></tr>
-              ) : sessionsLoading ? (
+              {sessionsLoading ? (
                 <tr><td colSpan={4} className="p-12 text-center text-[#6B7280] animate-pulse">Syncing Security Registry...</td></tr>
               ) : !sessions || sessions.length === 0 ? (
                 <tr><td colSpan={4} className="p-12 text-center text-[#6B7280] font-bold uppercase">No remote sessions detected.</td></tr>
