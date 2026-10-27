@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @fileOverview Varban Assistant Chatbot.
- * Adheres strictly to the Institutional Chat pattern using Message Scroller and Bubbles.
+ * @fileOverview Refined Varban Assistant AI.
+ * Features a modern circular UI, typewriter response effect, and live API integration.
  */
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
-import { X, Send, Loader2, MessageSquare, ChevronDown, GripVertical, Copy, RotateCcw } from 'lucide-react';
+import { X, Send, Loader2, MessageSquare, ChevronDown, GripVertical, Copy, RotateCcw, Sparkles } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import { supportChat } from '@/ai/flows/support-chat-flow';
 import { useTranslation } from '@/app/lib/i18n-context';
@@ -35,6 +35,31 @@ interface ChatMessage {
   content: string;
 }
 
+/**
+ * Specialized component for typewriter effect on AI responses.
+ */
+const TypewriterResponse = ({ text, onComplete }: { text: string, onComplete?: () => void }) => {
+  const [displayedText, setDisplayedText] = useState("");
+  const words = text.split(" ");
+  const index = useRef(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (index.current < words.length) {
+        setDisplayedText((prev) => (prev ? prev + " " + words[index.current] : words[index.current]));
+        index.current++;
+      } else {
+        clearInterval(timer);
+        onComplete?.();
+      }
+    }, 45); // Speed tuned for institutional readability
+
+    return () => clearInterval(timer);
+  }, [text, words.length, onComplete]);
+
+  return <span>{displayedText}</span>;
+};
+
 export default function ChatSupport() {
   const pathname = usePathname();
   const { t, locale } = useTranslation();
@@ -45,6 +70,7 @@ export default function ChatSupport() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [startTime, setStartTime] = useState('');
+  const [typingId, setTypingId] = useState<string | null>(null);
 
   // Drag & Position State
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
@@ -57,12 +83,9 @@ export default function ChatSupport() {
     setMessages([
       { id: 'starter', role: 'model', content: t('chat.starter') }
     ]);
-  }, [locale, t]);
-
-  useEffect(() => {
     const now = new Date();
     setStartTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-  }, []);
+  }, [locale, t]);
 
   // DRAG LOGIC
   const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
@@ -72,10 +95,7 @@ export default function ChatSupport() {
     const currentX = position?.x ?? window.innerWidth - 80;
     const currentY = position?.y ?? window.innerHeight - 80;
 
-    setDragStart({
-      x: clientX - currentX,
-      y: clientY - currentY
-    });
+    setDragStart({ x: clientX - currentX, y: clientY - currentY });
     setHasMoved(false);
   };
 
@@ -106,7 +126,6 @@ export default function ChatSupport() {
         setPosition({ x: snapX, y: position.y });
       }
     }
-    
     setDragStart(null);
     setTimeout(() => setIsDragging(false), 50);
   }, [dragOffset, isDragging, position]);
@@ -127,9 +146,7 @@ export default function ChatSupport() {
   }, [dragOffset, handleMouseMove, handleMouseUp]);
 
   const handleTriggerClick = () => {
-    if (!isDragging) {
-      setIsOpen(!isOpen);
-    }
+    if (!isDragging) setIsOpen(!isOpen);
   };
 
   const handleSend = async (e: React.FormEvent) => {
@@ -148,36 +165,21 @@ export default function ChatSupport() {
     setIsLoading(true);
 
     try {
-      const history = messages.map(m => ({
-        role: m.role,
-        content: m.content
-      }));
+      const history = messages.map(m => ({ role: m.role, content: m.content }));
+      const response = await supportChat({ message: currentInput, locale, history });
       
-      const response = await supportChat({
-        message: currentInput,
-        locale,
-        history
-      });
-
-      setMessages(prev => [...prev, { 
-        id: (Date.now() + 1).toString(),
-        role: 'model', 
-        content: response || "Handshake error." 
-      }]);
+      const newId = (Date.now() + 1).toString();
+      setMessages(prev => [...prev, { id: newId, role: 'model', content: response || "No response received." }]);
+      setTypingId(newId);
     } catch (error) {
-      console.error("Assistant Error:", error);
-      setMessages(prev => [...prev, { 
-        id: 'error-' + Date.now(),
-        role: 'model', 
-        content: t('chat.error')
-      }]);
+      setMessages(prev => [...prev, { id: 'err-' + Date.now(), role: 'model', content: t('chat.error') }]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCopy = (content: string) => {
-    navigator.clipboard.writeText(content);
+  const handleReset = () => {
+    setMessages([{ id: 'starter', role: 'model', content: t('chat.starter') }]);
   };
 
   const isTerminal = pathname?.includes('/terminal');
@@ -203,7 +205,8 @@ export default function ChatSupport() {
         onClick={handleTriggerClick}
         style={position ? { left: `${position.x}px`, top: `${position.y}px` } : { bottom: '24px', right: '24px' }}
         className={cn(
-          "fixed w-14 h-14 bg-[#0055FF] text-white flex items-center justify-center shadow-xl z-[150] rounded-full transition-shadow duration-200 cursor-grab active:cursor-grabbing group",
+          "fixed w-14 h-14 bg-[#0A0A0A] text-white flex items-center justify-center shadow-xl z-[150] rounded-full transition-shadow duration-200 cursor-grab active:cursor-grabbing group",
+          isOpen && "bg-[#0055FF]",
           isDragging && "shadow-2xl scale-110",
           !dragOffset && "transition-all duration-300 ease-out"
         )}
@@ -222,21 +225,35 @@ export default function ChatSupport() {
             (position?.x ?? window.innerWidth) < window.innerWidth / 2 ? "origin-bottom-left" : "origin-bottom-right"
           )}
         >
+          {/* Header */}
           <div className="p-4 border-b border-[#F7F7F5] bg-white flex justify-between items-center shrink-0">
-            <div className="flex items-center gap-2">
-               <div className="w-2 h-2 rounded-full bg-[#16835B] animate-pulse"></div>
-               <h3 className="text-[10px] font-bold text-[#0A0A0A] uppercase tracking-widest">{t('chat.title')}</h3>
+            <div className="flex items-center gap-3">
+               <div className="relative">
+                  <div className="w-8 h-8 rounded-full bg-[#F7F7F5] border border-[#E4E4E4] overflow-hidden">
+                    <img src="/assets/pwa.png" alt="Icon" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-[#16835B] rounded-full border-2 border-white"></div>
+               </div>
+               <div>
+                  <h3 className="text-[10px] font-bold text-[#0A0A0A] uppercase tracking-widest leading-none mb-1">Varban Assistant</h3>
+                  <span className="text-[8px] font-bold text-[#16835B] uppercase tracking-tighter">AI Node Operational</span>
+               </div>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-[#6B7280] hover:text-[#0A0A0A] transition-colors"><X className="w-5 h-5" /></button>
+            <div className="flex items-center gap-1">
+              <button onClick={handleReset} title="Reset Chat" className="p-1.5 text-[#6B7280] hover:text-[#0A0A0A]"><RotateCcw className="w-3.5 h-3.5" /></button>
+              <button onClick={() => setIsOpen(false)} className="p-1.5 text-[#6B7280] hover:text-[#0A0A0A]"><X className="w-4 h-4" /></button>
+            </div>
           </div>
 
+          {/* Messages */}
           <div className="flex-grow overflow-hidden bg-white">
             <MessageScrollerProvider autoScroll>
               <MessageScroller>
                 <MessageScrollerViewport className="px-0">
                   <MessageScrollerContent>
-                    <div className="flex items-center justify-center py-4 opacity-50">
-                      <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">
+                    <div className="flex flex-col items-center justify-center py-6 opacity-30">
+                      <Sparkles className="w-4 h-4 mb-2" />
+                      <span className="text-[8px] font-bold text-[#6B7280] uppercase tracking-[0.3em]">
                         {t('chat.started')} {startTime}
                       </span>
                     </div>
@@ -250,30 +267,34 @@ export default function ChatSupport() {
                         <Message align={msg.role === 'user' ? 'end' : 'start'}>
                           {msg.role === 'model' && (
                             <MessageAvatar>
-                              <div className="w-8 h-8 rounded-none bg-[#0A0A0A] border border-[#E4E4E4] flex items-center justify-center overflow-hidden">
-                                <img src="https://picsum.photos/seed/varbanbot/60/60" alt="Bot" className="w-full h-full object-cover" />
+                              <div className="w-8 h-8 rounded-full bg-white border border-[#E4E4E4] overflow-hidden flex items-center justify-center shadow-sm">
+                                <img src="/assets/pwa.png" alt="Bot" className="w-full h-full object-cover" />
                               </div>
                             </MessageAvatar>
                           )}
                           <MessageContent>
                             {msg.role === 'model' && (
-                              <MessageHeader>Varban Assistant</MessageHeader>
+                              <MessageHeader className="mb-2">Institutional Support</MessageHeader>
                             )}
                             {msg.role === 'user' ? (
-                              <Bubble align="end" variant="muted">
-                                <BubbleContent>{msg.content}</BubbleContent>
+                              <Bubble align="end" variant="tinted">
+                                <BubbleContent className="font-medium">{msg.content}</BubbleContent>
                               </Bubble>
                             ) : (
-                              <div className="px-1 text-[11px] leading-relaxed text-[#333333]">
-                                {msg.content}
+                              <div className="px-1 text-[11px] leading-relaxed text-[#333333] font-medium">
+                                {msg.id === typingId ? (
+                                  <TypewriterResponse text={msg.content} onComplete={() => setTypingId(null)} />
+                                ) : (
+                                  msg.content
+                                )}
                                 <MessageFooter>
                                   <Button 
                                     variant="ghost" 
                                     size="sm" 
-                                    className="h-7 w-7 p-0"
-                                    onClick={() => handleCopy(msg.content)}
+                                    className="h-6 px-1.5 text-[8px] font-bold"
+                                    onClick={() => navigator.clipboard.writeText(msg.content)}
                                   >
-                                    <Copy className="h-3 w-3" />
+                                    <Copy className="h-2.5 w-2.5 mr-1" /> Copy Response
                                   </Button>
                                 </MessageFooter>
                               </div>
@@ -287,12 +308,12 @@ export default function ChatSupport() {
                       <MessageScrollerItem messageId="loading">
                         <Message align="start">
                           <MessageAvatar>
-                            <div className="w-8 h-8 bg-[#F3F4F6] border border-[#E4E4E4] flex items-center justify-center">
-                              <Loader2 className="w-4 h-4 text-[#0055FF] animate-spin" />
+                            <div className="w-8 h-8 rounded-full bg-[#F3F4F6] border border-[#E4E4E4] flex items-center justify-center">
+                              <Loader2 className="w-3.5 h-3.5 text-[#0055FF] animate-spin" />
                             </div>
                           </MessageAvatar>
                           <MessageContent>
-                            <div className="italic font-bold tracking-widest uppercase text-[9px] text-[#6B7280] px-1 py-2">
+                            <div className="italic font-bold tracking-[0.2em] uppercase text-[9px] text-[#0055FF] px-1 py-2 animate-pulse">
                                 {t('chat.typing')}
                             </div>
                           </MessageContent>
@@ -306,6 +327,7 @@ export default function ChatSupport() {
             </MessageScrollerProvider>
           </div>
 
+          {/* Input Area */}
           <div className="p-4 border-t border-[#F7F7F5] bg-white shrink-0">
             <form onSubmit={handleSend} className="relative">
               <input 
@@ -314,20 +336,20 @@ export default function ChatSupport() {
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={t('chat.placeholder')}
                 disabled={isLoading}
-                className="w-full border border-[#0A0A0A] p-4 pr-12 text-xs focus:outline-none placeholder:text-[#6B7280] bg-white shadow-sm"
+                className="w-full border-2 border-[#0A0A0A] p-4 pr-12 text-xs focus:outline-none focus:border-[#0055FF] placeholder:text-[#6B7280] bg-white transition-colors"
               />
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
                 <button 
                   type="submit" 
                   disabled={!input.trim() || isLoading}
-                  className="text-[#0055FF] disabled:opacity-20 hover:text-[#0A0A0A] transition-colors p-2"
+                  className="text-[#0055FF] disabled:opacity-20 hover:text-[#0A0A0A] transition-all p-2"
                 >
                   <Send className="w-5 h-5" />
                 </button>
               </div>
             </form>
-            <div className="mt-2 text-center">
-               <span className="text-[8px] font-bold text-[#D1D5DB] uppercase tracking-[0.2em]">Institutional Intelligence Node</span>
+            <div className="mt-3 text-center">
+               <span className="text-[8px] font-bold text-[#D1D5DB] uppercase tracking-[0.4em]">Varban Intelligence Hub</span>
             </div>
           </div>
         </div>
