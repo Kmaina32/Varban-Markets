@@ -22,7 +22,8 @@ import {
   Settings,
   ShieldCheck,
   Zap,
-  BarChart2
+  BarChart2,
+  ListChecks
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
@@ -38,11 +39,20 @@ import ProfileDropdown from "@/components/layout/ProfileDropdown";
 import { TradingViewChart } from "@/components/terminal/TradingViewChart";
 import MarketSelector from "@/components/terminal/MarketSelector";
 import ExecutionTicket from "@/components/terminal/ExecutionTicket";
+import TradingLock from "@/components/onboarding/TradingLock";
+import { useOnboarding } from "@/app/lib/use-onboarding";
 import PortfolioManager from "@/components/terminal/PortfolioManager";
 import TerminalTutorial from "@/components/terminal/TerminalTutorial";
 import LoadingOverlay from "@/components/shared/LoadingOverlay";
 import DigitStats from "@/components/terminal/DigitStats";
 import DerivedTradeControls from "@/components/terminal/DerivedTradeControls";
+import SyntheticChart from "@/components/terminal/SyntheticChart";
+import ContractsPanel from "@/components/terminal/ContractsPanel";
+import BottomSheet from "@/components/terminal/BottomSheet";
+import { useSyntheticFeed } from "@/app/lib/synthetic/use-synthetic-feed";
+import { useDerivedContracts } from "@/app/lib/synthetic/contracts";
+import { CONTRACT_LABELS, needsDigit } from "@/app/lib/synthetic/engine";
+import { readDemoBalance, onDemoBalanceChange } from "@/app/lib/demo-wallet";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -81,6 +91,7 @@ function TerminalContent() {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isTradeDrawerOpen, setIsTradeDrawerOpen] = useState(false);
+  const [isTradesDrawerOpen, setIsTradesDrawerOpen] = useState(false);
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
   
@@ -106,6 +117,26 @@ function TerminalContent() {
     const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
     if (savedMode) setAccountMode(savedMode);
   }, []);
+
+  // Practice balance: shared with the rest of the app and updated when contracts are bought or settled.
+  useEffect(() => {
+    setDemoBalance(readDemoBalance());
+    return onDemoBalanceChange(() => setDemoBalance(readDemoBalance()));
+  }, []);
+
+  // Our own indices: prices come from the server feed, contracts are kept for the practice account.
+  const feed = useSyntheticFeed(activeInst.symbol, isDerivedMarket);
+  const { contracts, buy: buyContract, settleDue } = useDerivedContracts();
+  const symbolContracts = useMemo(() => contracts.filter((c) => c.symbol === activeInst.symbol), [contracts, activeInst.symbol]);
+  const openContracts = useMemo(() => symbolContracts.filter((c) => c.status === 'open'), [symbolContracts]);
+  const openCount = isDerivedMarket ? openContracts.length : positions.filter((p) => p.status === 'Open').length;
+
+  useEffect(() => {
+    if (!isDerivedMarket || !feed.latest) return;
+    const { p } = feed.latest;
+    setMarketData(prev => ({ ...prev, [activeInst.symbol]: { price: p, percent: Math.round(feed.changePercent * 100) / 100 } }));
+    settleDue(feed.ticks, feed.latest.t);
+  }, [isDerivedMarket, feed.latest?.t, activeInst.symbol]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -136,6 +167,7 @@ function TerminalContent() {
   };
 
   useEffect(() => {
+    if (isDerivedMarket) return;
     let active = true;
     const poll = async () => {
       try {
@@ -150,11 +182,15 @@ function TerminalContent() {
     poll();
     const interval = setInterval(poll, 4000);
     return () => { active = false; clearInterval(interval); };
-  }, [activeInst.symbol]);
+  }, [activeInst.symbol, isDerivedMarket]);
+
+  const { canTrade } = useOnboarding();
+  // Real-money trading needs a finished setup; the demo account stays open for practice.
+  const tradingLocked = accountMode === 'REAL' && !canTrade;
 
   const handleExecution = (params: any) => {
     const live = marketData[activeInst.symbol];
-    if (!live || !user) return;
+    if (!live || !user || tradingLocked) return;
 
     const newPos: Position = {
       id: `VRB-${Math.random().toString(36).substring(7).toUpperCase()}`,
@@ -175,8 +211,85 @@ function TerminalContent() {
 
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
+  const handleBuyDerived = (req: { type: any; digit: number; stake: number; ticks: number; payoutMultiplier: number }) => {
+    const cfg = feed.cfg;
+    const latest = feed.latest;
+    if (!cfg || !latest) return { ok: false, message: 'Prices are still loading. Try again in a moment.' };
+    if (accountMode !== 'DEMO') return { ok: false, message: 'Switch to the practice account to trade this market.' };
+    if (!feed.tradingOpen || !cfg.tradingEnabled) return { ok: false, message: 'Buying is paused on this market.' };
+    if (req.stake > readDemoBalance()) return { ok: false, message: 'You do not have enough balance for this stake.' };
+    const c = buyContract({
+      symbol: activeInst.symbol, type: req.type, digit: req.digit, stake: req.stake,
+      payoutMultiplier: req.payoutMultiplier, ticks: req.ticks, tickMs: cfg.tickMs,
+      entryTick: latest.t, entryPrice: latest.p, exitTick: latest.t + req.ticks,
+    });
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) setTimeout(() => setIsTradeDrawerOpen(false), 900);
+    const label = `${CONTRACT_LABELS[c.type as keyof typeof CONTRACT_LABELS]}${needsDigit(c.type) ? ' ' + c.digit : ''}`;
+    return { ok: true, message: `Trade started: ${label} for $${c.stake.toFixed(2)}. The result comes in about ${Math.round((req.ticks * cfg.tickMs) / 1000)} seconds.` };
+  };
+
+  const switchToPractice = () => {
+    setAccountMode('DEMO');
+    localStorage.setItem('varban_account_mode', 'DEMO');
+    window.dispatchEvent(new Event('varban_account_mode_changed'));
+  };
+
+  const livePrice = marketData[activeInst.symbol]?.price ?? null;
+
+  /** The order ticket for whichever market is open (used by desktop panel and phone drawer). */
+  const renderTicket = () => {
+    if (tradingLocked) return <TradingLock compact />;
+    if (isDerivedMarket) {
+      if (!feed.cfg) return null;
+      return (
+        <DerivedTradeControls
+          cfg={feed.cfg}
+          livePrice={feed.latest?.p ?? null}
+          balance={activeBalance}
+          tradingOpen={feed.tradingOpen && feed.cfg.tradingEnabled}
+          practiceOnly={accountMode === 'REAL'}
+          onSwitchToPractice={switchToPractice}
+          onBuy={handleBuyDerived}
+        />
+      );
+    }
+    return (
+      <ExecutionTicket
+        instrument={activeInst}
+        livePrice={livePrice as any}
+        balance={activeBalance}
+        onExecute={handleExecution}
+        accountMode={accountMode}
+      />
+    );
+  };
+
+  const renderStats = (padded: boolean) =>
+    isDerivedMarket ? (
+      <DigitStats ticks={feed.ticks} />
+    ) : (
+      <div className={cn("space-y-6 animate-in fade-in duration-300", padded ? "p-6" : "p-4")}>
+        <section className="space-y-3">
+          <h3 className="text-sm font-bold text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">About this market</h3>
+          <div className="grid grid-cols-2 gap-4 text-xs text-[#6B7280]">
+            <div><span className="block mb-1">Exchange</span><span className="font-bold text-[#0A0A0A]">Varban Markets</span></div>
+            <div><span className="block mb-1">Settlement</span><span className="font-bold text-[#16835B]">Instant</span></div>
+            <div><span className="block mb-1">Leverage</span><span className="font-bold text-[#0A0A0A]">1:400</span></div>
+            <div><span className="block mb-1">Market</span><span className="font-bold text-[#16835B]">Open</span></div>
+          </div>
+        </section>
+      </div>
+    );
+
+  const renderChart = () =>
+    isDerivedMarket ? (
+      <SyntheticChart symbol={activeInst.symbol} ticks={feed.ticks} tickMs={feed.cfg?.tickMs ?? 1000} openContracts={openContracts} error={feed.error} />
+    ) : (
+      <TradingViewChart symbol={activeInst.symbol} />
+    );
+
   return (
-    <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
+    <div className="flex flex-col h-[100dvh] bg-white overflow-hidden text-[#0A0A0A]">
       <TerminalTutorial />
 
       <header className="h-14 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[100] px-2 lg:px-4">
@@ -263,7 +376,7 @@ function TerminalContent() {
           <div className="relative">
             <button 
               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-              className="w-8 h-8 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs shadow-sm hover:ring-2 ring-[#0055FF]/20 overflow-hidden"
+              className="w-8 h-8 rounded-full bg-[#0055FF] text-white flex items-center justify-center font-bold text-xs shadow-sm hover:ring-2 ring-[#0055FF]/30 overflow-hidden"
             >
               {profile?.profile?.photoUrl ? <img src={profile.profile.photoUrl} className="w-full h-full object-cover" /> : user?.email?.substring(0,2).toUpperCase()}
             </button>
@@ -295,7 +408,7 @@ function TerminalContent() {
               <ResizablePanelGroup direction="vertical">
                 <ResizablePanel defaultSize={70} minSize={30}>
                   <div id="tour-chart" className="h-full w-full bg-[#F7F7F5] relative">
-                    <TradingViewChart symbol={activeInst.symbol} />
+                    {renderChart()}
                   </div>
                 </ResizablePanel>
                 
@@ -303,11 +416,15 @@ function TerminalContent() {
 
                 <ResizablePanel defaultSize={30} minSize={10}>
                   <div className="h-full w-full flex flex-col shrink-0 relative">
-                    <PortfolioManager 
-                      positions={positions.filter(p => p.status === 'Open')}
-                      orders={[]}
-                      history={positions.filter(p => p.status === 'Closed')}
-                    />
+                    {isDerivedMarket ? (
+                      <ContractsPanel contracts={symbolContracts} nowTick={feed.latest?.t ?? null} className="h-full" />
+                    ) : (
+                      <PortfolioManager 
+                        positions={positions.filter(p => p.status === 'Open')}
+                        orders={[]}
+                        history={positions.filter(p => p.status === 'Closed')}
+                      />
+                    )}
                   </div>
                 </ResizablePanel>
               </ResizablePanelGroup>
@@ -319,8 +436,8 @@ function TerminalContent() {
               <div className="h-full w-full border-l border-[#E4E4E4] shrink-0 bg-white shadow-xl relative z-40 flex flex-col overflow-hidden">
                 <div className="flex border-b border-[#E4E4E4] shrink-0">
                    {[
-                     { id: 'TRADE', label: 'Order Ticket', icon: MousePointer2 },
-                     { id: 'STATS', label: isDerivedMarket ? 'Digit Stats' : 'Market Data', icon: isDerivedMarket ? BarChart2 : Layout }
+                     { id: 'TRADE', label: 'Trade', icon: MousePointer2 },
+                     { id: 'STATS', label: isDerivedMarket ? 'Last digits' : 'Market info', icon: isDerivedMarket ? BarChart2 : Layout }
                    ].map(tab => (
                      <button 
                       key={tab.id}
@@ -338,146 +455,99 @@ function TerminalContent() {
 
                 <div className="flex-grow overflow-y-auto no-scrollbar">
                    {activeRightTab === 'TRADE' && (
-                     <div id="tour-settings" className="h-full">
-                        {isDerivedMarket ? (
-                          <DerivedTradeControls 
-                            instrument={activeInst} 
-                            livePrice={marketData[activeInst.symbol]?.price}
-                            balance={activeBalance}
-                            onExecute={handleExecution}
-                          />
-                        ) : (
-                          <ExecutionTicket 
-                            instrument={activeInst} 
-                            livePrice={marketData[activeInst.symbol]?.price}
-                            balance={activeBalance}
-                            onExecute={handleExecution}
-                            accountMode={accountMode}
-                          />
-                        )}
-                     </div>
+                     <div id="tour-settings" className="h-full">{renderTicket()}</div>
                    )}
-                   {activeRightTab === 'STATS' && (
-                     <div className="h-full">
-                        {isDerivedMarket ? (
-                          <DigitStats symbol={activeInst.symbol} livePrice={marketData[activeInst.symbol]?.price} />
-                        ) : (
-                          <div className="p-6 space-y-8 animate-in fade-in duration-300">
-                             <section className="space-y-4">
-                                <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">Instrument Details</h3>
-                                <div className="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase text-[#6B7280]">
-                                   <div><span className="block opacity-50 mb-1">Exchange</span> <span className="text-[#0A0A0A]">Varban Markets</span></div>
-                                   <div><span className="block opacity-50 mb-1">Settlement</span> <span className="text-[#16835B]">Instant</span></div>
-                                   <div><span className="block opacity-50 mb-1">Leverage</span> <span className="text-[#0A0A0A]">1:400</span></div>
-                                   <div><span className="block opacity-50 mb-1">Market State</span> <span className="text-[#16835B]">Active</span></div>
-                                </div>
-                             </section>
-                          </div>
-                        )}
-                     </div>
-                   )}
+                   {activeRightTab === 'STATS' && <div className="h-full">{renderStats(true)}</div>}
                 </div>
               </div>
             </ResizablePanel>
           </ResizablePanelGroup>
 
-          {/* MOBILE MAIN SCREEN - NO EXECUTION TICKET HERE */}
+          {/* PHONE / TABLET: chart only. Trading and trades live in drawers. */}
           <div className="flex lg:hidden flex-grow flex-col overflow-hidden">
             <div id="tour-chart-mobile" className="flex-grow min-h-0 bg-[#F7F7F5] relative">
-              <TradingViewChart symbol={activeInst.symbol} />
+              {renderChart()}
             </div>
           </div>
         </main>
       </div>
 
-      {/* MOBILE BOTTOM ACTION BAR */}
-      <div className="lg:hidden h-16 border-t border-[#E4E4E4] bg-white flex items-center px-4 gap-3 shrink-0 z-[110]">
-        <div className="flex-grow flex flex-col">
-           <span className="text-[10px] font-mono font-bold text-[#6B7280]">{activeInst.symbol}</span>
-           <span className={cn("text-xs font-mono font-bold", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
-              {marketData[activeInst.symbol]?.price?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "---"}
-           </span>
+      {/* PHONE BOTTOM BAR */}
+      <div className="lg:hidden shrink-0 z-[110] border-t border-[#E4E4E4] bg-white px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] text-[#6B7280] truncate">{activeInst.name}</p>
+          <p className={cn("text-base font-bold font-mono leading-tight", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
+            {livePrice !== null ? livePrice.toLocaleString(undefined, { minimumFractionDigits: 2 }) : "---"}
+          </p>
         </div>
-        <button 
-          onClick={() => setIsTradeDrawerOpen(true)}
-          className="px-8 py-3 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"
+        <button
+          onClick={() => setIsTradesDrawerOpen(true)}
+          className="relative px-3 py-3 border border-[#E4E4E4] bg-white text-[#0A0A0A] text-xs font-bold flex items-center gap-1.5 hover:border-[#0055FF]"
         >
-          Execute <ChevronDown className="w-3.5 h-3.5" />
+          <ListChecks className="w-4 h-4 text-[#0055FF]" /> Trades
+          {openCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#0055FF] text-white text-[10px] font-bold flex items-center justify-center">{openCount}</span>
+          )}
+        </button>
+        <button
+          onClick={() => { setActiveRightTab('TRADE'); setIsTradeDrawerOpen(true); }}
+          className="px-6 py-3 bg-[#0055FF] text-white text-sm font-bold hover:bg-[#0044cc] transition-colors"
+        >
+          Trade
         </button>
       </div>
 
-      {/* MOBILE EXECUTION DRAWER - THE ONLY PLACE FOR THE TICKET ON MOBILE */}
-      {isTradeDrawerOpen && (
-        <div className="fixed inset-0 z-[500] lg:hidden">
-          <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsTradeDrawerOpen(false)}></div>
-          <div className="absolute bottom-0 left-0 right-0 bg-white animate-in slide-in-from-bottom duration-300 rounded-t-xl overflow-hidden h-[90vh] flex flex-col shadow-2xl">
-            <div className="flex border-b border-[#E4E4E4] bg-[#F7F7F5] shrink-0">
-               {[
-                 { id: 'TRADE', label: 'Order Ticket', icon: MousePointer2 },
-                 { id: 'STATS', label: isDerivedMarket ? 'Digit Stats' : 'Market Data', icon: isDerivedMarket ? BarChart2 : Layout }
-               ].map(tab => (
-                 <button 
-                  key={tab.id}
-                  onClick={() => setActiveRightTab(tab.id as any)}
-                  className={cn(
-                    "flex-1 py-4 text-[9px] font-bold uppercase tracking-widest border-b-2 transition-all flex flex-col items-center gap-1",
-                    activeRightTab === tab.id ? "border-[#0055FF] text-[#0055FF] bg-white" : "border-transparent text-[#6B7280]"
-                  )}
-                 >
-                   <tab.icon className="w-4 h-4" />
-                   <span>{tab.label}</span>
-                 </button>
-               ))}
-               <button 
-                 onClick={() => setIsTradeDrawerOpen(false)} 
-                 className="px-6 border-l border-[#E4E4E4] text-[#6B7280] hover:text-[#0A0A0A]"
-               >
-                 <X className="w-5 h-5" />
-               </button>
-            </div>
-
-            <div className="flex-grow overflow-y-auto no-scrollbar pb-12">
-               {activeRightTab === 'TRADE' && (
-                  isDerivedMarket ? (
-                    <DerivedTradeControls 
-                      instrument={activeInst} 
-                      livePrice={marketData[activeInst.symbol]?.price}
-                      balance={activeBalance}
-                      onExecute={handleExecution}
-                    />
-                  ) : (
-                    <ExecutionTicket 
-                      instrument={activeInst} 
-                      livePrice={marketData[activeInst.symbol]?.price}
-                      balance={activeBalance}
-                      onExecute={handleExecution}
-                      accountMode={accountMode}
-                    />
-                  )
-               )}
-               {activeRightTab === 'STATS' && (
-                 <div className="h-full bg-white">
-                    {isDerivedMarket ? (
-                      <DigitStats symbol={activeInst.symbol} livePrice={marketData[activeInst.symbol]?.price} />
-                    ) : (
-                      <div className="p-8 space-y-8 animate-in fade-in duration-300">
-                         <section className="space-y-4">
-                            <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">Instrument Details</h3>
-                            <div className="grid grid-cols-2 gap-6 text-[10px] font-bold uppercase text-[#6B7280]">
-                               <div><span className="block opacity-50 mb-1">Exchange</span> <span className="text-[#0A0A0A]">Varban Markets</span></div>
-                               <div><span className="block opacity-50 mb-1">Settlement</span> <span className="text-[#16835B]">Instant</span></div>
-                               <div><span className="block opacity-50 mb-1">Leverage</span> <span className="text-[#0A0A0A]">1:400</span></div>
-                               <div><span className="block opacity-50 mb-1">Market State</span> <span className="text-[#16835B]">Active</span></div>
-                            </div>
-                         </section>
-                      </div>
-                    )}
-                 </div>
-               )}
-            </div>
+      {/* PHONE DRAWER: ticket and market info (this replaces the old right sidebar on small screens) */}
+      <BottomSheet
+        open={isTradeDrawerOpen}
+        title={activeInst.symbol}
+        onClose={() => setIsTradeDrawerOpen(false)}
+        header={
+          <div className="flex border-b border-[#E4E4E4] shrink-0">
+            {[
+              { id: 'TRADE', label: 'Trade' },
+              { id: 'STATS', label: isDerivedMarket ? 'Last digits' : 'Market info' },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveRightTab(tab.id as any)}
+                className={cn(
+                  "flex-1 py-3 text-sm font-bold border-b-2 transition-colors",
+                  activeRightTab === tab.id ? "border-[#0055FF] text-[#0055FF]" : "border-transparent text-[#6B7280]"
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-        </div>
-      )}
+        }
+      >
+        {activeRightTab === 'TRADE' ? renderTicket() : renderStats(false)}
+      </BottomSheet>
+
+      {/* PHONE DRAWER: running and finished trades */}
+      <BottomSheet open={isTradesDrawerOpen} title="Your trades" onClose={() => setIsTradesDrawerOpen(false)}>
+        {isDerivedMarket ? (
+          <ContractsPanel contracts={symbolContracts} nowTick={feed.latest?.t ?? null} className="min-h-full" />
+        ) : positions.length === 0 ? (
+          <p className="p-8 text-center text-sm text-[#6B7280]">No trades yet. Once you place one, it will show up here.</p>
+        ) : (
+          <ul className="p-3 space-y-2 bg-[#F7F7F5] min-h-full">
+            {positions.map(p => (
+              <li key={p.id} className="p-3 bg-white border border-[#E4E4E4] flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-bold">{p.instrument} · {p.vector === 'BUY' ? 'Buy' : 'Sell'}</p>
+                  <p className="text-[11px] text-[#6B7280]">Opened at {p.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold">${p.stake.toFixed(2)}</p>
+                  <p className="text-[11px] text-[#6B7280]">{p.status === 'Open' ? 'Running' : 'Closed'}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </BottomSheet>
 
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[400] lg:hidden">

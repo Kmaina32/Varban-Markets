@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Phone, CheckCircle2, ShieldCheck, Loader2, Smartphone, ArrowRight } from 'lucide-react';
+import { Phone, CheckCircle2, ShieldCheck, Loader2, Smartphone, ArrowRight, AlertTriangle } from 'lucide-react';
 import { useUser, useFirestore } from '@/firebase';
 import { authFetch } from '@/app/lib/auth-fetch';
 import { cn } from '@/app/lib/utils';

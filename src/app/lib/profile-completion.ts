@@ -44,7 +44,7 @@ export function getProfileGaps(userDoc: any): ProfileGap[] {
   const age = ageFromDate(text(p.dateOfBirth));
   need(age !== null && age >= MIN_AGE_YEARS, "dateOfBirth", `Date of birth (you must be ${MIN_AGE_YEARS}+)`);
   need(isValidPhone(text(p.phone)), "phone", "Phone number");
-  need(!!status.phoneVerified, "phoneVerified", "SMS Phone Verification");
+  need(!!status.phoneVerified, "phoneVerified", "Phone number confirmed by text message");
   need(!!text(p.country), "country", "Country of residence");
   need(!!text(p.addressLine1), "addressLine1", "Street address");
   need(!!text(p.city), "city", "City");

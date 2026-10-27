@@ -24,6 +24,7 @@ const todayMinusYears = (years: number) => {
 };
 
 interface ProfileTabProps {
+  /** Show the "Please fill in the missing details" banner (used by the completion gate page). */
   showGateBanner?: boolean;
   onCompleted?: () => void;
 }
@@ -250,8 +251,8 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
       } else {
         setDialog({
           status: 'success',
-          title: 'Identity Synchronized',
-          message: 'Your institutional profile has been successfully validated. You now have access to all platform nodes.'
+          title: 'Details saved',
+          message: 'Your details have been saved.'
         });
       }
     } catch (err: any) {
@@ -286,10 +287,10 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
           <Info className="w-4 h-4 text-[#C43D3D] shrink-0 mt-0.5" />
           <div className="space-y-1">
             <p className="text-[10px] font-bold uppercase text-[#C43D3D] tracking-widest">
-              Regulatory compliance required
+              {showGateBanner ? 'Please fill in the missing details' : 'Please fix the highlighted fields'}
             </p>
             <p className="text-[9px] text-[#C43D3D] uppercase font-bold leading-relaxed">
-              Remaining Gaps: {(submitted ? formGaps : storedGaps).map(g => g.label).join(', ')}
+              Still needed: {(submitted || !showGateBanner ? formGaps : storedGaps).map(g => g.label).join(', ')}
             </p>
           </div>
         </div>
@@ -348,7 +349,7 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
                           type="button"
                           onClick={handleSendOtp}
                           disabled={otpLoading || !isValidPhone(cleanPhone) || otpSent}
-                          className="px-6 bg-[#0A0A0A] text-white text-[9px] font-bold uppercase tracking-widest hover:bg-[#0055FF] disabled:opacity-40"
+                          className="px-6 bg-[#0055FF] text-white text-[10px] font-bold hover:bg-[#0044cc] disabled:opacity-40"
                         >
                           {otpLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Verify"}
                         </button>
@@ -372,7 +373,7 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
                                 type="button"
                                 onClick={handleVerifyOtp}
                                 disabled={otpLoading || otpCode.length < 6}
-                                className="px-8 bg-[#16835B] text-white text-[9px] font-bold uppercase tracking-widest hover:bg-[#0A0A0A]"
+                                className="px-8 bg-[#16835B] text-white text-[9px] font-bold uppercase tracking-widest hover:bg-[#12704d]"
                               >
                                 Confirm
                               </button>
@@ -485,27 +486,27 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
               type="submit" 
               disabled={isSaving || !isPhoneVerified} 
               className={cn(
-                "w-full py-5 text-xs font-bold uppercase tracking-[0.25em] shadow-xl transition-all",
-                isPhoneVerified ? "bg-[#0A0A0A] text-white hover:bg-[#0055FF]" : "bg-[#F3F4F6] text-[#D1D5DB] cursor-not-allowed border border-[#E4E4E4]"
+                "w-full py-4 text-sm font-bold shadow-sm transition-colors",
+                isPhoneVerified ? "bg-[#0055FF] text-white hover:bg-[#0044cc]" : "bg-[#F3F4F6] text-[#D1D5DB] cursor-not-allowed border border-[#E4E4E4]"
               )}
             >
-              {isSaving ? "SYNCHRONIZING..." : "Complete Registration"}
+              {isSaving ? "Saving..." : "Save and continue"}
             </button>
           </form>
         </div>
 
         <div className="lg:col-span-4 space-y-6">
-          <Card className="p-6 bg-[#010813] text-white border-none shadow-xl space-y-6">
+          <Card className="p-6 bg-white border border-[#E4E4E4] border-l-4 border-l-[#0055FF] shadow-sm space-y-4">
             <div className="flex items-center gap-2">
               <Smartphone className="w-5 h-5 text-[#0055FF]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest">Identity Node</span>
+              <span className="text-sm font-bold text-[#0A0A0A]">Verify your phone</span>
             </div>
-            <p className="text-[11px] text-[#94A3B8] leading-relaxed uppercase font-bold tracking-tight">
-              We require a verified mobile number to enable Multi-Factor Authentication (2FA) and provide instant trade settlement alerts.
+            <p className="text-xs text-[#6B7280] leading-relaxed">
+              We need to confirm your mobile number by text message. It helps keep your account safe and lets us send you trade alerts.
             </p>
             {!isPhoneVerified && (
-              <div className="p-4 bg-[#0055FF]/10 border border-[#0055FF]/30 text-[9px] font-bold text-[#0055FF] uppercase">
-                Awaiting SMS Validation
+              <div className="p-3 bg-[#0055FF]/5 border border-[#0055FF]/30 text-xs font-bold text-[#0055FF]">
+                Waiting for you to enter the text message code
               </div>
             )}
           </Card>

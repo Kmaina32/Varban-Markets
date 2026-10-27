@@ -136,7 +136,7 @@ export default function RegisterClient() {
 
       // Success
       setSuccess(true);
-      setTimeout(() => router.push("/client/dashboard"), 1500);
+      setTimeout(() => router.push("/client/complete-registration"), 1500);
     } catch (err: any) {
       setError('The verification code is invalid or has expired.');
     } finally {
@@ -187,7 +187,7 @@ export default function RegisterClient() {
       }
 
       setSuccess(true);
-      setTimeout(() => router.push("/client/dashboard"), 1500);
+      setTimeout(() => router.push("/client/complete-registration"), 1500);
     } catch (err: any) {
       setError(err.message || "Google Handshake Failed.");
       setGoogleLoading(false);

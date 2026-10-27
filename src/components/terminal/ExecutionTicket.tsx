@@ -10,7 +10,6 @@ import { Instrument } from '@/app/lib/instruments';
 import { cn } from '@/app/lib/utils';
 import { useTranslation } from '@/app/lib/i18n-context';
 import { Calculator, ShieldCheck } from 'lucide-react';
-import DerivedTradeControls from './DerivedTradeControls';
 
 interface ExecutionTicketProps {
   instrument: Instrument;
@@ -25,7 +24,6 @@ type TradingMode = 'SPOT' | 'DURATION';
 
 export default function ExecutionTicket({ instrument, livePrice, balance, onExecute, accountMode }: ExecutionTicketProps) {
   const { formatNumber } = useTranslation();
-  const isDerivedMarket = instrument.category === 'Synthetic Indices';
 
   const [mode, setMode] = useState<TradingMode>('SPOT');
   const [side, setSide] = useState<'BUY' | 'SELL'>('BUY');
@@ -59,10 +57,6 @@ export default function ExecutionTicket({ instrument, livePrice, balance, onExec
       duration: mode === 'DURATION' ? duration : undefined,
     });
   };
-
-  if (isDerivedMarket) {
-    return <DerivedTradeControls instrument={instrument} livePrice={livePrice} balance={balance} onExecute={onExecute} />;
-  }
 
   return (
     <div className="flex flex-col h-full bg-white select-none relative">

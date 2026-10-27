@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { 
   ShieldAlert, Users, FileSpreadsheet, Database, ArrowLeftRight, Settings, 
   Inbox, ArrowDownCircle, ArrowUpCircle, ShieldCheck, Newspaper, 
-  Shield, Server, FileCheck, Sparkles 
+  Shield, Server, FileCheck, Sparkles, Activity
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import {
@@ -36,6 +36,7 @@ export default function AdminSidebar({ onLinkClick, className, isMobile = false 
     { label: "Support Inbox", href: "/admin/inbox", icon: Inbox, description: "Institutional inquiry management and user assistance." },
     { label: "Platform Ledger", href: "/admin/transactions", icon: FileSpreadsheet, description: "Global immutable transaction ledger." },
     { label: "Market Switches", href: "/admin/markets", icon: Database, description: "Instrument halt switches and feed status control." },
+    { label: "Our Own Markets", href: "/admin/synthetic-markets", icon: Activity, description: "Volatility index settings: price swings, trend, house margin and stake limits." },
     { label: "Certificates", href: "/admin/certificates", icon: FileCheck, description: "Company profile and regulatory certificates shown on the public site." },
     { label: "Platform Settings", href: "/admin/settings", icon: Settings, description: "System-wide configuration (API keys, Payout rates)." },
   ];

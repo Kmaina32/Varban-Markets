@@ -48,7 +48,7 @@ const inputCls =
 const btnCls =
   'px-5 py-3 bg-white border border-[#E4E4E4] text-[10px] font-bold uppercase tracking-widest hover:border-[#0055FF] hover:text-[#0055FF] transition-all flex items-center justify-center gap-2 disabled:opacity-40';
 const primaryCls =
-  'px-6 py-3 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0055FF] transition-all flex items-center justify-center gap-2 disabled:opacity-40';
+  'px-6 py-3 bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0044cc] transition-all flex items-center justify-center gap-2 disabled:opacity-40';
 
 function validateFile(f: File): string | null {
   if (!ALLOWED.includes(f.type)) return 'Only JPG, PNG, WebP or PDF files are accepted.';
@@ -259,19 +259,20 @@ export default function KycTab() {
         <h4 className="text-lg font-bold uppercase tracking-tight text-[#0A0A0A]">Verification Pending</h4>
         <p className="text-xs text-[#6B7280] leading-relaxed max-w-sm mx-auto">
           {status === 'Verified'
-            ? 'Your institutional identity has been successfully validated.'
-            : 'Your documentation is currently undergoing review by our compliance team. Expected timeframe: 24-48 business hours.'}
+            ? 'Your identity is verified. No further action is needed.'
+            : 'Thank you, your documents have been sent. Someone on our team will review them and we will update your status here.'}
         </p>
       </div>
     );
   } else if (gaps.length > 0) {
     body = (
       <div className="space-y-4">
-        <p className="text-xs text-[#6B7280]">Complete your mandatory investor profile before uploading ID documents:</p>
-        <ul className="list-disc pl-5 text-[11px] space-y-1 font-bold uppercase text-[#C43D3D]">
+        <h4 className="text-sm font-bold">Please fill in your details first</h4>
+        <p className="text-[12px] text-[#6B7280]">We need these before you can upload your ID:</p>
+        <ul className="list-disc pl-5 text-[12px] space-y-1">
           {gaps.map((g) => <li key={g.key}>{g.label}</li>)}
         </ul>
-        <Link href="/complete-profile?next=/client/account" className={cn(primaryCls, 'inline-flex')}>Complete profile</Link>
+        <Link href="/client/complete-registration" className={cn(primaryCls, 'inline-flex')}>Fill in my details</Link>
       </div>
     );
   } else {
