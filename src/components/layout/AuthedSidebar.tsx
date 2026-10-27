@@ -121,10 +121,10 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
         href={item.href}
         onClick={onLinkClick}
         className={cn(
-          "flex items-center h-12 px-5 text-[11px] lg:text-[10px] font-bold uppercase tracking-widest transition-all border-l-2",
+          "flex items-center h-12 px-5 text-[11px] lg:text-[10px] font-bold uppercase tracking-widest transition-all border-l-2 whitespace-nowrap",
           isActive 
             ? "text-[#0055FF] bg-[#0055FF]/5 border-[#0055FF]" 
-            : "text-[#6B7280] hover:text-[#0A0A0A] border-transparent"
+            : "text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5] border-transparent"
         )}
       >
         <item.icon className={cn("w-4 h-4 lg:w-4 lg:h-4 shrink-0 transition-colors", isActive ? "text-[#0055FF]" : "text-[#6B7280]")} />

@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @fileOverview Institutional Derived Markets Terminal (Dark Mode).
- * High-fidelity workspace for specialized synthetic markets.
+ * @fileOverview Institutional Derived Markets Terminal (White Theme).
+ * Synchronized with standard terminal design architecture.
  */
 
 import { useState, useEffect, Suspense, useMemo } from "react";
 import Image from "next/image";
-import Link from "next/image";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { 
   Menu, 
@@ -15,22 +15,19 @@ import {
   Clock as ClockIcon,
   BarChart2,
   MousePointer2,
-  Settings2,
-  X,
-  Target,
+  Globe,
+  Zap,
   Plus,
   Minus,
-  Activity,
-  History,
-  ShieldCheck,
-  Zap,
-  Globe
+  Layout as LayoutIcon,
+  ShieldCheck
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { useUser, useDoc, useFirestore } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 import { useSyntheticFeed } from "@/app/lib/synthetic/use-synthetic-feed";
+import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
 
 // Components
 import AuthedSidebar from "@/components/layout/AuthedSidebar";
@@ -111,33 +108,35 @@ function DerivedTerminalContent() {
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
   return (
-    <div className="flex flex-col h-screen bg-[#0B0E11] overflow-hidden text-white">
-      {/* Dark Institutional Header */}
-      <header className="h-16 border-b border-[#1E222D] bg-[#131722] flex items-center justify-between shrink-0 z-[100] px-6 shadow-2xl">
-        <div className="flex items-center space-x-6">
-          <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 xl:hidden text-white hover:text-[#0055FF] transition-colors"><Menu className="w-6 h-6" /></button>
+    <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
+      {/* Standard Branded Header */}
+      <header className="h-16 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[100] px-4 md:px-6 shadow-sm">
+        <div className="flex items-center space-x-4">
+          <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 xl:hidden text-[#0A0A0A]"><Menu className="w-6 h-6" /></button>
           
-          <div className="flex items-center gap-4">
-             <div className="w-10 h-10 rounded-lg bg-[#00A015] flex items-center justify-center shadow-lg shadow-[#00A015]/20">
-                <Zap className="w-5 h-5 text-white" />
+          <Link href="/client/dashboard" className="shrink-0 flex items-center gap-4">
+            <Image src="/assets/logo2.png" alt="Varban" width={95} height={22} className="w-auto object-contain" priority />
+            <div className="h-6 w-px bg-[#E4E4E4] hidden md:block"></div>
+          </Link>
+
+          <div className="hidden md:flex items-center gap-3">
+             <div className="w-8 h-8 rounded-full bg-[#16835B] flex items-center justify-center shadow-sm">
+                <Zap className="w-4 h-4 text-white" />
              </div>
              <div className="flex flex-col">
                 <div className="flex items-center gap-2 cursor-pointer group">
-                   <span className="text-sm font-bold uppercase tracking-tight group-hover:text-[#0055FF] transition-colors">{activeInst.name}</span>
-                   <ChevronDown className="w-4 h-4 text-[#6B7280] group-hover:text-white transition-transform" />
+                   <span className="text-[11px] font-bold uppercase tracking-widest group-hover:text-[#0055FF] transition-colors">{activeInst.name}</span>
+                   <ChevronDown className="w-3 h-3 text-[#6B7280]" />
                 </div>
-                <div className="flex items-center gap-2">
-                   <div className="w-1.5 h-1.5 rounded-full bg-[#16835B] animate-pulse"></div>
-                   <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">Synthetic Node Active</span>
-                </div>
+                <span className="text-[8px] font-bold text-[#16835B] uppercase tracking-widest">Synthetic Node v4.2</span>
              </div>
           </div>
         </div>
 
         <div className="flex items-center space-x-8">
-          <div className="hidden xl:flex items-center bg-[#1E222D] border border-[#31363F] px-4 py-1.5 gap-4">
+          <div className="hidden xl:flex items-center bg-[#F7F7F5] border border-[#E4E4E4] px-4 py-1.5 gap-4">
              <ClockIcon className="w-3.5 h-3.5 text-[#0055FF]" />
-             <span className="text-sm font-mono font-bold text-white tracking-tighter">{currentTime}</span>
+             <span className="text-sm font-mono font-bold text-[#0A0A0A] tracking-tighter">{currentTime}</span>
           </div>
 
           <div className="flex flex-col text-right">
@@ -149,7 +148,7 @@ function DerivedTerminalContent() {
           
           <button 
             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-            className="w-10 h-10 rounded-full bg-[#31363F] text-white flex items-center justify-center font-bold text-xs overflow-hidden border border-[#1E222D] shadow-xl hover:border-[#0055FF] transition-all"
+            className="w-9 h-9 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs overflow-hidden border border-[#E4E4E4] shadow-sm hover:border-[#0055FF] transition-all"
           >
             {profile?.profile?.photoUrl ? <img src={profile.profile.photoUrl} className="w-full h-full object-cover" /> : user?.email?.substring(0,2).toUpperCase()}
           </button>
@@ -167,14 +166,14 @@ function DerivedTerminalContent() {
       </header>
 
       <div className="flex-grow flex overflow-hidden relative">
-        <AuthedSidebar className="hidden xl:flex border-[#1E222D] bg-[#131722]" />
+        <AuthedSidebar className="hidden xl:flex" />
         
-        <main className="flex-grow flex xl:ml-16 overflow-hidden">
+        <main className="flex-grow flex xl:ml-16 overflow-hidden bg-[#F7F7F5]">
           <ResizablePanelGroup direction="horizontal" className="flex-grow overflow-hidden">
             <ResizablePanel defaultSize={75} minSize={40}>
               <ResizablePanelGroup direction="vertical">
                 <ResizablePanel defaultSize={70} minSize={30}>
-                  <div className="h-full w-full bg-[#131722] relative">
+                  <div className="h-full w-full bg-[#131722] relative border-b border-[#E4E4E4]">
                     <SyntheticChart ticks={ticks} loading={syntheticLoading} />
                     
                     {/* Floating Zoom Node */}
@@ -189,20 +188,20 @@ function DerivedTerminalContent() {
                     </div>
                   </div>
                 </ResizablePanel>
-                <ResizableHandle className="bg-[#1E222D] h-1.5" />
+                <ResizableHandle withHandle />
                 <ResizablePanel defaultSize={30} minSize={10}>
-                  <div className="h-full bg-[#0B0E11] border-t border-[#1E222D]">
+                  <div className="h-full bg-white">
                     <PortfolioManager positions={[]} orders={[]} history={[]} />
                   </div>
                 </ResizablePanel>
               </ResizablePanelGroup>
             </ResizablePanel>
             
-            <ResizableHandle className="bg-[#1E222D] w-1.5" />
+            <ResizableHandle withHandle />
             
             <ResizablePanel defaultSize={25} minSize={20}>
-              <div className="h-full w-full border-l border-[#1E222D] bg-[#131722] flex flex-col overflow-hidden">
-                <div className="flex border-b border-[#1E222D] shrink-0">
+              <div className="h-full w-full border-l border-[#E4E4E4] bg-white flex flex-col overflow-hidden">
+                <div className="flex border-b border-[#E4E4E4] shrink-0">
                    {[
                      { id: 'TRADE', label: 'Order Ticket', icon: MousePointer2 },
                      { id: 'STATS', label: 'Digit Stats', icon: BarChart2 }
@@ -211,8 +210,8 @@ function DerivedTerminalContent() {
                       key={tab.id}
                       onClick={() => setActiveRightTab(tab.id as any)}
                       className={cn(
-                        "flex-1 py-5 text-[10px] font-bold uppercase tracking-[0.25em] border-b-2 transition-all flex items-center justify-center gap-2",
-                        activeRightTab === tab.id ? "border-white text-white bg-white/5" : "border-transparent text-[#6B7280] hover:bg-[#1E222D]"
+                        "flex-1 py-4 text-[9px] font-bold uppercase tracking-[0.2em] border-b-2 transition-all flex flex-col items-center gap-1",
+                        activeRightTab === tab.id ? "border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5" : "border-transparent text-[#6B7280] hover:bg-[#F7F7F5]"
                       )}
                      >
                        <tab.icon className="w-4 h-4" />
@@ -241,8 +240,8 @@ function DerivedTerminalContent() {
 
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[400] xl:hidden">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
-          <div className="absolute left-0 top-0 bottom-0 w-[300px] bg-[#131722] animate-in slide-in-from-left duration-300 shadow-2xl">
+          <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+          <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white animate-in slide-in-from-left duration-300 shadow-2xl">
             <AuthedSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
           </div>
         </div>
