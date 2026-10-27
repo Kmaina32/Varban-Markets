@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Institutional Hover Card component.
- * Refined to use namespaced subpath imports for stable resolution in Base UI 1.0 Beta.
+ * Refined for ref-forwarding and stable layout.
  */
 
 import * as React from "react"
@@ -11,7 +11,17 @@ import { cn } from "@/app/lib/utils"
 
 const HoverCard = PreviewCard.Root
 
-const HoverCardTrigger = PreviewCard.Trigger
+const HoverCardTrigger = React.forwardRef<
+  HTMLElement,
+  React.ComponentPropsWithoutRef<typeof PreviewCard.Trigger>
+>(({ className, ...props }, ref) => (
+  <PreviewCard.Trigger
+    ref={ref}
+    className={cn("outline-none cursor-pointer", className)}
+    {...props}
+  />
+))
+HoverCardTrigger.displayName = "HoverCardTrigger"
 
 const HoverCardPortal = PreviewCard.Portal
 

@@ -10,8 +10,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
-import { useUser, useDoc, useFirestore } from "@/firebase";
-import { initializeFirebase } from "@/firebase";
+import { useUser, useDoc, useFirestore, initializeFirebase } from "@/firebase";
 import { useMemo } from "react";
 import {
   HoverCard,
@@ -51,44 +50,33 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     {
       title: "OVERVIEW",
       items: [
-        { label: t('nav.dashboard'), href: "/client/dashboard", icon: LayoutDashboard, description: "Unified portfolio snapshot and real-time metrics." },
-        { label: t('nav.news'), href: "/client/news", icon: Newspaper, description: "Real-time financial headlines refined for trading." },
+        { label: t('nav.dashboard'), href: "/client/dashboard", icon: LayoutDashboard, description: "Portfolio snapshot and real-time metrics." },
+        { label: t('nav.news'), href: "/client/news", icon: Newspaper, description: "Real-time global market intelligence feed." },
       ]
     },
     {
       title: "TRADE",
       items: [
-        { label: "Standard Hub", href: "/client/terminal", icon: Monitor, description: "Professional execution for Forex, Crypto and Equities." },
-        { label: "Derived Hub", href: "/client/derived-terminal", icon: Zap, description: "Dedicated terminal for Volatility and Synthetic markets." },
-        { label: t('nav.bots'), href: "/client/bots", icon: Cpu, description: "Automated trading tools and pre-verified algorithms." },
-        { label: t('nav.markets'), href: "/client/markets", icon: Globe, description: "Global instrument registry with live pricing." },
-        { label: t('nav.portfolio'), href: "/client/portfolio", icon: Briefcase, description: "Asset allocation and performance curve visualization." },
-        { label: t('nav.positions'), href: "/client/positions", icon: Target, description: "Live contract management and risk tracking." },
-        { label: t('nav.orders'), href: "/client/orders", icon: FileText, description: "Pending order tracker for scheduled contracts." },
-        { label: t('nav.history'), href: "/client/history", icon: Clock, description: "Searchable archive of closed execution records." },
-        { label: t('nav.watchlist'), href: "/client/watchlist", icon: Star, description: "Prioritized registry of tracked instruments." },
+        { label: "Standard Hub", href: "/client/terminal", icon: Monitor, description: "Forex, Crypto and Equities terminal." },
+        { label: "Derived Hub", href: "/client/derived-terminal", icon: Zap, description: "Volatility and Synthetic indices hub." },
+        { label: t('nav.bots'), href: "/client/bots", icon: Cpu, description: "Automated trading tools and algorithms." },
+        { label: t('nav.portfolio'), href: "/client/portfolio", icon: Briefcase, description: "Performance curve and asset allocation." },
+        { label: t('nav.history'), href: "/client/history", icon: Clock, description: "Archive of closed execution records." },
+        { label: t('nav.watchlist'), href: "/client/watchlist", icon: Star, description: "Prioritized registry of instruments." },
       ]
     },
     {
       title: "ANALYSIS",
       items: [
-        { label: "Market Heatmaps", href: "/client/markets/heatmaps", icon: Layers, description: "Visual comparison of sector performance (Crypto/Forex)." },
-        { label: "Market Screener", href: "/client/markets/screener", icon: BarChart4, description: "Technical asset filtering and technical indicator alerts." },
-        { label: "Economic Calendar", href: "/client/calendar", icon: Calendar, description: "Real-time global fundamental catalyst feed." },
-      ]
-    },
-    {
-      title: "MONEY",
-      items: [
-        { label: "Wallet Hub", href: "/client/wallet", icon: Wallet, description: "Centralized capital hub for deposits and withdrawals." },
+        { label: "Heatmaps", href: "/client/markets/heatmaps", icon: Layers, description: "Visual sector performance comparison." },
+        { label: "Screener", href: "/client/markets/screener", icon: BarChart4, description: "Advanced technical instrument discovery." },
       ]
     },
     {
       title: "ACCOUNT",
       items: [
-        { label: "Account Hub", href: "/client/account", icon: User, description: "Identity management and workspace personalization." },
-        { label: "Alerts", href: "/client/account?tab=alerts", icon: Bell, description: "Security and trade notification settings." },
-        { label: "Referral Program", href: "/client/referral", icon: Share2, description: "Network growth portal and partner rewards." },
+        { label: "Account Hub", href: "/client/account", icon: User, description: "Identity management and personalization." },
+        { label: "Referral", href: "/client/referral", icon: Share2, description: "Partner network growth portal." },
       ]
     }
   ];
@@ -97,111 +85,87 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     sections.push({
       title: "ADMINISTRATION",
       items: [
-        { label: "Admin Oversight", href: "/admin", icon: ShieldAlert, description: "Global platform metrics and administrative oversight node." },
+        { label: "Oversight", href: "/admin", icon: ShieldAlert, description: "Root authority and platform monitoring." },
       ]
     });
   }
-  
-  sections.push({
-    title: "SUPPORT",
-    items: [
-      { label: "Help Center", href: "/help", icon: HelpCircle, description: "Educational roadmap and knowledge base." },
-      { label: "Contact Support", href: "/about/contact", icon: Mail, description: "Public support gateway and technical desk." },
-    ]
-  });
 
-  const renderItems = (items: any[]) => items.map((item) => {
-    const isActive = pathname === item.href || 
-      (item.href === '/admin' && pathname?.startsWith('/admin')) ||
-      (item.href === '/client/wallet' && pathname?.startsWith('/client/wallet')) ||
-      (item.href === '/client/account' && pathname?.startsWith('/client/account'));
+  const renderItem = (item: any) => {
+    const isActive = pathname === item.href || (item.href !== '/client/dashboard' && pathname?.startsWith(item.href));
     
-    const linkContent = (
+    const content = (
       <Link
         href={item.href}
         onClick={onLinkClick}
         className={cn(
-          "flex items-center h-12 px-5 text-[11px] lg:text-[10px] font-bold uppercase tracking-widest transition-all border-l-2 whitespace-nowrap",
+          "flex items-center h-12 px-5 text-[10px] font-bold uppercase tracking-widest transition-all border-l-2 whitespace-nowrap",
           isActive 
             ? "text-[#0055FF] bg-[#0055FF]/5 border-[#0055FF]" 
             : "text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5] border-transparent"
         )}
       >
-        <item.icon className={cn("w-4 h-4 lg:w-4 lg:h-4 shrink-0 transition-colors", isActive ? "text-[#0055FF]" : "text-[#6B7280]")} />
+        <item.icon className={cn("w-4 h-4 shrink-0", isActive ? "text-[#0055FF]" : "text-[#6B7280]")} />
         <span className={cn(
-          "ml-6 transition-all duration-300 whitespace-nowrap overflow-hidden",
-          !isMobile && "w-0 opacity-0 group-hover:w-48 group-hover:opacity-100"
+          "ml-6 transition-all duration-300",
+          !isMobile && "opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto"
         )}>
           {item.label}
         </span>
       </Link>
     );
 
-    if (isMobile) return <div key={item.href}>{linkContent}</div>;
+    if (isMobile) return <div key={item.href}>{content}</div>;
 
     return (
       <HoverCard key={item.href}>
-        <HoverCardTrigger render={linkContent} />
-        <HoverCardContent side="right" align="center" sideOffset={10}>
-          <div className="space-y-1.5">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#0055FF]">{item.label}</h4>
-            <p className="text-[9px] text-[#6B7280] leading-relaxed font-bold uppercase tracking-tight opacity-80">
+        <HoverCardTrigger asChild>
+          {content}
+        </HoverCardTrigger>
+        <HoverCardContent side="right" className="w-56">
+          <div className="space-y-1">
+            <h4 className="text-[10px] font-bold uppercase text-[#0A0A0A]">{item.label}</h4>
+            <p className="text-[9px] text-[#6B7280] leading-relaxed uppercase font-bold tracking-tight">
               {item.description}
             </p>
           </div>
         </HoverCardContent>
       </HoverCard>
     );
-  });
+  };
 
   return (
     <aside className={cn(
-      isMobile ? "flex flex-col h-full bg-white" : "group absolute left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-[#E4E4E4] flex flex-col transition-all duration-300 z-[200] overflow-hidden no-scrollbar hidden lg:flex",
+      isMobile ? "flex flex-col h-full" : "group absolute left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-[#E4E4E4] flex flex-col transition-all duration-300 z-[200] overflow-hidden no-scrollbar",
       className
     )}>
-      <div className="pt-4"></div>
-      <nav className={cn(
-        "flex-grow space-y-6 px-0 pb-6 overflow-y-auto no-scrollbar",
-        isMobile && "space-y-8 px-0 py-8 pb-32"
-      )}>
+      <nav className="flex-grow py-6 space-y-8 overflow-y-auto no-scrollbar">
         {sections.map((section) => (
           <div key={section.title} className="space-y-1">
             <h3 className={cn(
-              "text-[9px] font-bold text-[#D1D5DB] uppercase tracking-[0.2em] mb-2 px-6 transition-opacity duration-300 whitespace-nowrap",
+              "text-[9px] font-bold text-[#D1D5DB] uppercase tracking-[0.2em] mb-2 px-6 transition-opacity",
               !isMobile && "opacity-0 group-hover:opacity-100"
             )}>
               {section.title}
             </h3>
-            <div className="space-y-0.5">
-              {renderItems(section.items)}
-            </div>
+            {section.items.map(renderItem)}
           </div>
         ))}
-        {isMobile && (
-          <div className="pt-6 border-t border-[#F7F7F5] px-5">
-             <button 
-                onClick={handleLogout}
-                className="flex items-center h-12 text-[11px] font-bold uppercase tracking-widest text-[#C43D3D] w-full"
-              >
-                <LogOut className="w-4 h-4 shrink-0 mr-6" />
-                <span>End Session</span>
-              </button>
-          </div>
-        )}
       </nav>
-      {!isMobile && (
-        <div className="border-t border-[#F7F7F5] bg-[#F7F7F5]/30">
-          <button 
-            onClick={handleLogout}
-            className="flex items-center h-14 px-5 text-[10px] font-bold uppercase tracking-widest text-[#C43D3D] hover:bg-[#C43D3D]/5 transition-all w-full"
-          >
-            <LogOut className="w-4 h-4 shrink-0" />
-            <span className="ml-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-              End Session
-            </span>
-          </button>
-        </div>
-      )}
+
+      <div className="mt-auto border-t border-[#E4E4E4] bg-[#F7F7F5]/50">
+        <button 
+          onClick={handleLogout}
+          className="flex items-center h-14 px-5 text-[10px] font-bold uppercase tracking-widest text-[#C43D3D] hover:bg-[#C43D3D]/5 w-full transition-all"
+        >
+          <LogOut className="w-4 h-4 shrink-0" />
+          <span className={cn(
+            "ml-6 transition-all",
+            !isMobile && "opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto"
+          )}>
+            Logout
+          </span>
+        </button>
+      </div>
     </aside>
   );
 }

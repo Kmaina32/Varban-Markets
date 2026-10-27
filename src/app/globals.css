@@ -26,61 +26,14 @@
     --radius: 0rem;
   }
 
-  .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 14.9%;
-  }
-
   * {
-    border-color: hsl(var(--border));
+    border-color: #E4E4E4;
     font-style: normal !important;
   }
 
-  /* Institutional Scrollbar Customization */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: #F7F7F5;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: #E4E4E4;
-    border-radius: 10px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: #D1D5DB;
-  }
-
-  /* Support for Firefox */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: #E4E4E4 #F7F7F5;
-  }
-
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    background-color: #F7F7F5;
+    color: #0A0A0A;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     user-select: none;
@@ -100,78 +53,17 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-
-  @keyframes institutionalZoom {
-    0% {
-      opacity: 0;
-      transform: scale(0.94);
-    }
-    100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  .animate-institutional-zoom {
-    animation: institutionalZoom 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
 }
 
 @layer components {
   .btn-institutional-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #0A0A0A;
-    color: #FFFFFF;
-    font-weight: 700;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 0.875rem 1.5rem;
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 150ms;
-    border: 1px solid #0A0A0A;
-    border-radius: 0;
-  }
-  
-  .btn-institutional-primary:hover {
-    background-color: #141414;
-  }
-
-  .btn-institutional-primary:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+    @apply inline-flex items-center justify-center bg-[#0A0A0A] text-white font-bold text-[10px] uppercase tracking-widest px-6 py-3.5 transition-all border border-[#0A0A0A] hover:bg-[#0055FF] hover:border-[#0055FF] disabled:opacity-40;
   }
   
   .btn-institutional-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #FFFFFF;
-    color: #0A0A0A;
-    font-weight: 700;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 0.875rem 1.5rem;
-    border: 1px solid #E4E4E4;
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 150ms;
-    border-radius: 0;
-  }
-
-  .btn-institutional-secondary:hover {
-    background-color: #F7F7F5;
-  }
-
-  .btn-institutional-secondary:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+    @apply inline-flex items-center justify-center bg-white text-[#0A0A0A] font-bold text-[10px] uppercase tracking-widest px-6 py-3.5 transition-all border border-[#E4E4E4] hover:bg-[#F7F7F5] disabled:opacity-40;
   }
 }
-/* reCAPTCHA badge is hidden on auth, authed and admin routes (see RecaptchaBadgeControl).
-   Forms there carry the required Google attribution text instead. */
+
+/* reCAPTCHA badge control */
 html[data-hide-recaptcha] .grecaptcha-badge { visibility: hidden !important; }
