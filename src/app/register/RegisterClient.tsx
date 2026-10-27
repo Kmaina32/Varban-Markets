@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { initializeFirebase } from "@/firebase";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { Check as CheckIcon, Circle as CircleIcon, Check, Eye, EyeOff, Globe, Loader2, AlertCircle, Smartphone, ChevronDown, Clock, CheckCircle2 } from "lucide-react";
+import { Check as CheckIcon, Circle as CircleIcon, Check, Eye, EyeOff, Globe, Loader2, AlertCircle, Smartphone, ChevronDown, Clock, CheckCircle2, Mail } from "lucide-react";
 import { evaluatePassword, checkWithFirebase } from "@/app/lib/password-policy";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import placeholderImages from "@/app/lib/placeholder-images.json";
@@ -102,7 +102,7 @@ export default function RegisterClient() {
 
   const handleSendOtp = async (userObj: any) => {
     setOtpLoading(true);
-    setError(null);
+    setOtpError(null);
     const fullPhone = `${formData.dialCode} ${formData.phone}`.trim();
 
     try {
@@ -264,6 +264,10 @@ export default function RegisterClient() {
     }
   };
 
+  const setOtpError = (msg: string | null) => {
+    setError(msg);
+  };
+
   return (
     <div className="bg-[#F7F7F5] min-h-screen flex flex-col relative">
       {success && (
@@ -310,7 +314,7 @@ export default function RegisterClient() {
 
             {!showOtpStep ? (
               <>
-                <div className="max-w-sm mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto">
                   <button
                     onClick={handleGoogleRegister}
                     disabled={googleLoading || loading || success}
@@ -324,15 +328,27 @@ export default function RegisterClient() {
                           <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
                           <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                         </svg>
-                        <span>Continue with Google</span>
+                        <span>Google</span>
                       </>
                     )}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const phoneField = document.getElementById('phone-input');
+                      phoneField?.scrollIntoView({ behavior: 'smooth' });
+                      phoneField?.focus();
+                    }}
+                    className="w-full py-4 border border-[#E4E4E4] bg-white text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-[#F7F7F5] transition-all"
+                  >
+                    <Smartphone className="w-4 h-4" />
+                    <span>Phone</span>
                   </button>
                 </div>
 
                 <div className="flex items-center gap-4 max-w-sm mx-auto">
                   <div className="flex-grow h-px bg-[#E4E4E4]"></div>
-                  <span className="text-[9px] font-bold text-[#6B7280] uppercase">or manual registration</span>
+                  <span className="text-[9px] font-bold text-[#6B7280] uppercase">Identity Registry</span>
                   <div className="flex-grow h-px bg-[#E4E4E4]"></div>
                 </div>
 
@@ -386,6 +402,7 @@ export default function RegisterClient() {
                             {COUNTRIES.map(c => <option key={c.code} value={c.dial_code}>{c.dial_code}</option>)}
                           </select>
                           <input
+                            id="phone-input"
                             type="tel"
                             required
                             value={formData.phone}
