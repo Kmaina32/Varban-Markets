@@ -3,7 +3,7 @@
 
 /**
  * @fileOverview Institutional Mobile Terminal.
- * Optimized for mobile-first interaction with Bottom Navigation.
+ * Optimized with a 5-column bottom navigation featuring SELL/BUY action buttons.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -12,16 +12,15 @@ import Image from 'next/image';
 import { 
   Globe, 
   TrendingUp, 
-  Zap, 
   History, 
   User, 
   Menu, 
-  ChevronDown,
+  X,
   Search,
-  Activity,
-  ShieldCheck,
-  BarChart2,
-  Layout
+  ChevronDown,
+  ArrowUpRight,
+  ArrowDownLeft,
+  ShieldCheck
 } from 'lucide-react';
 import { Instrument, AVAILABLE_INSTRUMENTS } from '@/app/lib/instruments';
 import { useUser, useDoc, useFirestore } from '@/firebase';
@@ -33,8 +32,9 @@ import ExecutionTicket from './ExecutionTicket';
 import DigitStats from './DigitStats';
 import ProfileDropdown from '@/components/layout/ProfileDropdown';
 import AuthedSidebar from '@/components/layout/AuthedSidebar';
+import { Card } from '@/components/ui/card';
 
-type MobileView = 'MARKETS' | 'CHART' | 'TRADE' | 'POSITIONS';
+type MobileView = 'MARKETS' | 'CHART' | 'POSITIONS';
 
 interface MobileTerminalProps {
   activeInst: Instrument;
@@ -57,6 +57,10 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
   const [search, setSearch] = useState("");
   const [selectedCat, setSelectedCat] = useState("All");
 
+  // Execution Drawer State
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [selectedSide, setSelectedSide] = useState<'BUY' | 'SELL'>('BUY');
+
   const isDerived = activeInst.category === 'Synthetic Indices';
 
   useEffect(() => {
@@ -72,6 +76,11 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
                         i.name.toLowerCase().includes(search.toLowerCase());
     return catMatch && searchMatch;
   });
+
+  const openExecution = (side: 'BUY' | 'SELL') => {
+    setSelectedSide(side);
+    setIsDrawerOpen(true);
+  };
 
   return (
     <div className="fixed inset-0 flex flex-col bg-white overflow-hidden text-[#0A0A0A] z-[200]">
@@ -109,7 +118,7 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
       </header>
 
       {/* 2. MAIN VIEW AREA */}
-      <main className="flex-grow overflow-hidden relative">
+      <main className="flex-grow overflow-hidden relative bg-[#F7F7F5]">
         {/* Markets View */}
         {activeView === 'MARKETS' && (
           <div className="h-full flex flex-col bg-[#F7F7F5] animate-in fade-in duration-300">
@@ -176,21 +185,6 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
           </div>
         )}
 
-        {/* Trade View */}
-        {activeView === 'TRADE' && (
-          <div className="h-full flex flex-col bg-[#F7F7F5] animate-in slide-in-from-bottom-2 duration-300">
-            <div className="flex-grow overflow-y-auto no-scrollbar">
-               <ExecutionTicket 
-                 instrument={activeInst} 
-                 livePrice={livePrices[activeInst.symbol]?.price}
-                 balance={activeBalance}
-                 onExecute={(p) => { console.log(p); setActiveView('POSITIONS'); }}
-                 accountMode={accountMode}
-               />
-            </div>
-          </div>
-        )}
-
         {/* Positions View */}
         {activeView === 'POSITIONS' && (
           <div className="h-full flex flex-col bg-[#F7F7F5] animate-in fade-in duration-300">
@@ -208,7 +202,7 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
                 </div>
               ) : (
                 positions.map(pos => (
-                  <Card key={pos.id} className="p-4 bg-white border-[#E4E4E4] space-y-4 shadow-sm">
+                  <Card key={pos.id} className="p-4 bg-white border-[#E4E4E4] space-y-4 shadow-sm rounded-none">
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-2">
                         <MarketIcon symbol={pos.instrument} size="sm" />
@@ -240,12 +234,13 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
         )}
       </main>
 
-      {/* 3. MOBILE BOTTOM NAVIGATION */}
-      <footer className="h-16 border-t border-[#E4E4E4] bg-white flex items-center justify-around px-2 shrink-0 z-50 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
+      {/* 3. MOBILE BOTTOM NAVIGATION (5 COLUMN) */}
+      <footer className="h-16 border-t border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[100] shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
+        {/* Markets */}
         <button 
           onClick={() => setActiveView('MARKETS')}
           className={cn(
-            "flex flex-col items-center justify-center gap-1 w-16 transition-all",
+            "flex-1 flex flex-col items-center justify-center gap-1 h-full transition-all",
             activeView === 'MARKETS' ? "text-[#0055FF]" : "text-[#6B7280]"
           )}
         >
@@ -253,10 +248,11 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
           <span className="text-[8px] font-bold uppercase tracking-widest">Markets</span>
         </button>
         
+        {/* Chart */}
         <button 
           onClick={() => setActiveView('CHART')}
           className={cn(
-            "flex flex-col items-center justify-center gap-1 w-16 transition-all",
+            "flex-1 flex flex-col items-center justify-center gap-1 h-full transition-all",
             activeView === 'CHART' ? "text-[#0055FF]" : "text-[#6B7280]"
           )}
         >
@@ -264,37 +260,70 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
           <span className="text-[8px] font-bold uppercase tracking-widest">Chart</span>
         </button>
 
-        <button 
-          onClick={() => setActiveView('TRADE')}
-          className={cn(
-            "flex flex-col items-center justify-center -mt-8 w-14 h-14 rounded-full bg-[#0A0A0A] text-white shadow-2xl transition-all active:scale-90",
-            activeView === 'TRADE' && "bg-[#0055FF]"
-          )}
-        >
-          <Zap className="w-6 h-6" />
-        </button>
+        {/* SELL ACTION */}
+        <div className="flex-1 flex items-center justify-center h-full px-1">
+          <button 
+            onClick={() => openExecution('SELL')}
+            className="w-full h-11 bg-[#C43D3D] text-white flex items-center justify-center rounded-none shadow-md active:scale-95 transition-transform"
+          >
+            <span className="text-[10px] font-bold uppercase tracking-widest">SELL</span>
+          </button>
+        </div>
 
+        {/* BUY ACTION */}
+        <div className="flex-1 flex items-center justify-center h-full px-1">
+          <button 
+            onClick={() => openExecution('BUY')}
+            className="w-full h-11 bg-[#16835B] text-white flex items-center justify-center rounded-none shadow-md active:scale-95 transition-transform"
+          >
+            <span className="text-[10px] font-bold uppercase tracking-widest">BUY</span>
+          </button>
+        </div>
+
+        {/* Orders/History */}
         <button 
           onClick={() => setActiveView('POSITIONS')}
           className={cn(
-            "flex flex-col items-center justify-center gap-1 w-16 transition-all",
+            "flex-1 flex flex-col items-center justify-center gap-1 h-full transition-all",
             activeView === 'POSITIONS' ? "text-[#0055FF]" : "text-[#6B7280]"
           )}
         >
           <History className="w-5 h-5" />
           <span className="text-[8px] font-bold uppercase tracking-widest">Orders</span>
         </button>
-
-        <button 
-          onClick={() => setIsProfileOpen(true)}
-          className="flex flex-col items-center justify-center gap-1 w-16 text-[#6B7280]"
-        >
-          <User className="w-5 h-5" />
-          <span className="text-[8px] font-bold uppercase tracking-widest">Profile</span>
-        </button>
       </footer>
 
-      {/* 4. MODALS & DRAWERS */}
+      {/* 4. EXECUTION DRAWER */}
+      {isDrawerOpen && (
+        <div className="fixed inset-0 z-[600] flex items-end">
+          <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm animate-in fade-in" onClick={() => setIsDrawerOpen(false)}></div>
+          <div className="relative w-full bg-white animate-in slide-in-from-bottom duration-300 max-h-[90vh] flex flex-col">
+            <div className="p-4 border-b border-[#E4E4E4] flex justify-between items-center shrink-0">
+               <div className="flex items-center gap-2">
+                 <MarketIcon symbol={activeInst.symbol} size="sm" />
+                 <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Execute {activeInst.symbol}</h3>
+               </div>
+               <button onClick={() => setIsDrawerOpen(false)} className="p-1"><X className="w-6 h-6 text-[#6B7280]" /></button>
+            </div>
+            
+            <div className="flex-grow overflow-y-auto no-scrollbar">
+               <ExecutionTicket 
+                 instrument={activeInst} 
+                 livePrice={livePrices[activeInst.symbol]?.price}
+                 balance={activeBalance}
+                 onExecute={(p) => { 
+                   console.log("Executed:", p); 
+                   setIsDrawerOpen(false);
+                   setActiveView('POSITIONS');
+                 }}
+                 accountMode={accountMode}
+               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. SIDEBAR MENU */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-[600]">
           <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)}></div>
@@ -304,13 +333,14 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
         </div>
       )}
 
+      {/* 6. PROFILE HUB */}
       {isProfileOpen && (
         <div className="fixed inset-0 z-[600]">
           <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsProfileOpen(false)}></div>
-          <div className="absolute right-0 top-0 bottom-0 w-80 bg-white animate-in slide-in-from-right duration-300">
+          <div className="absolute right-0 top-0 bottom-0 w-80 bg-white animate-in slide-in-from-right duration-300 shadow-2xl">
              <div className="p-4 border-b border-[#E4E4E4] flex justify-between items-center">
                 <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Account Hub</h3>
-                <button onClick={() => setIsProfileOpen(false)} className="p-1"><X className="w-5 h-5" /></button>
+                <button onClick={() => setIsProfileOpen(false)} className="p-1"><X className="w-5 h-5 text-[#6B7280]" /></button>
              </div>
              <div className="p-2 h-full overflow-y-auto no-scrollbar">
                 <ProfileDropdown 
@@ -330,10 +360,3 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
   );
 }
 
-function X({ className }: { className?: string }) {
-  return (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-    </svg>
-  );
-}
