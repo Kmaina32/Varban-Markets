@@ -5,7 +5,7 @@
  * 4-Panel Grid Architecture with specialized Synthetic Hub for derived markets.
  */
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -21,7 +21,8 @@ import {
   Globe,
   Settings,
   ShieldCheck,
-  Zap
+  Zap,
+  BarChart2
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
@@ -41,7 +42,7 @@ import PortfolioManager from "@/components/terminal/PortfolioManager";
 import TerminalTutorial from "@/components/terminal/TerminalTutorial";
 import MarketNewsFeed from "@/components/dashboard/MarketNewsFeed";
 import LoadingOverlay from "@/components/shared/LoadingOverlay";
-import DerivedExecutionPanel from "@/components/terminal/DerivedExecutionPanel";
+import DigitStats from "@/components/terminal/DigitStats";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -83,10 +84,10 @@ function TerminalContent() {
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
   
-  const [activeRightTab, setActiveRightTab] = useState<'TRADE' | 'MARKET' | 'NEWS'>('TRADE');
+  const [activeRightTab, setActiveRightTab] = useState<'TRADE' | 'STATS' | 'NEWS'>('TRADE');
 
   const [currentTime, setCurrentTime] = useState("");
-  const [activeTimezone, setActiveTimezone] = useState("UTC+0");
+  const activeTimezone = profile?.preferences?.timezone || "UTC+0";
 
   const [activeInst, setActiveInst] = useState<Instrument>(
     AVAILABLE_INSTRUMENTS.find(i => i.symbol === symbolParam) || AVAILABLE_INSTRUMENTS[0]
@@ -94,11 +95,12 @@ function TerminalContent() {
   const [marketData, setMarketData] = useState<Record<string, { price: number; percent: number }>>({});
   const [positions, setPositions] = useState<Position[]>([]);
 
+  const isDerivedMarket = activeInst.category === 'Synthetic Indices';
+
   useEffect(() => {
     const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
     if (savedMode) setAccountMode(savedMode);
-    if (profile?.preferences?.timezone) setActiveTimezone(profile.preferences.timezone);
-  }, [profile]);
+  }, []);
 
   useEffect(() => {
     const updateTime = () => {
@@ -121,7 +123,6 @@ function TerminalContent() {
   }, [activeTimezone]);
 
   const handleTimezoneChange = async (val: string) => {
-    setActiveTimezone(val);
     if (user?.uid && db) {
       try {
         await updateDoc(doc(db, "users", user.uid), { "preferences.timezone": val });
@@ -160,14 +161,14 @@ function TerminalContent() {
       duration: params.duration,
       status: "Open",
       timestamp: Date.now(),
-      isDemo: accountMode === 'DEMO'
+      isDemo: accountMode === 'DEMO',
+      mode: params.mode
     };
 
     setPositions(prev => [newPos, ...prev]);
     setIsTradeDrawerOpen(false);
   };
 
-  const isDerivedMarket = activeInst.category === 'Synthetic Indices';
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
   return (
@@ -287,28 +288,15 @@ function TerminalContent() {
           <ResizablePanelGroup direction="horizontal" className="hidden lg:flex flex-grow overflow-hidden">
             <ResizablePanel defaultSize={75} minSize={40}>
               <ResizablePanelGroup direction="vertical">
-                <ResizablePanel defaultSize={60} minSize={30}>
+                <ResizablePanel defaultSize={70} minSize={30}>
                   <div id="tour-chart" className="h-full w-full bg-[#F7F7F5] relative">
                     <TradingViewChart symbol={activeInst.symbol} />
                   </div>
                 </ResizablePanel>
                 
                 <ResizableHandle withHandle />
-                
-                {/* DYNAMIC HUB: Special Page for Volatility/Derived below chart */}
-                {isDerivedMarket && (
-                  <ResizablePanel defaultSize={30} minSize={20}>
-                    <DerivedExecutionPanel 
-                      instrument={activeInst} 
-                      livePrice={marketData[activeInst.symbol]?.price}
-                      onExecute={handleExecution}
-                    />
-                  </ResizablePanel>
-                )}
 
-                <ResizableHandle withHandle />
-
-                <ResizablePanel defaultSize={isDerivedMarket ? 10 : 40} minSize={10}>
+                <ResizablePanel defaultSize={30} minSize={10}>
                   <div className="h-full w-full flex flex-col shrink-0 relative">
                     <PortfolioManager 
                       positions={positions.filter(p => p.status === 'Open')}
@@ -327,7 +315,7 @@ function TerminalContent() {
                 <div className="flex border-b border-[#E4E4E4] shrink-0">
                    {[
                      { id: 'TRADE', label: 'Order Ticket', icon: MousePointer2 },
-                     { id: 'MARKET', label: 'Market Data', icon: Layout },
+                     { id: 'STATS', label: isDerivedMarket ? 'Digit Stats' : 'Market Data', icon: isDerivedMarket ? BarChart2 : Layout },
                      { id: 'NEWS', label: 'News Feed', icon: Newspaper }
                    ].map(tab => (
                      <button 
@@ -356,30 +344,23 @@ function TerminalContent() {
                         />
                      </div>
                    )}
-                   {activeRightTab === 'MARKET' && (
-                     <div className="p-6 space-y-8 animate-in fade-in duration-300">
-                        <section className="space-y-4">
-                           <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">Instrument Details</h3>
-                           <div className="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase text-[#6B7280]">
-                              <div><span className="block opacity-50 mb-1">Exchange</span> <span className="text-[#0A0A0A]">Varban Synthetic</span></div>
-                              <div><span className="block opacity-50 mb-1">Settlement</span> <span className="text-[#16835B]">Instant</span></div>
-                              <div><span className="block opacity-50 mb-1">Leverage</span> <span className="text-[#0A0A0A]">1:400</span></div>
-                              <div><span className="block opacity-50 mb-1">Market State</span> <span className="text-[#16835B]">Active</span></div>
-                           </div>
-                        </section>
-                        <section className="space-y-4 pt-4 border-t border-[#F7F7F5]">
-                           <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A]">Technical Scorecard</h3>
-                           <div className="p-5 bg-white border border-[#E4E4E4] text-center space-y-3 shadow-sm">
-                              <div className="flex justify-between items-center text-[9px] font-bold text-[#6B7280]">
-                                 <span>OSCILLATORS</span>
-                                 <span className="text-[#0055FF]">BUY</span>
-                              </div>
-                              <div className="h-1.5 w-full bg-[#F7F7F5] relative overflow-hidden">
-                                 <div className="absolute inset-y-0 left-0 bg-[#0055FF] w-[75%]"></div>
-                              </div>
-                              <p className="text-[10px] font-bold uppercase text-[#0A0A0A]">Strong Momentum Detected</p>
-                           </div>
-                        </section>
+                   {activeRightTab === 'STATS' && (
+                     <div className="h-full">
+                        {isDerivedMarket ? (
+                          <DigitStats symbol={activeInst.symbol} livePrice={marketData[activeInst.symbol]?.price} />
+                        ) : (
+                          <div className="p-6 space-y-8 animate-in fade-in duration-300">
+                             <section className="space-y-4">
+                                <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">Instrument Details</h3>
+                                <div className="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase text-[#6B7280]">
+                                   <div><span className="block opacity-50 mb-1">Exchange</span> <span className="text-[#0A0A0A]">Varban Markets</span></div>
+                                   <div><span className="block opacity-50 mb-1">Settlement</span> <span className="text-[#16835B]">Instant</span></div>
+                                   <div><span className="block opacity-50 mb-1">Leverage</span> <span className="text-[#0A0A0A]">1:400</span></div>
+                                   <div><span className="block opacity-50 mb-1">Market State</span> <span className="text-[#16835B]">Active</span></div>
+                                </div>
+                             </section>
+                          </div>
+                        )}
                      </div>
                    )}
                    {activeRightTab === 'NEWS' && (

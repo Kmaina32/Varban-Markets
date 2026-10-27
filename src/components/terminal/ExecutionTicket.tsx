@@ -2,15 +2,15 @@
 
 /**
  * @fileOverview Institutional Execution Ticket.
- * Supports Spot and Duration trading modes.
- * Updated: Integrated Risk-Per-Trade Calculator (Stage 2 Roadmap).
+ * Supports Spot, Duration, and specialized Synthetic trading modes.
  */
 
 import React, { useState, useMemo } from 'react';
 import { Instrument } from '@/app/lib/instruments';
 import { cn } from '@/app/lib/utils';
 import { useTranslation } from '@/app/lib/i18n-context';
-import { AlertCircle, Calculator } from 'lucide-react';
+import { AlertCircle, Calculator, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import DerivedTradeControls from './DerivedTradeControls';
 
 interface ExecutionTicketProps {
   instrument: Instrument;
@@ -25,6 +25,8 @@ type TradingMode = 'SPOT' | 'DURATION';
 
 export default function ExecutionTicket({ instrument, livePrice, balance, onExecute, accountMode }: ExecutionTicketProps) {
   const { formatNumber } = useTranslation();
+  const isDerivedMarket = instrument.category === 'Synthetic Indices';
+
   const [mode, setMode] = useState<TradingMode>('SPOT');
   const [side, setSide] = useState<'BUY' | 'SELL'>('BUY');
   const [orderType, setOrderType] = useState<OrderType>('MARKET');
@@ -62,6 +64,11 @@ export default function ExecutionTicket({ instrument, livePrice, balance, onExec
       tp: useTP ? tpPrice : undefined
     });
   };
+
+  // If synthetic/volatility market, use the specialized controls
+  if (isDerivedMarket) {
+    return <DerivedTradeControls instrument={instrument} livePrice={livePrice} balance={balance} onExecute={onExecute} />;
+  }
 
   return (
     <div className="flex flex-col h-full bg-white select-none">
@@ -143,7 +150,6 @@ export default function ExecutionTicket({ instrument, livePrice, balance, onExec
                 className="w-full p-4 bg-[#F7F7F5] border border-[#E4E4E4] font-mono text-2xl font-bold focus:border-[#0055FF] outline-none"
               />
               
-              {/* Institutional Risk Calculator Output */}
               <div className="flex items-center justify-between p-3 bg-[#0055FF]/5 border border-[#0055FF]/20 mt-1">
                  <div className="flex items-center gap-2">
                     <Calculator className="w-3 h-3 text-[#0055FF]" />
@@ -236,7 +242,6 @@ export default function ExecutionTicket({ instrument, livePrice, balance, onExec
         )}
       </div>
 
-      {/* Action Area */}
       <div className="p-6 border-t border-[#E4E4E4] bg-[#F7F7F5] space-y-4 shrink-0">
         <button 
           onClick={handleExecute}
