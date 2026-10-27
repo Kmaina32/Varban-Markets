@@ -1,90 +1,62 @@
-# VARBAN MARKETS — INSTITUTIONAL SYSTEM DOCUMENTATION
+# VARBAN MARKETS — INSTITUTIONAL TRADING PROTOCOL
 
 <div align="center">
-  <img src="https://6000-firebase-studio-1780910772033.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev/assets/logo2.png" alt="Varban Markets Logo" width="300" />
+  <img src="/assets/logo2.png" alt="Varban Markets Logo" width="300" />
   <p><em>Professional electronic trading protocol for advanced derivatives and synthetic markets.</em></p>
 </div>
 
 ---
 
-## 1. CORE TECHNOLOGY MATRIX
+## 1. PLATFORM ARCHITECTURE
 
-### A. FRAMEWORK & LANGUAGES
-<div align="left">
-  <img src="https://skillicons.dev/icons?i=nextjs,react,ts,tailwind,html,css" alt="Tech Stack Icons" />
-</div>
+Varban Markets is a high-performance financial workspace engineered for deterministic execution and total capital integrity. The system is divided into specialized nodes for standard assets, synthetic indices, and decentralized exchange.
 
-*   **Frontend**: Next.js 15 (App Router) with React 19.
-*   **Styling**: Tailwind CSS & ShadCN UI components.
-*   **Language**: TypeScript (Strict Institutional Protocol).
+### A. TRADING HUBS
+*   **Standard Terminal**: Professional execution environment for Forex, Crypto, and Equities with integrated TradingView technical analysis.
+*   **Derived Hub**: A specialized environment for **Synthetic Volatility Indices (V10-V100)**, powered by a deterministic random-walk engine.
+*   **Exchange Hub**: Direct Buy/Sell swap interface with real-time market discovery and trend visualization.
+*   **Mobile Terminal**: Optimized touch-first experience with a 5-column bottom navigation and instant SELL/BUY action triggers.
 
-### B. INFRASTRUCTURE NODES
-<div align="left">
-  <img src="https://skillicons.dev/icons?i=firebase,gcp,cloudflare" alt="Infrastructure Icons" />
-</div>
-
-*   **Identity & Ledger**: <img src="https://cdn.simpleicons.org/firebase/FFCA28" width="16" /> **Google Firebase** (Auth & Real-time Firestore).
-*   **Storage**: <img src="https://cdn.simpleicons.org/cloudflare/F38020" width="16" /> **Cloudflare R2** (S3 Compatible KYC Storage).
-*   **Intelligence**: <img src="https://cdn.simpleicons.org/google/4285F4" width="16" /> **Google Gemini 1.5** via **Genkit 1.x**.
-
-### C. SECURITY & VERIFICATION
-<div align="left">
-  <img src="https://cdn.simpleicons.org/twilio/F22F46" width="40" height="40" alt="Twilio" />
-  <img src="https://cdn.simpleicons.org/google/4285F4" width="40" height="40" alt="Google" />
-</div>
-
-*   **SMS Gateway**: **Twilio Verify** (Real-time OTP Handshake).
-*   **Bot Protection**: **Google reCAPTCHA Enterprise**.
-*   **Biometrics**: **WebAuthn / Passkeys** for native hardware security.
+### B. THE "INSTITUTIONAL WHITE" DESIGN SYSTEM
+The platform utilizes a high-contrast, professional aesthetic defined by:
+*   **Smooth Geometry**: Universal `1.25rem` radius on all cards, buttons, and inputs for a modern, fluid user experience.
+*   **Branded Typography**: Strictly upright hierarchy using Inter (Interface) and IBM Plex Sans (Display).
+*   **Color Hierarchy**: Institutional Blue (`#0055FF`) for primary actions, Growth Green (`#16835B`) for successful outcomes, and Risk Red (`#C43D3D`) for directional bias.
 
 ---
 
-## 2. FINANCIAL PROTOCOLS & DATA
+## 2. TECHNOLOGY MATRIX
 
-### A. PAYMENT GATEWAYS
-<div align="left">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/1/15/M-PESA_LOGO-01.svg" width="60" alt="M-Pesa" />
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Airtel_logo.svg/1024px-Airtel_logo.svg.png" width="60" alt="Airtel Money" />
-  <img src="https://cdn.simpleicons.org/paystack/09A5DB" width="120" alt="Paystack" />
-</div>
+### CORE STACK
+*   **Framework**: Next.js 15 (App Router) with React 19.
+*   **Infrastructure**: Google Firebase (Unified Identity & Real-time Firestore Ledger).
+*   **Storage**: Cloudflare R2 (S3-Compatible Decentralized Document Storage).
+*   **Intelligence**: Google Gemini 1.5 via Genkit 1.x for automated support and reporting.
+*   **Security**: Google reCAPTCHA Enterprise & Twilio Verify (SMS OTP Handshake).
 
-*   **Mobile Money**: Safaricom M-Pesa (STK Push) & Airtel Money Kenya (USSD Push).
-*   **Fiat Gateway**: Paystack (PCI-DSS Level 1 Secure).
-*   **Settlement**: Real-time Firestore ledger synchronization.
-
-### B. MARKET DATA & CHARTING
-<div align="left">
-  <img src="https://cdn.simpleicons.org/tradingview/2962FF" width="40" height="40" alt="TradingView" />
-  <img src="https://cdn.simpleicons.org/binance/F3BA2F" width="40" height="40" alt="Binance" />
-  <img src="https://cdn.simpleicons.org/coinbase/0052FF" width="40" height="40" alt="Coinbase" />
-</div>
-
-*   **Charting**: **TradingView Pro Widget** (Advanced indicators & drawings).
-*   **Primary Feed**: Twelve Data & Alpha Vantage.
-*   **Failover Chain**: Coinbase CDP, Binance Public, and Finnhub SME.
+### DATA NODES
+*   **Market Data**: Multi-node failover proxy (Twelve Data -> Coinbase CDP -> Binance Public -> Alpha Vantage).
+*   **Synthetic Engine**: Proprietary deterministic algorithm generating sub-second price ticks anchored by server-side secrets.
+*   **Settlement**: 100% automated clearing with instant balance provisioning.
 
 ---
 
-## 3. LOCALIZATION PROTOCOL
-The platform is 100% localized for the following international markets:
-
-| Locale | Language | Region |
-|--------|----------|--------|
-| `en` | <img src="https://flagcdn.io/w20/gb.png" /> English | Global |
-| `fr` | <img src="https://flagcdn.io/w20/fr.png" /> Français | Europe / Africa |
-| `es` | <img src="https://flagcdn.io/w20/es.png" /> Español | LatAm / Spain |
-| `pt` | <img src="https://flagcdn.io/w20/pt.png" /> Português | Brazil / Portugal |
-| `zh-CN` | <img src="https://flagcdn.io/w20/cn.png" /> 简体中文 | East Asia |
+## 3. ADMINISTRATIVE OVERSIGHT
+The platform includes a restricted **Root Authority** hub for comprehensive monitoring:
+*   **User Directory**: Entity management and role authority control.
+*   **Financial Queues**: Verification nodes for manual TxHash audits and remittance dispatch.
+*   **Market Controls**: Global halt switches and synthetic engine parameter configuration.
+*   **Audit Ledger**: Immutable, append-only security event log for all administrative actions.
 
 ---
 
-## 4. PRODUCTION STATUS TRACKER
-- [x] **Institutional White Design System**: High-contrast, minimalist UI.
-- [x] **Firebase Core Integration**: Identity and financial ledger synchronized.
-- [x] **Twilio OTP Node**: Live SMS verification active for Kenyan gateways.
-- [x] **Consolidated Wallet**: M-Pesa, Airtel Money, and Paystack fully wired.
-- [x] **Market Intelligence Hub**: Real-time headlines and automated analysis.
-- [x] **5-Language Matrix**: Universal localization coverage.
+## 4. STATUS TRACKER
+- [x] **Institutional Design**: Completed (Smooth borders, white theme).
+- [x] **Mobile Terminal**: Operational (5-column alignment, fast-buy/sell).
+- [x] **Exchange Hub**: Operational (Asset swaps, sparklines).
+- [x] **Derived Hub**: Operational (V10-V100 deterministic feed).
+- [x] **Secure Auth**: Completed (Firebase + Google OAuth + SMS OTP).
+- [x] **Admin Suite**: Completed (Ledger, KYC, Withdrawals).
 
 ---
-*Operational Ledger Status: Synchronized & Verified.*
+*Operational Ledger Status: Synchronized, Verified & Locked.*
