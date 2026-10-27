@@ -3,11 +3,29 @@
 /**
  * @fileOverview Refined Varban Assistant AI.
  * Persists history to Firestore for Admin monitoring and takeover.
+ * Enhanced: Side-drawer mode, Image upload, and Higher visibility font.
  */
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
-import { X, Send, Loader2, MessageSquare, ChevronDown, GripVertical, Copy, RotateCcw, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { 
+  X, 
+  Send, 
+  Loader2, 
+  MessageSquare, 
+  ChevronDown, 
+  GripVertical, 
+  Copy, 
+  RotateCcw, 
+  Sparkles,
+  Maximize2,
+  Minimize2,
+  Image as ImageIcon,
+  Paperclip,
+  ShieldAlert,
+  Lock
+} from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import { supportChat } from '@/ai/flows/support-chat-flow';
 import { useTranslation } from '@/app/lib/i18n-context';
@@ -27,7 +45,6 @@ import {
   MessageScrollerProvider, 
   MessageScrollerViewport 
 } from '@/components/ui/message-scroller';
-import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, useDoc, useCollection } from '@/firebase';
 import { 
   doc, 
@@ -40,34 +57,6 @@ import {
   limit 
 } from 'firebase/firestore';
 
-interface ChatMessage {
-  id: string;
-  role: 'user' | 'model';
-  content: string;
-}
-
-const TypewriterResponse = ({ text, onComplete }: { text: string, onComplete?: () => void }) => {
-  const [displayedText, setDisplayedText] = useState("");
-  const words = text.split(" ");
-  const index = useRef(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (index.current < words.length) {
-        setDisplayedText((prev) => (prev ? prev + " " + words[index.current] : words[index.current]));
-        index.current++;
-      } else {
-        clearInterval(timer);
-        onComplete?.();
-      }
-    }, 45);
-
-    return () => clearInterval(timer);
-  }, [text, words.length, onComplete]);
-
-  return <span>{displayedText}</span>;
-};
-
 export default function ChatSupport() {
   const pathname = usePathname();
   const { t, locale } = useTranslation();
@@ -75,10 +64,12 @@ export default function ChatSupport() {
   const db = useFirestore();
   
   const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [startTime, setStartTime] = useState('');
-  const [typingId, setTypingId] = useState<string | null>(null);
+  const [selectedImage, setSelectedAsset] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Firestore Sync
   const sessionId = useMemo(() => user?.uid ? `sess_${user.uid}` : null, [user?.uid]);
@@ -96,26 +87,40 @@ export default function ChatSupport() {
     setStartTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   }, []);
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedAsset(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading || !db || !user || !sessionId) return;
+    if ((!input.trim() && !selectedImage) || isLoading || !db || !user || !sessionId) return;
 
     const currentInput = input.trim();
+    const currentImage = selectedImage;
     setInput('');
+    setSelectedAsset(null);
     setIsLoading(true);
 
     try {
       // 1. Log User Message to Firestore
       await addDoc(collection(db, `conversations/${sessionId}/messages`), {
         role: 'user',
-        content: currentInput,
+        content: currentInput || "Transmitted an image for analysis.",
+        hasImage: !!currentImage,
         timestamp: serverTimestamp()
       });
 
       await setDoc(doc(db, "conversations", sessionId), {
         userId: user.uid,
         userName: user.displayName || user.email?.split('@')[0] || "Trader",
-        lastMessage: currentInput,
+        lastMessage: currentInput || "Analyzed Image",
         updatedAt: serverTimestamp(),
         status: convData?.status || 'ai'
       }, { merge: true });
@@ -123,7 +128,14 @@ export default function ChatSupport() {
       // 2. Conditional AI Response (Only if not in Human Mode)
       if (convData?.status !== 'human') {
         const history = remoteMessages.map(m => ({ role: m.role, content: m.content }));
-        const response = await supportChat({ message: currentInput, locale, history });
+        const response = await supportChat({ 
+          message: currentInput || "Please analyze this image.", 
+          locale, 
+          history,
+          photoDataUri: currentImage || undefined,
+          userId: user.uid,
+          userEmail: user.email || ""
+        });
         
         await addDoc(collection(db, `conversations/${sessionId}/messages`), {
           role: 'model',
@@ -136,11 +148,6 @@ export default function ChatSupport() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleReset = async () => {
-    if (!db || !sessionId) return;
-    // Logic to clear or archive session could go here
   };
 
   const isTerminal = pathname?.includes('/terminal');
@@ -160,7 +167,12 @@ export default function ChatSupport() {
       </div>
 
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-80 sm:w-[420px] h-[600px] bg-white border border-[#E4E4E4] shadow-2xl z-[140] flex flex-col animate-in slide-in-from-bottom-4 duration-300 rounded-none overflow-hidden origin-bottom-right">
+        <div className={cn(
+          "fixed bg-white border-[#E4E4E4] shadow-2xl z-[140] flex flex-col animate-in duration-300 rounded-none overflow-hidden",
+          isExpanded 
+            ? "inset-y-0 right-0 w-full sm:w-[480px] border-l slide-in-from-right" 
+            : "bottom-24 right-6 w-80 sm:w-[420px] h-[600px] border slide-in-from-bottom-4 origin-bottom-right"
+        )}>
           {/* Header */}
           <div className="p-4 border-b border-[#F7F7F5] bg-white flex justify-between items-center shrink-0">
             <div className="flex items-center gap-3">
@@ -181,6 +193,13 @@ export default function ChatSupport() {
                </div>
             </div>
             <div className="flex items-center gap-1">
+              <button 
+                onClick={() => setIsExpanded(!isExpanded)} 
+                className="p-1.5 text-[#6B7280] hover:text-[#0A0A0A] transition-colors"
+                title={isExpanded ? "Collapse" : "Expand to Side Drawer"}
+              >
+                {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              </button>
               <button onClick={() => setIsOpen(false)} className="p-1.5 text-[#6B7280] hover:text-[#0A0A0A]"><X className="w-4 h-4" /></button>
             </div>
           </div>
@@ -225,8 +244,16 @@ export default function ChatSupport() {
                               </MessageHeader>
                             )}
                             <Bubble align={msg.role === 'user' ? 'end' : 'start'} variant={msg.role === 'user' ? 'tinted' : 'default'}>
-                              <BubbleContent className={cn("font-medium", msg.role === 'model' && "bg-[#0A0A0A] border-none text-white")}>
+                              <BubbleContent className={cn(
+                                "font-medium text-[14px] sm:text-[14px]", 
+                                msg.role === 'model' && "bg-[#0A0A0A] border-none text-white shadow-lg"
+                              )}>
                                 {msg.content}
+                                {msg.hasImage && (
+                                  <div className="mt-2 pt-2 border-t border-black/10 flex items-center gap-2 text-[10px] uppercase font-bold">
+                                     <ImageIcon className="w-3 h-3" /> Image Attachment Included
+                                  </div>
+                                )}
                               </BubbleContent>
                             </Bubble>
                           </MessageContent>
@@ -246,7 +273,22 @@ export default function ChatSupport() {
           </div>
 
           {/* Input Area */}
-          <div className="p-4 border-t border-[#F7F7F5] bg-white shrink-0">
+          <div className="p-4 border-t border-[#F7F7F5] bg-white shrink-0 space-y-3">
+            {selectedImage && (
+              <div className="flex items-center gap-2 p-2 bg-[#F7F7F5] border border-[#E4E4E4] animate-in slide-in-from-bottom-1">
+                 <div className="relative w-10 h-10 border border-[#D1D5DB] overflow-hidden">
+                    <img src={selectedImage} alt="Preview" className="w-full h-full object-cover" />
+                    <button 
+                      onClick={() => setSelectedAsset(null)}
+                      className="absolute top-0 right-0 bg-black/60 text-white p-0.5"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                 </div>
+                 <span className="text-[9px] font-bold uppercase text-[#6B7280]">Image Ready for Analysis</span>
+              </div>
+            )}
+
             <form onSubmit={handleSend} className="relative">
               <input 
                 type="text" 
@@ -254,18 +296,42 @@ export default function ChatSupport() {
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={user ? "Transmit message..." : "Identification Locked"}
                 disabled={isLoading || !user}
-                className="w-full border-2 border-[#0A0A0A] p-4 pr-12 text-xs focus:outline-none focus:border-[#0055FF] placeholder:text-[#6B7280] bg-white"
+                className="w-full border-2 border-[#0A0A0A] p-5 pr-24 text-[14px] font-medium focus:outline-none focus:border-[#0055FF] placeholder:text-[#6B7280] bg-white"
               />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                <button 
+                  type="button"
+                  disabled={isLoading || !user}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-[#6B7280] hover:text-[#0055FF] p-2 transition-all"
+                  title="Upload Image"
+                >
+                  <Paperclip className="w-5 h-5" />
+                </button>
                 <button 
                   type="submit" 
-                  disabled={!input.trim() || isLoading || !user}
+                  disabled={(!input.trim() && !selectedImage) || isLoading || !user}
                   className="text-[#0055FF] disabled:opacity-20 hover:text-[#0A0A0A] transition-all p-2"
                 >
-                  <Send className="w-5 h-5" />
+                  <Send className="w-6 h-6" />
                 </button>
               </div>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleImageUpload} 
+                accept="image/*" 
+                className="hidden" 
+              />
             </form>
+            
+            <div className="flex items-center justify-between px-1">
+               <span className="text-[8px] font-bold text-[#D1D5DB] uppercase tracking-[0.2em]">Institutional Safety Layer</span>
+               <div className="flex items-center gap-1">
+                  <ShieldAlert className="w-2.5 h-2.5 text-[#16835B]" />
+                  <span className="text-[8px] font-bold text-[#16835B] uppercase">Audited</span>
+               </div>
+            </div>
           </div>
         </div>
       )}
