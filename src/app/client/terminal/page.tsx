@@ -4,6 +4,7 @@
  * @fileOverview Institutional Multi-Asset Trading Terminal.
  * Refined 2-Panel Sidebar Architecture with high-fidelity execution node.
  * Optimization: Execution components hidden from main screen on Mobile and Tablet (XL breakpoint).
+ * Sidebar: Strictly removed from Mobile and Tablet screens (hidden until XL breakpoint).
  */
 
 import { useState, useEffect, Suspense, useMemo } from "react";
@@ -181,7 +182,7 @@ function TerminalContent() {
 
       <header className="h-14 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[100] px-2 lg:px-4">
         <div className="flex items-center space-x-2 lg:space-x-4">
-          <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 lg:hidden text-[#0A0A0A]"><Menu className="w-5 h-5" /></button>
+          <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 xl:hidden text-[#0A0A0A]"><Menu className="w-5 h-5" /></button>
           <Link href="/client/dashboard" className="hidden sm:block shrink-0">
             <Image src="/assets/logo2.png" alt="Varban" width={80} height={20} className="w-auto object-contain" priority />
           </Link>
@@ -286,9 +287,9 @@ function TerminalContent() {
       </header>
 
       <div className="flex-grow flex overflow-hidden relative">
-        <AuthedSidebar className="hidden lg:flex" />
+        <AuthedSidebar className="hidden xl:flex" />
 
-        <main className="flex-grow flex lg:ml-16 overflow-hidden">
+        <main className="flex-grow flex xl:ml-16 overflow-hidden">
           {/* DESKTOP WORKSPACE (XL ONLY for 3-column) */}
           <ResizablePanelGroup direction="horizontal" className="hidden xl:flex flex-grow overflow-hidden">
             <ResizablePanel defaultSize={75} minSize={40}>
@@ -480,7 +481,7 @@ function TerminalContent() {
       )}
 
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[400] lg:hidden">
+        <div className="fixed inset-0 z-[400] xl:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
           <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white animate-in slide-in-from-left duration-300">
             <AuthedSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
