@@ -2,10 +2,10 @@
 
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
- * 4-Panel Grid Architecture with Resizable Panels and full TradingView feature parity.
+ * 4-Panel Grid Architecture with specialized Synthetic Hub for derived markets.
  */
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -20,7 +20,8 @@ import {
   Layout,
   Globe,
   Settings,
-  ShieldCheck
+  ShieldCheck,
+  Zap
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
@@ -40,6 +41,7 @@ import PortfolioManager from "@/components/terminal/PortfolioManager";
 import TerminalTutorial from "@/components/terminal/TerminalTutorial";
 import MarketNewsFeed from "@/components/dashboard/MarketNewsFeed";
 import LoadingOverlay from "@/components/shared/LoadingOverlay";
+import DerivedExecutionPanel from "@/components/terminal/DerivedExecutionPanel";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -49,14 +51,14 @@ import {
 interface Position {
   id: string;
   instrument: string;
-  vector: "BUY" | "SELL";
+  vector: string;
   entryPrice: number;
   stake: number;
   duration?: string;
   status: "Open" | "Closed";
   timestamp: number;
   isDemo: boolean;
-  mode: 'SPOT' | 'DURATION';
+  mode: string;
 }
 
 const TIMEZONES = [
@@ -165,6 +167,7 @@ function TerminalContent() {
     setIsTradeDrawerOpen(false);
   };
 
+  const isDerivedMarket = activeInst.category === 'Synthetic Indices';
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
   return (
@@ -284,13 +287,28 @@ function TerminalContent() {
           <ResizablePanelGroup direction="horizontal" className="hidden lg:flex flex-grow overflow-hidden">
             <ResizablePanel defaultSize={75} minSize={40}>
               <ResizablePanelGroup direction="vertical">
-                <ResizablePanel defaultSize={70} minSize={40}>
+                <ResizablePanel defaultSize={60} minSize={30}>
                   <div id="tour-chart" className="h-full w-full bg-[#F7F7F5] relative">
                     <TradingViewChart symbol={activeInst.symbol} />
                   </div>
                 </ResizablePanel>
+                
                 <ResizableHandle withHandle />
-                <ResizablePanel defaultSize={30} minSize={15}>
+                
+                {/* DYNAMIC HUB: Special Page for Volatility/Derived below chart */}
+                {isDerivedMarket && (
+                  <ResizablePanel defaultSize={30} minSize={20}>
+                    <DerivedExecutionPanel 
+                      instrument={activeInst} 
+                      livePrice={marketData[activeInst.symbol]?.price}
+                      onExecute={handleExecution}
+                    />
+                  </ResizablePanel>
+                )}
+
+                <ResizableHandle withHandle />
+
+                <ResizablePanel defaultSize={isDerivedMarket ? 10 : 40} minSize={10}>
                   <div className="h-full w-full flex flex-col shrink-0 relative">
                     <PortfolioManager 
                       positions={positions.filter(p => p.status === 'Open')}
@@ -320,7 +338,7 @@ function TerminalContent() {
                         activeRightTab === tab.id ? "border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5" : "border-transparent text-[#6B7280] hover:bg-[#F7F7F5]"
                       )}
                      >
-                       <tab.icon className="w-3 h-3" />
+                       <tab.icon className="w-3.5 h-3.5" />
                        <span>{tab.label}</span>
                      </button>
                    ))}

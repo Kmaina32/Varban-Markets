@@ -358,7 +358,7 @@ export default function ProfileTab({ showGateBanner = false, onCompleted }: Prof
                         <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] space-y-4 animate-in slide-in-from-top-2">
                            <div className="flex justify-between items-center">
                               <span className="text-[9px] font-bold uppercase text-[#0055FF]">Enter 6-Digit Code</span>
-                              <button onClick={() => setOtpSent(false)} className="text-[9px] font-bold uppercase underline text-[#6B7280]">Change Number</button>
+                              <button type="button" onClick={() => setOtpSent(false)} className="text-[9px] font-bold uppercase underline text-[#6B7280]">Change Number</button>
                            </div>
                            <div className="flex gap-2">
                               <input 

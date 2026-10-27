@@ -11,6 +11,63 @@ export interface Instrument {
 }
 
 export const AVAILABLE_INSTRUMENTS: Instrument[] = [
+  // SYNTHETIC INDICES
+  {
+    symbol: "V10",
+    name: "Volatility 10 Index",
+    category: "Synthetic Indices",
+    status: "Open",
+    marketType: "Synthetic Derivative",
+    minStake: 1,
+    maxStake: 5000,
+    durationOptions: ["1m", "5m", "15m", "1h"],
+    settlementMethod: "Deterministic Algorithm"
+  },
+  {
+    symbol: "V25",
+    name: "Volatility 25 Index",
+    category: "Synthetic Indices",
+    status: "Open",
+    marketType: "Synthetic Derivative",
+    minStake: 1,
+    maxStake: 5000,
+    durationOptions: ["1m", "5m", "15m", "1h"],
+    settlementMethod: "Deterministic Algorithm"
+  },
+  {
+    symbol: "V50",
+    name: "Volatility 50 Index",
+    category: "Synthetic Indices",
+    status: "Open",
+    marketType: "Synthetic Derivative",
+    minStake: 1,
+    maxStake: 5000,
+    durationOptions: ["1m", "5m", "15m", "1h"],
+    settlementMethod: "Deterministic Algorithm"
+  },
+  {
+    symbol: "V75",
+    name: "Volatility 75 Index",
+    category: "Synthetic Indices",
+    status: "Open",
+    marketType: "Synthetic Derivative",
+    minStake: 1,
+    maxStake: 5000,
+    durationOptions: ["1m", "5m", "15m", "1h"],
+    settlementMethod: "Deterministic Algorithm"
+  },
+  {
+    symbol: "V100",
+    name: "Volatility 100 Index",
+    category: "Synthetic Indices",
+    status: "Open",
+    marketType: "Synthetic Derivative",
+    minStake: 1,
+    maxStake: 5000,
+    durationOptions: ["1m", "5m", "15m", "1h"],
+    settlementMethod: "Deterministic Algorithm"
+  },
+
   // CRYPTO
   {
     symbol: "BTC/USD",
