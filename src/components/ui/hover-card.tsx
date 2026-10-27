@@ -9,7 +9,27 @@ import * as React from "react"
 import { PreviewCard } from "@base-ui/react/preview-card"
 import { cn } from "@/app/lib/utils"
 
-const HoverCard = PreviewCard.Root
+/* ---------- HoverCard (Root wrapper) ---------- */
+
+export interface HoverCardProps
+  extends React.ComponentPropsWithoutRef<typeof PreviewCard.Root> {
+  /** Radix-style alias – mapped to Base UI's `delay` prop. */
+  openDelay?: number;
+  /** Radix-style alias – mapped to Base UI's `closeDelay` prop. */
+  closeDelay?: number;
+}
+
+function HoverCard({ openDelay, closeDelay, delay, ...props }: HoverCardProps) {
+  return (
+    <PreviewCard.Root
+      delay={openDelay ?? delay}
+      closeDelay={closeDelay}
+      {...props}
+    />
+  );
+}
+
+/* ---------- HoverCardTrigger ---------- */
 
 export interface HoverCardTriggerProps
   extends React.ComponentPropsWithoutRef<typeof PreviewCard.Trigger> {
@@ -33,6 +53,8 @@ const HoverCardTrigger = React.forwardRef<
   );
 })
 HoverCardTrigger.displayName = "HoverCardTrigger"
+
+/* ---------- Portal / Content ---------- */
 
 const HoverCardPortal = PreviewCard.Portal
 
