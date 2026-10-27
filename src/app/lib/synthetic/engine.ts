@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview Core Synthetic Price Engine.
  * Implements the deterministic random-walk algorithm for institutional indices.
@@ -5,7 +6,7 @@
  * price[n] = price[n-1] * exp( drift - sigma^2/2 + sigma * z[n] )
  */
 
-import { z } from "genkit";
+import { z } from "zod";
 
 export const SyntheticConfigSchema = z.object({
   symbol: z.string(),

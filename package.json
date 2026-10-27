@@ -38,7 +38,8 @@
     "react-paystack": "^6.0.0",
     "react-resizable-panels": "^2.1.7",
     "tailwind-merge": "^2.6.0",
-    "twilio": "^5.4.0"
+    "twilio": "^5.4.0",
+    "zod": "^3.24.2"
   },
   "overrides": {
     "react-paystack": {
