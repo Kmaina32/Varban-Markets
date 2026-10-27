@@ -136,7 +136,11 @@ export default function LoginPage() {
 
     } catch (err: any) {
       let msg = err?.message || "Authentication failed.";
-      if (msg.includes('auth/invalid-credential') || msg.includes('auth/user-not-found')) {
+      const errCode = err?.code || "";
+
+      if (errCode === 'auth/account-exists-with-different-credential' || msg.includes('diffrent sign up method')) {
+        msg = "Access Denied: This email address is registered using a different sign-up method (e.g. Google). Please use the Google sign-in button above.";
+      } else if (msg.includes('auth/invalid-credential') || msg.includes('auth/user-not-found') || msg.includes('auth/wrong-password')) {
         msg = "Sign in failed: The email or password provided is incorrect.";
       } else if (msg.includes('auth/too-many-requests')) {
         msg = "Security Lock: Too many failed attempts. Access is temporarily restricted.";
@@ -196,7 +200,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase tracking-wide flex items-start gap-3 animate-in fade-in duration-300">
+            <div className="mb-6 p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[10px] font-bold text-[#C43D3D] uppercase text-left flex items-start gap-3 animate-in fade-in duration-300">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span className="leading-relaxed">{error}</span>
             </div>

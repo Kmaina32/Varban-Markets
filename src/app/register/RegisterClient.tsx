@@ -24,7 +24,7 @@ import { cn } from "@/app/lib/utils";
 
 /**
  * @fileOverview Onboarding Workspace (Firebase).
- * Updated for /client redirection and password confirmation.
+ * Updated for /client redirection and sign-up method conflict handling.
  */
 
 export default function RegisterClient() {
@@ -60,7 +60,6 @@ export default function RegisterClient() {
     performGeoLookup();
   }, []);
 
-  // Single shared policy (src/app/lib/password-policy.ts) mirrors the Firebase console setting.
   const passwordPolicy = evaluatePassword(formData.password);
   const isPasswordValid = passwordPolicy.valid;
   const passwordsMatch = formData.password === formData.confirmPassword && formData.confirmPassword.length > 0;
@@ -78,7 +77,7 @@ export default function RegisterClient() {
             console.error("reCAPTCHA execution failure", e);
             resolve("");
           }
-        });
+        } );
       } else {
         resolve("");
       }
@@ -151,8 +150,6 @@ export default function RegisterClient() {
         throw new Error("Security Handshake Interrupted: Unable to verify session integrity.");
       }
       
-      // Ask Firebase to validate against the console policy first (best effort),
-      // so the user gets a precise message instead of a generic failure.
       const policyCheck = await checkWithFirebase(auth, formData.password);
       if (!policyCheck.ok) {
         setError(policyCheck.message || "Your password does not meet the password policy.");
@@ -192,13 +189,18 @@ export default function RegisterClient() {
       
       router.push("/client/dashboard");
     } catch (err: any) {
-      if (isPasswordPolicyError(err)) {
-        setError("Your password does not meet the password policy. Check the requirements below and try again.");
-      } else if (String(err?.code || err?.message || "").includes("auth/email-already-in-use")) {
-        setError("An account with this email already exists. Try signing in instead.");
-      } else {
-        setError(err.message || "Registration failed.");
+      let msg = err?.message || "Registration failed.";
+      const errCode = err?.code || "";
+
+      if (errCode === 'auth/email-already-in-use') {
+        msg = "An account with this email already exists. Try signing in instead.";
+      } else if (errCode === 'auth/account-exists-with-different-credential' || msg.includes('diffrent sign up method')) {
+        msg = "Enrollment Error: This email address is already registered using a different sign-up method (e.g. Google). Please use the Google sign-in button above.";
+      } else if (isPasswordPolicyError(err)) {
+        msg = "Your password does not meet the password policy. Check the requirements below and try again.";
       }
+      
+      setError(msg);
       setLoading(false);
     }
   };
