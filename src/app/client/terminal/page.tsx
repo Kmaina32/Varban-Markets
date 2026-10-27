@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
- * Integrated with specialized Synthetic Index charting and execution logic.
+ * Dedicated workspace for Forex, Crypto and Equities.
  */
 
 import { useState, useEffect, Suspense, useMemo } from "react";
@@ -21,21 +21,17 @@ import {
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { fetchLivePrice } from "@/app/lib/market-service";
 import { useUser, useFirestore, useDoc } from "@/firebase";
-import { doc, updateDoc } from "firebase/firestore";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
-import { useSyntheticFeed } from "@/app/lib/synthetic/use-synthetic-feed";
 
 // Terminal Components
 import AuthedSidebar from "@/components/layout/AuthedSidebar";
 import ProfileDropdown from "@/components/layout/ProfileDropdown";
 import { TradingViewChart } from "@/components/terminal/TradingViewChart";
-import SyntheticChart from "@/components/terminal/SyntheticChart";
 import MarketSelector from "@/components/terminal/MarketSelector";
 import ExecutionTicket from "@/components/terminal/ExecutionTicket";
 import PortfolioManager from "@/components/terminal/PortfolioManager";
-import DigitStats from "@/components/terminal/DigitStats";
 import MobileTerminal from "@/components/terminal/MobileTerminal";
 import LoadingOverlay from "@/components/shared/LoadingOverlay";
 import {
@@ -62,17 +58,19 @@ function TerminalContent() {
   const [currentTime, setCurrentTime] = useState("");
   const activeTimezone = profile?.preferences?.timezone || "UTC+0";
 
+  // Filter out synthetic markets from the standard terminal
+  const standardInstruments = useMemo(() => 
+    AVAILABLE_INSTRUMENTS.filter(i => i.category !== 'Synthetic Indices')
+  , []);
+
   const [activeInst, setActiveInst] = useState<Instrument>(() => {
     if (symbolParam) {
-      const found = AVAILABLE_INSTRUMENTS.find(i => i.symbol === symbolParam);
+      const found = standardInstruments.find(i => i.symbol === symbolParam);
       if (found) return found;
     }
-    return AVAILABLE_INSTRUMENTS[0]; // BTC/USD is primary
+    return standardInstruments[0]; // BTC/USD is primary
   });
 
-  const isDerived = activeInst.category === 'Synthetic Indices';
-  const { ticks, lastTick, loading: syntheticLoading } = useSyntheticFeed(isDerived ? activeInst.symbol : "", activeInst.tickMs);
-  
   const [marketData, setMarketData] = useState<Record<string, { price: number; percent: number }>>({});
   const [positions, setPositions] = useState<any[]>([]);
 
@@ -114,16 +112,6 @@ function TerminalContent() {
   }, [activeTimezone]);
 
   useEffect(() => {
-    if (isDerived) {
-      if (lastTick) {
-        setMarketData(prev => ({
-          ...prev,
-          [activeInst.symbol]: { price: lastTick.price, percent: 0 }
-        }));
-      }
-      return;
-    }
-
     let active = true;
     const poll = async () => {
       try {
@@ -138,7 +126,7 @@ function TerminalContent() {
     poll();
     const interval = setInterval(poll, 4000);
     return () => { active = false; clearInterval(interval); };
-  }, [activeInst.symbol, isDerived, lastTick]);
+  }, [activeInst.symbol]);
 
   const handleExecution = (params: any) => {
     const live = marketData[activeInst.symbol];
@@ -252,11 +240,7 @@ function TerminalContent() {
               <ResizablePanelGroup direction="vertical">
                 <ResizablePanel defaultSize={70} minSize={30}>
                   <div className="h-full w-full bg-[#F7F7F5] relative">
-                    {isDerived ? (
-                      <SyntheticChart ticks={ticks} loading={syntheticLoading} />
-                    ) : (
-                      <TradingViewChart symbol={activeInst.symbol} />
-                    )}
+                    <TradingViewChart symbol={activeInst.symbol} />
                   </div>
                 </ResizablePanel>
                 <ResizableHandle withHandle />
@@ -279,7 +263,7 @@ function TerminalContent() {
                 <div className="flex border-b border-[#E4E4E4] shrink-0">
                    {[
                      { id: 'TRADE', label: 'Order Ticket', icon: MousePointer2 },
-                     { id: 'STATS', label: isDerived ? 'Digit Stats' : 'Market Data', icon: isDerived ? BarChart2 : Layout }
+                     { id: 'STATS', label: 'Market Data', icon: Layout }
                    ].map(tab => (
                      <button 
                       key={tab.id}
@@ -296,7 +280,7 @@ function TerminalContent() {
                 </div>
 
                 <div className="flex-grow overflow-y-auto no-scrollbar">
-                   {activeRightTab === 'TRADE' && (
+                   {activeRightTab === 'TRADE' ? (
                       <ExecutionTicket 
                         instrument={activeInst} 
                         livePrice={marketData[activeInst.symbol]?.price}
@@ -304,18 +288,13 @@ function TerminalContent() {
                         onExecute={handleExecution}
                         accountMode={accountMode}
                       />
-                   )}
-                   {activeRightTab === 'STATS' && (
-                      isDerived ? (
-                        <DigitStats symbol={activeInst.symbol} livePrice={marketData[activeInst.symbol]?.price} />
-                      ) : (
-                        <div className="p-6 space-y-6">
-                           <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">Technical Analysis</h3>
-                           <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] text-[9px] uppercase font-bold text-[#6B7280]">
-                              Live market telemetry is synchronized with the Varban global relay.
-                           </div>
-                        </div>
-                      )
+                   ) : (
+                      <div className="p-6 space-y-6">
+                         <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0A0A0A] border-b border-[#F7F7F5] pb-2">Technical Analysis</h3>
+                         <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] text-[9px] uppercase font-bold text-[#6B7280]">
+                            Live market telemetry is synchronized with the Varban global relay.
+                         </div>
+                      </div>
                    )}
                 </div>
               </div>

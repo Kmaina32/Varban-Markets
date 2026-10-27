@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Monitor, Globe, Briefcase, Target, 
   FileText, Clock, Star, Wallet, User, Bell, ShieldAlert,
   Share2, Newspaper, HelpCircle, Mail, LogOut, Cpu,
-  BarChart4, Calendar, Layers
+  BarChart4, Calendar, Layers, Zap
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -58,7 +58,8 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     {
       title: "TRADE",
       items: [
-        { label: t('nav.terminal'), href: "/client/terminal", icon: Monitor, description: "Professional execution interface with TradingView integration." },
+        { label: "Standard Hub", href: "/client/terminal", icon: Monitor, description: "Professional execution for Forex, Crypto and Equities." },
+        { label: "Derived Hub", href: "/client/derived-terminal", icon: Zap, description: "Dedicated terminal for Volatility and Synthetic markets." },
         { label: t('nav.bots'), href: "/client/bots", icon: Cpu, description: "Automated trading tools and pre-verified algorithms." },
         { label: t('nav.markets'), href: "/client/markets", icon: Globe, description: "Global instrument registry with live pricing." },
         { label: t('nav.portfolio'), href: "/client/portfolio", icon: Briefcase, description: "Asset allocation and performance curve visualization." },
