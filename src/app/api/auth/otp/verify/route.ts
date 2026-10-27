@@ -1,24 +1,16 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import twilio from 'twilio';
 import { verifyUser } from '@/app/lib/server/verify-admin';
 import { initializeFirebase } from '@/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 /**
- * @fileOverview Twilio OTP Validation Node.
- * Verifies the code and updates the user's verification status in Firestore.
+ * @fileOverview Twilio OTP Validation Node (Manual Ledger Check).
+ * Verifies the code against Firestore and updates user verification status.
  */
-
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
-
-const client = twilio(accountSid, authToken);
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Verify User Authority
     const { uid } = await verifyUser(req);
     const { phoneNumber, code } = await req.json();
 
@@ -26,31 +18,40 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
     }
 
-    if (!verifyServiceSid) {
-      throw new Error('Twilio Verify Service not configured');
+    const { db } = initializeFirebase();
+
+    // 1. Retrieve code from ledger
+    const otpDoc = await getDoc(doc(db, 'otp_codes', uid));
+    
+    if (!otpDoc.exists()) {
+      return NextResponse.json({ error: 'No active verification session detected.' }, { status: 400 });
     }
 
-    // 2. Check Verification Code with Twilio
-    const verificationCheck = await client.verify.v2
-      .services(verifyServiceSid)
-      .verificationChecks.create({ to: phoneNumber, code });
+    const data = otpDoc.data();
+    const now = new Date();
+    const expiry = new Date(data.expiry);
 
-    if (verificationCheck.status === 'approved') {
-      // 3. Update Firestore Ledger on Success
-      const { db } = initializeFirebase();
-      await updateDoc(doc(db, 'users', uid), {
-        'status.phoneVerified': true,
-        'profile.phone': phoneNumber,
-        'status.phoneVerifiedAt': new Date().toISOString()
-      });
-
-      return NextResponse.json({ success: true });
+    // 2. Validate code and expiry
+    if (now > expiry) {
+      await deleteDoc(doc(db, 'otp_codes', uid));
+      return NextResponse.json({ error: 'The verification code has expired.' }, { status: 400 });
     }
 
-    return NextResponse.json({ 
-      success: false, 
-      error: 'The code provided is invalid or has expired.' 
-    }, { status: 400 });
+    if (data.code !== code) {
+      return NextResponse.json({ error: 'Invalid verification code.' }, { status: 400 });
+    }
+
+    // 3. Successful Handshake: Update user profile
+    await updateDoc(doc(db, 'users', uid), {
+      'status.phoneVerified': true,
+      'profile.phone': phoneNumber,
+      'status.phoneVerifiedAt': new Date().toISOString()
+    });
+
+    // 4. Purge temporary code
+    await deleteDoc(doc(db, 'otp_codes', uid));
+
+    return NextResponse.json({ success: true });
 
   } catch (error: any) {
     console.error('[OTP VERIFY FAILURE]:', error);

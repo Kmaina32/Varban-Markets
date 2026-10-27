@@ -1,22 +1,23 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import twilio from 'twilio';
 import { verifyUser } from '@/app/lib/server/verify-admin';
+import { initializeFirebase } from '@/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 
 /**
- * @fileOverview Twilio OTP Send Node.
- * Initiates an SMS verification handshake using Twilio Verify.
+ * @fileOverview Twilio OTP Send Node (Standard SMS).
+ * Generates a 6-digit code and transmits it via Twilio SMS API.
  */
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
-const verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
+const fromNumber = process.env.TWILIO_PHONE_NUMBER;
 
-// Initialize client only if credentials exist
 const client = accountSid && authToken ? twilio(accountSid, authToken) : null;
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Verify User Authority
     const { uid } = await verifyUser(req);
     const { phoneNumber } = await req.json();
 
@@ -24,27 +25,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Phone number required' }, { status: 400 });
     }
 
-    if (!client || !verifyServiceSid) {
+    if (!client || !fromNumber) {
       return NextResponse.json({ 
-        error: 'Twilio Verify Service not fully provisioned. Please check server environment variables.' 
+        error: 'Twilio SMS Node not fully provisioned. Check environment variables.' 
       }, { status: 400 });
     }
 
-    // 2. Initiate Verification via Twilio
-    const verification = await client.verify.v2
-      .services(verifyServiceSid)
-      .verifications.create({ to: phoneNumber, channel: 'sms' });
+    // 1. Generate 6-digit OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 10 * 60000).toISOString(); // 10 min expiry
 
-    return NextResponse.json({ 
-      success: true, 
-      status: verification.status,
-      sid: verification.sid 
+    // 2. Transmit via Standard Twilio SMS
+    await client.messages.create({
+      body: `Your Varban Markets verification code is ${otpCode}. It expires in 10 minutes. Do not share this code.`,
+      from: fromNumber,
+      to: phoneNumber
     });
+
+    // 3. Persist code for verification
+    const { db } = initializeFirebase();
+    await setDoc(doc(db, 'otp_codes', uid), {
+      code: otpCode,
+      phoneNumber,
+      expiry,
+      timestamp: new Date().toISOString()
+    });
+
+    return NextResponse.json({ success: true });
 
   } catch (error: any) {
     console.error('[OTP SEND FAILURE]:', error);
     return NextResponse.json({ 
-      error: error.message || 'Verification handshake failed',
+      error: error.message || 'Verification transmission failed',
       code: error.code 
     }, { status: 500 });
   }
