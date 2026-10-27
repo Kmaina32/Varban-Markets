@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Institutional Multi-Asset Trading Terminal.
- * 2-Panel Dynamic Sidebar Architecture for Execution and Analysis.
+ * Refined 2-Panel Sidebar Architecture with high-fidelity execution node.
  */
 
 import { useState, useEffect, Suspense, useMemo } from "react";
@@ -160,7 +160,6 @@ function TerminalContent() {
       status: "Open",
       timestamp: Date.now(),
       isDemo: accountMode === 'DEMO',
-      mode: params.mode
     };
 
     setPositions(prev => [newPos, ...prev]);
