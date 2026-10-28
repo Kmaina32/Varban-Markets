@@ -118,7 +118,9 @@ function DerivedTerminalContent() {
             <Image src="/assets/logo2.png" alt="Varban" width={95} height={22} className="w-auto object-contain" priority />
           </Link>
 
-          <div className="h-8 w-px bg-[#E4E4E4] hidden md:block mx-4"></div>
+          <div className="h-8 w-px bg-[#E4E4E4] hidden md:block mx-2"></div>
+          <span className="hidden md:block text-sm font-bold text-[#0055FF]">Derived</span>
+          <div className="h-8 w-px bg-[#E4E4E4] hidden md:block mx-2"></div>
 
           <div className="hidden md:block">
             <MarketSelector 
@@ -144,7 +146,7 @@ function DerivedTerminalContent() {
           
           <button 
             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-            className="w-9 h-9 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs overflow-hidden border border-[#E4E4E4] shadow-sm hover:border-[#0055FF] transition-all"
+            className="w-9 h-9 rounded-full bg-[#0055FF] text-white flex items-center justify-center font-bold text-xs overflow-hidden border border-[#E4E4E4] shadow-sm hover:border-[#0055FF] transition-all"
           >
             {profile?.profile?.photoUrl ? <img src={profile.profile.photoUrl} className="w-full h-full object-cover" /> : user?.email?.substring(0,2).toUpperCase()}
           </button>

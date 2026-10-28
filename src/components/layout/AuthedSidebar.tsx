@@ -58,8 +58,8 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
       title: "TRADE",
       items: [
         { label: "Exchange", href: "/client/exchange", icon: RefreshCcw, description: "Direct asset conversion and swaps." },
-        { label: "Standard Hub", href: "/client/terminal", icon: Monitor, description: "Forex, Crypto and Equities terminal." },
-        { label: "Derived Hub", href: "/client/derived-terminal", icon: Zap, description: "Volatility and Synthetic indices hub." },
+        { label: "Forex / CFDs / Crypto", href: "/client/terminal", icon: Monitor, description: "Trade forex, CFDs, indices and crypto." },
+        { label: "Derived", href: "/client/derived-terminal", icon: Zap, description: "Volatility indices and derived contracts." },
         { label: t('nav.bots'), href: "/client/bots", icon: Cpu, description: "Automated trading tools and algorithms." },
         { label: t('nav.portfolio'), href: "/client/portfolio", icon: Briefcase, description: "Performance curve and asset allocation." },
         { label: t('nav.history'), href: "/client/history", icon: Clock, description: "Archive of closed execution records." },

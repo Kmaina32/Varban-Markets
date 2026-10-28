@@ -53,7 +53,9 @@ function TerminalContent() {
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
   const [activeRightTab, setActiveRightTab] = useState<'TRADE' | 'STATS'>('TRADE');
-  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  // null until we know the screen size, so the desktop layout never flashes up on a phone
+  const [isMobileViewport, setIsMobileViewport] = useState<boolean | null>(null);
+  const [pendingOrders, setPendingOrders] = useState<any[]>([]);
 
   const [currentTime, setCurrentTime] = useState("");
   const activeTimezone = profile?.preferences?.timezone || "UTC+0";
@@ -117,6 +119,8 @@ function TerminalContent() {
       try {
         const data = await fetchLivePrice(activeInst.symbol);
         if (!active) return;
+        // A failed lookup comes back as 0; keep the last good price instead of showing 0.00.
+        if (!data.price || data.price <= 0) return;
         setMarketData(prev => ({
           ...prev,
           [activeInst.symbol]: { price: data.price, percent: data.changePercent }
@@ -131,19 +135,27 @@ function TerminalContent() {
   const handleExecution = (params: any) => {
     const live = marketData[activeInst.symbol];
     if (!live) return;
-    const newPos = {
+    const order = {
       id: `VRB-${Math.random().toString(36).substring(7).toUpperCase()}`,
       instrument: activeInst.symbol,
       vector: params.side,
-      entryPrice: live.price,
       stake: params.amount,
-      status: "Open",
       timestamp: Date.now(),
       isDemo: accountMode === 'DEMO',
-      ...params
+      ...params,
+      // Buy fills at the ask and Sell at the bid; the ticket works that out.
+      entryPrice: params.entryPrice ?? live.price,
     };
-    setPositions(prev => [newPos, ...prev]);
+    if (params.orderType && params.orderType !== 'MARKET') {
+      setPendingOrders(prev => [{ ...order, status: "Pending" }, ...prev]);
+    } else {
+      setPositions(prev => [{ ...order, status: "Open" }, ...prev]);
+    }
   };
+
+  if (isMobileViewport === null) {
+    return <LoadingOverlay message="Opening the terminal" />;
+  }
 
   if (isMobileViewport) {
     return (
@@ -152,6 +164,7 @@ function TerminalContent() {
         onSelect={setActiveInst} 
         livePrices={marketData} 
         positions={positions} 
+        onExecute={handleExecution}
       />
     );
   }
@@ -167,6 +180,8 @@ function TerminalContent() {
             <Image src="/assets/logo2.png" alt="Varban" width={80} height={20} className="w-auto object-contain" priority />
           </Link>
           <div className="h-6 w-px bg-[#E4E4E4]"></div>
+          <span className="hidden md:block text-xs font-bold text-[#0055FF] whitespace-nowrap">Forex / CFDs / Crypto</span>
+          <div className="h-6 w-px bg-[#E4E4E4] hidden md:block"></div>
           
           <MarketSelector 
             activeSymbol={activeInst.symbol} 
@@ -176,9 +191,9 @@ function TerminalContent() {
 
           <div className="hidden lg:flex items-center space-x-6 px-4">
             <div className="flex flex-col">
-              <span className="text-[8px] font-bold uppercase text-[#6B7280]">Price Factor</span>
+              <span className="text-[10px] text-[#6B7280]">Price</span>
               <span className={cn("text-xs font-mono font-bold transition-colors", (marketData[activeInst.symbol]?.percent || 0) >= 0 ? "text-[#16835B]" : "text-[#C43D3D]")}>
-                {marketData[activeInst.symbol]?.price?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "---"}
+                {marketData[activeInst.symbol]?.price?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "Loading…"}
               </span>
             </div>
           </div>
@@ -215,7 +230,7 @@ function TerminalContent() {
           
           <button 
             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-            className="w-8 h-8 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs overflow-hidden"
+            className="w-8 h-8 rounded-full bg-[#0055FF] text-white flex items-center justify-center font-bold text-xs overflow-hidden"
           >
             {profile?.profile?.photoUrl ? <img src={profile.profile.photoUrl} className="w-full h-full object-cover" /> : user?.email?.substring(0,2).toUpperCase()}
           </button>
@@ -248,7 +263,7 @@ function TerminalContent() {
                   <div className="h-full w-full flex flex-col shrink-0 relative">
                     <PortfolioManager 
                       positions={positions.filter(p => p.status === 'Open')}
-                      orders={[]}
+                      orders={pendingOrders}
                       history={positions.filter(p => p.status === 'Closed')}
                     />
                   </div>

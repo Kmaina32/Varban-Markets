@@ -33,6 +33,7 @@ import DigitStats from './DigitStats';
 import ProfileDropdown from '@/components/layout/ProfileDropdown';
 import AuthedSidebar from '@/components/layout/AuthedSidebar';
 import { Card } from '@/components/ui/card';
+import { getTradingParams, fmtPrice } from '@/app/lib/trading-params';
 
 type MobileView = 'MARKETS' | 'CHART' | 'POSITIONS';
 
@@ -41,9 +42,11 @@ interface MobileTerminalProps {
   onSelect: (inst: Instrument) => void;
   livePrices: Record<string, { price: number; percent: number }>;
   positions: any[];
+  /** Called with the full order when the ticket is sent. */
+  onExecute?: (params: any) => void;
 }
 
-export default function MobileTerminal({ activeInst, onSelect, livePrices, positions }: MobileTerminalProps) {
+export default function MobileTerminal({ activeInst, onSelect, livePrices, positions, onExecute }: MobileTerminalProps) {
   const { user } = useUser();
   const db = useFirestore();
   const { formatNumber, t } = useTranslation();
@@ -62,6 +65,7 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
   const [selectedSide, setSelectedSide] = useState<'BUY' | 'SELL'>('BUY');
 
   const isDerived = activeInst.category === 'Synthetic Indices';
+  const tp = getTradingParams(activeInst, livePrices[activeInst.symbol]?.price);
 
   useEffect(() => {
     const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
@@ -110,7 +114,7 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
           </div>
           <button 
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="w-8 h-8 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs"
+            className="w-8 h-8 rounded-full bg-[#0055FF] text-white flex items-center justify-center font-bold text-xs overflow-hidden"
           >
             {profile?.profile?.photoUrl ? <img src={profile.profile.photoUrl} className="w-full h-full object-cover rounded-full" /> : user?.email?.substring(0,2).toUpperCase()}
           </button>
@@ -139,7 +143,7 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
                     onClick={() => setSelectedCat(cat)}
                     className={cn(
                       "px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest border transition-all whitespace-nowrap",
-                      selectedCat === cat ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white text-[#6B7280] border-[#E4E4E4]"
+                      selectedCat === cat ? "bg-[#0055FF] text-white border-[#0055FF]" : "bg-white text-[#6B7280] border-[#E4E4E4]"
                     )}
                   >
                     {cat}
@@ -220,6 +224,9 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
                       <div>
                         <span className="text-[8px] font-bold text-[#6B7280] uppercase block">Entry</span>
                         <span className="text-[10px] font-mono font-bold">${pos.entryPrice.toLocaleString()}</span>
+                        {(pos.sl || pos.tp) && (
+                          <span className="text-[9px] text-[#6B7280] block mt-1">{pos.sl ? `SL ${pos.sl}` : ''}{pos.sl && pos.tp ? ' · ' : ''}{pos.tp ? `TP ${pos.tp}` : ''}</span>
+                        )}
                       </div>
                       <div className="text-right">
                         <span className="text-[8px] font-bold text-[#6B7280] uppercase block">Stake</span>
@@ -264,9 +271,10 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
         <div className="flex-1 flex items-center justify-center h-full px-1">
           <button 
             onClick={() => openExecution('SELL')}
-            className="w-full h-11 bg-[#C43D3D] text-white flex items-center justify-center rounded-none shadow-md active:scale-95 transition-transform"
+            className="w-full h-12 bg-[#C43D3D] text-white flex flex-col items-center justify-center rounded-none shadow-md active:scale-95 transition-transform leading-tight"
           >
-            <span className="text-[10px] font-bold uppercase tracking-widest">SELL</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest">Sell</span>
+            <span className="text-[11px] font-mono font-bold">{tp ? fmtPrice(tp.bid, tp.decimals) : '—'}</span>
           </button>
         </div>
 
@@ -274,9 +282,10 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
         <div className="flex-1 flex items-center justify-center h-full px-1">
           <button 
             onClick={() => openExecution('BUY')}
-            className="w-full h-11 bg-[#16835B] text-white flex items-center justify-center rounded-none shadow-md active:scale-95 transition-transform"
+            className="w-full h-12 bg-[#16835B] text-white flex flex-col items-center justify-center rounded-none shadow-md active:scale-95 transition-transform leading-tight"
           >
-            <span className="text-[10px] font-bold uppercase tracking-widest">BUY</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest">Buy</span>
+            <span className="text-[11px] font-mono font-bold">{tp ? fmtPrice(tp.ask, tp.decimals) : '—'}</span>
           </button>
         </div>
 
@@ -301,7 +310,7 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
             <div className="p-4 border-b border-[#E4E4E4] flex justify-between items-center shrink-0">
                <div className="flex items-center gap-2">
                  <MarketIcon symbol={activeInst.symbol} size="sm" />
-                 <h3 className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A]">Execute {activeInst.symbol}</h3>
+                 <h3 className="text-sm font-bold text-[#0A0A0A]">{selectedSide === 'BUY' ? 'Buy' : 'Sell'} {activeInst.symbol}</h3>
                </div>
                <button onClick={() => setIsDrawerOpen(false)} className="p-1"><X className="w-6 h-6 text-[#6B7280]" /></button>
             </div>
@@ -311,8 +320,9 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
                  instrument={activeInst} 
                  livePrice={livePrices[activeInst.symbol]?.price}
                  balance={activeBalance}
-                 onExecute={(p) => { 
-                   console.log("Executed:", p); 
+                 initialSide={selectedSide}
+                 onExecute={(p) => {
+                   onExecute?.(p);
                    setIsDrawerOpen(false);
                    setActiveView('POSITIONS');
                  }}
