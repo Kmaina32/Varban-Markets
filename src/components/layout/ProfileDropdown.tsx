@@ -33,6 +33,8 @@ interface ProfileDropdownProps {
   onClose: () => void;
   onSelectMode: (mode: 'REAL' | 'DEMO') => void;
   onSignOut?: () => void;
+  /** Render in normal flow (inside a drawer) instead of floating under the header. */
+  inline?: boolean;
 }
 
 const SUPER_ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
@@ -45,7 +47,8 @@ export default function ProfileDropdown({
   isOpen,
   onClose,
   onSelectMode,
-  onSignOut
+  onSignOut,
+  inline = false
 }: ProfileDropdownProps) {
   const router = useRouter();
   const { formatNumber } = useTranslation();
@@ -61,15 +64,18 @@ export default function ProfileDropdown({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as HTMLElement | null;
+      // The avatar button toggles the menu itself; don't close here or the click would reopen it.
+      if (target?.closest?.('[data-profile-trigger]')) return;
+      if (dropdownRef.current && !dropdownRef.current.contains(target as Node)) {
         onClose();
       }
     };
-    if (isOpen) {
+    if (isOpen && !inline) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, inline]);
 
   const handleLogout = async () => {
     if (onSignOut) {
@@ -86,7 +92,12 @@ export default function ProfileDropdown({
   return (
     <div 
       ref={dropdownRef}
-      className="absolute right-0 top-full mt-2 w-80 bg-white border border-[#E4E4E4] shadow-2xl z-[300] overflow-hidden text-[#0A0A0A] animate-in fade-in slide-in-from-top-2 duration-200"
+      className={cn(
+        "bg-white border border-[#E4E4E4] overflow-hidden text-[#0A0A0A] animate-in fade-in duration-200",
+        inline
+          ? "w-full"
+          : "fixed right-2 md:right-6 top-[68px] w-[min(20rem,calc(100vw-1rem))] max-h-[calc(100dvh-80px)] overflow-y-auto shadow-2xl z-[700] slide-in-from-top-2"
+      )}
     >
       <div className="bg-[#F7F7F5] p-5 border-b border-[#E4E4E4] flex items-center justify-between">
         <div className="flex items-center space-x-4 overflow-hidden">
@@ -154,7 +165,7 @@ export default function ProfileDropdown({
           <Link
             href="/client/wallet?tab=deposit"
             onClick={onClose}
-            className="py-3 px-3 bg-[#0A0A0A] text-white text-[9px] font-bold uppercase tracking-[0.2em] flex items-center justify-center space-x-2 hover:bg-[#0055FF] transition-all shadow-md group"
+            className="py-3 px-3 bg-[#0055FF] text-white text-[9px] font-bold uppercase tracking-[0.2em] flex items-center justify-center space-x-2 hover:bg-[#0044CC] transition-all shadow-md group"
           >
             <ArrowDownLeft className="w-3.5 h-3.5 text-[#16835B] group-hover:text-white transition-colors" />
             <span>Deposit</span>

@@ -229,7 +229,9 @@ function TerminalContent() {
           </div>
           
           <button 
-            onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+            data-profile-trigger
+            aria-label="Account menu"
+            onClick={() => setIsProfileDropdownOpen(v => !v)}
             className="w-8 h-8 rounded-full bg-[#0055FF] text-white flex items-center justify-center font-bold text-xs overflow-hidden"
           >
             {profile?.profile?.photoUrl ? <img src={profile.profile.photoUrl} className="w-full h-full object-cover" /> : user?.email?.substring(0,2).toUpperCase()}

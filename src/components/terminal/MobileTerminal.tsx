@@ -358,7 +358,8 @@ export default function MobileTerminal({ activeInst, onSelect, livePrices, posit
                   profile={profile} 
                   accountMode={accountMode} 
                   demoBalance={demoBalance} 
-                  isOpen={true} 
+                  isOpen={true}
+                  inline
                   onClose={() => setIsProfileOpen(false)} 
                   onSelectMode={m => { setAccountMode(m); localStorage.setItem('varban_account_mode', m); window.dispatchEvent(new Event('varban_account_mode_changed')); }}
                 />

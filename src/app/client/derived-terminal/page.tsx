@@ -38,6 +38,7 @@ import DerivedTradeControls from "@/components/terminal/DerivedTradeControls";
 import DigitStats from "@/components/terminal/DigitStats";
 import PortfolioManager from "@/components/terminal/PortfolioManager";
 import LoadingOverlay from "@/components/shared/LoadingOverlay";
+import BottomSheet from "@/components/terminal/BottomSheet";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -57,6 +58,21 @@ function DerivedTerminalContent() {
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
   const [activeRightTab, setActiveRightTab] = useState<'TRADE' | 'STATS'>('TRADE');
+  const [sheet, setSheet] = useState<null | 'TRADE' | 'TRADES'>(null);
+  const [sheetTab, setSheetTab] = useState<'TRADE' | 'STATS'>('TRADE');
+  const [placed, setPlaced] = useState<{ id: string; symbol: string; side: string; amount: number; price: number | null; at: number }[]>([]);
+
+  const handleExecute = (p: any) => {
+    setPlaced(prev => [{
+      id: `${Date.now()}-${prev.length}`,
+      symbol: p.symbol ?? activeInst.symbol,
+      side: String(p.derivedMode ?? p.side ?? 'TRADE'),
+      amount: Number(p.amount) || 0,
+      price: lastTick?.price ?? null,
+      at: Date.now(),
+    }, ...prev].slice(0, 50));
+    setSheet('TRADES');
+  };
 
   const [currentTime, setCurrentTime] = useState("");
   const activeTimezone = profile?.preferences?.timezone || "UTC+0";
@@ -131,7 +147,7 @@ function DerivedTerminalContent() {
           </div>
         </div>
 
-        <div className="flex items-center space-x-8">
+        <div className="flex items-center space-x-3 md:space-x-8">
           <div className="hidden xl:flex items-center bg-[#F7F7F5] border border-[#E4E4E4] px-4 py-1.5 gap-4">
              <ClockIcon className="w-3.5 h-3.5 text-[#0055FF]" />
              <span className="text-sm font-mono font-bold text-[#0A0A0A] tracking-tighter">{currentTime}</span>
@@ -145,7 +161,9 @@ function DerivedTerminalContent() {
           </div>
           
           <button 
-            onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+            data-profile-trigger
+            aria-label="Account menu"
+            onClick={() => setIsProfileDropdownOpen(v => !v)}
             className="w-9 h-9 rounded-full bg-[#0055FF] text-white flex items-center justify-center font-bold text-xs overflow-hidden border border-[#E4E4E4] shadow-sm hover:border-[#0055FF] transition-all"
           >
             {profile?.profile?.photoUrl ? <img src={profile.profile.photoUrl} className="w-full h-full object-cover" /> : user?.email?.substring(0,2).toUpperCase()}
@@ -167,7 +185,33 @@ function DerivedTerminalContent() {
         <AuthedSidebar className="hidden xl:flex" />
         
         <main className="flex-grow flex xl:ml-16 overflow-hidden bg-[#F7F7F5]">
-          <ResizablePanelGroup direction="horizontal" className="flex-grow overflow-hidden">
+          {/* Phone & tablet layout */}
+          <div className="flex flex-col flex-grow min-w-0 lg:hidden bg-white">
+            <div className="flex items-center justify-between gap-3 px-3 py-2 border-b border-[#E4E4E4] shrink-0">
+              <div className="min-w-0">
+                <MarketSelector
+                  activeSymbol={activeInst.symbol}
+                  onSelect={setActiveInst}
+                  livePrices={{ [activeInst.symbol]: { price: lastTick?.price || 0, percent: 0 } }}
+                />
+              </div>
+              <div className="text-right shrink-0">
+                <div className="text-lg font-mono font-bold leading-none">{lastTick ? formatNumber(lastTick.price, { minimumFractionDigits: 2 }) : '—'}</div>
+                <div className="text-[10px] text-[#6B7280] mt-1">Live price</div>
+              </div>
+            </div>
+            <div className="relative flex-1 min-h-0">
+              <SyntheticChart ticks={ticks} loading={syntheticLoading} />
+            </div>
+            <div className="shrink-0 grid grid-cols-[1fr_2fr] gap-3 p-3 border-t border-[#E4E4E4] bg-white pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+              <button onClick={() => setSheet('TRADES')} className="h-12 border border-[#E4E4E4] bg-white text-sm font-semibold text-[#0A0A0A] flex items-center justify-center gap-2">
+                Trades{placed.length > 0 && <span className="min-w-5 h-5 px-1 rounded-full bg-[#0055FF] text-white text-[10px] flex items-center justify-center">{placed.length}</span>}
+              </button>
+              <button onClick={() => { setSheetTab('TRADE'); setSheet('TRADE'); }} className="h-12 bg-[#0055FF] text-white text-sm font-bold">Trade</button>
+            </div>
+          </div>
+
+          <ResizablePanelGroup direction="horizontal" className="flex-grow overflow-hidden hidden lg:flex">
             <ResizablePanel defaultSize={75} minSize={40}>
               <ResizablePanelGroup direction="vertical">
                 <ResizablePanel defaultSize={70} minSize={30}>
@@ -224,7 +268,7 @@ function DerivedTerminalContent() {
                         instrument={activeInst} 
                         livePrice={lastTick?.price || null}
                         balance={activeBalance}
-                        onExecute={(p) => console.log("Execute Derived:", p)}
+                        onExecute={handleExecute}
                       />
                    ) : (
                       <DigitStats symbol={activeInst.symbol} livePrice={lastTick?.price || null} />
@@ -235,6 +279,49 @@ function DerivedTerminalContent() {
           </ResizablePanelGroup>
         </main>
       </div>
+
+      <BottomSheet
+        open={sheet === 'TRADE'}
+        title={activeInst.name || activeInst.symbol}
+        onClose={() => setSheet(null)}
+        header={
+          <div className="flex border-b border-[#E4E4E4] shrink-0">
+            {([['TRADE', 'Trade'], ['STATS', 'Digit stats']] as const).map(([id, label]) => (
+              <button key={id} onClick={() => setSheetTab(id)}
+                className={cn("flex-1 py-3 text-sm font-semibold border-b-2", sheetTab === id ? "border-[#0055FF] text-[#0055FF]" : "border-transparent text-[#6B7280]")}>
+                {label}
+              </button>
+            ))}
+          </div>
+        }
+      >
+        {sheetTab === 'TRADE' ? (
+          <DerivedTradeControls instrument={activeInst} livePrice={lastTick?.price || null} balance={activeBalance} onExecute={handleExecute} />
+        ) : (
+          <DigitStats symbol={activeInst.symbol} livePrice={lastTick?.price || null} />
+        )}
+      </BottomSheet>
+
+      <BottomSheet open={sheet === 'TRADES'} title="Your trades" onClose={() => setSheet(null)}>
+        {placed.length === 0 ? (
+          <div className="p-8 text-center text-sm text-[#6B7280]">No trades yet. Tap Trade to place your first one.</div>
+        ) : (
+          <ul className="divide-y divide-[#E4E4E4]">
+            {placed.map(t => (
+              <li key={t.id} className="px-4 py-3 flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-semibold">{t.symbol}</div>
+                  <div className="text-xs text-[#6B7280]">{t.side} · {new Date(t.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-mono font-bold">${formatNumber(t.amount, { minimumFractionDigits: 2 })}</div>
+                  {t.price !== null && <div className="text-xs text-[#6B7280] font-mono">at {formatNumber(t.price, { minimumFractionDigits: 2 })}</div>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </BottomSheet>
 
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[400] xl:hidden">

@@ -117,25 +117,22 @@ export default function NewsHubPage() {
 
       <div className="space-y-6 max-w-6xl mx-auto pb-12">
         
-        <div id="tour-news-banner" className="p-6 bg-[#0055FF] text-white shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b-4 border-[#0A0A0A]">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Market Intelligence</span>
-              {isRefreshing && (
-                <span className="flex items-center gap-1.5 text-[8px] bg-white/20 px-2 py-0.5 rounded font-bold uppercase">
-                  <RefreshCw className="w-2.5 h-2.5 animate-spin" /> Syncing
-                </span>
-              )}
-            </div>
-            <h1 className="text-2xl font-bold uppercase tracking-tight">Global Trading Feed</h1>
+        <div id="tour-news-banner" className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs text-[#6B7280]">
+            <span>Live headlines from global markets</span>
+            {isRefreshing && (
+              <span className="flex items-center gap-1.5 text-[10px] bg-[#0055FF]/10 text-[#0055FF] px-2 py-0.5 rounded-full font-semibold">
+                <RefreshCw className="w-2.5 h-2.5 animate-spin" /> Updating
+              </span>
+            )}
           </div>
-          <button 
+          <button
             onClick={() => loadNews(searchQuery, activeCategory)}
             disabled={isLoading || isRefreshing}
-            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2 border border-white/20 disabled:opacity-50"
+            className="px-4 py-2 bg-[#0055FF] hover:bg-[#0044CC] text-white text-xs font-semibold transition-colors flex items-center gap-2 disabled:opacity-50"
           >
-            <RefreshCw className={cn("w-3 h-3", isRefreshing && "animate-spin")} />
-            <span>Refresh Hub</span>
+            <RefreshCw className={cn("w-3.5 h-3.5", isRefreshing && "animate-spin")} />
+            <span>Refresh</span>
           </button>
         </div>
 
