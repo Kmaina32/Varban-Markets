@@ -30,7 +30,7 @@ export interface HoverCardTriggerProps
 }
 
 const HoverCardTrigger = React.forwardRef<
-  HTMLElement,
+  HTMLAnchorElement,
   HoverCardTriggerProps
 >(({ className, asChild, children, render, ...props }, ref) => {
   const triggerRender = asChild && React.isValidElement(children) ? children : render;
