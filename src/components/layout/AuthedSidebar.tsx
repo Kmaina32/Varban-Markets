@@ -51,7 +51,9 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
       title: "OVERVIEW",
       items: [
         { label: t('nav.dashboard'), href: "/client/dashboard", icon: LayoutDashboard, description: "Portfolio snapshot and real-time metrics." },
+        { label: "Wallet", href: "/client/wallet", icon: Wallet, description: "Deposit, withdraw and view your balance." },
         { label: t('nav.news'), href: "/client/news", icon: Newspaper, description: "Real-time global market intelligence feed." },
+        { label: "Calendar", href: "/client/calendar", icon: Calendar, description: "Upcoming economic events." },
       ]
     },
     {
@@ -61,6 +63,8 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
         { label: "Forex / CFDs / Crypto", href: "/client/terminal", icon: Monitor, description: "Trade forex, CFDs, indices and crypto." },
         { label: "Derived", href: "/client/derived-terminal", icon: Zap, description: "Volatility indices and derived contracts." },
         { label: t('nav.bots'), href: "/client/bots", icon: Cpu, description: "Automated trading tools and algorithms." },
+        { label: "Positions", href: "/client/positions", icon: Target, description: "Your open trades right now." },
+        { label: "Orders", href: "/client/orders", icon: FileText, description: "Pending and recent orders." },
         { label: t('nav.portfolio'), href: "/client/portfolio", icon: Briefcase, description: "Performance curve and asset allocation." },
         { label: t('nav.history'), href: "/client/history", icon: Clock, description: "Archive of closed execution records." },
         { label: t('nav.watchlist'), href: "/client/watchlist", icon: Star, description: "Prioritized registry of instruments." },
@@ -69,6 +73,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     {
       title: "ANALYSIS",
       items: [
+        { label: "Markets", href: "/client/markets", icon: Globe, description: "Browse every tradable market." },
         { label: "Heatmaps", href: "/client/markets/heatmaps", icon: Layers, description: "Visual sector performance comparison." },
         { label: "Screener", href: "/client/markets/screener", icon: BarChart4, description: "Advanced technical instrument discovery." },
       ]
@@ -92,7 +97,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
   }
 
   const renderItem = (item: any) => {
-    const isActive = pathname === item.href || (item.href !== '/client/dashboard' && pathname?.startsWith(item.href));
+    const isActive = pathname === item.href || (item.href !== '/client/dashboard' && item.href !== '/client/markets' && pathname?.startsWith(item.href));
     
     return (
       <HoverCard key={item.href} openDelay={0} closeDelay={0}>
