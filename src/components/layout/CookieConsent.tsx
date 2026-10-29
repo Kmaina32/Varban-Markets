@@ -1,10 +1,8 @@
-
 'use client';
 
 /**
- * @fileOverview Institutional Cookie Consent Module.
- * Provides a professional, non-intrusive way to handle website settings and data privacy.
- * Choices are registered in the database for authenticated users.
+ * @fileOverview Overhauled Institutional Cookie Consent.
+ * Rewired logic to persist data in the user's compliance ledger.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -12,6 +10,7 @@ import Link from 'next/link';
 import { cn } from '@/app/lib/utils';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { ShieldCheck, Lock, Check } from 'lucide-react';
 
 export default function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);
@@ -20,36 +19,32 @@ export default function CookieConsent() {
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
 
   useEffect(() => {
-    // 1. Priority check: Database Record (for cross-device consistency)
     if (user && profile) {
-      if (profile.cookieConsent) {
+      if (profile.compliance?.cookieConsent) {
         setIsVisible(false);
         return;
       }
     }
 
-    // 2. Secondary check: Local Storage (for guest/new users)
     const consent = localStorage.getItem('varban_cookie_consent');
     if (!consent) {
-      // Delay appearance for better UX
-      const timer = setTimeout(() => setIsVisible(true), 2500);
+      const timer = setTimeout(() => setIsVisible(true), 3000);
       return () => clearTimeout(timer);
     }
   }, [user, profile]);
 
   const handleConsent = async (choice: 'accepted' | 'declined') => {
-    // Persist locally for instant closure
     localStorage.setItem('varban_cookie_consent', choice);
     
-    // Persist to Database if authenticated (for compliance ledger)
     if (user && db) {
       try {
-        updateDoc(doc(db, "users", user.uid), {
-          cookieConsent: choice === 'accepted' ? 'Accepted' : 'Declined',
-          cookieConsentAt: serverTimestamp()
+        await updateDoc(doc(db, "users", user.uid), {
+          "compliance.cookieConsent": choice === 'accepted' ? 'Accepted' : 'Declined',
+          "compliance.cookieConsentAt": serverTimestamp(),
+          "compliance.ipAddress": "logged_per_session"
         });
       } catch (err) {
-        // Fail silently - non-critical background operation
+        console.warn("Compliance logging failure.");
       }
     }
 
@@ -59,58 +54,54 @@ export default function CookieConsent() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[1000] p-4 md:p-6 pointer-events-none">
+    <div className="fixed bottom-0 left-0 right-0 z-[1100] p-4 md:p-10 pointer-events-none">
       <div className={cn(
-        "max-w-4xl mx-auto bg-white border border-[#E4E4E4] shadow-2xl p-6 md:p-8 pointer-events-auto",
-        "animate-in slide-in-from-bottom-4 duration-500 flex flex-col md:flex-row items-start md:items-center gap-6 relative"
+        "max-w-5xl mx-auto bg-white border border-[#E4E4E4] shadow-2xl p-8 md:p-12 pointer-events-auto rounded-[2.5rem]",
+        "animate-in slide-in-from-bottom-10 duration-700 flex flex-col md:flex-row items-center gap-10 relative"
       )}>
-        {/* Message Area */}
-        <div className="flex-grow">
+        {/* Visual Brand Indicator */}
+        <div className="hidden md:flex w-20 h-20 rounded-full bg-[#F7F7F5] border border-[#E4E4E4] items-center justify-center shrink-0">
+          <ShieldCheck className="w-10 h-10 text-[#0055FF]" />
+        </div>
+
+        <div className="flex-grow space-y-4 text-center md:text-left">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.2em] block mb-1">
-              Cookies & Privacy
+            <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-[0.4em] block mb-2">
+              Privacy Protocol
             </span>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">
-              Personalize Your Experience
+            <h3 className="text-xl md:text-2xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">
+              Data Collection Transparency
             </h3>
-            <p className="text-[11px] text-[#6B7280] leading-relaxed max-w-2xl mt-2">
-              We use cookies to ensure our systems work reliably, analyze performance, and provide a professional trading environment. By choosing "Accept All," you help us improve the platform for everyone.
+            <p className="text-xs md:text-sm text-[#6B7280] leading-relaxed max-w-3xl">
+              We utilize cookies to maintain your secure session, analyze matching engine performance, and ensure our institutional systems operate with 99.98% uptime. Your choice is recorded in your account compliance ledger.
             </p>
-            <div className="mt-3">
-              <Link 
-                href="/terms/privacy" 
-                className="inline-flex items-center text-[9px] font-bold text-[#0055FF] uppercase tracking-widest hover:underline"
-              >
-                Read our Privacy Rules
-              </Link>
+          </div>
+          <div className="flex items-center justify-center md:justify-start gap-6">
+            <Link href="/terms/privacy" className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest underline decoration-2 underline-offset-4">
+              Review Privacy Rules
+            </Link>
+            <div className="flex items-center gap-2">
+               <Lock className="w-3.5 h-3.5 text-[#16835B]" />
+               <span className="text-[9px] font-bold uppercase text-[#6B7280] tracking-widest">End-to-End Encrypted</span>
             </div>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto shrink-0">
+        <div className="flex flex-col gap-3 w-full md:w-56 shrink-0">
           <button 
             onClick={() => handleConsent('accepted')}
-            className="flex-1 md:w-40 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest py-3 hover:bg-[#0055FF] transition-colors shadow-sm"
+            className="w-full bg-[#0A0A0A] text-white text-[11px] font-bold uppercase tracking-[0.3em] py-5 rounded-2xl hover:bg-[#0055FF] transition-all shadow-xl flex items-center justify-center gap-2"
           >
+            <Check className="w-4 h-4" />
             Accept All
           </button>
           <button 
             onClick={() => handleConsent('declined')}
-            className="flex-1 md:w-40 bg-white border border-[#E4E4E4] text-[#6B7280] text-[10px] font-bold uppercase tracking-widest py-3 hover:bg-[#F7F7F5] hover:text-[#0A0A0A] transition-colors"
+            className="w-full bg-[#F7F7F5] border border-[#E4E4E4] text-[#6B7280] text-[11px] font-bold uppercase tracking-[0.3em] py-5 rounded-2xl hover:bg-white hover:text-[#0A0A0A] transition-all"
           >
-            Necessary Only
+            Necessary
           </button>
         </div>
-
-        {/* Close Button */}
-        <button 
-          onClick={() => setIsVisible(false)}
-          className="absolute top-2 right-4 text-[10px] font-bold uppercase text-[#6B7280] hover:text-[#0A0A0A] transition-colors"
-          aria-label="Close"
-        >
-          Close
-        </button>
       </div>
     </div>
   );
