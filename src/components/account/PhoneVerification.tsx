@@ -1,11 +1,6 @@
 
 'use client';
 
-/**
- * @fileOverview Institutional Phone Verification Module.
- * Interfaces with Twilio OTP service for secure identity validation.
- */
-
 import React, { useState, useEffect } from 'react';
 import { Smartphone, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
 import { useUser } from '@/firebase';
@@ -115,6 +110,7 @@ export default function PhoneVerification({ currentPhone, isVerified: initialVer
                 />
               </div>
               <button 
+                type="button"
                 onClick={handleSendOtp}
                 disabled={loading || !phoneNumber}
                 className="px-6 bg-[#0A0A0A] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0055FF] disabled:opacity-40 transition-all shadow-sm rounded-xl"
@@ -132,6 +128,7 @@ export default function PhoneVerification({ currentPhone, isVerified: initialVer
           <div className="p-4 bg-[#0055FF]/5 border border-[#0055FF]/20 flex items-center justify-between rounded-xl">
             <span className="text-[10px] font-bold text-[#0055FF] uppercase">Token sent to {phoneNumber}</span>
             <button 
+              type="button"
               onClick={() => setOtpSent(false)} 
               className="text-[9px] font-bold uppercase underline text-[#6B7280] hover:text-[#0A0A0A]"
             >
@@ -150,6 +147,7 @@ export default function PhoneVerification({ currentPhone, isVerified: initialVer
                 maxLength={6}
               />
               <button 
+                type="button"
                 onClick={handleVerifyOtp}
                 disabled={loading || otpCode.length < 6}
                 className="px-8 bg-[#16835B] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#0A0A0A] disabled:opacity-40 transition-all shadow-lg rounded-xl"
@@ -162,6 +160,7 @@ export default function PhoneVerification({ currentPhone, isVerified: initialVer
           <div className="flex justify-between items-center">
             <p className="text-[9px] text-[#6B7280] uppercase font-bold">Expires in 10 minutes</p>
             <button 
+              type="button"
               disabled={resendTimer > 0 || loading}
               onClick={handleSendOtp}
               className="text-[9px] font-bold uppercase text-[#0055FF] disabled:text-[#6B7280]"

@@ -1,9 +1,10 @@
+
 'use client';
 
 /**
  * @fileOverview Institutional Telemetry Node v2.0.
  * Redesigned for high-fidelity white theme with dark typography.
- * Relocated above the AI chat bot with minimize/widget/close states.
+ * Stacked above the AI chat bot with minimize/widget/close states.
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -41,13 +42,11 @@ export default function AdminTelemetryOverlay() {
     status: 'OPTIMAL'
   });
 
-  // Verify Authority
   const isAdmin = useMemo(() => {
     if (!user?.email) return false;
     return SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase()) || profile?.status?.role === 'Admin';
   }, [user, profile]);
 
-  // Simulate telemetry flux
   useEffect(() => {
     if (!isAdmin) return;
     const interval = setInterval(() => {
@@ -64,7 +63,6 @@ export default function AdminTelemetryOverlay() {
 
   if (!isAdmin) return null;
 
-  // CLOSED STATE: Show small "N" trigger in bottom left as per reference
   if (state === 'closed') {
     return (
       <button 
@@ -92,14 +90,12 @@ export default function AdminTelemetryOverlay() {
           </button>
         ) : (
           <div className="h-full flex flex-col p-8 space-y-6">
-            {/* Header Controls */}
             <div className="absolute top-6 right-6 flex items-center gap-1 z-30">
               <button onClick={() => setState('minimized')} className="p-1 text-[#6B7280] hover:text-[#0A0A0A] transition-colors"><Minimize2 className="w-3.5 h-3.5" /></button>
               <button className="p-1 text-[#6B7280] hover:text-[#0055FF] transition-colors"><PlusSquare className="w-3.5 h-3.5" /></button>
               <button onClick={() => setState('closed')} className="p-1 text-[#6B7280] hover:text-[#C43D3D] transition-colors"><X className="w-3.5 h-3.5" /></button>
             </div>
 
-            {/* Branded Header */}
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full bg-[#0055FF] flex items-center justify-center shadow-lg shadow-[#0055FF]/20">
                 <Activity className="w-5 h-5 text-white" />
@@ -110,7 +106,6 @@ export default function AdminTelemetryOverlay() {
               </div>
             </div>
 
-            {/* Data Card (As per reference image) */}
             <div className="bg-[#94A3B8]/10 rounded-[2rem] p-6 space-y-5 flex-grow relative overflow-hidden flex flex-col">
               <div className="space-y-4 relative z-20">
                 <div className="flex items-center justify-between">
@@ -129,7 +124,6 @@ export default function AdminTelemetryOverlay() {
                 </div>
               </div>
 
-              {/* Liquid RAM Gauge (Centered large as per image) */}
               <div className="flex-grow flex flex-col items-center justify-center pt-4 relative">
                 <div className="absolute inset-x-0 bottom-0 top-[40%] bg-gradient-to-t from-[#0055FF]/40 to-[#0055FF]/10 z-0">
                   <svg className="w-[200%] h-4 absolute top-0 -translate-y-full animate-wave fill-[#0055FF]/20" viewBox="0 0 1200 24" preserveAspectRatio="none">
@@ -145,7 +139,6 @@ export default function AdminTelemetryOverlay() {
               </div>
             </div>
 
-            {/* Extended Data Bar */}
             <div className="flex justify-between items-center px-2 pt-2 border-t border-[#F7F7F5]">
               <div className="flex items-center gap-1.5">
                 <Globe className="w-2.5 h-2.5 text-[#6B7280]" />

@@ -1,3 +1,4 @@
+
 'use client';
 
 /**
@@ -59,7 +60,6 @@ export default function CookieConsent() {
         "max-w-5xl mx-auto bg-white border border-[#E4E4E4] shadow-2xl p-8 md:p-12 pointer-events-auto rounded-[2.5rem]",
         "animate-in slide-in-from-bottom-10 duration-700 flex flex-col md:flex-row items-center gap-10 relative"
       )}>
-        {/* Visual Brand Indicator */}
         <div className="hidden md:flex w-20 h-20 rounded-full bg-[#F7F7F5] border border-[#E4E4E4] items-center justify-center shrink-0">
           <ShieldCheck className="w-10 h-10 text-[#0055FF]" />
         </div>

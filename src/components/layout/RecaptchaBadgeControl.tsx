@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect } from 'react';
@@ -19,7 +20,6 @@ const HIDDEN_PREFIXES = [
 
 export function isBadgeHidden(pathname: string | null): boolean {
   if (!pathname) return false;
-  // Strictly hide if current path starts with any hidden prefix
   return HIDDEN_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'));
 }
 
@@ -32,7 +32,6 @@ export default function RecaptchaBadgeControl() {
     
     if (shouldHide) {
       root.setAttribute('data-hide-recaptcha', '');
-      // Inject internal CSS to ensure G-Captcha badge is removed from DOM visibility
       const style = document.createElement('style');
       style.id = 'recaptcha-stealth-mode';
       style.innerHTML = '.grecaptcha-badge { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }';
