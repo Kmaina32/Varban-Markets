@@ -141,7 +141,7 @@ export const DICTIONARY = {
       lastName: 'Last Name',
       continue: 'Continue',
       loginSuccess: 'Sign in successful',
-      verifying: 'Identity verified. Establishing link...',
+      verifying: 'Loading your account...',
       newToPlatform: 'New to the platform?',
       createAccount: 'Create Account',
       backToHome: 'Back to Home'
@@ -419,7 +419,7 @@ export const DICTIONARY = {
       lastName: 'Nom',
       continue: 'Continuer',
       loginSuccess: 'Connexion réussie',
-      verifying: 'Identité vérifiée. Établissement du lien...',
+      verifying: 'Chargement de votre compte...',
       newToPlatform: 'Nouveau sur la plateforme?',
       createAccount: 'Créer un compte',
       backToHome: 'Retour à l\'accueil'
@@ -697,7 +697,7 @@ export const DICTIONARY = {
       lastName: 'Apellido',
       continue: 'Continuar',
       loginSuccess: 'Inicio de sesión exitoso',
-      verifying: 'Identidad verificada. Estableciendo enlace...',
+      verifying: 'Cargando su cuenta...',
       newToPlatform: '¿Nuevo en la plataforma?',
       createAccount: 'Crear Cuenta',
       backToHome: 'Volver al Inicio'
@@ -720,7 +720,7 @@ export const DICTIONARY = {
       confirm: 'Confirmar Operación',
       cancel: 'Cancelar',
       openPositions: 'Operaciones Abiertas',
-      marketDetails: 'Detalles del Mercado',
+      marketDetails: 'Details del Mercado',
       orderConfirmed: 'Orden Confirmada',
       confirmedRef: 'Orden registrada con éxito.',
       specs: 'Especificaciones del Mercado',
@@ -756,7 +756,7 @@ export const DICTIONARY = {
       equity: 'Valor de la Cuenta',
       openRisk: 'Riesgo Activo',
       dailyPL: 'Resultados de Hoy',
-      integrityTitle: 'Integridad de la Plataforma',
+      integrityTitle: 'Integridad de la Plateforma',
       integrityDesc: 'Varban Markets funciona con un tiempo de actividad de ejecución del 99,98 %. Todos los feeds de precios están sujetos a auditoría determinista multifuente.',
       practiceNotice: 'Estás usando una cuenta de práctica. Los resultados están simulados para ayudarte a aprender.'
     },
@@ -912,7 +912,7 @@ export const DICTIONARY = {
         corporate: 'Corporativo',
         regulation: 'Regulamentação',
         legal: 'Documentos legais',
-        solutions: 'Soluções',
+        solutions: 'Solutions',
         rewards: 'Recompensas Varban'
       },
       footer: {
@@ -975,7 +975,7 @@ export const DICTIONARY = {
       lastName: 'Sobrenome',
       continue: 'Continuar',
       loginSuccess: 'Login bem-sucedido',
-      verifying: 'Identidade verificada. Estabelecendo conexão...',
+      verifying: 'Carregando a sua conta...',
       newToPlatform: 'Novo na plataforma?',
       createAccount: 'Criar Conta',
       backToHome: 'Voltar ao Início'
@@ -998,7 +998,7 @@ export const DICTIONARY = {
       confirm: 'Confirmar Negociação',
       cancel: 'Cancelar',
       openPositions: 'Posições Abertas',
-      marketDetails: 'Detalhes do Mercado',
+      marketDetails: 'Details do Mercado',
       orderConfirmed: 'Ordem Confirmada',
       confirmedRef: 'Ordem registada com sucesso.',
       specs: 'Especificações do Mercado',
@@ -1034,7 +1034,7 @@ export const DICTIONARY = {
       equity: 'Valor da Conta',
       openRisk: 'Risco Ativo',
       dailyPL: 'Resultados de Hoje',
-      integrityTitle: 'Integridade da Plataforma',
+      integrityTitle: 'Integridade da Plateforma',
       integrityDesc: 'A Varban Markets opera com 99,98% de tempo de atividade de execução. Todos os feeds de preços estão sujeitos a auditoria determinística multi-fonte.',
       practiceNotice: 'Você está usando uma conta de prática. Os resultados são simulados para ajudá-lo a aprender.'
     },
@@ -1091,7 +1091,7 @@ export const DICTIONARY = {
       step2Desc: 'Novos negociadores registram-se usando seu condutor e entram em nosso ecossistema seguro.',
       step3Title: 'Recompensas de escala',
       step3Desc: 'Monitore o crescimento da sua rede e desbloqueie níveis avançados de parceiros institucionais.',
-      rewardsActive: 'Recompensas Activas',
+      rewardsActive: 'Rewards Active',
       rewardsPolicy: 'As recompensas dos parceiros da plataforma são calculadas com base no volume ativo mensal dentro do seu domínio de rede direta.'
     },
     pages: {
@@ -1253,7 +1253,7 @@ export const DICTIONARY = {
       lastName: '姓',
       continue: '继续',
       loginSuccess: '登录成功',
-      verifying: '身份已验证。正在建立连接...',
+      verifying: '正在加载您的账户...',
       newToPlatform: '新用户？',
       createAccount: '创建账户',
       backToHome: '返回首页'

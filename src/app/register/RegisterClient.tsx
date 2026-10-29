@@ -124,7 +124,7 @@ export default function RegisterClient() {
     if (!otpCode || otpLoading || !auth.currentUser) return;
     setOtpLoading(true);
     setError(null);
-    const fullPhone = `${formData.dialCode} ${formData.phone}`.trim();
+    const fullPhone = `${formData.dialCode} {formData.phone}`.trim();
 
     try {
       const resp = await authFetch(auth.currentUser, '/api/auth/otp/verify', {
@@ -272,14 +272,14 @@ export default function RegisterClient() {
     <div className="bg-[#F7F7F5] min-h-screen flex flex-col relative">
       {success && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#F7F7F5]/90 backdrop-blur-md animate-in fade-in duration-500">
-          <Card className="bg-white border-[#E4E4E4] w-full max-w-md shadow-2xl p-10 md:p-12 text-center space-y-6 animate-in zoom-in-95 duration-300 rounded-none border-b-4 border-b-[#0055FF]">
+          <Card className="bg-white border-[#E4E4E4] w-full max-w-md shadow-2xl p-10 md:p-12 text-center space-y-6 animate-in zoom-in-95 duration-300 rounded-2xl border-b-4 border-b-[#0055FF]">
             <div className="flex justify-center">
               <Loader2 className="w-12 h-12 text-[#0055FF] animate-spin stroke-[2px]" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Initializing Workspace</h2>
+              <h2 className="text-xl font-bold uppercase tracking-tight text-[#0A0A0A] font-display">Preparing your account</h2>
               <p className="text-[10px] text-[#6B7280] leading-relaxed uppercase tracking-[0.2em] font-bold">
-                Synchronizing identity and trading nodes...
+                We're setting up your workspace. This will only take a moment.
               </p>
             </div>
           </Card>
@@ -304,7 +304,7 @@ export default function RegisterClient() {
             {showOtpStep ? "Verify Your Phone" : "Create your trading account"}
           </h1>
 
-          <div className="bg-white p-8 md:p-10 border border-[#E4E4E4] shadow-sm space-y-8">
+          <div className="bg-white p-8 md:p-10 border border-[#E4E4E4] shadow-sm space-y-8 rounded-2xl">
             {error && (
               <div className="p-4 bg-[#C43D3D]/5 border border-[#C43D3D]/20 text-[11px] font-bold text-[#C43D3D] uppercase text-left flex items-start gap-3 animate-in fade-in duration-300">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -318,7 +318,7 @@ export default function RegisterClient() {
                   <button
                     onClick={handleGoogleRegister}
                     disabled={googleLoading || loading || success}
-                    className="w-full py-4 border border-[#E4E4E4] bg-white text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-[#F7F7F5] transition-all"
+                    className="w-full py-4 border border-[#E4E4E4] bg-white text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-[#F7F7F5] transition-all rounded-xl"
                   >
                     {googleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                       <>
@@ -339,7 +339,7 @@ export default function RegisterClient() {
                       phoneField?.scrollIntoView({ behavior: 'smooth' });
                       phoneField?.focus();
                     }}
-                    className="w-full py-4 border border-[#E4E4E4] bg-white text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-[#F7F7F5] transition-all"
+                    className="w-full py-4 border border-[#E4E4E4] bg-white text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-[#F7F7F5] transition-all rounded-xl"
                   >
                     <Smartphone className="w-4 h-4" />
                     <span>Phone</span>
@@ -364,7 +364,7 @@ export default function RegisterClient() {
                             required
                             value={formData.firstName}
                             onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                            className="w-full p-3.5 bg-[#F7F7F5] border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] transition-all"
+                            className="w-full p-3.5 bg-[#F7F7F5] border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] transition-all rounded-xl"
                             placeholder="John"
                           />
                         </div>
@@ -375,7 +375,7 @@ export default function RegisterClient() {
                             required
                             value={formData.lastName}
                             onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                            className="w-full p-3.5 bg-[#F7F7F5] border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] transition-all"
+                            className="w-full p-3.5 bg-[#F7F7F5] border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] transition-all rounded-xl"
                             placeholder="Doe"
                           />
                         </div>
@@ -387,7 +387,7 @@ export default function RegisterClient() {
                           required
                           value={formData.email}
                           onChange={(e) => setFormData({...formData, email: e.target.value})}
-                          className="w-full p-3.5 bg-[#F7F7F5] border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] transition-all"
+                          className="w-full p-3.5 bg-[#F7F7F5] border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] transition-all rounded-xl"
                           placeholder="trader@domain.com"
                         />
                       </div>
@@ -397,7 +397,7 @@ export default function RegisterClient() {
                           <select 
                             value={formData.dialCode}
                             onChange={(e) => setFormData({...formData, dialCode: e.target.value})}
-                            className="p-3.5 bg-white border border-[#E4E4E4] text-sm outline-none w-24"
+                            className="p-3.5 bg-white border border-[#E4E4E4] text-sm outline-none w-24 rounded-xl"
                           >
                             {COUNTRIES.map(c => <option key={c.code} value={c.dial_code}>{c.dial_code}</option>)}
                           </select>
@@ -407,7 +407,7 @@ export default function RegisterClient() {
                             required
                             value={formData.phone}
                             onChange={(e) => setFormData({...formData, phone: e.target.value.replace(/\D/g, '')})}
-                            className="flex-grow p-3.5 bg-[#F7F7F5] border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] transition-all"
+                            className="flex-grow p-3.5 bg-[#F7F7F5] border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] transition-all rounded-xl"
                             placeholder="700000000"
                           />
                         </div>
@@ -422,7 +422,7 @@ export default function RegisterClient() {
                           <select 
                             value={formData.country}
                             onChange={(e) => setFormData({...formData, country: e.target.value})}
-                            className="w-full p-3.5 bg-white border border-[#E4E4E4] text-sm appearance-none outline-none focus:border-[#0A0A0A] transition-colors cursor-pointer"
+                            className="w-full p-3.5 bg-white border border-[#E4E4E4] text-sm appearance-none outline-none focus:border-[#0A0A0A] transition-colors cursor-pointer rounded-xl"
                           >
                             {COUNTRIES.map(c => <option key={c.code} value={c.name}>{c.name}</option>)}
                           </select>
@@ -437,7 +437,7 @@ export default function RegisterClient() {
                             value={formData.password}
                             autoComplete="new-password"
                             onChange={(e) => setFormData({...formData, password: e.target.value})}
-                            className="w-full p-3.5 bg-white border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] pr-10"
+                            className="w-full p-3.5 bg-white border border-[#E4E4E4] text-sm outline-none focus:border-[#0A0A0A] pr-10 rounded-xl"
                             required
                           />
                           <button
@@ -456,7 +456,7 @@ export default function RegisterClient() {
                           value={formData.confirmPassword}
                           onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
                           className={cn(
-                            "w-full p-3.5 bg-white border text-sm outline-none transition-all",
+                            "w-full p-3.5 bg-white border text-sm outline-none transition-all rounded-xl",
                             formData.confirmPassword && !passwordsMatch ? "border-[#C43D3D] bg-[#C43D3D]/5" : "border-[#E4E4E4] focus:border-[#0A0A0A]"
                           )}
                           required
@@ -479,7 +479,7 @@ export default function RegisterClient() {
                     <div className="md:col-span-5">
                       <div className="flex items-start gap-3 group cursor-pointer" onClick={() => setFormData({...formData, isNotUSCitizen: !formData.isNotUSCitizen})}>
                         <div className={cn(
-                          "w-5 h-5 border-2 shrink-0 flex items-center justify-center transition-all",
+                          "w-5 h-5 border-2 shrink-0 flex items-center justify-center transition-all rounded-sm",
                           formData.isNotUSCitizen ? "bg-[#0055FF] border-[#0055FF]" : "border-[#E4E4E4] group-hover:border-[#0A0A0A]"
                         )}>
                           {formData.isNotUSCitizen && <Check className="w-3.5 h-3.5 text-white" />}
@@ -496,7 +496,7 @@ export default function RegisterClient() {
                       type="submit"
                       disabled={!canSubmit || loading}
                       className={cn(
-                        "w-full py-5 text-[11px] font-bold uppercase tracking-[0.3em] transition-all shadow-xl",
+                        "w-full py-5 text-[11px] font-bold uppercase tracking-[0.3em] transition-all shadow-xl rounded-xl",
                         canSubmit ? "bg-[#0A0A0A] text-white hover:bg-[#0055FF]" : "bg-[#F3F4F6] text-[#D1D5DB] cursor-not-allowed border border-[#E4E4E4]"
                       )}
                     >
@@ -507,7 +507,7 @@ export default function RegisterClient() {
               </>
             ) : (
               <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300 max-w-sm mx-auto">
-                <div className="p-6 bg-[#0055FF]/5 border border-[#0055FF]/20 text-center space-y-4">
+                <div className="p-6 bg-[#0055FF]/5 border border-[#0055FF]/20 text-center space-y-4 rounded-2xl">
                   <Smartphone className="w-10 h-10 text-[#0055FF] mx-auto" />
                   <div className="space-y-1">
                     <h3 className="text-sm font-bold uppercase text-[#0A0A0A]">Verification Required</h3>
@@ -522,7 +522,7 @@ export default function RegisterClient() {
                       type="text"
                       value={otpCode}
                       onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      className="w-full p-4 border-2 border-[#0A0A0A] text-2xl font-mono font-bold tracking-[0.5em] text-center outline-none bg-[#F7F7F5]"
+                      className="w-full p-4 border-2 border-[#0A0A0A] text-2xl font-mono font-bold tracking-[0.5em] text-center outline-none bg-[#F7F7F5] rounded-xl"
                       placeholder="000000"
                     />
                   </div>
@@ -530,7 +530,7 @@ export default function RegisterClient() {
                   <button 
                     onClick={handleVerifyOtp}
                     disabled={otpCode.length < 6 || otpLoading}
-                    className="w-full btn-institutional-primary py-4 flex items-center justify-center gap-2"
+                    className="w-full btn-institutional-primary py-4 flex items-center justify-center gap-2 rounded-xl"
                   >
                     {otpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                     <span>Confirm Token</span>
@@ -550,7 +550,7 @@ export default function RegisterClient() {
                   </div>
                 </div>
 
-                <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4]">
+                <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] rounded-xl">
                   <p className="text-[10px] text-[#6B7280] leading-relaxed uppercase font-bold text-center">
                     SMS verification is required to activate the institutional settlement engine.
                   </p>

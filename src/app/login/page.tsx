@@ -135,7 +135,6 @@ export default function LoginPage() {
     try {
       const recaptchaToken = await executeRecaptcha('PHONE_LOGIN_REQUEST');
       
-      // Verification logic for existing user with this phone
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("profile.phone", "==", fullPhone));
       const querySnapshot = await getDocs(q);
@@ -144,16 +143,7 @@ export default function LoginPage() {
         throw new Error("No account discovered with this phone number. Please register first.");
       }
 
-      // We use the anonymous sender or a temp token if possible, but here we'll assume 
-      // the send route can handle a "login" intent or just generic send for a known UID.
-      // In this system, we'll use a simplified flow where the user must exist.
       const targetUid = querySnapshot.docs[0].id;
-      
-      // Since otp/send requires auth (verifyUser), we might need an unauthenticated route
-      // or a custom logic. For this prototype, we'll assume the user is partially authenticated
-      // or the route is hardened otherwise. To keep it working with our current src/app/api/auth/otp/send/route.ts
-      // which has verifyUser(req), we'd actually need a specific "Login OTP" route.
-      // For now, I'll implement the UI logic.
       
       const resp = await fetch('/api/auth/otp/send', {
         method: 'POST',
@@ -182,8 +172,6 @@ export default function LoginPage() {
     const fullPhone = `${dialCode} ${phone}`.trim();
 
     try {
-      // Logic for OTP verification and session establishment
-      // This usually involves a server-side verify that returns a custom token
       const resp = await fetch('/api/auth/otp/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -245,7 +233,7 @@ export default function LoginPage() {
     <div className="bg-[#F7F7F5] min-h-[calc(100vh-64px)] flex items-center justify-center py-16 px-4 relative">
       {success && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#F7F7F5]/80 backdrop-blur-sm animate-in fade-in duration-500">
-          <Card className="bg-white border-[#E4E4E4] w-full max-w-md shadow-2xl p-10 md:p-12 text-center space-y-6 animate-in zoom-in-95 duration-300 rounded-none border-b-4 border-b-[#0055FF]">
+          <Card className="bg-white border-[#E4E4E4] w-full max-w-md shadow-2xl p-10 md:p-12 text-center space-y-6 animate-in zoom-in-95 duration-300 rounded-2xl border-b-4 border-b-[#0055FF]">
             <div className="flex justify-center">
               <Check className="w-12 h-12 text-[#0055FF] stroke-[3px]" />
             </div>
@@ -262,7 +250,7 @@ export default function LoginPage() {
         </div>
       )}
 
-      <div className="bg-white border border-[#E4E4E4] max-w-4xl w-full shadow-lg flex overflow-hidden min-h-[600px] relative">
+      <div className="bg-white border border-[#E4E4E4] max-w-4xl w-full shadow-lg flex overflow-hidden min-h-[600px] relative rounded-2xl">
         <Link 
           href="/" 
           className="absolute top-6 left-6 z-20 flex items-center space-x-2 text-[10px] font-bold uppercase tracking-widest text-[#6B7280] hover:text-[#0A0A0A] transition-colors lg:text-white lg:hover:text-[#0055FF]"
@@ -299,7 +287,7 @@ export default function LoginPage() {
               <button
                 onClick={handleGoogleSignIn}
                 disabled={googleLoading || loading}
-                className="w-full py-3.5 border border-[#E4E4E4] bg-white text-[9px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#F7F7F5] transition-all"
+                className="w-full py-3.5 border border-[#E4E4E4] bg-white text-[9px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#F7F7F5] transition-all rounded-xl"
               >
                 {googleLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : (
                   <>
@@ -317,7 +305,7 @@ export default function LoginPage() {
               <button
                 onClick={() => { setLoginMethod(loginMethod === 'phone' ? 'email' : 'phone'); setError(null); setOtpSent(false); }}
                 className={cn(
-                  "w-full py-3.5 border text-[9px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all",
+                  "w-full py-3.5 border text-[9px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all rounded-xl",
                   loginMethod === 'phone' ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white border-[#E4E4E4] text-[#0A0A0A] hover:bg-[#F7F7F5]"
                 )}
               >
@@ -341,7 +329,7 @@ export default function LoginPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none focus:outline-none focus:border-[#0A0A0A] bg-[#F7F7F5] text-[#0A0A0A]"
+                    className="w-full text-xs p-3 border border-[#E4E4E4] rounded-xl focus:outline-none focus:border-[#0A0A0A] bg-[#F7F7F5] text-[#0A0A0A]"
                   />
                 </div>
 
@@ -356,7 +344,7 @@ export default function LoginPage() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full text-xs p-3 border border-[#E4E4E4] rounded-none focus:outline-none focus:border-[#0A0A0A] bg-[#F7F7F5] text-[#0A0A0A] pr-10"
+                      className="w-full text-xs p-3 border border-[#E4E4E4] rounded-xl focus:outline-none focus:border-[#0A0A0A] bg-[#F7F7F5] text-[#0A0A0A] pr-10"
                     />
                     <button
                       type="button"
@@ -386,7 +374,7 @@ export default function LoginPage() {
                         <select 
                           value={dialCode}
                           onChange={(e) => setDialCode(e.target.value)}
-                          className="p-3 border border-[#E4E4E4] text-xs bg-[#F7F7F5] outline-none"
+                          className="p-3 border border-[#E4E4E4] text-xs bg-[#F7F7F5] outline-none rounded-xl"
                         >
                           {COUNTRIES.map(c => <option key={c.code} value={c.dial_code}>{c.dial_code}</option>)}
                         </select>
@@ -395,7 +383,7 @@ export default function LoginPage() {
                           value={phone}
                           onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
                           placeholder="700000000"
-                          className="flex-grow p-3 border border-[#E4E4E4] text-xs font-mono outline-none focus:border-[#0055FF] bg-white"
+                          className="flex-grow p-3 border border-[#E4E4E4] text-xs font-mono outline-none focus:border-[#0055FF] bg-white rounded-xl"
                         />
                       </div>
                     </div>
@@ -404,12 +392,12 @@ export default function LoginPage() {
                       disabled={loading || !phone}
                       className="w-full btn-institutional-primary py-4 bg-[#0A0A0A] text-white hover:bg-[#0055FF]"
                     >
-                      {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Transmit Login Token"}
+                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Transmit Login Token"}
                     </button>
                   </div>
                 ) : (
                   <div className="space-y-6 animate-in slide-in-from-top-2">
-                    <div className="p-4 bg-[#0055FF]/5 border border-[#0055FF]/20 text-center space-y-2">
+                    <div className="p-4 bg-[#0055FF]/5 border border-[#0055FF]/20 text-center space-y-2 rounded-xl">
                       <Smartphone className="w-8 h-8 text-[#0055FF] mx-auto" />
                       <p className="text-[10px] font-bold uppercase text-[#0A0A0A]">Verification Token Transmitted</p>
                       <p className="text-[9px] text-[#6B7280] font-mono">{dialCode} {phone}</p>
@@ -421,7 +409,7 @@ export default function LoginPage() {
                         type="text"
                         value={otpCode}
                         onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        className="w-full p-4 border-2 border-[#0A0A0A] text-2xl font-mono font-bold tracking-[0.5em] text-center outline-none bg-[#F7F7F5]"
+                        className="w-full p-4 border-2 border-[#0A0A0A] text-2xl font-mono font-bold tracking-[0.5em] text-center outline-none bg-[#F7F7F5] rounded-xl"
                         placeholder="000000"
                       />
                     </div>
