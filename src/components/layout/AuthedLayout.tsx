@@ -8,18 +8,17 @@
 import AuthedSidebar from "./AuthedSidebar";
 import AdminSidebar from "./AdminSidebar";
 import ProfileDropdown from "./ProfileDropdown";
+import AdminTelemetryOverlay from "@/components/admin/AdminTelemetryOverlay";
 import LoadingOverlay from "@/components/shared/LoadingOverlay";
 import { Menu, ChevronDown, Globe, Clock as ClockIcon } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useUser, useDoc, useFirestore, initializeFirebase } from "@/firebase";
+import { useUser, useDoc, useFirestore } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import { cn } from "@/app/lib/utils";
 import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
-import { doc, updateDoc } from "firebase/firestore";
-import { getProfileGaps } from "@/app/lib/profile-completion";
 
 const SUPER_ADMIN_EMAILS = ['macos8388@gmail.com', 'gmaina4242@gmail.com'];
 
@@ -67,6 +66,9 @@ export default function AuthedLayout({ children, title, subtitle }: { children: 
 
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
+      {/* Admin Telemetry Node */}
+      <AdminTelemetryOverlay />
+      
       <header className="h-16 border-b border-[#E4E4E4] bg-white flex items-center justify-between px-4 md:px-6 shrink-0 z-[150] shadow-sm">
         <div className="flex items-center space-x-4">
           <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 xl:hidden">
