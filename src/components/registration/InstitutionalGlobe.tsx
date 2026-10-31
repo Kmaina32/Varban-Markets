@@ -36,7 +36,8 @@ export default function InstitutionalGlobe() {
     let active = true;
 
     // Direct dynamic import of the vanilla library
-    import('globe.gl').then(({ default: Globe }) => {
+    import('globe.gl').then(({ default: GlobeLib }) => {
+      const Globe: any = GlobeLib;
       if (!active || !containerRef.current) return;
 
       // PoP (Points of Presence) locations
@@ -58,7 +59,8 @@ export default function InstitutionalGlobe() {
       }
 
       // Create new instance
-      globeInstance.current = Globe()(containerRef.current)
+      const make = () => { try { return Globe()(containerRef.current!); } catch { return new Globe(containerRef.current!); } };
+      globeInstance.current = make()
         .width(dimensions.width)
         .height(dimensions.height)
         .backgroundColor('rgba(0,0,0,0)')
