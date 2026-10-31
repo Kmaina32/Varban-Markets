@@ -14,11 +14,6 @@ import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { useUser, useDoc, useFirestore, initializeFirebase } from "@/firebase";
 import { useMemo } from "react";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
 
 interface AuthedSidebarProps {
   onLinkClick?: () => void;
@@ -103,38 +98,28 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
     const isActive = pathname === item.href || (item.href !== '/client/dashboard' && item.href !== '/client/markets' && pathname?.startsWith(item.href));
     
     return (
-      <HoverCard key={item.href} openDelay={0} closeDelay={0}>
-        <HoverCardTrigger asChild>
-          <Link
-            href={item.href}
-            onClick={onLinkClick}
-            className={cn(
-              "flex items-center h-12 px-5 text-[10px] font-bold uppercase tracking-widest transition-all border-l-2 whitespace-nowrap",
-              isActive 
-                ? "text-[#0055FF] bg-[#0055FF]/5 border-[#0055FF]" 
-                : "text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5] border-transparent"
-            )}
-          >
-            <item.icon className={cn("w-4 h-4 shrink-0", isActive ? "text-[#0055FF]" : "text-[#6B7280]")} />
-            <span className={cn(
-              "ml-6 transition-all duration-300",
-              !isMobile && "opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto"
-            )}>
-              {item.label}
-            </span>
-          </Link>
-        </HoverCardTrigger>
-        {!isMobile && (
-          <HoverCardContent side="right" className="w-56 p-4">
-            <div className="space-y-1">
-              <h4 className="text-[10px] font-bold uppercase text-[#0A0A0A]">{item.label}</h4>
-              <p className="text-[9px] text-[#6B7280] leading-relaxed uppercase font-bold tracking-tight">
-                {item.description}
-              </p>
-            </div>
-          </HoverCardContent>
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={onLinkClick}
+        className={cn(
+          "flex items-center px-5 py-3 text-[10px] font-bold uppercase tracking-widest transition-all border-l-2 whitespace-nowrap group/item",
+          isActive 
+            ? "text-[#0055FF] bg-[#0055FF]/5 border-[#0055FF]" 
+            : "text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5] border-transparent"
         )}
-      </HoverCard>
+      >
+        <item.icon className={cn("w-4 h-4 shrink-0 transition-colors", isActive ? "text-[#0055FF]" : "text-[#6B7280]")} />
+        <div className={cn(
+          "ml-6 flex flex-col transition-all duration-300 overflow-hidden",
+          !isMobile && "opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto"
+        )}>
+          <span>{item.label}</span>
+          <span className="text-[8px] font-bold text-[#6B7280] opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 lowercase leading-tight mt-0.5 max-w-[180px]">
+            {item.description}
+          </span>
+        </div>
+      </Link>
     );
   };
 
@@ -143,7 +128,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
       isMobile ? "flex flex-col h-full bg-white" : "group absolute left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-[#E4E4E4] flex flex-col transition-all duration-300 z-[200] overflow-hidden no-scrollbar",
       className
     )}>
-      <nav className="flex-grow py-6 space-y-8 overflow-y-auto no-scrollbar">
+      <nav className="flex-grow py-6 space-y-6 overflow-y-auto no-scrollbar">
         {sections.map((section) => (
           <div key={section.title} className="space-y-1">
             <h3 className={cn(

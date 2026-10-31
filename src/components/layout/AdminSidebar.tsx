@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from "next/link";
@@ -8,11 +9,6 @@ import {
   Shield, Server, FileCheck, Sparkles 
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
 
 interface AdminSidebarProps {
   onLinkClick?: () => void;
@@ -42,49 +38,35 @@ export default function AdminSidebar({ onLinkClick, className, isMobile = false 
 
   const renderItems = () => items.map((item) => {
     const isActive = pathname === item.href;
-    const linkElement = (
+    return (
       <Link
+        key={item.href}
         href={item.href}
         onClick={onLinkClick}
         className={cn(
-          "flex items-center h-12 px-5 text-[10px] font-bold uppercase tracking-widest transition-all border-l-2 whitespace-nowrap",
+          "flex items-center px-5 py-3 text-[10px] font-bold uppercase tracking-widest transition-all border-l-2 whitespace-nowrap group/item",
           isActive 
             ? "text-[#0055FF] bg-[#0055FF]/5 border-[#0055FF]" 
             : "text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[#F7F7F5] border-transparent"
         )}
       >
         <item.icon className={cn("w-4 h-4 shrink-0 transition-colors", isActive ? "text-[#0055FF]" : "text-[#6B7280]")} />
-        <span className={cn(
-          "ml-6 transition-all duration-300 whitespace-nowrap overflow-hidden",
-          !isMobile && "w-0 opacity-0 group-hover:w-48 group-hover:opacity-100"
+        <div className={cn(
+          "ml-6 flex flex-col transition-all duration-300 overflow-hidden",
+          !isMobile && "opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto"
         )}>
-          {item.label}
-        </span>
+          <span>{item.label}</span>
+          <span className="text-[8px] font-bold text-[#6B7280] opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 lowercase leading-tight mt-0.5 max-w-[180px]">
+            {item.description}
+          </span>
+        </div>
       </Link>
-    );
-
-    if (isMobile) return <div key={item.href}>{linkElement}</div>;
-
-    return (
-      <HoverCard key={item.href}>
-        <HoverCardTrigger asChild>
-          {linkElement}
-        </HoverCardTrigger>
-        <HoverCardContent side="right" align="center" sideOffset={10}>
-          <div className="space-y-1.5">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#0055FF]">{item.label}</h4>
-            <p className="text-[9px] text-[#6B7280] leading-relaxed font-bold uppercase tracking-tight opacity-80">
-              {item.description}
-            </p>
-          </div>
-        </HoverCardContent>
-      </HoverCard>
     );
   });
 
   return (
     <aside className={cn(
-      isMobile ? "flex flex-col h-full bg-white" : "group absolute left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-[#E4E4E4] flex flex-col transition-all duration-300 z-[200] overflow-hidden no-scrollbar hidden lg:flex",
+      isMobile ? "flex flex-col h-full bg-white" : "group absolute left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-[#E4E4E4] flex flex-col transition-all duration-300 z-[200] overflow-hidden no-scrollbar",
       className
     )}>
       <div className="pt-6">
@@ -102,7 +84,7 @@ export default function AdminSidebar({ onLinkClick, className, isMobile = false 
           <ArrowLeftRight className="w-4 h-4 shrink-0" />
           <span className={cn(
             "ml-6 transition-all duration-300 whitespace-nowrap overflow-hidden",
-            !isMobile && "w-0 opacity-0 group-hover:w-48 group-hover:opacity-100"
+            !isMobile && "opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto"
           )}>
             Trader Mode
           </span>

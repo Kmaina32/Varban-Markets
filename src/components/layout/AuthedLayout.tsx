@@ -72,7 +72,7 @@ export default function AuthedLayout({ children, title, subtitle }: { children: 
       
       <header className="h-16 border-b border-[#E4E4E4] bg-white flex items-center justify-between px-4 md:px-6 shrink-0 z-[150] shadow-sm">
         <div className="flex items-center space-x-4">
-          <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 xl:hidden">
+          <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 lg:hidden">
             <Menu className="w-5 h-5" />
           </button>
           <Link href="/client/dashboard" className="flex items-center gap-4">
@@ -135,9 +135,9 @@ export default function AuthedLayout({ children, title, subtitle }: { children: 
       </header>
 
       <div className="flex-grow flex overflow-hidden relative">
-        {isAdminPath ? <AdminSidebar className="hidden xl:flex" /> : <AuthedSidebar className="hidden xl:flex" />}
+        {isAdminPath ? <AdminSidebar className="hidden lg:flex" /> : <AuthedSidebar className="hidden lg:flex" />}
         
-        <main className="flex-grow overflow-y-auto bg-[#F7F7F5] p-4 md:p-8 xl:ml-16 no-scrollbar">
+        <main className="flex-grow overflow-y-auto bg-[#F7F7F5] p-4 md:p-8 lg:ml-16 no-scrollbar">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>
@@ -145,7 +145,7 @@ export default function AuthedLayout({ children, title, subtitle }: { children: 
       </div>
 
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[400] xl:hidden">
+        <div className="fixed inset-0 z-[400] lg:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
           <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white animate-in slide-in-from-left duration-300">
             {isAdminPath ? (
