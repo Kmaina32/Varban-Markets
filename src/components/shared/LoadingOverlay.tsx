@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -17,7 +16,7 @@ export default function LoadingOverlay({ message = "Loading your account", fullS
           alt="Varban Markets"
           width={280}
           height={60}
-          className="w-auto h-10 md:h-12 object-contain grayscale opacity-20"
+          className="w-auto h-10 md:h-12 object-contain opacity-80"
           priority
         />
         <div className="flex flex-col items-center space-y-6">
@@ -26,9 +25,6 @@ export default function LoadingOverlay({ message = "Loading your account", fullS
             <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#0A0A0A]">
               {message}
             </span>
-            <p className="text-[8px] font-bold uppercase tracking-[0.4em] text-[#6B7280]">
-              Institutional Execution Node
-            </p>
           </div>
         </div>
       </div>
