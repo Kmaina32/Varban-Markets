@@ -1,0 +1,116 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return signedIn() && (
+        (request.auth.token.email_verified == true && (
+          request.auth.token.email == 'macos8388@gmail.com' ||
+          request.auth.token.email == 'gmaina4242@gmail.com')) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status.role == 'Admin')
+      );
+    }
+
+    // --- Users --------------------------------------------------------------
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+
+      allow create: if isOwner(userId)
+        && request.resource.data.status.role == 'Trader'
+        && request.resource.data.balance == 0
+        && request.resource.data.equity == 0;
+
+      allow update: if isOwner(userId)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['balance', 'equity', 'referral'])
+        && (
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status'])
+          || (
+            request.resource.data.status.diff(resource.data.status).affectedKeys().hasOnly(['verificationStatus', 'kycSubmittedAt', 'phoneVerified', 'phoneVerifiedAt'])
+          )
+        );
+
+      allow update, delete: if isAdmin();
+
+      match /{sub}/{docId} {
+        allow read, write: if (isOwner(userId) || isAdmin())
+          && sub in ['transactions', 'positions', 'watchlist', 'notifications', 'sessions', 'passkeys', 'bots', 'kyc_submissions'];
+      }
+    }
+
+    // --- AI Conversations ---------------------------------------------------
+    match /conversations/{convId} {
+      // Allow read if admin, or if the ID matches the user's session ID pattern, or if the data userId matches
+      allow read: if isAdmin() || (signedIn() && (convId == 'sess_' + request.auth.uid || (resource != null && resource.data.userId == request.auth.uid)));
+      
+      // Allow create if the userId in the data matches the auth UID
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      
+      // Allow update if admin, or if the user owns the conversation and is not changing the userId
+      allow update: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid);
+      
+      allow delete: if isAdmin();
+      
+      match /messages/{msgId} {
+        // Inherit permissions from parent conversation check using ID pattern for efficiency
+        allow read, create: if isAdmin() || (signedIn() && convId == 'sess_' + request.auth.uid);
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // --- Error Reports ------------------------------------------------------
+    match /error_reports/{reportId} {
+      allow create: if signedIn();
+      allow read: if isAdmin();
+    }
+
+    // --- Security Nodes -----------------------------------------------------
+    match /otp_codes/{uid} {
+      allow read: if isOwner(uid);
+      allow write: if signedIn(); // Restricted by server logic usually, but allowed for auth flow
+    }
+
+    match /challenges/{uid} {
+      allow read, write: if true; // Public access for WebAuthn/Passkey challenges
+    }
+
+    // --- Public / shared content --------------------------------------------
+    match /contact_messages/{msgId} {
+      allow create: if true;
+      allow read, write: if isAdmin();
+    }
+
+    match /articles/{articleId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /site_profile/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /certificates/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /adminLogs/{logId} {
+      allow create: if isAdmin();
+      allow read: if isAdmin();
+    }
+  }
+}
