@@ -102,8 +102,8 @@ export default function SyntheticChart({ ticks, loading }: SyntheticChartProps) 
     const sma25 = chart.addLineSeries({ color: '#C43D3D', lineWidth: 1, priceLineVisible: false, lastValueVisible: false, title: 'SMA 25' });
     
     // Bollinger Bands
-    const bbUpper = chart.addLineSeries({ color: '#9CA3AF', lineWidth: 1, style: LineStyle.Dashed, priceLineVisible: false, lastValueVisible: false, title: 'BB Upper' });
-    const bbLower = chart.addLineSeries({ color: '#9CA3AF', lineWidth: 1, style: LineStyle.Dashed, priceLineVisible: false, lastValueVisible: false, title: 'BB Lower' });
+    const bbUpper = chart.addLineSeries({ color: '#9CA3AF', lineWidth: 1, lineStyle: LineStyle.Dashed, priceLineVisible: false, lastValueVisible: false, title: 'BB Upper' });
+    const bbLower = chart.addLineSeries({ color: '#9CA3AF', lineWidth: 1, lineStyle: LineStyle.Dashed, priceLineVisible: false, lastValueVisible: false, title: 'BB Lower' });
     const bbMid = chart.addLineSeries({ color: '#E4E4E4', lineWidth: 1, priceLineVisible: false, lastValueVisible: false, title: 'BB Mid' });
 
     chartRef.current = chart;
