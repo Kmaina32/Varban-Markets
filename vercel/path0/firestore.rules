@@ -48,14 +48,20 @@ service cloud.firestore {
 
     // --- AI Conversations ---------------------------------------------------
     match /conversations/{convId} {
-      allow read: if isAdmin() || (signedIn() && (convId == 'sess_' + request.auth.uid || (resource != null && resource.data.userId == request.auth.uid)));
-      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAdmin() || (signedIn() && (resource != null && resource.data.userId == request.auth.uid));
+      // Allow read if admin (to list/get all) or if user is targeting their own session ID
+      allow read: if isAdmin() || (signedIn() && convId == 'sess_' + request.auth.uid);
+      
+      // Allow create if the user is signed in and using their own session pattern
+      allow create: if signedIn() && convId == 'sess_' + request.auth.uid && request.resource.data.userId == request.auth.uid;
+      
+      // Allow update if admin, or if the user is the session owner
+      allow update: if isAdmin() || (signedIn() && convId == 'sess_' + request.auth.uid);
+      
       allow delete: if isAdmin();
       
       match /messages/{msgId} {
-        allow read, create: if isAdmin() || (signedIn() && convId == 'sess_' + request.auth.uid);
-        allow update, delete: if isAdmin();
+        // Inherit permissions from parent session pattern
+        allow read, write: if isAdmin() || (signedIn() && convId == 'sess_' + request.auth.uid);
       }
     }
 
@@ -67,8 +73,8 @@ service cloud.firestore {
 
     // --- Security Nodes -----------------------------------------------------
     match /otp_codes/{uid} {
-      allow read: if isOwner(uid);
-      allow write: if signedIn(); 
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if signedIn() && uid == request.auth.uid; 
     }
 
     match /challenges/{uid} {

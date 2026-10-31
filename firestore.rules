@@ -10,19 +10,13 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == uid;
     }
 
-    function isSuperAdmin() {
-      return signedIn() && 
-        request.auth.token.email_verified == true && (
-          request.auth.token.email == 'macos8388@gmail.com' ||
-          request.auth.token.email == 'gmaina4242@gmail.com'
-        );
-    }
-
     function isAdmin() {
-      return isSuperAdmin() || (
-        signedIn() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status.role == 'Admin'
+      return signedIn() && (
+        (request.auth.token.email_verified == true && (
+          request.auth.token.email == 'macos8388@gmail.com' ||
+          request.auth.token.email == 'gmaina4242@gmail.com')) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status.role == 'Admin')
       );
     }
 
@@ -54,19 +48,19 @@ service cloud.firestore {
 
     // --- AI Conversations ---------------------------------------------------
     match /conversations/{convId} {
-      // Allow read if admin, or if the user is signed in and the ID matches their session pattern
+      // Allow read if admin (to list/get all) or if user is targeting their own session ID
       allow read: if isAdmin() || (signedIn() && convId == 'sess_' + request.auth.uid);
       
-      // Allow create if the user is signed in and using their own session ID
+      // Allow create if the user is signed in and using their own session pattern
       allow create: if signedIn() && convId == 'sess_' + request.auth.uid && request.resource.data.userId == request.auth.uid;
       
-      // Allow update if admin, or if the user is the owner
+      // Allow update if admin, or if the user is the session owner
       allow update: if isAdmin() || (signedIn() && convId == 'sess_' + request.auth.uid);
       
       allow delete: if isAdmin();
       
       match /messages/{msgId} {
-        // Inherit permissions from parent session check
+        // Inherit permissions from parent session pattern
         allow read, write: if isAdmin() || (signedIn() && convId == 'sess_' + request.auth.uid);
       }
     }
