@@ -26,7 +26,8 @@ import {
   AlertCircle,
   Database,
   Cpu,
-  Clock
+  Clock,
+  Zap
 } from 'lucide-react';
 import { useUser, useDoc, useFirestore } from '@/firebase';
 import { doc, setDoc, addDoc, collection, serverTimestamp, increment } from 'firebase/firestore';
