@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview Core Synthetic Price Engine.
  * Implements the deterministic random-walk algorithm for institutional indices.
@@ -26,12 +25,18 @@ export const SyntheticConfigSchema = z.object({
 
 export type SyntheticConfig = z.infer<typeof SyntheticConfigSchema>;
 
+/**
+ * RECENT ANCHOR (Oct 30 2024)
+ * This prevents the loop from running for 1.7bn ticks.
+ */
+const RECENT_ANCHOR = 1730300000;
+
 export const DEFAULT_SYNTHETIC_CONFIGS: Record<string, SyntheticConfig> = {
-  V10: { symbol: "V10", active: true, allowTrades: true, volatility: 10, driftPerHour: 0, tickMs: 1000, houseMargin: 4, minStake: 1, maxStake: 5000, maxPayoutMultiplier: 9.5, contractLengths: [1, 5, 10, 30, 60], anchorTick: 0, anchorPrice: 6000 },
-  V25: { symbol: "V25", active: true, allowTrades: true, volatility: 25, driftPerHour: 0, tickMs: 1000, houseMargin: 4, minStake: 1, maxStake: 5000, maxPayoutMultiplier: 9.5, contractLengths: [1, 5, 10, 30, 60], anchorTick: 0, anchorPrice: 2400 },
-  V50: { symbol: "V50", active: true, allowTrades: true, volatility: 50, driftPerHour: 0, tickMs: 1000, houseMargin: 4, minStake: 1, maxStake: 5000, maxPayoutMultiplier: 9.5, contractLengths: [1, 5, 10, 30, 60], anchorTick: 0, anchorPrice: 1200 },
-  V75: { symbol: "V75", active: true, allowTrades: true, volatility: 75, driftPerHour: 0, tickMs: 1000, houseMargin: 4, minStake: 1, maxStake: 5000, maxPayoutMultiplier: 9.5, contractLengths: [1, 5, 10, 30, 60], anchorTick: 0, anchorPrice: 600000 },
-  V100: { symbol: "V100", active: true, allowTrades: true, volatility: 100, driftPerHour: 0, tickMs: 1000, houseMargin: 4, minStake: 1, maxStake: 5000, maxPayoutMultiplier: 9.5, contractLengths: [1, 5, 10, 30, 60], anchorTick: 0, anchorPrice: 1000 },
+  V10: { symbol: "V10", active: true, allowTrades: true, volatility: 10, driftPerHour: 0, tickMs: 1000, houseMargin: 4, minStake: 1, maxStake: 5000, maxPayoutMultiplier: 9.5, contractLengths: [1, 5, 10, 30, 60], anchorTick: RECENT_ANCHOR, anchorPrice: 6000 },
+  V25: { symbol: "V25", active: true, allowTrades: true, volatility: 25, driftPerHour: 0, tickMs: 1000, houseMargin: 4, minStake: 1, maxStake: 5000, maxPayoutMultiplier: 9.5, contractLengths: [1, 5, 10, 30, 60], anchorTick: RECENT_ANCHOR, anchorPrice: 2400 },
+  V50: { symbol: "V50", active: true, allowTrades: true, volatility: 50, driftPerHour: 0, tickMs: 1000, houseMargin: 4, minStake: 1, maxStake: 5000, maxPayoutMultiplier: 9.5, contractLengths: [1, 5, 10, 30, 60], anchorTick: RECENT_ANCHOR, anchorPrice: 1200 },
+  V75: { symbol: "V75", active: true, allowTrades: true, volatility: 75, driftPerHour: 0, tickMs: 1000, houseMargin: 4, minStake: 1, maxStake: 5000, maxPayoutMultiplier: 9.5, contractLengths: [1, 5, 10, 30, 60], anchorTick: RECENT_ANCHOR, anchorPrice: 600000 },
+  V100: { symbol: "V100", active: true, allowTrades: true, volatility: 100, driftPerHour: 0, tickMs: 1000, houseMargin: 4, minStake: 1, maxStake: 5000, maxPayoutMultiplier: 9.5, contractLengths: [1, 5, 10, 30, 60], anchorTick: RECENT_ANCHOR, anchorPrice: 1000 },
 };
 
 /** Simple hash for tick-to-uniform generation */
@@ -59,9 +64,10 @@ export function getPriceAtTick(secret: string, config: SyntheticConfig, targetTi
   const sigmaPerTick = (config.volatility / 100) * Math.sqrt(tickSeconds / (365 * 24 * 3600));
   const driftPerTick = (config.driftPerHour / 100) * (tickSeconds / 3600);
 
-  // For performance, in a real system we'd use checkpoints. 
-  // Here we loop from anchor for deterministic safety.
-  for (let i = start + 1; i <= targetTick; i++) {
+  // Performance Guard: Limit loop iterations
+  const actualStart = Math.max(start, targetTick - 5000);
+
+  for (let i = actualStart + 1; i <= targetTick; i++) {
     const z = getZ(secret, config.symbol, i);
     const exponent = driftPerTick - (sigmaPerTick ** 2) / 2 + sigmaPerTick * z;
     currentPrice = Math.round(currentPrice * Math.exp(exponent) * 100) / 100;

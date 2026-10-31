@@ -184,8 +184,8 @@ export default function ChatSupport() {
           <div className="p-4 border-b border-[#F7F7F5] bg-white flex justify-between items-center shrink-0">
             <div className="flex items-center gap-3">
                <div className="relative">
-                  <div className="w-8 h-8 rounded-full bg-[#F7F7F5] border border-[#E4E4E4] overflow-hidden">
-                    <img src="/assets/pwa.png" alt="Icon" className="w-full h-full object-cover" />
+                  <div className="w-8 h-8 rounded-full bg-[#0055FF] text-white flex items-center justify-center">
+                    <Sparkles className="w-4 h-4" />
                   </div>
                   <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-[#16835B] rounded-full border-2 border-white"></div>
                </div>
@@ -239,8 +239,8 @@ export default function ChatSupport() {
                         <Message align={msg.role === 'user' ? 'end' : 'start'}>
                           {msg.role === 'model' && (
                             <MessageAvatar>
-                              <div className="w-8 h-8 rounded-full bg-white border border-[#E4E4E4] overflow-hidden">
-                                <img src="/assets/pwa.png" alt="Bot" className="w-full h-full object-cover" />
+                              <div className="w-8 h-8 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center">
+                                <Sparkles className="w-4 h-4" />
                               </div>
                             </MessageAvatar>
                           )}
