@@ -18,7 +18,9 @@ import {
   Zap,
   Plus,
   Minus,
-  ShieldCheck
+  ShieldCheck,
+  TrendingUp,
+  Newspaper
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
 import { useUser, useDoc, useFirestore } from "@/firebase";
@@ -33,6 +35,7 @@ import SyntheticChart from "@/components/terminal/SyntheticChart";
 import MarketSelector from "@/components/terminal/MarketSelector";
 import DerivedTradeControls from "@/components/terminal/DerivedTradeControls";
 import DigitStats from "@/components/terminal/DigitStats";
+import SyntheticAnalysis from "@/components/terminal/SyntheticAnalysis";
 import PortfolioManager from "@/components/terminal/PortfolioManager";
 import LoadingOverlay from "@/components/shared/LoadingOverlay";
 import MobileDerivedTerminal from "@/components/terminal/MobileDerivedTerminal";
@@ -41,6 +44,8 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+
+type RightTab = 'TRADE' | 'STATS' | 'ANALYSIS';
 
 function DerivedTerminalContent() {
   const searchParams = useSearchParams();
@@ -54,7 +59,7 @@ function DerivedTerminalContent() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
-  const [activeRightTab, setActiveRightTab] = useState<'TRADE' | 'STATS'>('TRADE');
+  const [activeRightTab, setActiveRightTab] = useState<RightTab>('TRADE');
   const [isMobileViewport, setIsMobileViewport] = useState<boolean | null>(null);
 
   const [currentTime, setCurrentTime] = useState("");
@@ -140,7 +145,7 @@ function DerivedTerminalContent() {
           </Link>
 
           <div className="h-8 w-px bg-[#E4E4E4] hidden md:block mx-2"></div>
-          <span className="hidden md:block text-sm font-bold text-[#0055FF]">Derived</span>
+          <span className="hidden md:block text-sm font-bold text-[#0055FF]">Derived Hub</span>
           <div className="h-8 w-px bg-[#E4E4E4] hidden md:block mx-2"></div>
 
           <div className="hidden md:block">
@@ -202,10 +207,6 @@ function DerivedTerminalContent() {
                        <div className="w-px h-4 bg-[#E4E4E4]"></div>
                        <button className="p-2 text-[#6B7280] hover:text-[#0055FF] transition-colors"><Plus className="w-5 h-5" /></button>
                     </div>
-
-                    <div className="absolute top-8 left-8 pointer-events-none opacity-20 select-none">
-                       <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#0A0A0A]">Matching Node Operational & bull; Varban Algorithm v4.2</span>
-                    </div>
                   </div>
                 </ResizablePanel>
                 <ResizableHandle withHandle />
@@ -224,13 +225,14 @@ function DerivedTerminalContent() {
                 <div className="flex border-b border-[#E4E4E4] shrink-0">
                    {[
                      { id: 'TRADE', label: 'Order Ticket', icon: MousePointer2 },
-                     { id: 'STATS', label: 'Digit Stats', icon: BarChart2 }
+                     { id: 'STATS', label: 'Digit Stats', icon: BarChart2 },
+                     { id: 'ANALYSIS', label: 'Intelligence', icon: Newspaper }
                    ].map(tab => (
                      <button 
                       key={tab.id}
-                      onClick={() => setActiveRightTab(tab.id as any)}
+                      onClick={() => setActiveRightTab(tab.id as RightTab)}
                       className={cn(
-                        "flex-1 py-4 text-[9px] font-bold uppercase tracking-[0.2em] border-b-2 transition-all flex flex-col items-center gap-1",
+                        "flex-1 py-4 text-[8px] font-bold uppercase tracking-[0.2em] border-b-2 transition-all flex flex-col items-center gap-1",
                         activeRightTab === tab.id ? "border-[#0055FF] text-[#0055FF] bg-[#0055FF]/5" : "border-transparent text-[#6B7280] hover:bg-[#F7F7F5]"
                       )}
                      >
@@ -241,15 +243,19 @@ function DerivedTerminalContent() {
                 </div>
 
                 <div className="flex-grow overflow-y-auto no-scrollbar">
-                   {activeRightTab === 'TRADE' ? (
+                   {activeRightTab === 'TRADE' && (
                       <DerivedTradeControls 
                         instrument={activeInst} 
                         livePrice={lastTick?.price || null}
                         balance={activeBalance}
                         onExecute={() => {}}
                       />
-                   ) : (
+                   )}
+                   {activeRightTab === 'STATS' && (
                       <DigitStats symbol={activeInst.symbol} livePrice={lastTick?.price || null} />
+                   )}
+                   {activeRightTab === 'ANALYSIS' && (
+                      <SyntheticAnalysis activeInst={activeInst} livePrice={lastTick?.price || null} />
                    )}
                 </div>
               </div>
