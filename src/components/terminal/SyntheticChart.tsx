@@ -19,7 +19,8 @@ import {
   Type, 
   Search,
   Eye,
-  Maximize2
+  Maximize2,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 
