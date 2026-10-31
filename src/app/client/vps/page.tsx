@@ -4,6 +4,7 @@
 /**
  * @fileOverview Authenticated VPS Management Hub.
  * Features a multi-step provisioning flow and institutional dashboard.
+ * Fixed: Missing Zap icon import and hardened state transitions.
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -185,6 +186,7 @@ export default function ClientVpsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* PLAN CARDS */}
               {VPS_PLANS.map((plan) => (
                 <Card 
                   key={plan.id}

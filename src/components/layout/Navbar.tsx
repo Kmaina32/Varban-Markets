@@ -12,7 +12,6 @@ import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
 
 /**
  * @fileOverview Public Landing Page Navigation.
- * Updated to prevent overlap with institutional workspace headers.
  */
 
 const AUTH_PATHS = ['/login', '/register', '/forgot-password'];
@@ -23,7 +22,6 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   
-  // STRICT: Hide on any authenticated workspace path or auth funnel
   const isStrict = pathname?.startsWith('/client') || pathname?.startsWith('/admin');
   const isAuthPage = AUTH_PATHS.some(path => pathname === path);
 
@@ -225,7 +223,6 @@ export default function Navbar() {
           </div>
 
           <div className="hidden lg:flex items-center space-x-6">
-            {/* PUBLIC LANGUAGE SELECTOR */}
             <div className="flex items-center bg-[#F7F7F5] border border-[#E4E4E4] px-3 py-1.5 space-x-3">
                <Globe className="w-3.5 h-3.5 text-[#0055FF]" />
                <div className="relative flex items-center">
@@ -288,7 +285,6 @@ export default function Navbar() {
               </button>
             </div>
             <div className="flex-grow overflow-y-auto p-6 space-y-8">
-              {/* Mobile Language Selector */}
               <div className="p-4 bg-[#F7F7F5] border border-[#E4E4E4] flex justify-between items-center">
                  <span className="text-[10px] font-bold uppercase text-[#6B7280]">Select Language</span>
                  <select 
