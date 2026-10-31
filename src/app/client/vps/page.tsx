@@ -1,10 +1,8 @@
-
 'use client';
 
 /**
- * @fileOverview Authenticated VPS Management Hub.
+ * @fileOverview Authenticated Vps (Virtual private server ) Management Hub.
  * Features a multi-step provisioning flow and institutional dashboard.
- * Fixed: Missing Zap icon import and hardened state transitions.
  */
 
 import React, { useState, useEffect, useMemo } from 'react';

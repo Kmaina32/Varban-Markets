@@ -1,35 +1,26 @@
 'use client';
 
 /**
- * @fileOverview Public VPS Hosting Landing Page.
- * Refined for a professional institutional look with reduced radiuses and a text-first design.
+ * @fileOverview Public Vps (Virtual private server ) Landing Page.
+ * Features comprehensive sections for pricing, comparison, and app deployment.
+ * Styled with reduced border-radius and professional typography.
  */
 
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { 
-  Server, 
-  Zap, 
-  ShieldCheck, 
-  Clock, 
-  Globe, 
-  Cpu, 
+  Check, 
+  ChevronDown, 
+  Plus, 
   ArrowRight,
-  Monitor,
-  Lock,
-  Terminal,
-  Check,
+  ShieldCheck,
   Star,
-  MessageSquare,
-  ChevronDown,
-  Layers,
   Activity,
-  Box,
-  Shield,
-  Download,
-  Phone,
-  Info,
+  Cpu,
+  Database,
+  Lock,
+  Search,
   X
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -42,6 +33,7 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { cn } from '@/app/lib/utils';
+import placeholderImages from "@/app/lib/placeholder-images.json";
 
 export default function VpsLandingPage() {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
@@ -104,7 +96,7 @@ export default function VpsLandingPage() {
     },
     {
       q: "Which operating systems can I use with VPS hosting?",
-      a: "VPS hosting provides flexibility to run various operating systems, with robust support for popular Linux distributions like Ubuntu, CentOS and Debian. You have full control to install the OS that best fits your application requirements. Our VPS servers come installed with Linux Alma 9 by default, giving you root access and easy installation tools."
+      a: "VPS hosting provides flexibility to run various operating systems, with robust support for popular Linux distributions like Ubuntu, CentOS and Debian. You have full control to install the OS that best fits your application requirements and technical preferences. Our VPS servers come installed with Linux Alma 9 by default, giving you root access and easy installation tools."
     }
   ];
 
@@ -248,7 +240,7 @@ export default function VpsLandingPage() {
                   {plan.features.map((feat, i) => (
                     <div key={i} className="flex items-center gap-3">
                       <Check className="w-3.5 h-3.5 text-[#16835B]" />
-                      <span className="text-[10px] text-[#6B7280] font-bold uppercase tracking-tight">{feat}</span>
+                      <span className="text-[10px] font-bold uppercase tracking-tight text-[#6B7280]">{feat}</span>
                     </div>
                   ))}
                 </div>
@@ -508,4 +500,3 @@ export default function VpsLandingPage() {
     </div>
   );
 }
-
