@@ -48,14 +48,21 @@ service cloud.firestore {
 
     // --- AI Conversations ---------------------------------------------------
     match /conversations/{convId} {
-      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      // Allow read if admin, or if the user is signed in and the ID matches their session pattern
+      // or if the document exists and they are the owner.
+      allow read: if isAdmin() || (signedIn() && (convId == 'sess_' + request.auth.uid || (resource != null && resource.data.userId == request.auth.uid)));
+      
+      // Allow create if the user is signed in and setting themselves as the owner
       allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid);
+      
+      // Allow update if admin, or if the user is the owner
+      allow update: if isAdmin() || (signedIn() && (resource != null && resource.data.userId == request.auth.uid));
+      
       allow delete: if isAdmin();
       
       match /messages/{msgId} {
-        allow read: if isAdmin() || (signedIn() && get(/databases/$(database)/documents/conversations/$(convId)).data.userId == request.auth.uid);
-        allow create: if isAdmin() || (signedIn() && get(/databases/$(database)/documents/conversations/$(convId)).data.userId == request.auth.uid);
+        // Inherit read/create permissions from the parent session ID check
+        allow read, create: if isAdmin() || (signedIn() && convId == 'sess_' + request.auth.uid);
         allow update, delete: if isAdmin();
       }
     }

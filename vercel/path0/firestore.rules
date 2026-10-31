@@ -48,19 +48,12 @@ service cloud.firestore {
 
     // --- AI Conversations ---------------------------------------------------
     match /conversations/{convId} {
-      // Allow read if admin, or if the ID matches the user's session ID pattern, or if the data userId matches
       allow read: if isAdmin() || (signedIn() && (convId == 'sess_' + request.auth.uid || (resource != null && resource.data.userId == request.auth.uid)));
-      
-      // Allow create if the userId in the data matches the auth UID
       allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
-      
-      // Allow update if admin, or if the user owns the conversation and is not changing the userId
-      allow update: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid);
-      
+      allow update: if isAdmin() || (signedIn() && (resource != null && resource.data.userId == request.auth.uid));
       allow delete: if isAdmin();
       
       match /messages/{msgId} {
-        // Inherit permissions from parent conversation check using ID pattern for efficiency
         allow read, create: if isAdmin() || (signedIn() && convId == 'sess_' + request.auth.uid);
         allow update, delete: if isAdmin();
       }
@@ -75,11 +68,11 @@ service cloud.firestore {
     // --- Security Nodes -----------------------------------------------------
     match /otp_codes/{uid} {
       allow read: if isOwner(uid);
-      allow write: if signedIn(); // Restricted by server logic usually, but allowed for auth flow
+      allow write: if signedIn(); 
     }
 
     match /challenges/{uid} {
-      allow read, write: if true; // Public access for WebAuthn/Passkey challenges
+      allow read, write: if true;
     }
 
     // --- Public / shared content --------------------------------------------
