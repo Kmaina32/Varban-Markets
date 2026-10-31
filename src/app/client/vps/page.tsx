@@ -1,3 +1,4 @@
+
 'use client';
 
 /**
@@ -44,7 +45,7 @@ export default function ClientVpsPage() {
 
   return (
     <AuthedLayout 
-      title="VPS Management" 
+      title="Vps (Virtual private server )" 
       subtitle="Institutional infrastructure control hub"
     >
       <div className="max-w-6xl mx-auto space-y-8 pb-20">

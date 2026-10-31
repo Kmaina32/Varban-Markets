@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -64,7 +65,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
         { label: "Forex / CFDs / Crypto", href: "/client/terminal", icon: Monitor, description: "Trade forex, CFDs, indices and crypto." },
         { label: "Derived", href: "/client/derived-terminal", icon: Zap, description: "Volatility indices and derived contracts." },
         { label: t('nav.bots'), href: "/client/bots", icon: Cpu, description: "Automated trading tools and algorithms." },
-        { label: "Institutional VPS", href: "/client/vps", icon: Server, description: "Low-latency dedicated hosting." },
+        { label: "Vps (Virtual private server )", href: "/client/vps", icon: Server, description: "Low-latency dedicated hosting." },
         { label: "Positions", href: "/client/positions", icon: Target, description: "Your open trades right now." },
         { label: "Orders", href: "/client/orders", icon: FileText, description: "Pending and recent orders." },
         { label: t('nav.portfolio'), href: "/client/portfolio", icon: Briefcase, description: "Performance curve and asset allocation." },

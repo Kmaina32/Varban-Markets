@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -92,7 +93,7 @@ export default function Navbar() {
             title: t('landing.nav.mobile'),
             items: [
               { label: t('landing.nav.mobile'), href: "/platforms/mobile" },
-              { label: "Institutional VPS", href: "/platforms/vps" },
+              { label: "Vps (Virtual private server )", href: "/platforms/vps" },
             ]
           }
         ]

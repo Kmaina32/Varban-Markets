@@ -1,3 +1,4 @@
+
 'use client';
 
 /**
@@ -74,7 +75,7 @@ export default function VpsLandingPage() {
           <div className="max-w-3xl space-y-8 animate-in fade-in slide-in-from-left-4 duration-700">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0055FF]/10 border border-[#0055FF]/30">
               <Server className="w-3.5 h-3.5 text-[#0055FF]" />
-              <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest">Institutional VPS Hosting</span>
+              <span className="text-[10px] font-bold text-[#0055FF] uppercase tracking-widest">Vps (Virtual private server )</span>
             </div>
             
             <h1 className="text-4xl md:text-7xl font-normal tracking-tight font-display leading-[1.1]">
