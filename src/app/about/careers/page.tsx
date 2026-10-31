@@ -11,10 +11,10 @@ export default function AboutCareersPage() {
   ];
 
   const positions = [
-    { title: "Senior Low-Latency Rust / C++ Engineer", department: "Core Execution Engine", location: "London / Remote", type: "Full-Time" },
+    { title: "Senior Low-Latency Rust / C++ Engineer", department: "Core Execution Engine", location: "Remote Global", type: "Full-Time" },
     { title: "Lead Full-Stack Next.js Developer", department: "Trading Systems Frontend", location: "Seychelles / Remote", type: "Full-Time" },
-    { title: "Quantitative Risk & Pricing Analyst", department: "Derivatives Analytics", location: "London / Remote", type: "Full-Time" },
-    { title: "Global Compliance & AML Officer", department: "Legal & Regulatory", location: "London / Hybrid", type: "Full-Time" },
+    { title: "Quantitative Risk & Pricing Analyst", department: "Derivatives Analytics", location: "Remote Global", type: "Full-Time" },
+    { title: "Global Compliance & AML Officer", department: "Seychelles / Hybrid", type: "Full-Time" },
     { title: "24/7 Technical Support Specialist", department: "Client Operations", location: "Remote Global", type: "Full-Time" },
   ];
 
@@ -88,8 +88,12 @@ export default function AboutCareersPage() {
                   <h3 className="text-sm font-bold text-[#0A0A0A] hover:text-[#0055FF] transition-colors cursor-pointer">{job.title}</h3>
                   <div className="flex items-center space-x-3 text-[10px] text-[#6B7280] mt-1 font-mono">
                     <span>{job.department}</span>
-                    <span>&bull;</span>
-                    <span>{job.location}</span>
+                    {job.location && (
+                      <>
+                        <span>&bull;</span>
+                        <span>{job.location}</span>
+                      </>
+                    )}
                     <span>&bull;</span>
                     <span className="font-bold text-[#16835B]">{job.type}</span>
                   </div>

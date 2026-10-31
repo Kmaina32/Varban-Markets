@@ -40,7 +40,7 @@ export default function TechnologyArchitecturePage() {
 
   return (
     <div className="bg-[#F7F7F5] min-h-screen py-16 text-[#0A0A0A]">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl auto px-4 sm:px-6 lg:px-8">
         
         {/* Page Header */}
         <div className="border-b border-[#E4E4E4] pb-8 mb-12">
@@ -125,7 +125,7 @@ export default function TechnologyArchitecturePage() {
         {/* Bottom Footer Notice */}
         <div className="mt-20 pt-8 border-t border-[#E4E4E4] text-center">
           <p className="text-[10px] text-[#6B7280] uppercase tracking-widest font-bold">
-            Varban Markets Ltd &bull; Seychelles &bull; London, United Kingdom
+            Varban Markets Ltd &bull; Seychelles
           </p>
         </div>
 

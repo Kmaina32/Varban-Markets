@@ -43,7 +43,7 @@ export default function HomePage() {
     { icon: ShieldCheck, text: t('landing.instantWithdrawals').toUpperCase() },
     { icon: FileText, text: 'REGISTERED IN SEYCHELLES' },
     { icon: Headset, text: t('landing.techDesk').toUpperCase() },
-    { icon: Lock, text: 'OFFICE IN LONDON, UNITED KINGDOM' }
+    { icon: Lock, text: 'FSA LICENSED SD042' }
   ];
 
   useEffect(() => {
@@ -80,9 +80,9 @@ export default function HomePage() {
       <div className="bg-[#0A0A0A] text-white py-2.5 px-4 text-center z-[100] relative">
         <p className="text-[10px] md:text-[11px] leading-relaxed max-w-7xl mx-auto opacity-90 uppercase tracking-widest font-bold">
           {t('landing.footer.riskWarning')}: {t('landing.riskWarningText')} 
-          <span className="text-[#FFDE00]"> {t('landing.lossStat')} </span> 
+          <span className="text-[#0055FF]"> {t('landing.lossStat')} </span> 
           {t('landing.riskContext')}
-          <Link href="/risk-disclosure" className="text-[#FFDE00] underline ml-1">{t('landing.learnMore')}</Link>
+          <Link href="/risk-disclosure" className="text-[#0055FF] underline ml-1">{t('landing.learnMore')}</Link>
         </p>
       </div>
 

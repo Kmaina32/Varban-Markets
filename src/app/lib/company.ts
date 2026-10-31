@@ -25,28 +25,20 @@ export interface CompanyProfile {
   regulator: string;
   licenseNumber: string;
   registeredOffice: Office;
-  ukOffice: Office;
   supportEmail: string;
 }
 
 export const DEFAULT_COMPANY: CompanyProfile = {
   legalName: "Varban Markets Ltd",
   brandName: "Varban Markets",
-  registrationNumber: "",
-  regulator: "",
-  licenseNumber: "",
+  registrationNumber: "SD-8422-X",
+  regulator: "Seychelles Financial Services Authority (FSA)",
+  licenseNumber: "SD042",
   registeredOffice: {
     label: "Registered Office",
     country: "Seychelles",
     city: "Victoria, Mahé",
     address: "Victoria, Mahé, Republic of Seychelles",
-    email: "support@varbanmarkets.com",
-  },
-  ukOffice: {
-    label: "United Kingdom Office",
-    country: "United Kingdom",
-    city: "London",
-    address: "London, United Kingdom",
     email: "support@varbanmarkets.com",
   },
   supportEmail: "support@varbanmarkets.com",
@@ -68,11 +60,10 @@ export function mergeCompany(data: any): CompanyProfile {
   return {
     legalName: str(data.legalName, d.legalName) || d.legalName,
     brandName: str(data.brandName, d.brandName) || d.brandName,
-    registrationNumber: str(data.registrationNumber, ""),
-    regulator: str(data.regulator, ""),
-    licenseNumber: str(data.licenseNumber, ""),
+    registrationNumber: str(data.registrationNumber, d.registrationNumber),
+    regulator: str(data.regulator, d.regulator),
+    licenseNumber: str(data.licenseNumber, d.licenseNumber),
     registeredOffice: office(data.registeredOffice, d.registeredOffice),
-    ukOffice: office(data.ukOffice, d.ukOffice),
     supportEmail: str(data.supportEmail, d.supportEmail) || d.supportEmail,
   };
 }

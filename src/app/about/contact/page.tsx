@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -39,7 +38,7 @@ export default function AboutContactPage() {
     { label: "Contact & Support", href: "/about/contact", active: true },
   ];
 
-  const offices = [company.registeredOffice, company.ukOffice].map((o) => ({
+  const offices = [company.registeredOffice].map((o) => ({
     city: `${o.label} \u2014 ${o.city ? o.city + ", " : ""}${o.country}`,
     address: o.address,
     email: o.email || company.supportEmail,
@@ -222,16 +221,16 @@ export default function AboutContactPage() {
             <button 
               type="submit" 
               disabled={isSubmitting}
-              className="px-8 py-3.5 bg-[#0A0A0A] hover:bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest transition-all shadow-md flex items-center justify-center space-x-2"
+              className="px-8 py-3.5 bg-[#0A0A0A] hover:bg-[#0055FF] text-white text-[10px] font-bold uppercase tracking-widest text-center whitespace-nowrap"
             >
               {isSubmitting ? (
                 <>
-                  <Clock className="w-3.5 h-3.5 animate-spin" />
+                  <Clock className="w-3.5 h-3.5 animate-spin inline-block mr-2" />
                   <span>Transmitting...</span>
                 </>
               ) : (
                 <>
-                  <Send className="w-3.5 h-3.5" />
+                  <Send className="w-3.5 h-3.5 inline-block mr-2" />
                   <span>Transmit Support Ticket &rarr;</span>
                 </>
               )}

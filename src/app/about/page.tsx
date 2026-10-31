@@ -9,7 +9,7 @@ import { Shield, Cpu, Database, Zap, Globe, Users, Target, Award, ArrowRight } f
 
 export const metadata = {
   title: "About Varban Markets | Institutional Profile",
-  description: "Learn about Varban Markets, a company registered in Seychelles with an office in London, and our mission to make high-speed derivative trading accessible.",
+  description: "Learn about Varban Markets, a company registered in Seychelles and our mission to make high-speed derivative trading accessible.",
   alternates: {
     canonical: '/about',
   },
@@ -25,7 +25,7 @@ export default function AboutOverviewPage() {
   ];
 
   const executiveTeam = [
-    { name: "Victor Varban", role: "Chief Executive Officer & Founder", bio: "Former Quantitative Risk Strategist with 15+ years experience building high-frequency execution infrastructure across London and New York financial hubs." },
+    { name: "Victor Varban", role: "Chief Executive Officer & Founder", bio: "Former Quantitative Risk Strategist with 15+ years experience building high-frequency execution infrastructure across global financial hubs." },
     { name: "Elena Rostova", role: "Chief Technology Officer", bio: "Ex-Lead Architect at Tier-1 Investment Bank. Specialized in low-latency WebSocket data streaming and server-side settlement validation." },
     { name: "Marcus Chen", role: "Head of Global Compliance", bio: "Certified Anti-Money Laundering Specialist (CAMS) with background overseeing international regulatory frameworks and cross-border licensing." },
     { name: "Sophia Al-Mansoor", role: "Head of Product & Design", bio: "Pioneer in user-centric financial UX, focused on transparent risk presentation and high-performance electronic trading interfaces." },

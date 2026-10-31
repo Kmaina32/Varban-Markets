@@ -3,7 +3,7 @@
 /**
  * @fileOverview Institutional Regulatory Footer.
  * Fully Localized for Multilingual Support.
- * Optimized to prevent overlap with institutional workspace.
+ * Optimized: Highlight color updated to Blue per brand guidelines.
  */
 
 import Link from "next/link";
@@ -18,14 +18,12 @@ export default function Footer() {
   const { t } = useTranslation();
   const company = useCompanyProfile();
 
-  // Legal text is composed from the live company profile. Registration and
-  // regulator sentences appear only once an admin has published real values.
+  // Legal text is composed from the live company profile.
   const fill = (tpl: string, vars: Record<string, string>) =>
     Object.entries(vars).reduce((acc, [k, v]) => acc.split(`{${k}}`).join(v), tpl);
   const legalVars = {
     legalName: company.legalName,
     registeredOffice: company.registeredOffice.address,
-    ukOffice: company.ukOffice.address,
     registrationNumber: company.registrationNumber,
     regulator: company.regulator,
     licenseNumber: company.licenseNumber,
@@ -36,7 +34,6 @@ export default function Footer() {
     company.regulator && company.licenseNumber ? fill(t('landing.footer.disclosures.regulatedLine'), legalVars) : '',
   ].filter(Boolean).join(' ');
   
-  // STRICT: Hide on any authenticated workspace path or auth funnel
   const isStrict = pathname?.startsWith('/client') || 
                    pathname?.startsWith('/admin') ||
                    ['/login', '/register', '/forgot-password'].includes(pathname);
@@ -108,7 +105,7 @@ export default function Footer() {
           </p>
           
           <p>
-            <span className="text-[#0A0A0A] font-bold">{t('landing.footer.riskWarning')}:</span> {t('landing.footer.disclosures.riskWarningFull')} <Link href="/terms/risk-disclosure" className="text-[#FFDE00] underline font-bold uppercase ml-1">Learn more.</Link>
+            <span className="text-[#0A0A0A] font-bold">{t('landing.footer.riskWarning')}:</span> {t('landing.footer.disclosures.riskWarningFull')} <Link href="/risk-disclosure" className="text-[#0055FF] underline font-bold uppercase ml-1">Learn more.</Link>
           </p>
           
           <p>

@@ -241,9 +241,8 @@ export default function AdminCertificatesPage() {
             <Field label="Regulator / licensing authority"><input className={inputCls} value={company.regulator} onChange={(e) => setCompany({ ...company, regulator: e.target.value })} /></Field>
             <Field label="Licence number"><input className={inputCls} value={company.licenseNumber} onChange={(e) => setCompany({ ...company, licenseNumber: e.target.value })} /></Field>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1">
             <OfficeFields title="Registered office (Seychelles)" value={company.registeredOffice} onChange={(o) => setCompany({ ...company, registeredOffice: o })} />
-            <OfficeFields title="United Kingdom office" value={company.ukOffice} onChange={(o) => setCompany({ ...company, ukOffice: o })} />
           </div>
           {noticeBox(companyNotice)}
           <button
@@ -263,7 +262,7 @@ export default function AdminCertificatesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="Title *"><input className={inputCls} placeholder="Certificate of Incorporation" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></Field>
             <Field label="Issuing authority *"><input className={inputCls} placeholder="As shown on the document" value={form.issuer} onChange={(e) => setForm({ ...form, issuer: e.target.value })} /></Field>
-            <Field label="Jurisdiction"><input className={inputCls} placeholder="Seychelles / United Kingdom" value={form.jurisdiction} onChange={(e) => setForm({ ...form, jurisdiction: e.target.value })} /></Field>
+            <Field label="Jurisdiction"><input className={inputCls} placeholder="Seychelles" value={form.jurisdiction} onChange={(e) => setForm({ ...form, jurisdiction: e.target.value })} /></Field>
             <Field label="Reference number"><input className={inputCls} value={form.referenceNumber} onChange={(e) => setForm({ ...form, referenceNumber: e.target.value })} /></Field>
             <Field label="Issue date"><input type="date" className={inputCls} value={form.issuedAt} onChange={(e) => setForm({ ...form, issuedAt: e.target.value })} /></Field>
             <Field label="File (PDF, PNG, JPG, WebP · max 10 MB) *">

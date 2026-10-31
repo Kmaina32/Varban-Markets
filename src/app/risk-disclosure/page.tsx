@@ -4,11 +4,12 @@ import { Metadata } from 'next';
 /**
  * @fileOverview Regulatory Risk Notice and Compliance Disclosure.
  * SEO Metadata for high-authority compliance searches.
+ * Updated: Seychelles exclusive jurisdiction with expanded clauses.
  */
 
 export const metadata: Metadata = {
   title: "Risk Disclosure | Regulatory Notice",
-  description: "Critical risk warning for Varban Markets traders. Read the key risks of leveraged derivative and synthetic market trading with Varban Markets, a company registered in Seychelles, before you open an account.",
+  description: "Critical risk warning for Varban Markets traders. Read the key risks of leveraged derivative and synthetic market trading with Varban Markets, a company registered in Seychelles.",
   alternates: {
     canonical: '/risk-disclosure',
   },
@@ -16,10 +17,17 @@ export const metadata: Metadata = {
 
 export default function PublicRiskDisclosurePage() {
   const disclosurePoints = [
-    { title: "Possibility of Loss", text: "Trading derivatives is risky. You can lose all of the money you commit to any single trade." },
-    { title: "Internal Settlement", text: "All trades are settled directly through our system. There is no outside clearing house involved." },
-    { title: "Internet Speed", text: "Network speed can change without warning. This can affect the price you get when you open or close a trade." },
-    { title: "User Experience", text: "By using this platform, you confirm that you understand how algorithmic trading works and accept the risks." }
+    { title: "Possibility of Total Loss", text: "Trading derivatives is risky. You can lose all of the money you commit to any single trade. Leveraged contracts amplify both potential returns and potential losses." },
+    { title: "Internal Settlement & Counterparty Risk", text: "All trades are settled directly through our internal matching engine. There is no outside clearing house involved. Varban Markets acts as the direct counterparty to every execution." },
+    { title: "Leverage and Gearing Risk", text: "Leveraged trading allows you to control large positions with a small initial stake. While this can increase gains, it equally accelerates losses. Small market movements can result in the immediate closure of positions." },
+    { title: "Slippage and Market Gaps", text: "During periods of high volatility, price 'gaps' may occur where the price jumps between ticks. This can result in execution prices that are significantly different from your requested price." },
+    { title: "Digital Asset Custody Risk", text: "Assets held in digital wallets are subject to cybersecurity risks. While Varban utilizes segregated cold storage, the nature of blockchain technology means transactions are irreversible." },
+    { title: "Automated Trading Systems", text: "Traders using bots or automated scripts acknowledge that software errors, latency, or connection failures can lead to unintended execution results for which the platform bears no liability." },
+    { title: "Internet Speed & Connectivity", text: "Network speed can change without warning. This can affect the price you get when you open or close a trade. We are not liable for losses resulting from user-side connectivity gaps." },
+    { title: "Algorithmic Neutrality", text: "Our synthetic indices are generated via a proprietary deterministic random-walk protocol. Market conditions are simulated without human intervention to ensure unbiased volatility profiles." },
+    { title: "Liquidity Gaps & Gapping", text: "During periods of extreme volatility or low liquidity, price gaps may occur. This may result in immediate contract termination at the last verified tick." },
+    { title: "Jurisdictional Boundaries", text: "Varban Markets operates exclusively under the financial framework of Seychelles. It is the user's responsibility to ensure compliance with local laws in their region." },
+    { title: "Platform Integrity", text: "By using this platform, you confirm that you understand how algorithmic trading works and accept the inherent risks of digital market participation." }
   ];
 
   return (

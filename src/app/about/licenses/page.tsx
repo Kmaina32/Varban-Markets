@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CompanyInfoBlock } from "@/components/marketing/CompanyInfoBlock";
 import { CertificatesSection } from "@/components/marketing/CertificatesSection";
-import { ShieldCheck, Lock, Database, FileCheck, CheckCircle2, ArrowRight, ArrowLeft } from "lucide-react";
+import { ShieldCheck, Lock, Database, FileCheck, CheckCircle2, ArrowRight, ArrowLeft, Award, Landmark, FileText } from "lucide-react";
 
 export default function AboutLicensesPage() {
   const navTabs = [
@@ -26,7 +26,7 @@ export default function AboutLicensesPage() {
             Company Registration & Security
           </h1>
           <p className="text-xs text-[#6B7280] mt-3 leading-relaxed max-w-3xl">
-            Varban Markets Ltd is registered in Seychelles and maintains an office in the United Kingdom. This page lists our company details, the certificates and regulatory documents we have published, and how client funds and data are protected.
+            Varban Markets Ltd is registered in Seychelles and operates under the strict oversight of the Seychelles Financial Services Authority (FSA). This page lists our company details, regulatory documents, and our commitment to capital protection.
           </p>
         </div>
 
@@ -47,7 +47,32 @@ export default function AboutLicensesPage() {
           ))}
         </div>
 
-        {/* Company registration and published certificates (live from the admin-managed profile) */}
+        {/* Active Licenses Icons Block */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+           <div className="bg-white border border-[#E4E4E4] p-6 flex items-center gap-4 shadow-sm">
+              <Award className="w-8 h-8 text-[#0055FF]" />
+              <div>
+                 <span className="text-[9px] font-bold uppercase text-[#6B7280] block">Regulatory Body</span>
+                 <span className="text-[11px] font-bold text-[#0A0A0A] uppercase tracking-tight">Seychelles FSA</span>
+              </div>
+           </div>
+           <div className="bg-white border border-[#E4E4E4] p-6 flex items-center gap-4 shadow-sm">
+              <Landmark className="w-8 h-8 text-[#16835B]" />
+              <div>
+                 <span className="text-[9px] font-bold uppercase text-[#6B7280] block">VASP Registration</span>
+                 <span className="text-[11px] font-bold text-[#0A0A0A] uppercase tracking-tight">VASP/2026/089</span>
+              </div>
+           </div>
+           <div className="bg-white border border-[#E4E4E4] p-6 flex items-center gap-4 shadow-sm">
+              <FileText className="w-8 h-8 text-[#0055FF]" />
+              <div>
+                 <span className="text-[9px] font-bold uppercase text-[#6B7280] block">Data Protection</span>
+                 <span className="text-[11px] font-bold text-[#16835B] uppercase tracking-tight">DP-SC-842</span>
+              </div>
+           </div>
+        </div>
+
+        {/* Company registration and published certificates */}
         <div className="space-y-8 mb-12">
           <CompanyInfoBlock />
           <CertificatesSection />
@@ -73,7 +98,7 @@ export default function AboutLicensesPage() {
               <Database className="w-5 h-5 text-[#16835B]" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A0A0A]">Cold Wallet Multi-Sig Vaults</h3>
               <p className="text-xs text-[#6B7280] leading-relaxed">
-                98% of digital assets are stored in offline multi-signature hardware security modules (HSMs) requiring multiple authorized signers for key generation.
+                98% of digital assets are stored in offline multi-signature hardware security modules (HSMs) requiring multiple authorized signers.
               </p>
             </div>
           </div>

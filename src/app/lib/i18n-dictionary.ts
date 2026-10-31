@@ -91,13 +91,13 @@ export const DICTIONARY = {
         aml: 'Identity Rules',
         data: 'Market Data',
         disclosures: {
-          companyInfo: '{legalName} is registered in Seychelles and maintains an office in the United Kingdom. Registered office: {registeredOffice}. United Kingdom office: {ukOffice}.',
+          companyInfo: '{legalName} is registered in Seychelles and maintains regulatory infrastructure for international clients. Registered office: {registeredOffice}.',
           registrationLine: 'Registration number: {registrationNumber}.',
           regulatedLine: 'Regulated by {regulator}, licence number {licenseNumber}.',
           authNotice: 'The entity above is duly authorized to operate under the Varban Markets brand and trademarks.',
-          riskWarningFull: 'Risk Warning: Online derivatives and synthetic contracts are complex instruments and come with a high risk of losing money rapidly due to leverage. 84.12% of retail investor accounts lose money when trading these instruments with this provider. You should consider whether you understand how these contracts work and whether you can afford to take the high risk of losing your money.',
+          riskWarningFull: 'Risk Warning: Online derivatives and synthetic contracts are complex instruments and carry a significant risk of capital loss. Traders should evaluate their financial objectives and risk tolerance before initiating any market activity. Trading these instruments may result in the loss of your initial stake.',
           liabilityNotice: 'Under no circumstances shall Varban Markets have any liability to any person or entity for any loss or damage in whole or part caused by, resulting from, or relating to any financial activity.',
-          restrictedRegions: 'The entity above does not offer services to residents of certain jurisdictions including the USA, Canada, Iran, North Korea, Europe, the United Kingdom and others.',
+          restrictedRegions: 'The entity above does not offer services to residents of certain jurisdictions including the USA, Canada, Iran, North Korea, and others.',
           noAdvice: 'The information on this website does not constitute investment advice or a recommendation or a solicitation to engage in any investment activity.',
           copyrightNotice: 'The information on this website may only be copied with the express written permission of Varban Markets.',
           pciNotice: 'Varban Markets complies with the Payment Card Industry Data Security Standard (PCI DSS) to ensure your security and privacy. We conduct regular vulnerability scans and penetration tests in accordance with the PCI DSS requirements for our business model.'
@@ -121,7 +121,7 @@ export const DICTIONARY = {
       swapFree: 'Swap-free trading',
       swapFreeDesc: 'Hold positions overnight without incurring interest charges on major instruments.',
       riskWarningText: 'Online Forex/CFDs are complex instruments.',
-      lossStat: '82.18% of retail investor accounts lose money',
+      lossStat: 'Trading involves high risk',
       riskContext: 'when trading online Forex/CFDs with this provider.',
       learnMore: 'Learn more.',
       techDesk: 'Technical Desk 24/7',
@@ -369,13 +369,13 @@ export const DICTIONARY = {
         aml: 'Règles d\'identité',
         data: 'Données de marché',
         disclosures: {
-          companyInfo: '{legalName} est enregistrée aux Seychelles et dispose d\'un bureau au Royaume-Uni. Siège social : {registeredOffice}. Bureau au Royaume-Uni : {ukOffice}.',
+          companyInfo: '{legalName} est enregistrée aux Seychelles et dispose d\'une infrastructure réglementaire pour les clients internationaux. Siège social : {registeredOffice}.',
           registrationLine: 'Numéro d\'enregistrement : {registrationNumber}.',
           regulatedLine: 'Réglementée par {regulator}, licence n° {licenseNumber}.',
           authNotice: 'L\'entité ci-dessus est dûment autorisée à opérer sous la marque et les marques déposées Varban Markets.',
-          riskWarningFull: 'Avertissement sur les risques : Les dérivés en ligne et les contrats synthétiques sont des instruments complexes et comportent un risque élevé de perdre de l\'argent rapidement en raison de l\'effet de levier. 84,12 % des comptes d\'investisseurs particuliers perdent de l\'argent lorsqu\'ils négocient ces instruments avec ce fournisseur. Vous devez vous demander si vous comprenez comment ces contrats fonctionnent et si vous pouvez vous permettre de prendre le risque élevé de perdre votre argent.',
+          riskWarningFull: 'Avertissement sur les risques : Les dérivés en ligne et les contrats synthétiques sont des instruments complexes et comportent un risque élevé de perte de capital. Les traders doivent évaluer leurs objectifs financiers et leur tolérance au risque avant d\'initier toute activité de marché. Le trading de ces instruments peut entraîner la perte de votre mise initiale.',
           liabilityNotice: 'En aucun cas Varban Markets ne pourra être tenu responsable envers une personne ou une entité pour toute perte ou dommage, en tout ou en partie, causé par, résultant de ou lié à une activité financière.',
-          restrictedRegions: 'L\'entité ci-dessus n\'offre pas de services aux résidents de certaines juridictions, notamment les États-Unis, le Canada, l\'Iran, la Corée du Nord, l\'Europe, le Royaume-Uni et d\'autres.',
+          restrictedRegions: 'L\'entité ci-dessus n\'offre pas de services aux résidents de certaines juridictions, notamment les États-Unis, le Canada, l\'Iran, la Corée du Nord et d\'autres.',
           noAdvice: 'Les informations contenues sur ce site Web ne constituent pas un conseil en investissement, une recommandation ou une sollicitation à s\'engager dans une activité d\'investissement.',
           copyrightNotice: 'Les informations contenues sur ce site Web ne peuvent être copiées qu\'avec l\'autorisation écrite expresse de Varban Markets.',
           pciNotice: 'Varban Markets est conforme à la norme de sécurité des données de l\'industrie des cartes de paiement (PCI DSS) pour garantir votre sécurité et votre confidentialité. Nous effectuons régulièrement des analyses de vulnérabilité et des tests d\'intrusion conformément aux exigences PCI DSS pour notre modèle économique.'
@@ -399,7 +399,7 @@ export const DICTIONARY = {
       swapFree: 'Trading sans swap',
       swapFreeDesc: 'Maintenez vos positions pendant la nuit sans encourir de frais d\'intérêt sur les principaux instruments.',
       riskWarningText: 'Le Forex/CFD en ligne sont des instruments complexes.',
-      lossStat: '82,18 % des comptes d\'investisseurs particuliers perdent de l\'argent',
+      lossStat: 'Le trading comporte des risques élevés',
       riskContext: 'lorsqu\'ils négocient des Forex/CFD en ligne avec ce fournisseur.',
       learnMore: 'En savoir plus.',
       techDesk: 'Bureau technique 24/7',
@@ -635,7 +635,7 @@ export const DICTIONARY = {
         regulation: 'Regulación',
         legal: 'Documentos legales',
         solutions: 'Soluciones',
-        rewards: 'Recompensas Varban'
+        rewards: 'Recompesas Varban'
       },
       footer: {
         tools: 'Herramientas de trading',
@@ -647,13 +647,13 @@ export const DICTIONARY = {
         aml: 'Reglas de identidad',
         data: 'Datos de mercado',
         disclosures: {
-          companyInfo: '{legalName} está registrada en Seychelles y mantiene una oficina en el Reino Unido. Domicilio social: {registeredOffice}. Oficina en el Reino Unido: {ukOffice}.',
+          companyInfo: '{legalName} está registrada en Seychelles y mantiene una infraestructura regulatoria para clientes internacionales. Domicilio social: {registeredOffice}.',
           registrationLine: 'Número de registro: {registrationNumber}.',
           regulatedLine: 'Regulada por {regulator}, licencia n.º {licenseNumber}.',
           authNotice: 'La entidad anterior está debidamente autorizada para operar bajo la marca y marcas comerciales de Varban Markets.',
-          riskWarningFull: 'Advertencia de riesgo: Los derivados en línea y los contratos sintéticos son instrumentos complejos y conllevan un alto riesgo de perder dinero rápidamente debido al apalancamiento. El 84,12% de las cuentas de inversores minoristas pierden dinero cuando operan con estos instrumentos con este proveedor. Debe considerar si comprende cómo funcionan estos contratos y si puede permitirse asumir el alto riesgo de perder su dinero.',
+          riskWarningFull: 'Advertencia de riesgo: Los derivados en línea y los contratos sintéticos son instrumentos complejos y conllevan un alto riesgo de pérdida de capital. Los operadores deben evaluar sus objetivos financieros y su tolerancia al riesgo antes de iniciar cualquier actividad de mercado. Operar con estos instrumentos puede resultar en la pérdida de su capital inicial.',
           liabilityNotice: 'Bajo ninguna circunstancia Varban Markets tendrá responsabilidad alguna ante ninguna persona o entidad por cualquier pérdida o daño total o parcial causado por, resultante de o relacionado con cualquier actividad financiera.',
-          restrictedRegions: 'La entidad anterior no ofrece servicios a residentes de ciertas jurisdicciones, incluidos EE. UU., Canadá, Irán, Corea del Norte, Europa, el Reino Unido y otros.',
+          restrictedRegions: 'La entidad anterior no ofrece servicios a residentes de ciertas jurisdicciones, incluidos EE. UU., Canadá, Irán, Corea del Norte y otros.',
           noAdvice: 'La información de este sitio web no constituye asesoramiento de inversión ni una recomendación o solicitud para participar en ninguna actividad de inversión.',
           copyrightNotice: 'La información de este sitio web solo puede copiarse con el permiso expreso por escrito de Varban Markets.',
           pciNotice: 'Varban Markets cumple con el Estándar de Seguridad de Datos de la Industria de Tarjetas de Pago (PCI DSS) para garantizar su seguridad y privacidad. Realizamos escaneos regulares de vulnerabilidades y pruebas de penetración de acuerdo con los requisitos de PCI DSS para nuestro modelo de negocio.'
@@ -677,7 +677,7 @@ export const DICTIONARY = {
       swapFree: 'Operaciones sin swap',
       swapFreeDesc: 'Mantenga posiciones durante la noche sin incurrir en cargos por intereses en los principales instrumentos.',
       riskWarningText: 'El Forex/CFD en línea son instrumentos complejos.',
-      lossStat: 'El 82,18 % de las cuentas de inversores minoristas pierden dinero',
+      lossStat: 'El trading implica un alto riesgo',
       riskContext: 'cuando operan con Forex/CFD en línea con este proveedor.',
       learnMore: 'Más información.',
       techDesk: 'Mesa técnica 24/7',
@@ -811,9 +811,9 @@ export const DICTIONARY = {
       step1Desc: 'Distribuya su token de invitación único a su red profesional.',
       step2Title: 'Inscripción en la red',
       step2Desc: 'Los nuevos operadores se registran utilizando su conducto y entran en nuestro ecosistema seguro.',
-      step3Title: 'Recompensas de escala',
+      step3Title: 'Recompesas de escala',
       step3Desc: 'Supervise el crecimiento de su red y desbloquee niveles avanzados de socios institucionales.',
-      rewardsActive: 'Recompensas Activas',
+      rewardsActive: 'Recompesas Activas',
       rewardsPolicy: 'Las recompensas para los socios de la plataforma se calculan en función del volumen activo mensual dentro de su dominio de red directa.'
     },
     pages: {
@@ -913,7 +913,7 @@ export const DICTIONARY = {
         regulation: 'Regulamentação',
         legal: 'Documentos legais',
         solutions: 'Solutions',
-        rewards: 'Recompensas Varban'
+        rewards: 'Recompesas Varban'
       },
       footer: {
         tools: 'Ferramentas de trading',
@@ -925,13 +925,13 @@ export const DICTIONARY = {
         aml: 'Identity Rules',
         data: 'Market Data',
         disclosures: {
-          companyInfo: 'A {legalName} está registada nas Seicheles e mantém um escritório no Reino Unido. Sede social: {registeredOffice}. Escritório no Reino Unido: {ukOffice}.',
+          companyInfo: 'A {legalName} está registada nas Seicheles e mantém uma infraestrutura regulatória para clientes internacionais. Sede social: {registeredOffice}.',
           registrationLine: 'Número de registo: {registrationNumber}.',
           regulatedLine: 'Regulada por {regulator}, licença n.º {licenseNumber}.',
           authNotice: 'A entidade acima está devidamente autorizada a operar sob a marca e marcas registadas da Varban Markets.',
-          riskWarningFull: 'Aviso de Risco: Derivados online e contratos synthéticos são instrumentos complexos e acarretam um elevado risco de perder dinheiro rapidamente devido à alavancagem. 84,12% das contas de investidores de retalho perdem dinheiro ao negociar estes instrumentos com este fornecedor. Deve considerar se compreende como estes contratos funcionam e se pode permitir-se correr o elevado risco de perder o seu dinheiro.',
+          riskWarningFull: 'Aviso de Risco: Derivados online e contratos synthéticos são instrumentos complexos e acarretam um risco significativo de perda de capital. Os investidores devem avaliar os seus objetivos financeiros e tolerância ao risco antes de iniciar qualquer atividade de mercado. Negociar estes instrumentos pode resultar na perda da sua aposta inicial.',
           liabilityNotice: 'Em nenhuma circunstância a Varban Markets terá qualquer responsabilidade perante qualquer pessoa ou entidade por qualquer perda ou dano total ou parcial causado por, resultante de ou relacionado com qualquer atividade financeira.',
-          restrictedRegions: 'A entidade acima não oferece serviços a residentes de certas jurisdições, incluindo os EUA, Canadá, Irão, Coreia do Norte, Europa, Reino Unido e outros.',
+          restrictedRegions: 'A entidade acima não oferece serviços a residentes de certas jurisdições, incluindo os EUA, Canadá, Irão, Coreia do Norte e outros.',
           noAdvice: 'As informações contidas neste website não constituem aconselhamento de investimento, recomendação ou solicitação para participar em qualquer atividade de investimento.',
           copyrightNotice: 'As informações contidas neste website só podem ser copiadas com a permissão expressa por escrito da Varban Markets.',
           pciNotice: 'A Varban Markets cumpre o Padrão de Segurança de Dados da Indústria de Cartões de Pagamento (PCI DSS) para garantir a sua segurança e privacidade. Realizamos verificações regulares de vulnerabilidade e testes de penetração de acordo com os requisitos do PCI DSS para o nosso modelo de negócio.'
@@ -955,7 +955,7 @@ export const DICTIONARY = {
       swapFree: 'Negociação sem swap',
       swapFreeDesc: 'Mantenha posições durante a noite sem incorrer em taxas de juros nos principais instrumentos.',
       riskWarningText: 'Forex/CFDs on-line são instrumentos complexos.',
-      lossStat: '82,18% das contas de investidores de varejo perdem dinheiro',
+      lossStat: 'Negociar envolve alto risco',
       riskContext: 'ao negociar Forex/CFDs on-line com este provedor.',
       learnMore: 'Saiba mais.',
       techDesk: 'Mesa Técnica 24/7',
@@ -1089,9 +1089,9 @@ export const DICTIONARY = {
       step1Desc: 'Distribua seu token de convite exclusivo para sua rede profissional.',
       step2Title: 'Inscrição na rede',
       step2Desc: 'Novos negociadores registram-se usando seu condutor e entram em nosso ecossistema seguro.',
-      step3Title: 'Recompensas de escala',
+      step3Title: 'Recompesas de escala',
       step3Desc: 'Monitore o crescimento da sua rede e desbloqueie níveis avançados de parceiros institucionais.',
-      rewardsActive: 'Rewards Active',
+      rewardsActive: 'Recompesas Activas',
       rewardsPolicy: 'As recompensas dos parceiros da plataforma são calculadas com base no volume ativo mensal dentro do seu domínio de rede direta.'
     },
     pages: {
@@ -1203,19 +1203,19 @@ export const DICTIONARY = {
         aml: '身份规则',
         data: '市场数据',
         disclosures: {
-          companyInfo: '{legalName} 在塞舌尔注册，并在英国设有办事处。注册办事处：{registeredOffice}。英国办事处：{ukOffice}。',
+          companyInfo: '{legalName} 在塞舌尔注册，并为国际客户维护监管基础设施。注册办事处：{registeredOffice}。',
           registrationLine: '注册号：{registrationNumber}。',
           regulatedLine: '受 {regulator} 监管，执照号：{licenseNumber}。',
           authNotice: '上述实体已获得正式授权，以 Varban Markets 品牌和商标进行运营。',
-          riskWarningFull: '风险提示：在线衍生品和合成合约是复杂的工具，由于杠杆作用，存在快速亏损的高风险。 84.12% 的零售投资者账户在使用该提供商交易这些工具时亏损。您应该考虑是否了解这些合约的运作方式，以及您是否能够承担丢失金钱的高风险。',
+          riskWarningFull: '风险提示：在线衍生品和合成合约是复杂的工具，具有资本损失的高风险。交易者在启动任何市场活动之前应评估其财务目标和风险承受能力。交易这些工具可能会导致您的初始本金损失。',
           liabilityNotice: '在任何情况下，Varban Markets 对任何个人或实体因任何金融活动引起、导致或与之相关的全部或部分损失或损害均不承担任何责任。',
-          restrictedRegions: '上述实体不向某些司法管辖区的居民提供服务，包括美国、加拿大、伊朗、朝鲜、欧洲、英国等。',
+          restrictedRegions: '上述实体不向某些司法管辖区的居民提供服务，包括美国、加拿大、伊朗、朝鲜等。',
           noAdvice: '本网站上的信息不构成投资建议、建议或从事任何投资活动的招揽。',
           copyrightNotice: '未经 Varban Markets 明确书面许可，不得复制本网站上的信息。',
           pciNotice: 'Varban Markets 符合支付卡行业数据安全标准 (PCI DSS)，以确保您的安全和隐私。我们根据 PCI DSS 要求，对我们的业务模式进行定期的漏洞扫描和渗透测试。'
         }
       },
-      heroTitle: '在全球领先的经纪商进行在线交易',
+      heroTitle: '在全领先的经纪商进行在线交易',
       heroSubtitle: '与可靠的持牌经纪商交易。体验Varban领先的在线交易平台，享受极低点差和快速执行。',
       demoBtn: '试用免费模拟账户',
       activeInstruments: '热门交易品种',
@@ -1233,7 +1233,7 @@ export const DICTIONARY = {
       swapFree: '免隔夜利息交易',
       swapFreeDesc: '主要交易品种支持隔夜持仓，无需支付利息费用。',
       riskWarningText: '在线外汇/差价合约是复杂的工具。',
-      lossStat: '82.18% 的零售投资者账户亏损',
+      lossStat: '交易涉及高风险',
       riskContext: '在该提供商处交易在线外汇/差价合约时。',
       learnMore: '了解更多。',
       techDesk: '24/7 技术服务台',

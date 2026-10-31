@@ -63,8 +63,7 @@ export default function ContactPage() {
             <div className="space-y-8">
               {[
                 { icon: Mail, title: "Email", detail: company.supportEmail },
-                { icon: MapPin, title: `${company.registeredOffice.label} (${company.registeredOffice.country})`, detail: company.registeredOffice.address },
-                { icon: MapPin, title: `${company.ukOffice.label} (${company.ukOffice.city})`, detail: company.ukOffice.address }
+                { icon: MapPin, title: `${company.registeredOffice.label} (${company.registeredOffice.country})`, detail: company.registeredOffice.address }
               ].map((item, idx) => (
                 <div key={idx} className="flex items-start space-x-4">
                   <item.icon className="w-5 h-5 text-[#0055FF] shrink-0 mt-1" />
