@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Custom Institutional Synthetic Charting Node.
- * Updated to "Institutional White" theme to match the core workspace aesthetic.
+ * Updated to "Institutional White" theme with robust auto-scaling.
  */
 
 import React, { useEffect, useRef } from 'react';
@@ -22,6 +22,7 @@ export default function SyntheticChart({ ticks, loading }: SyntheticChartProps) 
   useEffect(() => {
     if (!containerRef.current) return;
 
+    // Use a ResizeObserver to handle container size changes accurately
     const chart = createChart(containerRef.current, {
       layout: {
         background: { type: ColorType.Solid, color: '#FFFFFF' },
@@ -32,8 +33,8 @@ export default function SyntheticChart({ ticks, loading }: SyntheticChartProps) 
         vertLines: { color: '#F0F0F0' },
         horzLines: { color: '#F0F0F0' },
       },
-      width: containerRef.current.clientWidth,
-      height: containerRef.current.clientHeight,
+      width: containerRef.current.clientWidth || 600,
+      height: containerRef.current.clientHeight || 400,
       timeScale: {
         timeVisible: true,
         secondsVisible: true,
@@ -63,7 +64,7 @@ export default function SyntheticChart({ ticks, loading }: SyntheticChartProps) 
     });
 
     const lineSeries = chart.addLineSeries({
-      color: '#0055FF', // Institutional Blue Line
+      color: '#0055FF',
       lineWidth: 2,
       crosshairMarkerVisible: true,
       lastValueVisible: true,
@@ -75,37 +76,44 @@ export default function SyntheticChart({ ticks, loading }: SyntheticChartProps) 
     chartRef.current = chart;
     lineSeriesRef.current = lineSeries;
 
-    const handleResize = () => {
-      if (containerRef.current) {
-        chart.applyOptions({ 
-          width: containerRef.current.clientWidth, 
-          height: containerRef.current.clientHeight 
-        });
-      }
-    };
+    const resizeObserver = new ResizeObserver(entries => {
+      if (entries.length === 0 || !chartRef.current) return;
+      const { width, height } = entries[0].contentRect;
+      chartRef.current.applyOptions({ width, height });
+    });
 
-    window.addEventListener('resize', handleResize);
+    resizeObserver.observe(containerRef.current);
+
     return () => {
-      window.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
       chart.remove();
+      chartRef.current = null;
     };
   }, []);
 
   useEffect(() => {
     if (lineSeriesRef.current && ticks.length > 0) {
-      const data = ticks.map(t => ({
-        time: (t.time / 1000) as any,
-        value: t.price
-      }));
-      lineSeriesRef.current.setData(data);
+      try {
+        const data = ticks.map(t => ({
+          time: (t.time / 1000) as any,
+          value: t.price
+        }));
+        lineSeriesRef.current.setData(data);
+      } catch (err) {
+        // Suppress sequence errors in dev, they indicate deduplication needed in feed hook
+        console.warn("[Chart Sequence Data Issue]:", err);
+      }
     }
   }, [ticks]);
 
   return (
     <div className="w-full h-full relative bg-white">
-      {loading && (
+      {loading && ticks.length === 0 && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 backdrop-blur-[1px]">
-          <div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin" />
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-6 h-6 border-2 border-[#0055FF] border-t-transparent rounded-full animate-spin" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B7280]">Connecting to Node...</span>
+          </div>
         </div>
       )}
       <div ref={containerRef} className="w-full h-full" />

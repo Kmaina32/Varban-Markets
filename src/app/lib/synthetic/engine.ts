@@ -27,7 +27,7 @@ export type SyntheticConfig = z.infer<typeof SyntheticConfigSchema>;
 
 /**
  * RECENT ANCHOR (Oct 30 2024)
- * This prevents the loop from running for 1.7bn ticks.
+ * This prevents the loop from running for billions of ticks.
  */
 const RECENT_ANCHOR = 1730300000;
 
@@ -55,23 +55,44 @@ export function getZ(secret: string, symbol: string, tick: number): number {
   return Math.sqrt(-2.0 * Math.log(u1 || 0.0001)) * Math.cos(2.0 * Math.PI * u2);
 }
 
-/** Returns the price at a specific tick index */
-export function getPriceAtTick(secret: string, config: SyntheticConfig, targetTick: number): number {
-  let currentPrice = config.anchorPrice;
+/** 
+ * Returns a range of ticks starting from targetTick.
+ * Optimized O(N) where N is (endTick - anchor).
+ */
+export function getPriceRange(secret: string, config: SyntheticConfig, fromTick: number, count: number): { tick: number; price: number; time: number }[] {
+  const results = [];
   const start = config.anchorTick;
+  let currentPrice = config.anchorPrice;
   
   const tickSeconds = config.tickMs / 1000;
   const sigmaPerTick = (config.volatility / 100) * Math.sqrt(tickSeconds / (365 * 24 * 3600));
   const driftPerTick = (config.driftPerHour / 100) * (tickSeconds / 3600);
 
-  // Performance Guard: Limit loop iterations
-  const actualStart = Math.max(start, targetTick - 5000);
+  const endTick = fromTick + count - 1;
+  
+  // To avoid calculating from the beginning of time, we only calculate the necessary window.
+  // In a production environment, you would cache intermediate prices.
+  const actualStart = Math.max(start, fromTick - 500); 
 
-  for (let i = actualStart + 1; i <= targetTick; i++) {
+  for (let i = actualStart + 1; i <= endTick; i++) {
     const z = getZ(secret, config.symbol, i);
     const exponent = driftPerTick - (sigmaPerTick ** 2) / 2 + sigmaPerTick * z;
     currentPrice = Math.round(currentPrice * Math.exp(exponent) * 100) / 100;
+    
+    if (i >= fromTick) {
+      results.push({
+        tick: i,
+        price: currentPrice,
+        time: i * config.tickMs
+      });
+    }
   }
 
-  return currentPrice;
+  return results;
+}
+
+/** Returns the price at a specific tick index (Legacy wrapper) */
+export function getPriceAtTick(secret: string, config: SyntheticConfig, targetTick: number): number {
+  const range = getPriceRange(secret, config, targetTick, 1);
+  return range[0]?.price || config.anchorPrice;
 }
