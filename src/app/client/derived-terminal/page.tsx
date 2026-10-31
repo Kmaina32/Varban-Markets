@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Institutional Derived Markets Terminal (White Theme).
- * Updated: Integrated standard MarketSelector with refined reference design.
+ * Supports Cross-Platform rendering with a dedicated mobile view.
  */
 
 import { useState, useEffect, Suspense, useMemo } from "react";
@@ -15,11 +15,9 @@ import {
   Clock as ClockIcon,
   BarChart2,
   MousePointer2,
-  Globe,
   Zap,
   Plus,
   Minus,
-  Layout as LayoutIcon,
   ShieldCheck
 } from "lucide-react";
 import { AVAILABLE_INSTRUMENTS, Instrument } from "@/app/lib/instruments";
@@ -27,7 +25,6 @@ import { useUser, useDoc, useFirestore } from "@/firebase";
 import { useTranslation } from "@/app/lib/i18n-context";
 import { cn } from "@/app/lib/utils";
 import { useSyntheticFeed } from "@/app/lib/synthetic/use-synthetic-feed";
-import { LANGUAGE_LABELS, LocaleCode } from "@/app/lib/i18n-dictionary";
 
 // Components
 import AuthedSidebar from "@/components/layout/AuthedSidebar";
@@ -38,7 +35,7 @@ import DerivedTradeControls from "@/components/terminal/DerivedTradeControls";
 import DigitStats from "@/components/terminal/DigitStats";
 import PortfolioManager from "@/components/terminal/PortfolioManager";
 import LoadingOverlay from "@/components/shared/LoadingOverlay";
-import BottomSheet from "@/components/terminal/BottomSheet";
+import MobileDerivedTerminal from "@/components/terminal/MobileDerivedTerminal";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -50,7 +47,7 @@ function DerivedTerminalContent() {
   const symbolParam = searchParams.get('symbol');
   const { user } = useUser();
   const db = useFirestore();
-  const { formatNumber, locale, setLocale } = useTranslation();
+  const { formatNumber } = useTranslation();
 
   const { data: profile } = useDoc<any>(db, user ? `users/${user.uid}` : null);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -58,21 +55,7 @@ function DerivedTerminalContent() {
   const [accountMode, setAccountMode] = useState<'REAL' | 'DEMO'>('REAL');
   const [demoBalance, setDemoBalance] = useState<number>(10000);
   const [activeRightTab, setActiveRightTab] = useState<'TRADE' | 'STATS'>('TRADE');
-  const [sheet, setSheet] = useState<null | 'TRADE' | 'TRADES'>(null);
-  const [sheetTab, setSheetTab] = useState<'TRADE' | 'STATS'>('TRADE');
-  const [placed, setPlaced] = useState<{ id: string; symbol: string; side: string; amount: number; price: number | null; at: number }[]>([]);
-
-  const handleExecute = (p: any) => {
-    setPlaced(prev => [{
-      id: `${Date.now()}-${prev.length}`,
-      symbol: p.symbol ?? activeInst.symbol,
-      side: String(p.derivedMode ?? p.side ?? 'TRADE'),
-      amount: Number(p.amount) || 0,
-      price: lastTick?.price ?? null,
-      at: Date.now(),
-    }, ...prev].slice(0, 50));
-    setSheet('TRADES');
-  };
+  const [isMobileViewport, setIsMobileViewport] = useState<boolean | null>(null);
 
   const [currentTime, setCurrentTime] = useState("");
   const activeTimezone = profile?.preferences?.timezone || "UTC+0";
@@ -92,6 +75,13 @@ function DerivedTerminalContent() {
   const { ticks, lastTick, loading: syntheticLoading } = useSyntheticFeed(activeInst.symbol, 1000);
 
   useEffect(() => {
+    const handleResize = () => setIsMobileViewport(window.innerWidth < 1024);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
     const savedMode = localStorage.getItem('varban_account_mode') as 'REAL' | 'DEMO';
     if (savedMode) setAccountMode(savedMode);
     
@@ -100,7 +90,6 @@ function DerivedTerminalContent() {
       if (saved) setDemoBalance(parseFloat(saved));
     };
     window.addEventListener('varban_balance_update', handleBalanceUpdate);
-    handleBalanceUpdate();
     return () => window.removeEventListener('varban_balance_update', handleBalanceUpdate);
   }, []);
 
@@ -121,11 +110,27 @@ function DerivedTerminalContent() {
     return () => clearInterval(interval);
   }, [activeTimezone]);
 
+  if (isMobileViewport === null) return <LoadingOverlay message="Synchronizing Interface" />;
+
+  // Render Mobile View
+  if (isMobileViewport) {
+    return (
+      <MobileDerivedTerminal 
+        activeInst={activeInst}
+        onSelect={setActiveInst}
+        ticks={ticks}
+        lastTick={lastTick}
+        loading={syntheticLoading}
+        onExecute={() => {}}
+      />
+    );
+  }
+
   const activeBalance = accountMode === 'REAL' ? (profile?.balance || 0) : demoBalance;
 
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden text-[#0A0A0A]">
-      {/* Standard Branded Header */}
+      {/* Standard Header */}
       <header className="h-16 border-b border-[#E4E4E4] bg-white flex items-center justify-between shrink-0 z-[100] px-4 md:px-6 shadow-sm">
         <div className="flex items-center space-x-4">
           <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 xl:hidden text-[#0A0A0A]"><Menu className="w-6 h-6" /></button>
@@ -164,7 +169,7 @@ function DerivedTerminalContent() {
             data-profile-trigger
             aria-label="Account menu"
             onClick={() => setIsProfileDropdownOpen(v => !v)}
-            className="w-9 h-9 rounded-full bg-[#0055FF] text-white flex items-center justify-center font-bold text-xs overflow-hidden border border-[#E4E4E4] shadow-sm hover:border-[#0055FF] transition-all"
+            className="w-9 h-9 rounded-full bg-[#0055FF] text-white flex items-center justify-center font-bold text-xs overflow-hidden border border-[#E4E4E4] shadow-sm"
           >
             {profile?.profile?.photoUrl ? <img src={profile.profile.photoUrl} className="w-full h-full object-cover" /> : user?.email?.substring(0,2).toUpperCase()}
           </button>
@@ -185,40 +190,13 @@ function DerivedTerminalContent() {
         <AuthedSidebar className="hidden xl:flex" />
         
         <main className="flex-grow flex xl:ml-16 overflow-hidden bg-[#F7F7F5]">
-          {/* Phone & tablet layout */}
-          <div className="flex flex-col flex-grow min-w-0 lg:hidden bg-white">
-            <div className="flex items-center justify-between gap-3 px-3 py-2 border-b border-[#E4E4E4] shrink-0">
-              <div className="min-w-0">
-                <MarketSelector
-                  activeSymbol={activeInst.symbol}
-                  onSelect={setActiveInst}
-                  livePrices={{ [activeInst.symbol]: { price: lastTick?.price || 0, percent: 0 } }}
-                />
-              </div>
-              <div className="text-right shrink-0">
-                <div className="text-lg font-mono font-bold leading-none">{lastTick ? formatNumber(lastTick.price, { minimumFractionDigits: 2 }) : '—'}</div>
-                <div className="text-[10px] text-[#6B7280] mt-1">Live price</div>
-              </div>
-            </div>
-            <div className="relative flex-1 min-h-0">
-              <SyntheticChart ticks={ticks} loading={syntheticLoading} />
-            </div>
-            <div className="shrink-0 grid grid-cols-[1fr_2fr] gap-3 p-3 border-t border-[#E4E4E4] bg-white pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-              <button onClick={() => setSheet('TRADES')} className="h-12 border border-[#E4E4E4] bg-white text-sm font-semibold text-[#0A0A0A] flex items-center justify-center gap-2">
-                Trades{placed.length > 0 && <span className="min-w-5 h-5 px-1 rounded-full bg-[#0055FF] text-white text-[10px] flex items-center justify-center">{placed.length}</span>}
-              </button>
-              <button onClick={() => { setSheetTab('TRADE'); setSheet('TRADE'); }} className="h-12 bg-[#0055FF] text-white text-sm font-bold">Trade</button>
-            </div>
-          </div>
-
-          <ResizablePanelGroup direction="horizontal" className="flex-grow overflow-hidden hidden lg:flex">
+          <ResizablePanelGroup direction="horizontal" className="flex-grow overflow-hidden">
             <ResizablePanel defaultSize={75} minSize={40}>
               <ResizablePanelGroup direction="vertical">
                 <ResizablePanel defaultSize={70} minSize={30}>
                   <div className="h-full w-full bg-white relative border-b border-[#E4E4E4]">
                     <SyntheticChart ticks={ticks} loading={syntheticLoading} />
                     
-                    {/* Floating Zoom Node */}
                     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center bg-white/90 backdrop-blur-md border border-[#E4E4E4] rounded-full px-3 py-1.5 gap-4 shadow-2xl z-50">
                        <button className="p-2 text-[#6B7280] hover:text-[#0055FF] transition-colors"><Minus className="w-5 h-5" /></button>
                        <div className="w-px h-4 bg-[#E4E4E4]"></div>
@@ -226,7 +204,7 @@ function DerivedTerminalContent() {
                     </div>
 
                     <div className="absolute top-8 left-8 pointer-events-none opacity-20 select-none">
-                       <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#0A0A0A]">Matching Node Operational &bull; Varban Algorithm v4.2</span>
+                       <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#0A0A0A]">Matching Node Operational & bull; Varban Algorithm v4.2</span>
                     </div>
                   </div>
                 </ResizablePanel>
@@ -268,7 +246,7 @@ function DerivedTerminalContent() {
                         instrument={activeInst} 
                         livePrice={lastTick?.price || null}
                         balance={activeBalance}
-                        onExecute={handleExecute}
+                        onExecute={() => {}}
                       />
                    ) : (
                       <DigitStats symbol={activeInst.symbol} livePrice={lastTick?.price || null} />
@@ -280,53 +258,10 @@ function DerivedTerminalContent() {
         </main>
       </div>
 
-      <BottomSheet
-        open={sheet === 'TRADE'}
-        title={activeInst.name || activeInst.symbol}
-        onClose={() => setSheet(null)}
-        header={
-          <div className="flex border-b border-[#E4E4E4] shrink-0">
-            {([['TRADE', 'Trade'], ['STATS', 'Digit stats']] as const).map(([id, label]) => (
-              <button key={id} onClick={() => setSheetTab(id)}
-                className={cn("flex-1 py-3 text-sm font-semibold border-b-2", sheetTab === id ? "border-[#0055FF] text-[#0055FF]" : "border-transparent text-[#6B7280]")}>
-                {label}
-              </button>
-            ))}
-          </div>
-        }
-      >
-        {sheetTab === 'TRADE' ? (
-          <DerivedTradeControls instrument={activeInst} livePrice={lastTick?.price || null} balance={activeBalance} onExecute={handleExecute} />
-        ) : (
-          <DigitStats symbol={activeInst.symbol} livePrice={lastTick?.price || null} />
-        )}
-      </BottomSheet>
-
-      <BottomSheet open={sheet === 'TRADES'} title="Your trades" onClose={() => setSheet(null)}>
-        {placed.length === 0 ? (
-          <div className="p-8 text-center text-sm text-[#6B7280]">No trades yet. Tap Trade to place your first one.</div>
-        ) : (
-          <ul className="divide-y divide-[#E4E4E4]">
-            {placed.map(t => (
-              <li key={t.id} className="px-4 py-3 flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-semibold">{t.symbol}</div>
-                  <div className="text-xs text-[#6B7280]">{t.side} · {new Date(t.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-mono font-bold">${formatNumber(t.amount, { minimumFractionDigits: 2 })}</div>
-                  {t.price !== null && <div className="text-xs text-[#6B7280] font-mono">at {formatNumber(t.price, { minimumFractionDigits: 2 })}</div>}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </BottomSheet>
-
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[400] xl:hidden">
           <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
-          <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white animate-in slide-in-from-left duration-300 shadow-2xl">
+          <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white animate-in slide-in-from-left duration-300">
             <AuthedSidebar isMobile onLinkClick={() => setIsMobileMenuOpen(false)} />
           </div>
         </div>
