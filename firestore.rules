@@ -10,13 +10,19 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == uid;
     }
 
-    function isAdmin() {
-      return signedIn() && (
-        (request.auth.token.email_verified == true && (
+    function isSuperAdmin() {
+      return signedIn() && 
+        request.auth.token.email_verified == true && (
           request.auth.token.email == 'macos8388@gmail.com' ||
-          request.auth.token.email == 'gmaina4242@gmail.com')) ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status.role == 'Admin')
+          request.auth.token.email == 'gmaina4242@gmail.com'
+        );
+    }
+
+    function isAdmin() {
+      return isSuperAdmin() || (
+        signedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status.role == 'Admin'
       );
     }
 
@@ -49,21 +55,19 @@ service cloud.firestore {
     // --- AI Conversations ---------------------------------------------------
     match /conversations/{convId} {
       // Allow read if admin, or if the user is signed in and the ID matches their session pattern
-      // or if the document exists and they are the owner.
-      allow read: if isAdmin() || (signedIn() && (convId == 'sess_' + request.auth.uid || (resource != null && resource.data.userId == request.auth.uid)));
+      allow read: if isAdmin() || (signedIn() && convId == 'sess_' + request.auth.uid);
       
-      // Allow create if the user is signed in and setting themselves as the owner
-      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      // Allow create if the user is signed in and using their own session ID
+      allow create: if signedIn() && convId == 'sess_' + request.auth.uid && request.resource.data.userId == request.auth.uid;
       
       // Allow update if admin, or if the user is the owner
-      allow update: if isAdmin() || (signedIn() && (resource != null && resource.data.userId == request.auth.uid));
+      allow update: if isAdmin() || (signedIn() && convId == 'sess_' + request.auth.uid);
       
       allow delete: if isAdmin();
       
       match /messages/{msgId} {
-        // Inherit read/create permissions from the parent session ID check
-        allow read, create: if isAdmin() || (signedIn() && convId == 'sess_' + request.auth.uid);
-        allow update, delete: if isAdmin();
+        // Inherit permissions from parent session check
+        allow read, write: if isAdmin() || (signedIn() && convId == 'sess_' + request.auth.uid);
       }
     }
 
@@ -75,8 +79,8 @@ service cloud.firestore {
 
     // --- Security Nodes -----------------------------------------------------
     match /otp_codes/{uid} {
-      allow read: if isOwner(uid);
-      allow write: if true; 
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if signedIn() && uid == request.auth.uid; 
     }
 
     match /challenges/{uid} {
