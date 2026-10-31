@@ -66,23 +66,24 @@ export default function InstitutionalGlobe() {
         .backgroundColor('rgba(0,0,0,0)')
         .showAtmosphere(true)
         .atmosphereColor('#0055FF')
-        .atmosphereDaylightAlpha(0.1)
-        .globeColor('#F7F7F5')
+        .atmosphereAltitude(0.2)
+        .globeImageUrl('https://unpkg.com/three-globe@2.31.0/example/img/earth-night.jpg')
+        .globeColor('#0B1530')
         .lineHoverPrecision(0)
         .pointsData(gData)
-        .pointColor(() => '#0055FF')
+        .pointColor(() => '#4D8DFF')
         .pointAltitude(0.05)
         .pointRadius(0.8)
         .pointsMerge(true)
         .labelsData(gData)
         .labelDotRadius(0.3)
-        .labelColor(() => '#0A0A0A')
+        .labelColor(() => '#D6E4FF')
         .labelSize(1.5)
         .labelText('name')
         .labelResolution(2);
 
       globeInstance.current.controls().autoRotate = true;
-      globeInstance.current.controls().autoRotateSpeed = 0.5;
+      globeInstance.current.controls().autoRotateSpeed = 0.6;
       globeInstance.current.controls().enableZoom = false;
     });
 
