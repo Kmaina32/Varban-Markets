@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/card';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { cn } from '@/app/lib/utils';
+import { useTranslation } from '@/app/lib/i18n-context';
 import StatusDialog, { DialogStatus } from '@/components/shared/StatusDialog';
 
 const TIMEZONES = [
@@ -24,6 +25,7 @@ const TIMEZONES = [
 export default function DisplayTab() {
   const { user } = useUser();
   const db = useFirestore();
+  const { setLocale } = useTranslation();
   
   const [form, setForm] = useState({
     currency: 'USD',
@@ -73,6 +75,10 @@ export default function DisplayTab() {
           timezone: form.timezone
         }
       }, { merge: true });
+
+      const codes: Record<string, any> = { ENGLISH: 'en', FRENCH: 'fr', SPANISH: 'es', PORTUGUESE: 'pt' };
+      if (codes[form.language]) setLocale(codes[form.language]);
+      try { localStorage.setItem('varban_timezone', form.timezone); } catch {}
 
       setDialog({
         status: 'success',

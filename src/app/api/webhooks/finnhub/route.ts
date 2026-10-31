@@ -10,10 +10,10 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(req: NextRequest) {
   const secret = req.headers.get('x-finnhub-secret');
   
-  // Provided Secret for verification
-  const VALID_SECRET = "daqjp7pr01qott5g8thg";
+  // Set FINNHUB_WEBHOOK_SECRET in the Vercel project settings.
+  const VALID_SECRET = process.env.FINNHUB_WEBHOOK_SECRET;
 
-  if (secret !== VALID_SECRET) {
+  if (!VALID_SECRET || secret !== VALID_SECRET) {
     console.warn("Unauthorized Webhook Attempt: Invalid Finnhub Secret Header");
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
