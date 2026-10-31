@@ -92,7 +92,7 @@ export default function Navbar() {
             title: t('landing.nav.mobile'),
             items: [
               { label: t('landing.nav.mobile'), href: "/platforms/mobile" },
-              { label: t('landing.nav.mt5'), href: "/technology" },
+              { label: "Institutional VPS", href: "/platforms/vps" },
             ]
           }
         ]

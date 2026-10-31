@@ -6,7 +6,8 @@ import {
   LayoutDashboard, Monitor, Globe, Briefcase, Target, 
   FileText, Clock, Star, Wallet, User, Bell, ShieldAlert,
   Share2, Newspaper, HelpCircle, Mail, LogOut, Cpu,
-  BarChart4, Calendar, Layers, Zap, ArrowLeftRight, RefreshCcw
+  BarChart4, Calendar, Layers, Zap, ArrowLeftRight, RefreshCcw,
+  Server
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { useTranslation } from "@/app/lib/i18n-context";
@@ -63,6 +64,7 @@ export default function AuthedSidebar({ onLinkClick, className, isMobile = false
         { label: "Forex / CFDs / Crypto", href: "/client/terminal", icon: Monitor, description: "Trade forex, CFDs, indices and crypto." },
         { label: "Derived", href: "/client/derived-terminal", icon: Zap, description: "Volatility indices and derived contracts." },
         { label: t('nav.bots'), href: "/client/bots", icon: Cpu, description: "Automated trading tools and algorithms." },
+        { label: "Institutional VPS", href: "/client/vps", icon: Server, description: "Low-latency dedicated hosting." },
         { label: "Positions", href: "/client/positions", icon: Target, description: "Your open trades right now." },
         { label: "Orders", href: "/client/orders", icon: FileText, description: "Pending and recent orders." },
         { label: t('nav.portfolio'), href: "/client/portfolio", icon: Briefcase, description: "Performance curve and asset allocation." },
